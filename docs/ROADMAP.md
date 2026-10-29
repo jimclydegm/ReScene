@@ -34,6 +34,7 @@ If a target slips, remove optional work before weakening the complete core flow.
 
 - [ ] Read the participant rules/details and record track, final deadline/timezone, model requirements, allowed hosts/assets, team rules, judging rubric, and submission format in PLAN.md. Do not treat marketing copy as the final rules.
 - [x] Verify account/model discovery access to `muse-spark-1.3` and `sam-3.1`. Secrets are local/platform-side; live inference is still pending.
+- [x] Prepare Spark/SAM adapters, private checkpointed spike CLI, offline contract/mask/artifact tests, and normalized synthetic bedroom input. Jim requested code-only preparation; no inference budget or paid calls authorized yet. See [SPIKE.md](SPIKE.md).
 - [ ] Select one rights-cleared photo with 3–5 clear furniture/decor objects; use two objects for the first test.
 - [ ] Run Spark analysis and SAM masks; save sanitized request/response fixtures plus private full artifacts.
 - [ ] Check current hosted SAM 3D price/billing unit/credits and set the experimental spending cap before paid tests.

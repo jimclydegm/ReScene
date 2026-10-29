@@ -10,14 +10,16 @@ One real room photo → two reviewed masks → two independent Meta-generated GL
 
 Time-box the experiment to 2–4 focused hours after the input and billing prerequisites are ready. Keep `GENERATION_ENABLED=false` for the public app during the experiment. Do not enable generation merely because model discovery succeeds.
 
+**October 29 update:** Jim selected **prepare code only**. No paid inference is authorized and no spending cap is approved. The CLI/adapters and offline tests are implemented; see [SPIKE.md](SPIKE.md) for commands and current limits. The corrected generated bedroom image is prepared as a synthetic test input, not evidence of real-photo reconstruction quality.
+
 ## 1. Prepare the bounded experiment
 
-- [ ] Start implementation from updated `main`; proposed branch: `codex/meta-feasibility`. Keep the existing foundation branch/preview for now because its origin is registered with Auth and R2.
-- [ ] Choose one rights-cleared room photo with two distinguishable, opaque objects, such as a chair and side table. Record source/license. The solid-color storage fixture cannot test segmentation or reconstruction.
-- [ ] Use the existing normalization path. Save input asset ID, SHA-256, width, height, and orientation; every mask and model call uses these exact normalized pixels.
+- [x] Start implementation from updated `main` on `codex/meta-feasibility`. The existing foundation branch/preview remains registered with Auth and R2.
+- [x] Prepare the corrected synthetic bedroom fixture created in this chat. Keep its provenance with the private checkpoint. Real-photo testing remains required before the final demo.
+- [x] Normalize the fixture using the upload path's canonical transform. Save a private experiment ID, SHA-256, width, and height. The spike uses a separate private R2 namespace and does not create application Asset rows.
 - [ ] Verify current Meta/fal pricing, billing unit (per job/object/image), account balance, and any participant terms. Record a total experiment spending cap with Jim before paid submissions. No cap has been selected yet.
 - [ ] Check participant rules for model/host eligibility, deadline, submission format, and judging criteria. Keep unknown rules explicitly unresolved rather than inferring them from the invitation.
-- [ ] Review the installed Meta parser and fal SDK documentation/types before implementing adapters; confirm the current endpoint input/output schemas.
+- [x] Review the installed Meta parser and fal SDK documentation/types and official endpoint contracts. Runtime behavior still needs live validation.
 
 Submission limits for the first successful path: one Spark analysis, at most two initial SAM concept requests, and one two-object reconstruction job. A request-count limit does not replace the monetary cap. Additional submissions require remaining budget and an explicit recorded reason. Disable automatic retries around paid submission where acceptance could be ambiguous.
 
