@@ -26,7 +26,9 @@ Jim deferred recording/portal work and requested a single broader UX/pipeline co
 - [x] Independent outline retries with text or box/include/exclude points; keep other accepted masks.
 - [x] Persist multiple matches, select saved outlines, combine multi-part product masks without inference.
 - [x] Fit portrait photo/3D views, improve review controls, reconstruction seed, backdrop and placement resets.
-- [ ] Complete targeted live clothing/recovery checks, one PR/release and bounded production verification.
+- [x] Complete targeted live clothing/recovery checks, PR #11 merged at 90f5911, READY production release and bounded production verification.
+
+The clothing correction has 61 passing unit cases, passed CI/build and saved-data/API checks, and a real three-item clothing reconstruction saved privately. Production controls/authorization/recovery smoke checks pass with no further inference. Native browser interaction remains unverified.
 
 ## External completion gates
 
