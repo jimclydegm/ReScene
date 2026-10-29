@@ -1753,7 +1753,9 @@ svg {
 .reference-dialog-heading h2 { margin: 4px 0 0; font-size: 21px; }
 .reference-dialog-content > img { display: block; width: 100%; height: auto; max-height: 73dvh; object-fit: contain; border-radius: 8px; background: #e9e7df; }
 .reference-dialog-content > p { margin: 12px 0 0; font-size: 12px; color: #59665b; }
-.model-viewport { height: auto; aspect-ratio: var(--scene-aspect, 1.5); }
+.model-viewport { width: 100%; min-width: 0; max-width: 100%; height: auto; aspect-ratio: var(--scene-aspect, 1.5); }
+.editor-layout > div, .editor-layout > .object-inspector { min-width: 0; }
+@media (max-width: 850px) { .editor-layout { grid-template-columns: minmax(0, 1fr); } }
 .viewer-toolbar { position: absolute; top: 14px; right: 14px; display: flex; gap: 6px; }
 .viewer-toolbar button { background: #fffdf5ed; border: 1px solid #d5d9cd; border-radius: 7px; font-size: 11px; padding: 7px 10px; cursor: pointer; }
 .scene-layout-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; padding: 18px 0 8px; }

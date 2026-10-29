@@ -1,6 +1,6 @@
 # Test the photo-to-3D prototype
 
-Updated October 29, 2026. Production and local end-to-end API checks pass: upload → analysis/masks → three meshes → saved edits. Browser automation is currently disabled in Work settings, so rendered controls/mesh appearance have not been visually verified in this phase.
+Updated October 29, 2026. Production and local end-to-end API checks pass: upload → analysis/masks → three meshes → saved edits. Browser access now works. Desktop composition/selection/hide and 390px confirmation/reference dialogs have been visually checked.
 
 ## Browser journey
 
@@ -19,7 +19,7 @@ For an already generated scene, click **Match photo layout** below the viewer. I
 
 Click the **Reference photo** thumbnail in Scene Studio to expand the original without leaving the editor. Close with the button, Escape, or the backdrop. The image remains private.
 
-Shapes, hidden surfaces, measurements, room geometry/materials, and lighting remain approximate. Existing scenes use sampled photo colors with a plain floor and diffuse neutral lighting; they do not gain new AI room observations unless a new analysis is run. The updated Spark room schema/prompt has not had a live inference test. Product cards, replacements, and anonymous sharing are not part of this build yet.
+Shapes, hidden surfaces, measurements, room geometry/materials, and lighting remain approximate. Existing scenes use sampled photo colors with a plain floor and diffuse neutral lighting; they do not gain new AI room observations unless a new analysis is run. The updated Spark room schema/prompt passed a production inference with warm left lighting, wood floor and left-wall observations. Product cards, replacements, and anonymous sharing are not part of this build yet.
 
 ## Developer checks
 
@@ -61,7 +61,7 @@ GENERATION_QA_FILE=test-results/generation-production-inline-qa.json \
 npm exec tsx scripts/smoke-composition.ts
 ```
 
-Add `SMOKE_BASE_URL=https://rescene-eta.vercel.app` for production. Use a QA scene only; the runner temporarily changes its layout. Local integration passed with the real saved bed/nightstand/chair GLBs. Twenty-two focused tests cover pose ordering/axes, shared scale, camera fit, invalid/behind-camera data, GLB hierarchy/cycles, room-observation validation, masks, and existing contracts. Lint/typecheck/production build pass. The same composition runner passed on production after PR #3 merged (`81bf9ac`): matching/persistence, imported baseline preservation, exact previous-layout restore, stale revision/origin rejection, second-account isolation, and rendered reference controls. Both PR CI runs, Vercel preview, main CI, and production deployment passed. Visual/mobile behavior is still unverified because browser access remains disabled; the revised Spark environment prompt has not been called live.
+Add `SMOKE_BASE_URL=https://rescene-eta.vercel.app` for production. Use a QA scene only; the runner temporarily changes its layout. Local integration passed with the real saved bed/nightstand/chair GLBs. Twenty-two focused tests cover pose ordering/axes, shared scale, camera fit, invalid/behind-camera data, GLB hierarchy/cycles, room-observation validation, masks, and existing contracts. Lint/typecheck/production build pass. The same composition runner passed on production after PR #3 merged (`81bf9ac`): matching/persistence, imported baseline preservation, exact previous-layout restore, stale revision/origin rejection, second-account isolation, and rendered reference controls. Both PR CI runs, Vercel preview, main CI, and production deployment passed. The initial browser block was later resolved: desktop material/pose/selection/hide/reload and mobile reference/confirmation dialogs are checked. Revised Spark environment output now passes live.
 
 At the end of composition work the database reservation sum was $7.28 of $7.50. Jim subsequently removed the app cap, so that historical value no longer blocks new runs. No additional inference was submitted for this correction. The private color fallback is not evidence of live validation of the updated Spark prompt.
 
@@ -73,4 +73,13 @@ At the end of composition work the database reservation sum was $7.28 of $7.50. 
 - **Rebuild 3D** (also step 2 from the editor): confirm to keep the photo and masks, clear models/layout/edits, then review/reselect and Build in 3D again.
 - **Keep current scene** or Escape cancels without a request. Restart controls are disabled during generation; stale tabs receive a revision conflict.
 
-`node --conditions=react-server --import tsx scripts/smoke-restarts.ts` with QA_CREDENTIAL_FILE and an existing GENERATION_QA_FILE creates a separate QA copy of real saved photo/mask/GLB assets. It tests confirmation, active/stale/origin/ownership guards, concurrent reset conflict, old-job resume denial, each clearing boundary, and reupload in the same scene. No inference is submitted by this runner. The local run passes. Invalidated assets are marked DELETED; historical provider/usage records remain. No automatic R2 expiry is added.
+`node --conditions=react-server --import tsx scripts/smoke-restarts.ts` with QA_CREDENTIAL_FILE and an existing GENERATION_QA_FILE creates a separate QA copy of real saved photo/mask/GLB assets. It tests confirmation, active/stale/origin/ownership guards, concurrent reset conflict, old-job resume denial, each clearing boundary, and reupload in the same scene. No inference is submitted by this runner. Local and deployed runs pass. Invalidated assets are marked DELETED; historical provider/usage records remain. No automatic R2 expiry is added.
+
+
+### Live restart follow-up
+
+PR #4 merged (`5189d05`), main CI/preview/production passed. Fresh production QA state is ignored `test-results/generation-restart-live-qa.json` (scene `672ef2e3-8ddc-4b94-bacd-b5f9502f780d`). The analysis passed beyond the old cap and produced the new environment fields. Bed/nightstand masks passed; armchair returned NO_MATCH and was correctly disabled. A two-object reconstruction reached READY and was then explicitly restarted to REVIEW: photo/masks/IDs persisted, model URLs/layout cleared, and a second reconstruction was submitted with a new idempotency key. The second reconstruction also reached READY. Fresh GLB downloads/CORS and save/reload, stale revision/origin and second-account checks passed. Desktop Chrome shows both rebuilt meshes with the new room observations; its Rebuild 3D confirmation and cancel are verified. Analysis took 18.1 seconds and the first/rebuilt GPU runs took 58.7/58.8 seconds. Phone-sized inspection found an inherited canvas width overflow; the grid track/viewport/inspector now explicitly shrink.
+
+`scripts/smoke-generation.ts restart-review` and `restart-analysis` explicitly clear later QA results and rotate relevant idempotency keys; they do not submit inference. `reconstruct`/`start` then submit the requested new run. Never use these destructive modes on a user's scene without authorization. Cancel/confirmation dialogs were visually checked; browser destructive submission itself is covered by the API runner instead of silently accepting a permanent-deletion prompt.
+
+Visual QA found SAM GLBs omit metallicFactor, which glTF interprets as metal. The viewer now clones unspecified generated materials with metalness=0 and disposes those private copies; explicit factors/maps and cached loader materials remain intact. Wood/fabric colors now read correctly. Detailed background texture and physical illumination remain approximate.

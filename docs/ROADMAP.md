@@ -109,13 +109,13 @@ If a target slips, remove optional work before weakening the complete core flow.
 - [x] Add pose/projection/GLB hierarchy regressions. Preserve usable meshes on unsupported-layout fallback.
 - [x] Complete local/deployed integration verification and merge the correction (PR #3, `81bf9ac`).
 - [ ] Visually compare the reconstructed bedroom with its photo; check mobile dialog, camera reset, selection, and mesh orientation once browser access is enabled.
-- [ ] Validate the revised Spark environment response on a future authorized inference; current saved scenes use the color fallback.
+- [x] Validate the revised Spark environment response on production; older saved scenes still use the color fallback.
 
 Room surfaces and lighting are approximate. Full background texture/depth reconstruction remains a separate quality gate, not a completed capability.
 
 ## Next room-quality gate — before calling the photo recreation complete
 
-Time-box the first quality pass after visual comparison; keep the November 2 freeze and approved inference cap.
+Time-box the first quality pass after visual comparison; keep the November 2 freeze and focus inference on observed quality gaps. Jim removed the cumulative app cap later on October 29.
 
 - [ ] Compare the saved bedroom from Photo view with the reference: floor/wall boundary, wall corner, object contacts, bed/chair facing, proportions, shadows, and missing objects. Record visible mismatches separately from coarse projection error.
 - [ ] If room surfaces are the main gap, use reviewed floor/wall segmentation and image-space boundary/vanishing-line estimates to fit planes/camera. Validate the provider's supported prompts before adding calls; bounding boxes alone do not determine room geometry.
@@ -223,5 +223,5 @@ Runtime/editor PR #2 merged into `main` on October 29 (`8f56977`). Both PR CI ru
 - [x] Add Change photo / Analyze again / Rebuild 3D with an explicit consequence/credit confirmation and cancel.
 - [x] Implement transactional downstream clearing, asset invalidation, old-run resume rejection, revision conflicts and active-run guard.
 - [x] Local integration: copied real assets, confirmation requirement, concurrent resets, clearing boundaries, reupload, stale/origin/ownership rejection pass. Local dialog/cancel visually checked.
-- [ ] Fresh deployed Meta analysis/environment + SAM masks + composed 3D, then return/rebuild and confirm refreshed results.
-- [ ] Deployed restart integration, desktop/mobile browser QA, CI and production deployment.
+- [x] Fresh deployed Meta analysis/environment + SAM masks + composed 3D, then return/rebuild and confirm refreshed results. Two usable masks; chair NO_MATCH is excluded. Both GPU runs reached READY; signed downloads and saved edits pass.
+- [x] Deployed restart integration, desktop/mobile dialog and saved-room browser QA, CI and production deployment (PR #4). Fresh rebuild visual QA follows below.
