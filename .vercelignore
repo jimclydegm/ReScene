@@ -1,6 +1,6 @@
 .env*
 !.env.example
-.git
+# Keep Git history available to the pre-install ignoreCommand.
 .next
 node_modules
 coverage
