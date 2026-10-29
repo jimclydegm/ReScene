@@ -1,8 +1,10 @@
 import { z } from "zod";
+import { environmentSchema } from "@/lib/scene/composition";
 
 export const analysisSchema = z.object({
   sceneType: z.string().min(1).max(80),
   summary: z.string().min(1).max(600),
+  environment: environmentSchema,
   objects: z.array(z.object({
     candidateId: z.string().regex(/^candidate-[1-5]$/),
     label: z.string().min(1).max(80),
