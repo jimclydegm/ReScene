@@ -1737,3 +1737,36 @@ svg {
 /* Private photo-to-scene studio */
 .generation-studio{padding:0 0 64px}.generation-steps{display:flex;gap:28px;margin:0 0 28px;font-size:12px;color:#93978b}.generation-steps span{display:flex;align-items:center;gap:8px}.generation-steps .done{color:#477157}.generation-progress{display:flex;align-items:center;gap:20px;padding:24px;background:#edf1e7;border-radius:14px;margin-bottom:24px}.generation-progress p{font-size:13px;color:#727967;margin:7px 0}.generation-progress progress{height:6px;width:260px;max-width:100%;accent-color:#477157}.generation-error{padding:20px;border:1px solid #e4c7b9;border-radius:12px;margin-bottom:24px}.analysis-layout{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(270px,1fr);gap:36px}.review-photo{position:relative;align-self:start;line-height:0;border-radius:12px;overflow:hidden;border:1px solid #dedfd6}.review-photo>img:first-child{width:100%;height:auto}.review-photo .mask-overlay{object-fit:contain;mix-blend-mode:screen;opacity:.5}.object-inspector{padding:24px;background:#f0f1ea;border:1px solid #e0e2d7;border-radius:12px;align-self:start}.object-inspector h2{font-size:26px;line-height:1.15;margin:14px 0}.object-inspector>p{font-size:14px;line-height:1.6;color:#747a6d}.object-inspector>.button{margin-top:16px;width:100%}.review-object{display:flex;gap:12px;align-items:start;padding:16px 0;border-bottom:1px solid #dfe2d7;font-size:13px;cursor:pointer}.review-object input{margin-top:4px;accent-color:#477157}.review-object small{display:block;font-size:11px;color:#7b8172;margin-top:5px}.editor-layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:24px}.model-viewport{height:540px;position:relative;border:1px solid #dce0d4;border-radius:14px;overflow:hidden}.viewer-reset{position:absolute;right:16px;top:16px;background:#fafaf4;border:1px solid #d7ddcf;border-radius:6px;padding:8px 12px;font-size:11px;cursor:pointer}.viewer-help{position:absolute;bottom:12px;left:16px;font-size:11px;color:#717b67;pointer-events:none}.preview-caveat{font-size:11px!important;color:#858b7d;line-height:1.6;margin:16px 0}.object-selector{display:flex;flex-direction:column;gap:6px;margin:18px 0}.object-selector button{text-align:left;padding:10px 12px;border:1px solid #d8dece;border-radius:7px;background:#f7f8f2;font-size:12px;cursor:pointer}.object-selector .selected{border-color:#4d7d5d;background:#e4ebdd}.transform-fields{display:flex;flex-direction:column;gap:12px}.transform-fields label{font-size:12px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px}.transform-fields input:not([type=checkbox]){width:100%;accent-color:#477157}.transform-fields input:not([type=range]):not([type=checkbox]){padding:9px;border:1px solid #d7decb;border-radius:6px;background:#fafbf7}.transform-fields output{font-size:10px;color:#818878}.transform-fields .visibility-toggle{justify-content:flex-start}.editor-actions{display:flex;gap:8px;margin:24px 0 16px}.editor-actions .button{padding:11px 14px;font-size:11px}.save-message{color:#447251;font-size:13px}.viewer-error{padding:60px 30px;background:#ecefe4;border-radius:12px;font-size:14px;color:#717968}.object-inspector .text-link{font-size:11px}
 @media(max-width:850px){.analysis-layout,.editor-layout{grid-template-columns:1fr}.object-inspector{padding:20px}.generation-steps{gap:15px;font-size:10px}.model-viewport{height:440px}.generation-progress{padding:18px;gap:12px}.generation-progress strong{font-size:13px}.generation-progress progress{width:190px}}
+
+.studio-reference-bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+.studio-reference-bar p { margin: 7px 0 0; color: var(--muted); font-size: 13px; }
+.reference-photo { display: flex; align-items: center; gap: 12px; padding: 7px 13px 7px 7px; border: 1px solid #d9ddd3; border-radius: 12px; background: #fffefa; color: #26362b; text-align: left; cursor: pointer; flex-shrink: 0; }
+.reference-photo > img { width: 96px; height: 64px; object-fit: contain; background: #e9e7df; border-radius: 7px; }
+.reference-photo strong { display: block; font-size: 13px; }
+.reference-photo small { display: flex; align-items: center; gap: 6px; margin-top: 5px; font-size: 11px; }
+.reference-photo:hover { border-color: #42785c; }
+.reference-photo:focus-visible, .reference-dialog button:focus-visible, .viewer-toolbar button:focus-visible { outline: 3px solid #42785c; outline-offset: 3px; }
+.reference-dialog { border: 0; padding: 0; border-radius: 16px; width: min(1100px, 94vw); max-height: 94dvh; background: #faf9f4; box-shadow: 0 24px 100px #0005; }
+.reference-dialog::backdrop { background: #17231fd9; }
+.reference-dialog-content { padding: 20px; }
+.reference-dialog-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 16px; }
+.reference-dialog-heading h2 { margin: 4px 0 0; font-size: 21px; }
+.reference-dialog-content > img { display: block; width: 100%; height: auto; max-height: 73dvh; object-fit: contain; border-radius: 8px; background: #e9e7df; }
+.reference-dialog-content > p { margin: 12px 0 0; font-size: 12px; color: #59665b; }
+.model-viewport { height: auto; aspect-ratio: var(--scene-aspect, 1.5); }
+.viewer-toolbar { position: absolute; top: 14px; right: 14px; display: flex; gap: 6px; }
+.viewer-toolbar button { background: #fffdf5ed; border: 1px solid #d5d9cd; border-radius: 7px; font-size: 11px; padding: 7px 10px; cursor: pointer; }
+.scene-layout-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; padding: 18px 0 8px; }
+.scene-layout-tools > div { flex: 1 1 230px; }
+.scene-layout-tools strong { font-size: 13px; }
+.scene-layout-tools p { font-size: 12px; color: #617064; line-height: 1.6; margin: 5px 0; }
+@media (max-width: 600px) {
+  .studio-reference-bar { align-items: flex-start; gap: 10px; }
+  .studio-reference-bar p { font-size: 12px; }
+  .reference-photo { padding: 5px; gap: 7px; }
+  .reference-photo > img { width: 70px; height: 48px; }
+  .reference-photo strong { font-size: 11px; }
+  .reference-photo small { font-size: 10px; }
+  .reference-dialog-content { padding: 12px; }
+  .viewer-help { font-size: 9px; }
+}

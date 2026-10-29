@@ -11,6 +11,8 @@ import { analyzePhoto } from "@/lib/ai/analyze";
 import { segmentConcept } from "@/lib/ai/segment";
 import { getSam3dClient } from "@/lib/ai/sam3d";
 import { downloadFalArtifact, inspectGlb } from "@/lib/ai/glb";
+import { composeRoom, compositionSchema, glbBounds, modelPlacementSchema, type CompositionInput } from "@/lib/scene/composition";
+import { record, sceneEnvironment } from "./composition";
 import { runInputSchema, objectEditsSchema } from "@/lib/validation/generation";
 import type { z } from "zod";
 import type { Prisma, AssetKind } from "@/generated/prisma/client";
@@ -97,7 +99,8 @@ export async function analyzeRun(runId: string) {
     for (const [index, object] of candidates.entries()) await tx.sceneObject.create({ data: { sceneId: run.sceneId, originRunId: runId, sourceOrdinal: index,
       label: object.label, category: object.category, segmentationConcept: object.segmentationConcept, imageBounds: object.bbox, sortOrder: index,
       positionX: ((object.bbox.xMin + object.bbox.xMax) / 2 / image.width! - 0.5) * 5,
-      provenance: { model: result.model, promptVersion: result.promptVersion, placement: "approximate-stage" } } });
+      provenance: { model: result.model, promptVersion: result.promptVersion, support: object.support, placement: "approximate-stage" } } });
+    await tx.scene.update({ where: { id: run.sceneId }, data: { settings: asJson({ ...record(run.scene.settings), environment: result.analysis.environment }) } });
     await tx.generationRun.update({ where: { id: runId }, data: { currentStage: "Finding object outlines", progress: 25 } });
   });
   return (await getDb().sceneObject.findMany({ where: { sceneId: run.sceneId, originRunId: runId }, orderBy: { sourceOrdinal: "asc" } })).map(o => o.id);
@@ -119,7 +122,7 @@ export async function segmentRunObject(runId: string, objectId: string) {
     const stored = await artifact(run.sceneId, runId, "MASK", mask.png, "image/png", { width: image.width!, height: image.height! });
     await getDb().sceneObject.update({ where: { id: objectId }, data: { maskAssetId: stored.id, confidence: mask.confidence,
       imageBounds: { xMin: mask.bounds.left, yMin: mask.bounds.top, xMax: mask.bounds.right, yMax: mask.bounds.bottom },
-      provenance: asJson({ model: result.model, requestLocalId: mask.objectId, foregroundArea: mask.area }) } });
+      provenance: asJson({ ...record(object.provenance), model: result.model, requestLocalId: mask.objectId, foregroundArea: mask.area }) } });
   }
   await getDb().generationStep.update({ where: { id: step.id }, data: { status: "SUCCEEDED", providerRequestId: result.requestId, responseAssetId: raw.id, imageCount: 1, costUsd: 0.0025, completedAt: new Date() } });
 }
@@ -164,18 +167,34 @@ export async function ingestRun(runId: string, requestId: string) {
   if (!files || files.length !== ids.length || files.some(f => !f?.url)) throw new Error("INDEPENDENT_MESHES_MISSING");
   await artifact(run.sceneId, runId, "PROVIDER_RESPONSE", Buffer.from(JSON.stringify(result)), "application/json");
   const assets: { id: string }[] = [];
+  const layoutInputs: CompositionInput[] = [];
+  const objects = await getDb().sceneObject.findMany({ where: { sceneId: run.sceneId, id: { in: ids } } });
   for (const file of files) {
     const bytes = await downloadFalArtifact(file.url);
     inspectGlb(bytes);
     assets.push(await artifact(run.sceneId, runId, "MODEL_GLB", bytes, "model/gltf-binary"));
+    const index = assets.length - 1;
+    const object = objects.find(o => o.id === ids[index])!;
+    try { layoutInputs.push({ id: object.id, metadata: result.metadata?.find(m => m.object_index === index), bounds: glbBounds(bytes),
+      imageBounds: object.imageBounds, support: String(record(object.provenance).support ?? "unknown") }); } catch { /* Layout is optional; do not discard a usable mesh. */ }
   }
+  let layout: ReturnType<typeof composeRoom> | undefined;
+  try {
+    if (layoutInputs.length !== ids.length) throw new Error("LAYOUT_BOUNDS_MISSING");
+    const environment = await sceneEnvironment(run.scene);
+    layout = composeRoom(layoutInputs, { width: run.scene.normalizedAsset!.width!, height: run.scene.normalizedAsset!.height! }, environment.environment, environment.environmentSource);
+  } catch { /* Keep independent meshes usable if a provider changes its pose contract. The UI offers manual placement. */ }
   await getDb().$transaction(async tx => {
-    for (const [index, id] of ids.entries()) await tx.sceneObject.update({ where: { id, sceneId: run.sceneId }, data: {
+    for (const [index, id] of ids.entries()) {
+      const composed = layout?.objects[index];
+      await tx.sceneObject.update({ where: { id, sceneId: run.sceneId }, data: {
       modelAssetId: assets[index].id, representation: "MESH", status: "READY", visible: true,
-      initialTransform: { placement: "manual-stage", importer: "gltf-y-up-bottom-center-v1" },
-      provenance: asJson({ provider: "fal", model, requestId, maskInputIndex: index, metadata: result.metadata?.find(m => m.object_index === index), placement: "manual-stage" })
-    } });
-    await tx.scene.update({ where: { id: run.sceneId, revision: run.inputRevision }, data: { status: "READY", revision: { increment: 1 } } });
+      ...(composed ? { positionX: composed.position[0], positionY: composed.position[1], positionZ: composed.position[2], rotationX: 0, rotationY: 0, rotationZ: 0, rotationW: 1, scaleX: 1, scaleY: 1, scaleZ: 1 } : {}),
+      initialTransform: composed ? asJson(composed.placement) : { placement: "manual-stage", importer: "gltf-y-up-bottom-center-v1" },
+      provenance: asJson({ ...record(objects.find(o => o.id === id)!.provenance), provider: "fal", model, requestId, maskInputIndex: index, metadata: result.metadata?.find(m => m.object_index === index), placement: composed ? "sam3d-layout-v1" : "manual-stage" })
+    } }); }
+    await tx.scene.update({ where: { id: run.sceneId, revision: run.inputRevision }, data: { status: "READY", revision: { increment: 1 },
+      ...(layout ? { camera: asJson(layout.composition.camera), stage: asJson(layout.composition) } : {}) } });
     await tx.generationStep.updateMany({ where: { runId, key: "sam3d-submit" }, data: { status: "SUCCEEDED", completedAt: new Date() } });
     await tx.generationRun.update({ where: { id: runId }, data: { status: "SUCCEEDED", currentStage: "Your 3D scene is ready", progress: 100, completedAt: new Date() } });
   });
@@ -205,10 +224,12 @@ export async function workspace(sceneId: string, ownerId: string) {
     return workspace(sceneId, ownerId);
   }
   return { id: scene.id, title: scene.title, status: scene.status, revision: scene.revision,
+    composition: compositionSchema.safeParse(scene.stage).data ?? null, canRestoreLayout: Boolean(record(scene.settings).layoutBackup),
     image: scene.normalizedAsset ? { url: await signRead(scene.normalizedAsset), width: scene.normalizedAsset.width!, height: scene.normalizedAsset.height! } : null,
     generationEnabled: process.env.GENERATION_ENABLED === "true", objects: await Promise.all(objects.map(async o => ({
       id: o.id, label: o.label, status: o.status, errorCode: o.lastErrorCode,
       maskUrl: o.mask ? await signRead(o.mask) : null, modelUrl: o.model ? await signRead(o.model) : null,
+      placement: modelPlacementSchema.safeParse(o.initialTransform).data ?? null,
       positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, yaw: Math.atan2(2 * o.rotationW * o.rotationY, 1 - 2 * o.rotationY * o.rotationY), scale: o.scaleX, visible: o.visible
     }))), run: run ? { id: run.id, kind: run.kind, status: run.status, stage: run.currentStage, progress: run.progress,
       errorCode: run.errorCode, errorMessage: run.errorMessage, canResume: run.status === "QUEUED" || (run.status === "FAILED" && run.errorCode === "KNOWN_JOB_INTERRUPTED") } : null };

@@ -9,13 +9,17 @@ Updated October 29, 2026. Production and local end-to-end API checks pass: uploa
 3. Click **Find objects**. The app uses Meta Spark to select up to three main pieces, then SAM 3.1 to outline each. The server keeps processing if you close the tab.
 4. Review the object list. Select a checkbox to highlight its mask in the photo. Choose only outlines that cover the intended object; unclear/multiple-instance detections are disabled.
 5. Click **Build … objects in 3D**. The server submits one hosted Meta SAM 3D Objects job with the ordered reviewed masks. Wait for the editor; reload preserves job progress.
-6. Select an object from the list or click its mesh. Drag the viewport to orbit, right-drag to pan, and scroll to zoom. Use **Reset camera** if needed.
+6. Select an object from the list or click its mesh. Drag the viewport to orbit, right-drag to pan, and scroll to zoom. Use **Photo view** to return to the fitted photo camera (older manual stages say Reset camera).
 7. Adjust **Left / right**, **Forward / back**, **Height**, **Rotation**, or **Size**. Uncheck **Show object** to hide it. **Undo** restores the previous local edit.
 8. Click **Save scene**, refresh, and verify that the layout persists. Another browser tab saving an older revision receives a conflict instead of overwriting changes.
 
 The global prototype allowance is deliberately small. The app conservatively reserves $1.42 for analysis and $1 for reconstruction; repeated requests with the same idempotency key reuse the saved run. A budget-limit message leaves saved scenes readable. Ask before increasing allowance; Jim approved $10 total development inference, not unlimited generation.
 
-Shapes, hidden surfaces, scale, and arrangement are approximate. The renderer fits object meshes to a neutral stage; it does not claim measured room layout. Product cards, replacements, and anonymous sharing are not part of this build yet.
+For an already generated scene, click **Match photo layout** below the viewer. It reuses saved SAM poses, preserves relative scale/orientation/depth, fits the photo camera, and adds an estimated floor/walls. It resets and saves transforms; **Undo photo layout** restores the previous composition. Save or reload unsaved edits first. New supported reconstructions compose during ingestion.
+
+Click the **Reference photo** thumbnail in Scene Studio to expand the original without leaving the editor. Close with the button, Escape, or the backdrop. The image remains private.
+
+Shapes, hidden surfaces, measurements, room geometry/materials, and lighting remain approximate. Existing scenes use sampled photo colors with a plain floor and diffuse neutral lighting; they do not gain new AI room observations unless a new analysis is run. The updated Spark room schema/prompt has not had a live inference test. Product cards, replacements, and anonymous sharing are not part of this build yet.
 
 ## Developer checks
 
@@ -39,9 +43,24 @@ To test production, also set `SMOKE_BASE_URL=https://rescene-eta.vercel.app` and
 
 ## Current evidence and limitations
 
-- CLI experiment: one Spark request, two SAM concepts, one two-object reconstruction; independent nightstand/chair GLBs passed bounded ingestion. Their textures match the intended object types; automatic poses remain unverified.
+- CLI experiment: one Spark request, two SAM concepts, one two-object reconstruction; independent nightstand/chair GLBs passed bounded ingestion. Their textures match the intended object types. Pose conversion is now checked against Meta source, geometric regressions, and both saved reconstruction batches; browser appearance is still unverified.
 - Local app: fresh synthetic upload, one analysis with three SAM concepts, and one reconstruction reached READY with bed/chair/nightstand meshes. Repeated starts returned the same run ID. Saved model positions persisted; stale revisions, cross-origin mutations, and second-account access were rejected.
 - First production analysis: Spark succeeded; SAM received HTTP 400 because its media fetcher rejected a signed R2 URL. The workflow stopped without automatic resubmission. The fix sends bounded normalized image bytes inline to Meta; a direct live SAM diagnostic accepted this format. The corrected fresh production run passed: analysis/masks took 28.8 seconds and reconstruction/ingestion took 93.7 seconds; bed/nightstand/chair reached READY, with save/reload, revision/origin/ownership checks passing.
 - Production budget pool is $7.50 across database runs. CLI reserve is $2.405 plus $0.0025 for the inline-SAM diagnostic. The rejected production run was manually reconciled to $0.02 with an audit note and observed Spark usage. These are conservative reservations/usage estimates, not provider invoices.
 - Automatic staging expiry remains disabled at Jim's request. No source photos, masks, or raw model responses are public.
 - Visual browser controls, mobile editor layout, real-photo quality beyond the synthetic fixture, partial mesh success, individual resegmentation, and publication remain unchecked.
+
+
+## Composition regression checks (no inference)
+
+`scripts/smoke-composition.ts` uses an existing READY QA scene and existing QA accounts. It applies photo layout, checks common model scale/pose/camera and signed workspace output, edits yaw/size and confirms the baseline survives, checks stale/origin/other-account rejections and rendered reference controls, then restores the original composition/transforms exactly. It increments revisions during the test but makes no generation call.
+
+```sh
+QA_CREDENTIAL_FILE=/absolute/path/to/qa.json \
+GENERATION_QA_FILE=test-results/generation-production-inline-qa.json \
+npm exec tsx scripts/smoke-composition.ts
+```
+
+Add `SMOKE_BASE_URL=https://rescene-eta.vercel.app` for production. Use a QA scene only; the runner temporarily changes its layout. Local integration passed with the real saved bed/nightstand/chair GLBs. Twenty-two focused tests cover pose ordering/axes, shared scale, camera fit, invalid/behind-camera data, GLB hierarchy/cycles, room-observation validation, masks, and existing contracts. Lint/typecheck/production build pass. Deployed composition checks and visual QA status are recorded below when complete.
+
+The database reservation sum is now $7.28 of $7.50. A fresh full generation is blocked by the remaining allowance; inspect existing scenes without new inference. No additional inference was submitted for this correction. The private color fallback is not evidence of live validation of the updated Spark prompt.

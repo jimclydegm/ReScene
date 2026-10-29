@@ -3,7 +3,9 @@ import { validateAnalysis, placeMask } from "../src/lib/ai/contracts";
 
 const object = { candidateId: "candidate-1", label: "chair", category: "seating", segmentationConcept: "chair",
   bbox: { xMin: 2, yMin: 3, xMax: 8, yMax: 9 }, support: "floor", notes: "" };
-const input = { sceneType: "bedroom", summary: "A chair.", objects: [object] };
+const input = { sceneType: "bedroom", summary: "A chair.", objects: [object], environment: {
+  floorColor: "#bfa385", wallColor: "#ded6cc", floorMaterial: "wood", lightDirection: "left", lightWarmth: "warm", sideWall: "left"
+} };
 describe("Model output boundaries", () => {
   it("rejects off-image, inverted, and duplicate candidate boxes/IDs", () => {
     expect(() => validateAnalysis(input, { width: 7, height: 10 })).toThrow();
@@ -12,6 +14,11 @@ describe("Model output boundaries", () => {
   });
   it("allows no-match analysis without fabricating candidates", () => {
     expect(validateAnalysis({ ...input, objects: [] }, { width: 10, height: 10 }).objects).toEqual([]);
+  });
+  it("validates room colors and bounded lighting observations", () => {
+    expect(() => validateAnalysis({ ...input, environment: { ...input.environment, floorColor: "url(private-photo)" } }, { width: 10, height: 10 })).toThrow();
+    expect(() => validateAnalysis({ ...input, environment: { ...input.environment, lightDirection: "anywhere" } }, { width: 10, height: 10 })).toThrow();
+    expect(validateAnalysis(input, { width: 10, height: 10 }).environment.floorMaterial).toBe("wood");
   });
   it("places a cropped binary mask at its source-pixel offset", () => {
     const result = placeMask(new Uint8Array([1, 0, 0, 1]), { width: 2, height: 2 },

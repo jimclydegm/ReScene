@@ -163,3 +163,13 @@ Slugs are 24 random bytes / 32 base64url characters. Store them only on the publ
 Validate Prisma and the manifest schema offline now. During implementation, exercise duplicate idempotency keys, simultaneous saves, active-run uniqueness, cross-scene references, invalid transforms, and immutable publication reads against an isolated database. Use real mask/GLB fixtures for the importer because the largest failures are semantic, not type errors.
 
 Keep live-provider smoke tests explicit and small; normal CI uses sanitized fixtures and never consumes inference credits. Report schema validation separately from database/application/inference validation.
+
+
+### Current private composition JSON (October 29)
+
+- `Scene.stage`: `sam3d-room-v1` validated object with camera `{position,target,fov,aspect}`, room `{centerX,centerZ,width,depth,height}`, environment `{floorColor,wallColor,floorMaterial,lightDirection,lightWarmth,sideWall}`, environment source, projection error, and approximation warnings.
+- `Scene.camera`: duplicate current photo camera for the future manifest adapter. Orbiting is transient; Photo view returns to this camera.
+- `Scene.settings.environment`: validated Spark observations from `room-and-objects-v2`; absent in older scenes. `layoutBackup` contains one previous camera/stage and object baseline/draft transforms for owner-triggered restore, never binary data or signed URLs.
+- `SceneObject.initialTransform`: `sam3d-layout-v1` with `rotation` XYZW quaternion, positive `scale`, `offset`, and rotated/scaled bound `size`, all numeric arrays. This is the imported mesh baseline. Draft position, quaternion yaw, and uniform scale fields operate on the baseline's bottom-center pivot. A future publication adapter must flatten both transforms.
+- Existing manual-stage baseline objects remain readable. Owner-triggered Match photo layout upgrades them using saved provider metadata; no hidden database migration or GET mutation occurs.
+- Object provenance retains support classification across segmentation and ingestion. Old floor-furniture categories supply a documented fallback when earlier code omitted it.

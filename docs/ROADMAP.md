@@ -99,6 +99,20 @@ If a target slips, remove optional work before weakening the complete core flow.
 
 **Pass:** a fresh demo photo produces at least three independent GLBs. Each selects the correct object, camera controls work, and objects can be temporarily moved independently. Browser refresh/tab closure does not restart paid submissions or lose completed work.
 
+## Phase 3.5 — Correct scene composition (Jim's October 29 clarification)
+
+- [x] Trace GLB export axes, quaternion ordering, and row-vector pose convention against Meta source and saved provider artifacts.
+- [x] Preserve relative model scale/rotation/depth with one scene transform, a common floor, and a fitted photo camera.
+- [x] Add estimated floor/walls/shadow surfaces and bounded room/light observations to Spark's schema/prompt.
+- [x] Add a clickable reference thumbnail and expanded native dialog to Scene Studio.
+- [x] Add owner-only Match photo layout / Undo photo layout using saved assets, revision checks, and no new inference.
+- [x] Add pose/projection/GLB hierarchy regressions. Preserve usable meshes on unsupported-layout fallback.
+- [ ] Complete local/deployed integration verification and merge the correction.
+- [ ] Visually compare the reconstructed bedroom with its photo; check mobile dialog, camera reset, selection, and mesh orientation once browser access is enabled.
+- [ ] Validate the revised Spark environment response on a future authorized inference; current saved scenes use the color fallback.
+
+Room surfaces and lighting are approximate. Full background texture/depth reconstruction remains a separate quality gate, not a completed capability.
+
 ## Phase 4 — Editable and shoppable draft
 
 **Estimate: 5–7 hours, October 31.** Depends on Phase 3.
@@ -109,7 +123,7 @@ If a target slips, remove optional work before weakening the complete core flow.
 - [ ] Seed 2–3 rights-cleared replacement products/GLBs in the scene catalog through a trusted script.
 - [ ] Implement mesh+product replacement in one transaction with normalized pivot/size and undo.
 - [ ] Add responsive object list/product sheet and keyboard-accessible controls.
-- [ ] Optionally show the original photo beside the editor. Add Muse Image only after every core gate passes.
+- [x] Show a small expandable reference photo in Scene Studio (composition correction). Add Muse Image only after every core gate passes.
 
 **Pass:** select a lamp, enter details, move/rotate/scale/hide/undo, replace it, Save, refresh, and see the exact saved draft with correct product mapping. Two simultaneous saves produce a visible conflict instead of data loss.
 

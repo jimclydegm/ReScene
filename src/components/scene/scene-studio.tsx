@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, Component, type ReactNode } from "rea
 import { Scan, Box, Check, LoaderCircle, Save, RotateCcw } from "lucide-react";
 import { apiJson } from "@/lib/client-api";
 import type { SceneWorkspace, SceneObjectView } from "./types";
+import { ReferencePhoto } from "./reference-photo";
 
 const ModelCanvas = dynamic(() => import("./model-canvas"), { ssr: false, loading: () => <div className="canvas-loading">Opening the 3D viewer…</div> });
 class ViewerBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -83,15 +84,31 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     } catch (e) { setError(e instanceof Error ? e.message : "Could not save."); }
     finally { setBusy(false); }
   }
+  async function matchLayout(action: "MATCH_PHOTO" | "RESTORE") {
+    setBusy(true); setError(""); setMessage("");
+    try {
+      await apiJson(`${base}/composition`, { method: "POST", body: JSON.stringify({ expectedRevision: data.revision, action }) });
+      await reload();
+      setMessage(action === "RESTORE" ? "Previous layout restored." : "Photo layout applied and saved. You can undo it below.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not match the photo layout."); }
+    finally { setBusy(false); }
+  }
   const current = draft.find(o => o.id === selected);
   const ready = data.status === "READY" && draft.some(o => o.modelUrl);
   return <div className="generation-studio">
+    {data.image && <div className="studio-reference-bar"><div><span className="eyebrow">SCENE STUDIO</span><p>{ready ? "Compare your scene with the original photo." : "Your photo is the reference for this scene."}</p></div><ReferencePhoto image={data.image} title={data.title}/></div>}
     <div className="generation-steps"><span className="done"><Check size={14}/>Photo saved</span><span className={data.objects.length ? "done" : ""}>2 · Review objects</span><span className={ready ? "done" : ""}>3 · Edit your scene</span></div>
     {error && <p role="alert" className="form-error">{error}</p>}
     {message && <p role="status" className="save-message">{message}</p>}
     {data.run?.errorMessage && <div className="generation-error"><p>{data.run.errorMessage}</p>{data.run.canResume && <button className="button button-dark" disabled={busy} onClick={resume}>Resume existing generation</button>}</div>}
     {running && <div className="generation-progress" role="status"><LoaderCircle className="spin" size={20}/><div><strong>{data.run?.stage}</strong><p>You can close this page. Your progress is saved.</p><progress value={data.run?.progress} max={100}/></div>{data.run?.canResume && <button className="button button-light" onClick={resume} disabled={busy}>Resume</button>}</div>}
-    {ready ? <div className="editor-layout"><div><ViewerBoundary><ModelCanvas objects={draft} selected={selected} onSelect={setSelected}/></ViewerBoundary><p className="preview-caveat">AI reconstructed preview · approximate shapes and stage placement. Hidden surfaces and measurements may differ from the real object.</p></div>
+    {ready ? <div className="editor-layout"><div><ViewerBoundary key={data.revision}><ModelCanvas objects={draft} selected={selected} onSelect={setSelected} composition={data.composition}/></ViewerBoundary>
+      <div className="scene-layout-tools"><div><strong>{data.composition ? "Photo layout · estimated room" : "Manual stage · photo layout available"}</strong><p>{data.composition ? "Relative size, orientation, depth, and camera use the saved SAM 3D estimates. Room surfaces and lighting are approximate." : "Apply the saved AI poses to restore relative sizes, depth, orientation, and a matching camera. No new generation needed."}</p></div>
+        <button className="button button-light" disabled={busy || dirty} onClick={() => matchLayout("MATCH_PHOTO")}>{busy ? "Working…" : "Match photo layout"}</button>
+        {data.canRestoreLayout && <button className="text-link" disabled={busy || dirty} onClick={() => matchLayout("RESTORE")}>Undo photo layout</button>}
+      </div>
+      <p className="preview-caveat">Match photo layout resets object transforms and saves them; Undo photo layout restores the previous layout. Save or reload any unsaved edits first. Hidden surfaces and measurements may differ from the photo.</p>
+      {data.composition?.warnings.slice(1).map(warning => <p className="preview-caveat" key={warning}>{warning}</p>)}</div>
       <aside className="object-inspector"><span className="eyebrow">YOUR OBJECTS</span><div className="object-selector">{draft.filter(o => o.modelUrl).map(o => <button key={o.id} className={o.id === selected ? "selected" : ""} onClick={() => setSelected(o.id)}>{o.label}{!o.visible && " · hidden"}</button>)}</div>
         {current?.modelUrl && <div className="transform-fields"><label>Name<input value={current.label} maxLength={120} onChange={e => edit(current.id, { label: e.target.value })}/></label>
           {([ ["positionX", "Left / right", -10, 10, 0.1], ["positionZ", "Forward / back", -10, 10, 0.1], ["positionY", "Height", -2, 5, 0.1], ["yaw", "Rotation", -Math.PI, Math.PI, 0.05], ["scale", "Size", 0.1, 5, 0.1] ] as const).map(([field, label, min, max, step]) => <label key={field}>{label}<input type="range" min={min} max={max} step={step} value={current[field]} onChange={e => edit(current.id, { [field]: Number(e.target.value) })}/><output>{current[field].toFixed(2)}</output></label>)}
