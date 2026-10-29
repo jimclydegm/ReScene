@@ -40,8 +40,17 @@ The clothing correction has 61 passing unit cases, passed CI/build and saved-dat
 - [x] Live full-person experiment/adoption plus 65 tests and reusable saved-data/assembly checks.
 - [x] PR #12 merged at f58d4eb; READY production release and bounded deployed verification pass.
 
+## General supports and source-detail correction — October 30
+
+- [x] Inspect reported desk scene and test the specific Body/Align endpoints without replacing textured appearance.
+- [x] Balanced general analysis and separate support/attachment relationships.
+- [x] Tabletop contact settling, shared-plane fallback and actual vertex contact refinement.
+- [x] Ten-mesh source transfer, per-root registration, 2K copy, refresh/restore and optional automatic post-ingest application.
+- [x] Repair saved desk output, verify contact/source restore, static/browser appearance and focused tests.
+- [ ] One PR/production release and bounded deployed desktop/mobile checks.
+
 ## External completion gates
 
-Browser desktop/mobile visual checks and recording need browser access, which is currently disabled. Participant video limits/private portal fields and actual submission need the authenticated portal and final user review. Keep these separate from implemented app functionality. Continue independent work; do not label these gates as passed.
+Browser access is now available through Chrome; record desktop/mobile checks per release. Recording remains deferred. Participant video limits/private portal fields and actual submission need the authenticated portal and final user review. Keep these separate from implemented app functionality. Continue independent work; do not label these gates as passed.
 
 Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCHITECTURE.md, DATA_MODEL.md, META_MODELS.md. Current state: CONTEXT.md.

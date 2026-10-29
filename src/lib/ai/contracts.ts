@@ -8,7 +8,7 @@ export const analysisSchema = z.object({
   objects: z.array(z.object({
     candidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/),
     label: z.string().min(1).max(80),
-    category: z.enum(["bed", "seating", "table", "lighting", "storage", "decor", "clothing", "footwear", "accessory", "person", "vehicle", "plant", "electronics", "other"]),
+    category: z.enum(["bed", "seating", "table", "lighting", "storage", "decor", "clothing", "footwear", "accessory", "person", "vehicle", "plant", "electronics", "animal", "food", "tool", "surface", "other"]),
     segmentationConcept: z.string().min(1).max(80),
     bbox: z.object({
       xMin: z.number().int().nonnegative(), yMin: z.number().int().nonnegative(),
@@ -16,7 +16,8 @@ export const analysisSchema = z.object({
     }).strict(),
     support: z.enum(["floor", "tabletop", "wall", "unknown"]),
     notes: z.string().max(300),
-      parentCandidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/).nullable().optional()
+      parentCandidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/).nullable().optional(),
+    supportedByCandidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/).nullable().optional()
   }).strict()).max(10)
 }).strict();
 export type PhotoAnalysis = z.infer<typeof analysisSchema>;
@@ -40,6 +41,10 @@ export function validateAnalysis(value: unknown, size: ImageSize): PhotoAnalysis
     const b=object.bbox,p=parent.bbox;
     const intersection=Math.max(0,Math.min(b.xMax,p.xMax)-Math.max(b.xMin,p.xMin))*Math.max(0,Math.min(b.yMax,p.yMax)-Math.max(b.yMin,p.yMin));
     if(intersection/((b.xMax-b.xMin)*(b.yMax-b.yMin))<.5)throw new Error("Part is outside its subject");
+  }
+  for(const object of result.objects){
+    const visited=new Set([object.candidateId]);let support=object.supportedByCandidateId;
+    while(support){if(visited.has(support))throw new Error("Cyclic support relationship");visited.add(support);const target=result.objects.find(o=>o.candidateId===support);if(!target||target.parentCandidateId)throw new Error("Missing or partial support subject");support=target.supportedByCandidateId;}
   }
   return result;
 }

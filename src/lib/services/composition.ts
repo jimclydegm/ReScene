@@ -69,16 +69,20 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
   let result: ReturnType<typeof composeRoom>;
   try {
     const inputs: CompositionInput[] = [];
+    const meshBytes:Buffer[]=[];
     for (const object of objects.filter(o=>!record(o.provenance).parentObjectId)) {
       if (!object.model || object.model.sceneId !== sceneId || object.model.status !== "READY") throw new Error("MODEL_UNAVAILABLE");
       const bytes = await readLimited(object.model!.storageKey, 40 * 1024 * 1024);
-      inspectGlb(bytes);
+      inspectGlb(bytes);meshBytes.push(bytes);
       const provenance = record(object.provenance);
       inputs.push({ id: object.id, metadata: provenance.metadata, bounds: glbBounds(bytes), imageBounds: provenance.layoutImageBounds ?? object.imageBounds,
+        category:object.category,supportedById:typeof provenance.supportedByObjectId==="string"?provenance.supportedByObjectId:undefined,
         support: typeof provenance.support === "string" ? provenance.support : ["bed", "seating", "table", "storage"].includes(object.category ?? "") ? "floor" : "unknown" });
     }
     const environment = await sceneEnvironment(scene);
     result = composeRoom(inputs, { width: scene.normalizedAsset!.width!, height: scene.normalizedAsset!.height! }, environment.environment, environment.environmentSource);
+    const {seatGeometry}=await import("@/lib/appearance/contact");
+    for(const [i,object]of result.objects.entries())try{seatGeometry(meshBytes[i],object);}catch{/* Keep conservative bounds if mesh refinement is unsupported. */}
     const {compositionSchema}=await import("@/lib/scene/composition");
     result.composition.backdrop=compositionSchema.safeParse(scene.stage).data?.backdrop ?? (record(scene.settings).preferredBackdrop === "studio" ? "studio" : "room");
   } catch {

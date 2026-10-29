@@ -28,7 +28,7 @@ export const compositionSchema = z.object({
 });
 export type SceneComposition = z.infer<typeof compositionSchema>;
 type Bounds = { min: [number, number, number]; max: [number, number, number] };
-export type CompositionInput = { id: string; metadata: unknown; bounds: Bounds; imageBounds: unknown; support: string };
+export type CompositionInput = { id: string; metadata: unknown; bounds: Bounds; imageBounds: unknown; support: string;category?:string;supportedById?:string };
 const metadataSchema = z.object({
   scale: z.tuple([vector.refine(v => v.every(n => n > 0 && n < 100))]),
   rotation: z.tuple([quaternion.refine(q => Math.abs(Math.hypot(...q) - 1) < 0.05)]),
@@ -64,7 +64,7 @@ function median(values: number[]) {
 }
 
 export function composeRoom(inputs: CompositionInput[], image: { width: number; height: number },
-  environment: Environment, environmentSource: SceneComposition["environmentSource"]) {
+  environment: Environment, environmentSource: SceneComposition["environmentSource"], settle=true) {
   if (!inputs.length || inputs.length > 10 || !Number.isFinite(image.width / image.height) || image.width < 1 || image.height < 1) throw new Error("LAYOUT_INPUT_INVALID");
   const posed = inputs.map(input => {
     const pose = samPose(input.metadata);
@@ -137,6 +137,7 @@ export function composeRoom(inputs: CompositionInput[], image: { width: number; 
     warnings: ["Scene surfaces and lighting are estimated; the floor is kept below reconstructed geometry.",
       ...(projectionError > 0.12 ? ["The pose and photo disagree. Check the layout against the reference and adjust it."] : [])]
   });
+  if(settle)settleSupportContacts(objects,inputs,composition);
   return { composition, objects };
 }
 
@@ -168,4 +169,32 @@ export function glbBounds(bytes: Buffer): Bounds {
   for (const index of roots) visit(index, new Matrix4(), new Set());
   if (box.isEmpty() || ![...box.min.toArray(), ...box.max.toArray()].every(Number.isFinite) || box.getSize(new Vector3()).toArray().some(n => n <= 0)) throw new Error("GLB bounds invalid");
   return { min: box.min.toArray(), max: box.max.toArray() };
+}
+
+// Contact constraints operate on independent reconstructed roots. They do not
+// change relative part geometry or claim a metric surface measurement.
+export function settleSupportContacts(objects:{id:string;position:[number,number,number];placement:ModelPlacement}[],inputs:CompositionInput[],composition:SceneComposition){
+  const done=new Set<string>(),visiting=new Set<string>();
+  function settle(id:string){
+    if(done.has(id)||visiting.has(id))return;
+    visiting.add(id);
+    const item=objects.find(o=>o.id===id)!,input=inputs.find(o=>o.id===id)!;
+    if(input.support==="tabletop"){
+      const supports=objects.filter(o=>o.id!==id&&["table","storage","surface"].includes(inputs.find(i=>i.id===o.id)?.category??""));
+      const support=supports.find(o=>o.id===input.supportedById)??supports.filter(o=>Math.abs(o.position[0]-item.position[0])<=o.placement.size[0]/2&&Math.abs(o.position[2]-item.position[2])<=o.placement.size[2]/2).sort((a,b)=>Math.abs(a.position[1]+a.placement.size[1]-item.position[1])-Math.abs(b.position[1]+b.placement.size[1]-item.position[1]))[0];
+      if(support)settle(support.id);
+      const peers=objects.filter(o=>inputs.find(i=>i.id===o.id)?.support==="tabletop");
+      const y=support?support.position[1]+support.placement.size[1]:Math.min(...peers.map(o=>o.position[1]));
+      const delta=y-item.position[1];
+      if(Math.abs(delta)<Math.max(2,item.placement.size[1]*4)){
+        // Follow the viewing ray so the contact anchor retains its source position.
+        const camera=composition.camera.position,t=(y-camera[1])/(item.position[1]-camera[1]);
+        if(Number.isFinite(t)&&t>.2&&t<3){item.position[0]=camera[0]+(item.position[0]-camera[0])*t;item.position[2]=camera[2]+(item.position[2]-camera[2])*t;}
+        item.position[1]=y;
+      }
+      if(!support&&!composition.warnings.includes("A shared tabletop plane is estimated because its support mesh is unavailable."))composition.warnings.push("A shared tabletop plane is estimated because its support mesh is unavailable.");
+    }
+    visiting.delete(id);done.add(id);
+  }
+  for(const o of objects)settle(o.id);
 }

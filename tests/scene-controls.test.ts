@@ -14,7 +14,7 @@ describe("Subject-independent analysis and recovery controls",()=>{
  });
  it("bounds the analysis scope and retains explicit garment focus",()=>{
   const options=analysisOptionsSchema.parse({focus:"clothing",maxObjects:3,instructions:"shirt, shorts and shoes"});
-  expect(analysisUserPrompt(size,options)).toContain("garments and footwear");
+  expect(analysisUserPrompt(size,options)).toContain("visible apparel");
   expect(analysisOptionsSchema.safeParse({maxObjects:30}).success).toBe(false);
   expect(analysisOptionsSchema.safeParse({instructions:"x".repeat(601)}).success).toBe(false);
  });

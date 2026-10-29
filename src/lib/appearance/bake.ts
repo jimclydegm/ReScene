@@ -79,8 +79,9 @@ export function visibility(triangles: Triangle[], camera: PerspectiveCamera, wid
   }
   return { depth, owners };
 }
+export type PhotoRegistration={scaleX:number;scaleY:number;offsetX:number;offsetY:number};
 export function transferPixels(triangles: Triangle[], imageIndex: number, texture: PixelImage, photo: PixelImage, mask: Uint8Array,
-  camera: PerspectiveCamera, visible: ReturnType<typeof visibility>) {
+  camera: PerspectiveCamera, visible: ReturnType<typeof visibility>, registration:PhotoRegistration={scaleX:1,scaleY:1,offsetX:0,offsetY:0}) {
   const output = Buffer.from(texture.data), weights = new Float32Array(texture.width * texture.height);
   const w = photo.width, h = photo.height;
   let copied = 0;
@@ -93,12 +94,14 @@ export function transferPixels(triangles: Triangle[], imageIndex: number, textur
     raster(uv, texture.width, texture.height, (x, y, a, b, c) => {
       const p = t.points[0].clone().multiplyScalar(a).addScaledVector(t.points[1], b).addScaledVector(t.points[2], c);
       const d = -p.clone().applyMatrix4(camera.matrixWorldInverse).z, projected = p.project(camera);
-      const sx = (projected.x + 1) * w / 2, sy = (1 - projected.y) * h / 2, px = Math.floor(sx), py = Math.floor(sy);
+      const ox=(projected.x+1)*w/2,oy=(1-projected.y)*h/2;
+      const sx=ox*registration.scaleX+registration.offsetX,sy=oy*registration.scaleY+registration.offsetY,px=Math.floor(sx),py=Math.floor(sy);
       if (d <= 0 || px < 3 || py < 3 || px >= w - 3 || py >= h - 3) return;
       const at = py * w + px;
-      if (visible.owners[at] !== t.object || Math.abs(visible.depth[at] - d) > Math.max(0.015, d * 0.006)) return;
+      const originalAt=Math.floor(oy)*w+Math.floor(ox);
+      if (ox<0||oy<0||ox>=w||oy>=h||visible.owners[originalAt] !== t.object || Math.abs(visible.depth[originalAt] - d) > Math.max(0.015, d * 0.006)) return;
       if ([at, at - 2, at + 2, at - 2 * w, at + 2 * w].some(i => mask[i] < 200)) return;
-      const weight = Math.min(1, (facing - 0.18) / 0.25), index = y * texture.width + x;
+      const weight = Math.min(1, (facing - 0.18) / 0.1), index = y * texture.width + x;
       if (weight <= weights[index]) return;
       if (!weights[index]) copied++;
       weights[index] = weight;
@@ -112,14 +115,14 @@ export function transferPixels(triangles: Triangle[], imageIndex: number, textur
   }
   return { data: output, copied, fraction: copied / (texture.width * texture.height) };
 }
-export async function bakeGlb(bytes: Buffer, triangles: Triangle[], photo: PixelImage, mask: Uint8Array, camera: PerspectiveCamera, depth: ReturnType<typeof visibility>) {
+export async function bakeGlb(bytes: Buffer, triangles: Triangle[], photo: PixelImage, mask: Uint8Array, camera: PerspectiveCamera, depth: ReturnType<typeof visibility>,registration?:PhotoRegistration) {
   const { json: g, binary } = readGlb(bytes);
   const chunks: Buffer[] = [binary]; let length = binary.length, copied = 0;
   for (const [i, image] of g.images.entries()) {
     const v = g.bufferViews[image.bufferView];
-    const raw = await sharp(binary.subarray(v.byteOffset ?? 0, (v.byteOffset ?? 0) + v.byteLength)).removeAlpha().toColourspace("srgb").raw().toBuffer({ resolveWithObject: true });
+    const raw = await sharp(binary.subarray(v.byteOffset ?? 0, (v.byteOffset ?? 0) + v.byteLength)).resize(2048,2048,{fit:"inside",withoutEnlargement:false,kernel:"lanczos3"}).removeAlpha().toColourspace("srgb").raw().toBuffer({ resolveWithObject: true });
     if (raw.info.width > 2048 || raw.info.height > 2048) throw new Error("Texture size exceeds bake limit");
-    const result = transferPixels(triangles, i, { data: raw.data, width: raw.info.width, height: raw.info.height }, photo, mask, camera, depth);
+    const result = transferPixels(triangles, i, { data: raw.data, width: raw.info.width, height: raw.info.height }, photo, mask, camera, depth,registration);
     copied += result.copied;
     const png = await sharp(result.data, { raw: { width: raw.info.width, height: raw.info.height, channels: 3 } }).png().toBuffer();
     const padding = Buffer.alloc((4 - length % 4) % 4); chunks.push(padding); length += padding.length;
@@ -145,4 +148,17 @@ export async function cleanPatch(photo: PixelImage, masks: Uint8Array[], surface
   }
   if (best < 0 || bestCount > 0) throw new Error(`No clean ${surface} patch; keep the existing surface`);
   return sharp(Buffer.from(photo.data), { raw: { width: photo.width, height: photo.height, channels: 3 } }).extract({ left: best, top, width, height }).png().toBuffer();
+}
+
+// Bounded per-object silhouette registration compensates modest pose/camera drift.
+// It does not OCR or invent lettering; pixels are sampled from the uploaded image.
+export function registerPhoto(triangles:Triangle[],camera:PerspectiveCamera,mask:Uint8Array,size:{width:number;height:number}):PhotoRegistration{
+  const identity={scaleX:1,scaleY:1,offsetX:0,offsetY:0};
+  let x0=size.width,y0=size.height,x1=0,y1=0;
+  for(let y=0;y<size.height;y++)for(let x=0;x<size.width;x++)if(mask[y*size.width+x]>127){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x+1);y1=Math.max(y1,y+1);}
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  for(const triangle of triangles)for(const point of triangle.points){const p=point.clone().project(camera),x=(p.x+1)*size.width/2,y=(1-p.y)*size.height/2;minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);}
+  const scaleX=(x1-x0)/(maxX-minX),scaleY=(y1-y0)/(maxY-minY),offsetX=x0-minX*scaleX,offsetY=y0-minY*scaleY;
+  if(![scaleX,scaleY,offsetX,offsetY].every(Number.isFinite)||scaleX<.7||scaleX>1.3||scaleY<.7||scaleY>1.3||Math.abs(offsetX)>size.width*.15||Math.abs(offsetY)>size.height*.15)return identity;
+  return {scaleX,scaleY,offsetX,offsetY};
 }

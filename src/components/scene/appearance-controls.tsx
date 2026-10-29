@@ -2,16 +2,17 @@
 import { Lightbulb, Palette, RotateCcw, Sparkles, Check } from "lucide-react";
 import type { Lighting } from "@/lib/scene/lighting";
 import { RangeField } from "@/components/ui/range-field";
-export function AppearanceControls({ panel, lighting, setLighting, dirty, objectDirty, busy, applied, onTexture, onReset, texturesBlocked = false }: {
+export function AppearanceControls({ panel, lighting, setLighting, dirty, objectDirty, busy, applied, onTexture, onRefresh, onReset, texturesBlocked = false }: {
   panel: "textures" | "lighting"; lighting: Lighting; setLighting: (value: Lighting) => void; dirty: boolean; objectDirty: boolean; busy: boolean; applied: boolean;
-  texturesBlocked?: boolean; onTexture: () => void; onReset: () => void;
+  texturesBlocked?: boolean; onTexture: () => void; onRefresh:()=>void; onReset: () => void;
 }) {
   if (panel === "textures") return <section className="appearance-controls" aria-label="Photo textures"><div className="inspector-section-heading"><Palette size={17}/><h3>Photo textures</h3><span className={`setting-badge${applied ? " active" : ""}`}>{applied ? "Applied" : "AI original"}</span></div>
-    <p>Copy visible fabric, grain, and surface detail from your reference photo.</p><div className="texture-status"><span className="texture-swatch"/><div><strong>{applied ? "Source photo detail" : "Generated appearance"}</strong><small>{applied ? "Objects, floor & walls" : "Original model textures"}</small></div>{applied && <Check size={17}/>}</div>
+    <p>Copy visible lettering, logos, fabric, grain, and surface detail from your reference photo.</p><div className="texture-status"><span className="texture-swatch"/><div><strong>{applied ? "Source photo detail" : "Generated appearance"}</strong><small>{applied ? "Visible object surfaces · up to 2K" : "Original model textures"}</small></div>{applied && <Check size={17}/>}</div>
     <button className="button button-light button-full" disabled={busy || dirty || objectDirty || texturesBlocked} onClick={onTexture}><Sparkles size={15}/>{busy ? "Working…" : applied ? "Restore AI textures" : "Copy photo textures"}</button>
+    {applied&&<button className="button button-light button-full" disabled={busy||dirty||objectDirty||texturesBlocked} onClick={onRefresh}>Refresh source detail</button>}
     {texturesBlocked && <p className="control-hint">Restore original objects in Products before copying or restoring photo textures.</p>}
     {(dirty || objectDirty) && <p className="control-hint">Save your changes before switching textures.</p>}
-    <div className="inspector-note"><strong>What gets copied?</strong><p>Visible object surfaces use photo detail. Hidden surfaces keep their AI texture. Floor and wall use clean, repeated photo patches.</p><p>Photo textures save immediately and can be restored. They include the original lighting, so softer lights preserve more detail.</p></div>
+    <div className="inspector-note"><strong>What gets copied?</strong><p>Visible object surfaces use photo detail. Visible pixels are aligned per subject. Hidden surfaces keep their AI texture. Small text is limited by source resolution and mesh alignment. Floor and wall use clean, repeated photo patches.</p><p>Photo textures save immediately and can be restored. They include the original lighting, so softer lights preserve more detail.</p></div>
   </section>;
   return <section className="appearance-controls" aria-label="Scene lighting"><div className="inspector-section-heading"><Lightbulb size={17}/><h3>Scene lighting</h3><span className="setting-badge">Live preview</span></div><p>Position your lights and balance their brightness.</p>
     {(["key", "fill"] as const).map(name => <fieldset className="light-group" key={name} disabled={busy}><legend><span className={`light-dot ${name}`}/>{name === "key" ? "Main light" : "Fill light"}</legend>

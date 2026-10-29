@@ -38,7 +38,7 @@ export async function restartScene(sceneId: string, ownerId: string, input: z.in
       for (const object of objects) {
         const provenance = record(object.provenance);
         // Keep only source/segmentation facts; the old provider pose belongs to the deleted mesh.
-        const retained = Object.fromEntries(["model", "promptVersion", "support", "requestLocalId", "foregroundArea", "maskAlternatives", "segmentationOptions", "segmentationModel", "parentObjectId"].filter(k => k in provenance).map(k => [k, provenance[k]]));
+        const retained = Object.fromEntries(["model", "promptVersion", "support", "requestLocalId", "foregroundArea", "maskAlternatives", "segmentationOptions", "segmentationModel", "parentObjectId", "supportedByObjectId"].filter(k => k in provenance).map(k => [k, provenance[k]]));
         await tx.sceneObject.update({ where: { id: object.id, sceneId }, data: {
           modelAssetId: null, productId: null, status: object.maskAssetId ? "CONFIRMED" : "FAILED", representation: "PROXY",
           positionX: 0, positionY: 0, positionZ: 0, rotationX: 0, rotationY: 0, rotationZ: 0, rotationW: 1,

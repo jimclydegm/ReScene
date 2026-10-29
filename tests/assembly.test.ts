@@ -1,5 +1,7 @@
 import {describe,it,expect} from 'vitest';
-import {BoxGeometry} from 'three';
+import {BoxGeometry,Matrix4,Quaternion,Vector3} from 'three';
+import {seatGeometry} from '../src/lib/appearance/contact';
+import {geometry} from '../src/lib/appearance/bake';
 import {splitAssembly} from '../src/lib/scene/assembly';
 import {inspectGlb} from '../src/lib/ai/glb';
 import {validateAnalysis} from '../src/lib/ai/contracts';
@@ -19,6 +21,11 @@ describe('Complete subjects and product regions',()=>{
   const split=splitAssembly(bytes,{translation:[[0,0,5]],rotation:[[0,0,Math.SQRT1_2,Math.SQRT1_2]],scale:[[1,1,1]]},{width:100,height:100},{xMin:30,yMin:5,xMax:70,yMax:95},environment,[{id:'garment',mask:{data:mask,width:100,height:100}}]);
   expect(split.body.triangles+split.parts[0].triangles).toBe(split.sourceTriangles);expect(split.body.triangles).toBeGreaterThan(0);expect(split.parts[0].triangles).toBeGreaterThan(0);
   inspectGlb(split.body.bytes);inspectGlb(split.parts[0].bytes);
+ });
+ it('refines the contact against actual mesh vertices',()=>{
+  const bytes=fixture(),object={position:[0,0,0] as [number,number,number],placement:{version:'sam3d-layout-v1' as const,offset:[0,1.5,0] as [number,number,number],rotation:[0,0,0,1] as [number,number,number,number],scale:[1,1,1] as [number,number,number],size:[1,3,1] as [number,number,number]}};
+  seatGeometry(bytes,object);const p=object.placement,matrix=new Matrix4().compose(new Vector3(...p.offset),new Quaternion(...p.rotation),new Vector3(...p.scale));
+  let min=Infinity;for(const t of geometry(bytes,matrix,0))for(const v of t.points)min=Math.min(min,v.y);expect(min).toBeCloseTo(0);
  });
  it('does not honor a user item-count quota in the automatic discovery prompt',()=>{
   const prompt=analysisUserPrompt({width:100,height:100},{...defaultAnalysisOptions,maxObjects:1});expect(prompt).toContain('complete subjects');expect(prompt).not.toContain('up to 1');

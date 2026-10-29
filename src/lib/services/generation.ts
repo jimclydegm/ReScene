@@ -129,7 +129,7 @@ export async function analyzeRun(runId: string) {
     for (const [index, object] of candidates.entries()) await tx.sceneObject.create({ data: { id:candidateIds.get(object.candidateId), sceneId: run.sceneId, originRunId: runId, sourceOrdinal: index,
       label: object.label, category: object.category, segmentationConcept: object.segmentationConcept, imageBounds: object.bbox, sortOrder: index,
       positionX: ((object.bbox.xMin + object.bbox.xMax) / 2 / image.width! - 0.5) * 5,
-      provenance: { model: result.model, promptVersion: result.promptVersion, support: object.support, parentObjectId:object.parentCandidateId ? candidateIds.get(object.parentCandidateId) : null, placement: "approximate-stage" } } });
+      provenance: { model: result.model, promptVersion: result.promptVersion, support: object.support, parentObjectId:object.parentCandidateId ? candidateIds.get(object.parentCandidateId) : null, supportedByObjectId:object.supportedByCandidateId ? candidateIds.get(object.supportedByCandidateId) : null, placement: "approximate-stage" } } });
     await tx.scene.update({ where: { id: run.sceneId }, data: { settings: asJson({ ...record(run.scene.settings), environment: result.analysis.environment, analysisOptions:options, sceneType:result.analysis.sceneType, analysisSummary:result.analysis.summary,
       preferredBackdrop: options.focus === "clothing" || options.focus === "products" || candidates.length > 0 && candidates.every(o=>["clothing","footwear","accessory","person","electronics","other"].includes(o.category)) ? "studio" : "room" }) } });
     await tx.generationRun.update({ where: { id: runId }, data: { currentStage: "Finding object outlines", progress: 25 } });
@@ -223,7 +223,7 @@ export async function pollReconstruction(runId: string, requestId: string) {
   const response = await client.queue.status(model, { requestId, logs: false, abortSignal: AbortSignal.timeout(30_000) });
   return response.status === "COMPLETED";
 }
-export async function ingestRun(runId: string, requestId: string) {
+export async function ingestRun(runId: string, requestId: string, withAppearance=false) {
   const run = await loadRun(runId);
   const allIds = (run.input as {objectIds:string[]}).objectIds;
   const ids = (record(run.input).reconstructionObjectIds ?? allIds) as string[];
@@ -235,12 +235,13 @@ export async function ingestRun(runId: string, requestId: string) {
   await artifact(run.sceneId, runId, "PROVIDER_RESPONSE", Buffer.from(JSON.stringify(result)), "application/json");
   const assets: { id: string }[] = [];
   const layoutInputs: CompositionInput[] = [];
+  const layoutBytes:Buffer[]=[];
   const objects = await getDb().sceneObject.findMany({ where: { sceneId: run.sceneId, id: { in: allIds } },include:{mask:true} });
   const derived=new Map<string,{id:string;rootId:string;sourceId:string}>();
   const partitionFailed:string[]=[];
   for (const file of files) {
     const bytes = await downloadFalArtifact(file.url);
-    inspectGlb(bytes);
+    inspectGlb(bytes);layoutBytes.push(bytes);
     const original=await artifact(run.sceneId, runId, "MODEL_GLB", bytes, "model/gltf-binary");
     assets.push(original);
     const index = assets.length - 1;
@@ -261,13 +262,15 @@ export async function ingestRun(runId: string, requestId: string) {
       }catch{partitionFailed.push(...children.map(o=>o.id));}
     }
     try { layoutInputs.push({ id: object.id, metadata: result.metadata?.find(m => m.object_index === index), bounds: glbBounds(bytes),
-      imageBounds: object.imageBounds, support: String(record(object.provenance).support ?? "unknown") }); } catch { /* Layout is optional; do not discard a usable mesh. */ }
+      imageBounds: object.imageBounds, support: String(record(object.provenance).support ?? "unknown"),category:object.category,supportedById:typeof record(object.provenance).supportedByObjectId==="string"?String(record(object.provenance).supportedByObjectId):undefined }); } catch { /* Layout is optional; do not discard a usable mesh. */ }
   }
   let layout: ReturnType<typeof composeRoom> | undefined;
   try {
     if (layoutInputs.length !== ids.length) throw new Error("LAYOUT_BOUNDS_MISSING");
     const environment = await sceneEnvironment(run.scene);
     layout = composeRoom(layoutInputs, { width: run.scene.normalizedAsset!.width!, height: run.scene.normalizedAsset!.height! }, environment.environment, environment.environmentSource);
+    const {seatGeometry}=await import("@/lib/appearance/contact");
+    for(const [i,object]of layout.objects.entries())try{seatGeometry(layoutBytes[i],object);}catch{/* Keep validated bounds if vertex refinement is unavailable. */}
     layout.composition.backdrop=record(run.scene.settings).preferredBackdrop === "studio" ? "studio" : "room";
   } catch { /* Keep independent meshes usable if a provider changes its pose contract. The UI offers manual placement. */ }
   await getDb().$transaction(async tx => {
@@ -288,7 +291,7 @@ export async function ingestRun(runId: string, requestId: string) {
     await tx.scene.update({ where: { id: run.sceneId, revision: run.inputRevision }, data: { status: "READY", revision: { increment: 1 },settings:asJson({...record(run.scene.settings),reconstructionOptions:reconstructionOptionsSchema.parse(record(run.input).reconstruction ?? {})}),
       ...(layout ? { camera: asJson(layout.composition.camera), stage: asJson(layout.composition) } : {}) } });
     await tx.generationStep.updateMany({ where: { runId, key: "sam3d-submit" }, data: { status: "SUCCEEDED", completedAt: new Date() } });
-    await tx.generationRun.update({ where: { id: runId }, data: { status: partitionFailed.length ? "PARTIAL" : "SUCCEEDED", errorMessage:partitionFailed.length ? "Complete subjects are ready. Some product regions could not be separated reliably; no independent replacement geometry was invented." : null, currentStage: "Your 3D scene is ready", progress: 100, completedAt: new Date() } });
+    await tx.generationRun.update({ where: { id: runId }, data: { status: withAppearance ? "WAITING" : partitionFailed.length ? "PARTIAL" : "SUCCEEDED", errorMessage:partitionFailed.length ? "Complete subjects are ready. Some product regions could not be separated reliably; no independent replacement geometry was invented." : null, currentStage: withAppearance ? "Enhancing source detail" : "Your 3D scene is ready", progress: withAppearance ? 90 : 100, completedAt: withAppearance ? null : new Date() } });
   });
 }
 export async function failRun(runId: string) {
@@ -423,4 +426,13 @@ export async function saveObjects(sceneId: string, ownerId: string, input: z.inf
       if (changed.count !== 1) throw new AppError(400, "INVALID_OBJECT", "The selected object is unavailable.");
     }
   });
+}
+
+export async function improveGeneratedAppearance(runId:string){
+  const run=await getDb().generationRun.findUnique({where:{id:runId},include:{scene:true}});
+  if(!run||run.status!=="WAITING"||run.currentStage!=="Enhancing source detail")return;
+  try{
+    if(run.scene.status==="READY"&&run.scene.revision===run.inputRevision+1&&!run.scene.archivedAt){const {updateAppearance}=await import("./appearance");await updateAppearance(run.sceneId,run.scene.ownerId,{action:"APPLY",expectedRevision:run.scene.revision});}
+  }catch{/* Optional source transfer must not discard successful reconstruction or retry inference. */}
+  finally{await getDb().generationRun.updateMany({where:{id:runId,status:"WAITING",currentStage:"Enhancing source detail"},data:{status:run.errorMessage?"PARTIAL":"SUCCEEDED",currentStage:"Your 3D scene is ready",progress:100,completedAt:new Date()}});}
 }
