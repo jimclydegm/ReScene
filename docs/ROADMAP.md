@@ -248,6 +248,6 @@ Runtime/editor PR #2 merged into `main` on October 29 (`8f56977`). Both PR CI ru
 - [x] Main/fill source XYZ/intensity and ambient controls with live preview and atomic save alongside edits.
 - [x] Add/apply SURFACE_TEXTURE enum migration; restart invalidation covers those assets.
 - [x] QA clone service checks and 28 focused tests pass; no new inference.
-- [x] Apply to Jim's selected scene with original assets preserved; service/HTTP and browser checks pass. PR #5 merged (4db7874); production verification follows in TESTING.md.
+- [x] Apply to Jim's selected scene with original assets preserved; service/HTTP and browser checks pass. PR #5 merged (4db7874); production API/CORS and visual verification pass (TESTING.md).
 
 Room patches repeat observed detail; hidden object surfaces remain inferred and source lighting is baked into copied colors. This does not implement physical material/illumination recovery.
