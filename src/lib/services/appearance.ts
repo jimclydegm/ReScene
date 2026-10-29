@@ -22,6 +22,7 @@ export const appearanceInput = z.discriminatedUnion("action", [
 const backupSchema = z.object({ version: z.literal("photo-bake-v1"), models: z.array(z.object({ objectId: z.uuid(), originalId: z.uuid(), bakedId: z.uuid(), copied: z.number() })), floorId: z.uuid().nullable(), wallId: z.uuid().nullable() });
 export async function updateAppearance(sceneId: string, ownerId: string, input: z.infer<typeof appearanceInput>) {
   const scene = await ownedScene(sceneId, ownerId), db = getDb();
+  if (input.action !== "LIGHTING" && (await db.sceneObject.findMany({ where: { sceneId }, select: { provenance: true } })).some(o => record(o.provenance).replacementBackup)) throw new AppError(409, "REPLACEMENTS_ACTIVE", "Restore original objects before changing photo textures.");
   if (scene.status !== "READY" || scene.revision !== input.expectedRevision) throw new AppError(409, "REVISION_CONFLICT", "Reload the ready scene before changing its appearance.");
   const settings = record(scene.settings);
   if (input.action === "LIGHTING") {

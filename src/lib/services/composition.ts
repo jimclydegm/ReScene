@@ -40,6 +40,7 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
   if (scene.status !== "READY") throw new AppError(409, "SCENE_STATE", "Build your 3D objects first.");
   if (scene.revision !== input.expectedRevision) throw new AppError(409, "REVISION_CONFLICT", "The scene changed. Reload before matching the photo.");
   const objects = await getDb().sceneObject.findMany({ where: { sceneId, status: "READY", modelAssetId: { not: null } }, include: { model: true }, orderBy: { sortOrder: "asc" } });
+  if ((await getDb().sceneObject.findMany({ where: { sceneId }, select: { provenance: true } })).some(o => record(o.provenance).replacementBackup)) throw new AppError(409, "REPLACEMENTS_ACTIVE", "Restore original objects before matching the photo layout.");
   if (input.action === "RESTORE") {
     const backup = backupSchema.safeParse(record(scene.settings).layoutBackup);
     if (!backup.success || backup.data.objects.length !== objects.length || backup.data.objects.some(o => !objects.some(current => current.id === o.id))) {

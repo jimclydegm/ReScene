@@ -2,7 +2,7 @@ import type { ProductFields } from "@/lib/validation/products";
 import type { Lighting } from "@/lib/scene/lighting";
 import type { ModelPlacement, SceneComposition } from "@/lib/scene/composition";
 export type SceneObjectView = { id: string; label: string; status: string; errorCode: string | null;
-  product: (ProductFields & { imageUrl: string | null }) | null; maskUrl: string | null; modelUrl: string | null; positionX: number; positionY: number; positionZ: number;
+  canRestoreOriginal: boolean; product: (ProductFields & { imageUrl: string | null }) | null; maskUrl: string | null; modelUrl: string | null; positionX: number; positionY: number; positionZ: number;
   yaw: number; scale: number; visible: boolean; placement: ModelPlacement | null };
 export type SceneWorkspace = { id: string; title: string; status: string; revision: number; generationEnabled: boolean;
   lighting: Lighting; appearance: { applied: boolean; floorUrl: string | null; wallUrl: string | null };

@@ -187,3 +187,7 @@ Scene.settings.resetRevision identifies the current workflow epoch without chang
 ### Phase 4A implemented behavior
 
 PATCH objects optionally includes merchant product fields or null (unlink); omission preserves the existing association for older clients. Product/asset IDs are server-owned. Product creates/updates share the transform/light transaction and expectedRevision CAS. PRODUCT_IMAGE cutouts are immutable, privately stored, and derived from the reviewed mask with source-photo/object provenance. A cutout upload can outlive a conflicting save; no automatic byte cleanup is enabled. Unlinked Product rows remain private for future snapshot/history support. Publication must freeze fields rather than joining live Product records.
+
+### Phase 4B implemented behavior
+
+Catalog Product.attributes.catalogVersion=demo-v1 marks trusted original demo templates; model/image assets carry catalogKey, generator and CC0 provenance. Placed copies use demoSourceId instead and are independent merchant rows. Object.provenance.replacementBackup stores the original modelAssetId/productId/label/initialTransform/localBounds once. Replace/restore are atomic scene-revision transactions and validate same-scene READY mesh/image references. Restore removes this backup, preserving current transform columns. Scene restarts already clear provenance/products/catalog model/image assets. Snapshot serialization must exclude backup/provenance/template rows and expose only current approved render assets and merchant fields.

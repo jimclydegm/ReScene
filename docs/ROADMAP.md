@@ -145,8 +145,8 @@ See [TEXTURE_FIDELITY.md](TEXTURE_FIDELITY.md) for evidence, implementation desi
 - [x] Add floor translation, vertical rotation, uniform scale multiplier, hide/restore, numeric controls, and local undo/redo (4A; browser checks pending).
 - [x] Implement atomic transform saves with expectedRevision, conflict feedback, and reload persistence; edit APIs reject busy scenes. Local/deployed API checks pass.
 - [x] Build merchant product form/card with price/currency validation, HTTPS link, description, and thumbnail (4A).
-- [ ] Seed 2–3 rights-cleared replacement products/GLBs in the scene catalog through a trusted script.
-- [ ] Implement mesh+product replacement in one transaction with normalized pivot/size and undo.
+- [x] Seed 2–3 rights-cleared replacement products/GLBs in the scene catalog through a trusted script (4B, original CC0 demos).
+- [x] Implement mesh+product replacement in one transaction with normalized pivot/size and undo (4B, persistent original restore).
 - [ ] Add responsive object list/product sheet and keyboard-accessible controls.
 - [x] Show a small expandable reference photo in Scene Studio (composition correction). Add Muse Image only after every core gate passes.
 
@@ -273,3 +273,14 @@ This is a presentation/query change; no inference or schema migration is needed.
 - [ ] Browser interaction/visual checks once access is available.
 
 Phase 4B: original rights-cleared replacement catalog and transactional mesh/product replacement remain unimplemented. Phase 5 publication remains unimplemented.
+
+## Phase 4B — catalog replacements (October 29)
+
+- [x] Original CC0 chair, cabinet and side-table GLBs with authored illustrative thumbnails; no fabricated prices/store links.
+- [x] Trusted per-scene seed script and owner-only seed action; sample scene seeded.
+- [x] Atomic same-scene mesh/product/baseline swap, cloned merchant card, original backup and persistent restore.
+- [x] Uniform size fitting / bottom-center pivot, preserved placement edits, photo-operation compatibility guards and editable lighting.
+- [x] Pure geometry/bounds tests (42 total tests) and production build/typecheck; integration validation recorded in TESTING.md.
+- [ ] Desktop/mobile replacement interaction checks when browser access is available.
+
+Next implementation phase: Phase 5 immutable publication and anonymous shopper viewer. Catalog assets are illustrative demos; exact measurements and real product identity are not inferred.

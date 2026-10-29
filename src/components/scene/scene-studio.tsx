@@ -7,6 +7,7 @@ import { Scan, Box, Check, LoaderCircle, Save, RotateCcw, Palette, Lightbulb, Re
 import { apiJson } from "@/lib/client-api";
 import type { SceneWorkspace, SceneObjectView } from "./types";
 import { RangeField } from "@/components/ui/range-field";
+import { CatalogControls, type CatalogItem } from "./catalog-controls";
 import { ProductControls } from "./product-controls";
 import { AppearanceControls } from "./appearance-controls";
 import { defaultLighting, type Lighting } from "@/lib/scene/lighting";
@@ -25,6 +26,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const restartDialog = useRef<HTMLDialogElement>(null);
   const [restartTarget, setRestartTarget] = useState<RestartTarget>("ANALYSIS");
   const [data, setData] = useState(initial);
+  const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
   const [panel, setPanel] = useState<"objects" | "textures" | "lighting" | "products">("objects");
   const renderedStatus = useRef(initial.status);
   const [lights, setLights] = useState(initial.lighting);
@@ -72,6 +74,22 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     }, 10 * 60_000);
     return () => clearInterval(timer);
   }, [dirty, lightDirty, running, reload]);
+  useEffect(() => {
+    if (panel !== "products") return;
+    let canceled = false;
+    void apiJson<{products: CatalogItem[]}>(`${base}/catalog`).then(result => { if (!canceled) setCatalogItems(result.products); }).catch(() => { if (!canceled) setError("Could not load the catalog. Reopen Products to retry."); });
+    return () => { canceled = true; };
+  }, [base, panel]);
+  async function catalogAction(action: "SEED" | "REPLACE" | "RESTORE", productId?: string) {
+    setBusy(true); setError(""); setMessage("");
+    try {
+      await apiJson(`${base}/${action === "SEED" ? "catalog" : "replacement"}`, {method:"POST", body:JSON.stringify({expectedRevision:data.revision,...(action === "SEED" ? {} : {action,objectId:selected,...(productId ? {productId} : {})})})});
+      await reload();
+      setCatalogItems((await apiJson<{products:CatalogItem[]}>(`${base}/catalog`)).products);
+      setMessage(action === "SEED" ? "Demo catalog added." : action === "RESTORE" ? "Original object and product card restored." : "Object and product card replaced and saved.");
+    } catch(e) { setError(e instanceof Error ? e.message : "Could not update the object."); }
+    finally { setBusy(false); }
+  }
   async function action(kind: "ANALYZE" | "RECONSTRUCT") {
     setBusy(true); setError(""); setMessage("");
     try {
@@ -142,6 +160,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   }
   const current = draft.find(o => o.id === selected);
   const ready = data.status === "READY" && draft.some(o => o.modelUrl);
+  const hasReplacements = data.objects.some(o => o.canRestoreOriginal);
   const hasMasks = data.objects.some(o => o.maskUrl);
   const restartCopy = {
     PHOTO: { title: "Change the photo?", detail: "This clears the current photo, object analysis, outlines, 3D models, room layout, and saved edits. You will upload a new photo in this scene.", confirm: "Clear scene and change photo" },
@@ -170,9 +189,10 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     {running && <div className="generation-progress" role="status"><LoaderCircle className="spin" size={20}/><div><strong>{data.run?.stage}</strong><p>You can close this page. Your progress is saved.</p><progress value={data.run?.progress} max={100}/></div>{data.run?.canResume && <button className="button button-light" onClick={resume} disabled={busy}>Resume</button>}</div>}
     {ready ? <div className="editor-layout"><div className="editor-canvas-column"><ViewerBoundary key={data.revision}><ModelCanvas objects={draft} selected={selected} onSelect={setSelected} composition={data.composition} lighting={lights} appearance={data.appearance}/></ViewerBoundary>
       <div className="scene-layout-tools"><div><strong>{data.composition ? "Photo layout · estimated room" : "Manual stage · photo layout available"}</strong><p>{data.composition ? "Relative size, orientation, depth, and camera use the saved SAM 3D estimates. Room surfaces and lighting are approximate." : "Apply the saved AI poses to restore relative sizes, depth, orientation, and a matching camera. No new generation needed."}</p></div>
-        <button className="button button-light" disabled={busy || dirty || lightDirty} onClick={() => matchLayout("MATCH_PHOTO")}>{busy ? "Working…" : "Match photo layout"}</button>
-        {data.canRestoreLayout && <button className="text-link" disabled={busy || dirty || lightDirty} onClick={() => matchLayout("RESTORE")}>Undo photo layout</button>}
+        <button className="button button-light" disabled={busy || dirty || lightDirty || hasReplacements} onClick={() => matchLayout("MATCH_PHOTO")}>{busy ? "Working…" : "Match photo layout"}</button>
+        {data.canRestoreLayout && <button className="text-link" disabled={busy || dirty || lightDirty || hasReplacements} onClick={() => matchLayout("RESTORE")}>Undo photo layout</button>}
       </div>
+      {hasReplacements && <p className="control-hint">Restore original objects in Products before matching the photo layout or changing photo textures.</p>}
       <p className="preview-caveat">Match photo layout resets object transforms and saves them; Undo photo layout restores the previous layout. Save or reload any unsaved edits first. Hidden surfaces and measurements may differ from the photo.</p>
       {data.composition?.warnings.slice(1).map(warning => <p className="preview-caveat" key={warning}>{warning}</p>)}</div>
       <aside className="object-inspector editor-inspector" aria-label="Scene controls">
@@ -187,7 +207,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
               {([ ["positionX", "Left / right", -10, 10, 0.1], ["positionZ", "Forward / back", -10, 10, 0.1], ["positionY", "Height", -2, 5, 0.1], ["yaw", "Rotation", -Math.PI, Math.PI, 0.05], ["scale", "Size", 0.1, 5, 0.1] ] as const).map(([field, label, min, max, step]) => <RangeField key={field} label={label} min={min} max={max} step={step} value={current[field]} precision={2} onChange={value => edit(current.id, { [field]: value })}/>)}
               <label className="visibility-toggle"><span><Eye size={15}/>Show object</span><input className="switch-input" role="switch" type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/></label>
             </fieldset>}
-          </> : panel === "products" ? current?.modelUrl ? <ProductControls object={current} busy={busy} onChange={product => edit(current.id, { product })}/> : <p>Select an object first.</p> : <AppearanceControls panel={panel} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={busy} applied={data.appearance.applied} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
+          </> : panel === "products" ? current?.modelUrl ? <><CatalogControls items={catalogItems} busy={busy} dirty={dirty || lightDirty} canRestore={current.canRestoreOriginal} onSeed={() => catalogAction("SEED")} onReplace={id => catalogAction("REPLACE", id)} onRestore={() => catalogAction("RESTORE")}/><ProductControls object={current} busy={busy} onChange={product => edit(current.id, { product })}/></> : <p>Select an object first.</p> : <AppearanceControls panel={panel} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={busy} texturesBlocked={hasReplacements} applied={data.appearance.applied} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
         </div>
         <div className="inspector-footer"><div className="editor-actions"><button className="button button-light" disabled={!history.length || busy} onClick={() => { setFuture(prev => [...prev, draft]); setDraft(history[history.length - 1]); setHistory(history.slice(0, -1)); setDirty(true); }}><RotateCcw size={14}/>Undo</button><button className="button button-light redo-button" aria-label="Redo object edit" title="Redo object edit" disabled={!future.length || busy} onClick={() => { setHistory(prev => [...prev, draft]); setDraft(future[future.length - 1]); setFuture(future.slice(0, -1)); setDirty(true); }}><Redo2 size={14}/></button><button className="button button-dark" disabled={(!dirty && !lightDirty) || busy} onClick={save}><Save size={14}/>{busy ? "Saving…" : "Save changes"}</button></div>
           <button className="inspector-reload" disabled={busy || dirty || lightDirty} onClick={() => void reload().catch(() => setError("Could not reload."))}><RefreshCw size={12}/>Reload saved scene</button>
