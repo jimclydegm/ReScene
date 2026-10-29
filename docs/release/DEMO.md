@@ -36,7 +36,7 @@ Use a short recording suitable for the participant portal's actual limit. The ti
 - Live authoring app: https://rescene-eta.vercel.app
 - Source: https://github.com/jimclydegm/ReScene
 - Public demo link: publish an approved final scene in the app and paste its unlisted /s/ URL into the participant form. Test links are revoked automatically and are not submission links.
-- Track/team/builder profile, final video URL and participant-required fields: Jim to confirm in the authenticated portal.
+- Track: Indie developer (confirmed by Jim). Builder/team profile, final video URL and participant-required fields: Jim to confirm in the authenticated portal.
 - Architecture: ARCHITECTURE.md; models: META_MODELS.md; verification: TESTING.md; current handoff: CONTEXT.md.
 
 ## Final human checks
@@ -46,3 +46,7 @@ Use a short recording suitable for the participant portal's actual limit. The ti
 - Open the final share without a session. Confirm title and all visible merchant fields are approved, and no source photo/mask/editor controls appear.
 - Confirm actual Google consent if it is part of the demonstration; email-session QA does not verify Google OAuth consent.
 - Record screenshots/video once browser access is enabled, verify the portal's actual requirements, then review and submit the entry. No contest submission has been made.
+
+## Verified release evidence
+
+The deployed fresh author-to-shopper API flow passed on October 29 with two real Meta SAM 3D meshes. Server analysis/masking took 19.824 seconds and reconstruction/ingestion took 82.298 seconds; these exclude human review/editing time. The frozen viewer passed anonymous product/GLB access and revoke. See TESTING.md for limits and billing interpretation. Browser visual QA and recording remain pending.

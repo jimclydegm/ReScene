@@ -130,3 +130,21 @@ Local production-build check passes: owner/confirmation/stale/origin guards; dup
 Fresh paid release runner: `scripts/smoke-release.mjs prepare`, `status`, `reconstruct`, `finish`. SMOKE_CREDENTIAL_FILE is required. prepare uploads the approved synthetic input and starts one idempotent Meta analysis; reconstruct submits one two-object job. These two phases spend inference credits; status/report/finish do not. State/timestamps are saved to ignored test-results/release-qa.json. Finish verifies saved merchant fields, catalog replacement, publication, anonymous real GLBs/CORS and revoke. Run release-report.ts with react-server/tsx to save provider/timing/size evidence without secret provider IDs. Null actual cost means unknown, not free.
 
 Browser access remains disabled, so physical appearance, camera orbit/mobile selection, dialogs/clipboard and frame rate are not verified. Google consent, recording and authenticated participant-portal submission remain release gates. See docs/release/DEMO.md.
+
+### Deployed release evidence — October 29
+
+PR #9 merged at be841d8; production is READY. PR CI, 47 tests, lint/typecheck/build pass. The publication integration runner passes on production, including anonymous pages, GLBs/CORS, product thumbnails and two room textures, frozen price/transform/model bindings after draft edits/replacement, no raw-photo/editor data, idempotency, ownership/origin/revision/confirmation guards and revoke. All test links were revoked and disposable metadata restored.
+
+The fresh release scene is 20d22f55-9857-49eb-96f1-435826585347. It completed an actual production WebP upload, one Muse Spark analysis and three SAM masks, one two-object fal reconstruction, saved merchant fields, catalog replacement with an independently edited card, confirmed publication, anonymous cards/real GLBs/CORS, and revoke. It remains a private saved QA scene. State/report files are ignored in test-results; no public snapshot URL is committed.
+
+| Measured server-run item | Observed result |
+| --- | --- |
+| Meta analysis + reviewed-mask outputs | SUCCEEDED, 19.824 seconds |
+| Two-object SAM 3D reconstruction + ingestion | SUCCEEDED, 82.298 seconds |
+| Generated mesh files | 1,399,440 / 1,237,708 bytes |
+| Provider steps | muse-spark-1.3, sam-3.1 ×3, fal-ai/sam-3/3d-objects ×1 |
+| Recorded actual run charges | null / unknown; reserved USD 1.42 + 1.00 are estimates, not bills |
+| Final fresh author-to-shopper API check | passed, including revoke |
+| Desktop/mobile orbit/selection/dialog/clipboard/frame rate | pending; browser access disabled |
+
+Server-run times exclude upload, merchant review and editing time. Provider usage histories remain private. The fresh run made no automatic paid retry; duplicate start calls reused the same run IDs. Indie developer track is confirmed by Jim; video/portal details and actual contest submission are still pending.

@@ -172,8 +172,8 @@ See [TEXTURE_FIDELITY.md](TEXTURE_FIDELITY.md) for evidence, implementation desi
 
 **Estimate: 3–4 hours, November 2.** Depends on all P0 gates.
 
-- [ ] Run one fresh deployed upload→review→3D→edit→replace→publish flow with real Meta models.
-- [ ] Run clean build/typecheck/lint and focused service/contract checks; record what is and is not tested.
+- [x] Run one fresh deployed upload→review→3D→edit→replace→publish flow with real Meta models (scripted API verification, October 29; browser review still pending).
+- [x] Run clean build/typecheck/lint and focused service/contract checks; record what is and is not tested (47 tests + deployed publication/release checks).
 - [ ] Measure generation wall time, per-stage failures, GLB/texture sizes, desktop/mobile frame behavior, and actual charges.
 - [ ] Fix blocking defects before visual polish; freeze scope. Voice/embeds/extra samples remain optional.
 - [ ] Save a fully generated reference scene and confirm it works independently of model availability.
@@ -294,7 +294,7 @@ Next implementation phase: Phase 5 immutable publication and anonymous shopper v
 - [x] 47 tests, lint/typecheck/build and local snapshot isolation/auth/asset/CORS/revoke/lifecycle checks.
 - [x] Fresh live Meta analysis + two-object reconstruction reaches READY for the release run.
 - [x] README/setup accuracy, attribution and demo/submission draft prepared in docs/release/DEMO.md.
-- [ ] Deployed publication + complete fresh author-to-shopper verification; record final report in TESTING.md.
+- [x] Deployed publication + complete fresh author-to-shopper verification; PR #9 deployed and fresh two-model flow passed. Final report in TESTING.md.
 - [ ] Browser desktop/mobile visual quality, selection/dialog/clipboard and actual frame performance (access disabled).
 - [ ] Record demo/screenshots; verify private portal track/fields/video limit and final requirements; review/submit when authorized.
 

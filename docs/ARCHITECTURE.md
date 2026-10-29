@@ -1,6 +1,6 @@
 # ReScene system architecture
 
-Architecture target, October 29, 2026. The app/auth/database, durable analysis/reconstruction, mask review, and saved object-transform editor are implemented. Product editing and publication remain planned. Visual browser QA is pending. See [SETUP.md](SETUP.md) for verified deployment/access status, [PLAN.md](PLAN.md) for scope, and [DATA_MODEL.md](DATA_MODEL.md) for constraints.
+Architecture target, October 29, 2026. The app/auth/database, durable analysis/reconstruction, mask review, and saved object-transform editor are implemented. Product editing, original demo catalog replacement and immutable v2 publication/read-only sharing are implemented. Visual browser QA is pending. See [SETUP.md](SETUP.md) for verified deployment/access status, [PLAN.md](PLAN.md) for scope, and [DATA_MODEL.md](DATA_MODEL.md) for constraints.
 
 ## 1. System boundaries
 
@@ -31,7 +31,7 @@ No Python service, Redis, WebSockets, separate database REST service, or Cloudfl
 
 Use [Next.js App Router](https://nextjs.org/docs/app), TypeScript, and React. The implemented foundation uses plain CSS; Tailwind/shadcn remain optional for the editor. Keep authentication, list pages, and initial data loading on the server. Dynamically import WebGL components so they do not enter server rendering.
 
-Use [React Three Fiber](https://r3f.docs.pmnd.rs/getting-started/introduction) over [Three.js](https://threejs.org/docs/) with Drei controls/loaders. Zustand holds draft scene state and selection; React component state holds transient form UI. Fetch/poll server state using one approach (SWR or a small fetch hook), not multiple query libraries.
+Use [React Three Fiber](https://r3f.docs.pmnd.rs/getting-started/introduction) over [Three.js](https://threejs.org/docs/) with Drei controls/loaders. React component state holds draft scene state, selection and transient form UI; Zustand is not installed. Fetch/poll server state using one approach (SWR or a small fetch hook), not multiple query libraries.
 
 ### Screens
 
