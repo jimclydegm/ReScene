@@ -178,3 +178,8 @@ Keep live-provider smoke tests explicit and small; normal CI uses sanitized fixt
 ### Step-restart state (October 29)
 
 Scene.settings.resetRevision identifies the current workflow epoch without changing the SQL schema. Workspace filters earlier runs; failed earlier runs become CANCELED and cannot resume. Earlier successful run/step usage remains historical. Cleared asset rows become DELETED; new signing rejects them. SOURCE/NORMALIZED pointers survive ANALYSIS/RECONSTRUCTION restart; mask/object IDs survive only RECONSTRUCTION. All targets clear room/camera/baseline edits and layout backups, clear product associations, and revoke later publications. R2 bytes are retained privately until a separately authorized cleanup; lifecycle rules stay unchanged.
+
+
+### Appearance data (October 29)
+
+`AssetKind.SURFACE_TEXTURE` is added by migration 20261029110000_surface_texture for private PNG floor/wall patches. Baked models remain embedded-texture MODEL_GLB assets with derivedFromId pointing to the original mesh and provenance describing the photo/bake version. Settings.appearance stores photo-bake-v1, per-object originalId/bakedId/copied texel counts, and floorId/wallId. Settings.lighting stores bounded key/fill XYZ/intensity and ambient fill. Workspace signs only same-scene READY surface assets. Restore keeps original immutable assets and swaps references under revision/ownership checks. No source photographs are embedded in baked GLBs; public serialization must allowlist only approved derived assets.

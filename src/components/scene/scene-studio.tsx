@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Scan, Box, Check, LoaderCircle, Save, RotateCcw } from "lucide-react";
 import { apiJson } from "@/lib/client-api";
 import type { SceneWorkspace, SceneObjectView } from "./types";
+import { AppearanceControls } from "./appearance-controls";
+import { defaultLighting, type Lighting } from "@/lib/scene/lighting";
 import { ReferencePhoto } from "./reference-photo";
 import { UploadForm } from "@/components/upload-form";
 import type { RestartTarget } from "@/lib/validation/generation";
@@ -22,6 +24,8 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const [restartTarget, setRestartTarget] = useState<RestartTarget>("ANALYSIS");
   const [data, setData] = useState(initial);
   const renderedStatus = useRef(initial.status);
+  const [lights, setLights] = useState(initial.lighting);
+  const [lightDirty, setLightDirty] = useState(false);
   const [draft, setDraft] = useState(initial.objects);
   const [selected, setSelected] = useState(initial.objects[0]?.id ?? "");
   const [chosen, setChosen] = useState<string[]>([]);
@@ -34,18 +38,18 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const running = Boolean(data.run && ["QUEUED", "RUNNING", "WAITING"].includes(data.run.status));
   const reload = useCallback(async () => {
     const next = await apiJson<SceneWorkspace>(`${base}/workspace`);
-    setData(next); setDraft(next.objects); setDirty(false); setHistory([]);
+    setData(next); setDraft(next.objects); setLights(next.lighting); setLightDirty(false); setDirty(false); setHistory([]);
     if (renderedStatus.current !== next.status) { renderedStatus.current = next.status; router.refresh(); }
     const selectable = next.status === "READY" ? next.objects.filter(o => o.modelUrl) : next.objects;
     setSelected(prev => selectable.some(o => o.id === prev) ? prev : selectable[0]?.id ?? "");
     return next;
   }, [base, router]);
   useEffect(() => {
-    if (!dirty) return;
+    if (!dirty && !lightDirty) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); };
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+  }, [dirty, lightDirty]);
   useEffect(() => {
     if (!running) return;
     let canceled = false;
@@ -59,11 +63,11 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   }, [running, reload]);
   useEffect(() => {
     const timer = setInterval(() => {
-      if (dirty || running) return;
+      if (dirty || lightDirty || running) return;
       void reload().catch(() => {});
     }, 10 * 60_000);
     return () => clearInterval(timer);
-  }, [dirty, running, reload]);
+  }, [dirty, lightDirty, running, reload]);
   async function action(kind: "ANALYZE" | "RECONSTRUCT") {
     setBusy(true); setError(""); setMessage("");
     try {
@@ -87,7 +91,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     setBusy(true); setError("");
     try {
       await apiJson(`${base}/objects`, { method: "PATCH", body: JSON.stringify({ expectedRevision: data.revision,
-        objects: draft.filter(o => o.modelUrl).map(o => ({ id: o.id, label: o.label, positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, yaw: o.yaw, scale: o.scale, visible: o.visible })) }) });
+        ...(lightDirty ? { lighting: lights } : {}), objects: draft.filter(o => o.modelUrl).map(o => ({ id: o.id, label: o.label, positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, yaw: o.yaw, scale: o.scale, visible: o.visible })) }) });
       await reload(); setMessage("Scene saved. Your layout will be here when you return.");
     } catch (e) { setError(e instanceof Error ? e.message : "Could not save."); }
     finally { setBusy(false); }
@@ -101,6 +105,15 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     } catch (e) { setError(e instanceof Error ? e.message : "Could not match the photo layout."); }
     finally { setBusy(false); }
   }
+  async function appearance(action: "APPLY" | "RESTORE" | "LIGHTING") {
+    setBusy(true); setError(""); setMessage("");
+    try {
+      await apiJson(`${base}/appearance`, { method: "POST", body: JSON.stringify({ action, expectedRevision: data.revision, ...(action === "LIGHTING" ? { lighting: lights } : {}) }) });
+      await reload(); setMessage(action === "LIGHTING" ? "Lighting saved." : action === "RESTORE" ? "Original AI textures restored." : "Photo detail copied and saved. Hidden surfaces retain their AI texture.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Appearance could not be saved."); }
+    finally { setBusy(false); }
+  }
+  function editLights(value: Lighting) { setLights(value); setLightDirty(true); }
   function askRestart(target: RestartTarget) {
     setRestartTarget(target);
     restartDialog.current?.showModal();
@@ -143,10 +156,10 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     {message && <p role="status" className="save-message">{message}</p>}
     {data.run?.errorMessage && <div className="generation-error"><p>{data.run.errorMessage}</p>{data.run.canResume && <button className="button button-dark" disabled={busy} onClick={resume}>Resume existing generation</button>}</div>}
     {running && <div className="generation-progress" role="status"><LoaderCircle className="spin" size={20}/><div><strong>{data.run?.stage}</strong><p>You can close this page. Your progress is saved.</p><progress value={data.run?.progress} max={100}/></div>{data.run?.canResume && <button className="button button-light" onClick={resume} disabled={busy}>Resume</button>}</div>}
-    {ready ? <div className="editor-layout"><div><ViewerBoundary key={data.revision}><ModelCanvas objects={draft} selected={selected} onSelect={setSelected} composition={data.composition}/></ViewerBoundary>
+    {ready ? <div className="editor-layout"><div><ViewerBoundary key={data.revision}><ModelCanvas objects={draft} selected={selected} onSelect={setSelected} composition={data.composition} lighting={lights} appearance={data.appearance}/></ViewerBoundary>
       <div className="scene-layout-tools"><div><strong>{data.composition ? "Photo layout · estimated room" : "Manual stage · photo layout available"}</strong><p>{data.composition ? "Relative size, orientation, depth, and camera use the saved SAM 3D estimates. Room surfaces and lighting are approximate." : "Apply the saved AI poses to restore relative sizes, depth, orientation, and a matching camera. No new generation needed."}</p></div>
-        <button className="button button-light" disabled={busy || dirty} onClick={() => matchLayout("MATCH_PHOTO")}>{busy ? "Working…" : "Match photo layout"}</button>
-        {data.canRestoreLayout && <button className="text-link" disabled={busy || dirty} onClick={() => matchLayout("RESTORE")}>Undo photo layout</button>}
+        <button className="button button-light" disabled={busy || dirty || lightDirty} onClick={() => matchLayout("MATCH_PHOTO")}>{busy ? "Working…" : "Match photo layout"}</button>
+        {data.canRestoreLayout && <button className="text-link" disabled={busy || dirty || lightDirty} onClick={() => matchLayout("RESTORE")}>Undo photo layout</button>}
       </div>
       <p className="preview-caveat">Match photo layout resets object transforms and saves them; Undo photo layout restores the previous layout. Save or reload any unsaved edits first. Hidden surfaces and measurements may differ from the photo.</p>
       {data.composition?.warnings.slice(1).map(warning => <p className="preview-caveat" key={warning}>{warning}</p>)}</div>
@@ -155,7 +168,8 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
           {([ ["positionX", "Left / right", -10, 10, 0.1], ["positionZ", "Forward / back", -10, 10, 0.1], ["positionY", "Height", -2, 5, 0.1], ["yaw", "Rotation", -Math.PI, Math.PI, 0.05], ["scale", "Size", 0.1, 5, 0.1] ] as const).map(([field, label, min, max, step]) => <label key={field}>{label}<input type="range" min={min} max={max} step={step} value={current[field]} onChange={e => edit(current.id, { [field]: Number(e.target.value) })}/><output>{current[field].toFixed(2)}</output></label>)}
           <label className="visibility-toggle"><input type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/> Show object</label>
         </div>}
-        <div className="editor-actions"><button className="button button-light" disabled={!history.length || busy} onClick={() => { setDraft(history[history.length - 1]); setHistory(history.slice(0, -1)); setDirty(true); }}><RotateCcw size={14}/>Undo</button><button className="button button-dark" disabled={!dirty || busy} onClick={save}><Save size={14}/>{busy ? "Saving…" : "Save scene"}</button></div>
+        <div className="editor-actions"><button className="button button-light" disabled={!history.length || busy} onClick={() => { setDraft(history[history.length - 1]); setHistory(history.slice(0, -1)); setDirty(true); }}><RotateCcw size={14}/>Undo</button><button className="button button-dark" disabled={(!dirty && !lightDirty) || busy} onClick={save}><Save size={14}/>{busy ? "Saving…" : "Save scene"}</button></div>
+        <AppearanceControls lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={busy} applied={data.appearance.applied} onSave={save} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>
         <button className="text-link" disabled={busy} onClick={() => void reload().catch(() => setError("Could not reload."))}>Reload saved layout</button>
       </aside></div> : <div className="analysis-layout"><div className="review-photo">{data.image && <Image src={data.image.url} alt={data.title} width={data.image.width} height={data.image.height} unoptimized/>}{data.objects.filter(o => chosen.includes(o.id) && o.maskUrl).map(o => <Image key={o.id} className="mask-overlay" src={o.maskUrl!} alt={`${o.label} outline`} fill unoptimized/>)}</div>
       <aside className="object-inspector"><span className="eyebrow">TURN THE PHOTO INTO A SCENE</span><h2>{data.objects.length ? "Choose your objects." : "Find what’s in the room."}</h2>

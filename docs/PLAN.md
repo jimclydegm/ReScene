@@ -170,3 +170,8 @@ Earlier steps must be reachable within an existing scene. Change photo returns t
 ## Texture-fidelity clarification — October 29
 
 Textured SAM GLBs are already requested and stored, but generated appearance alone does not meet Jim's photo-likeness expectation. Add the explicit Phase 3.6 quality gate in ROADMAP.md before merchandise/publication: diagnose stored texture versus display fidelity, test source-photo detail projection on visible mesh surfaces, then bake a successful result into a private validated GLB. Preserve generated hidden surfaces and original fallback assets. Background plane textures remain a separate room-quality gate. See [TEXTURE_FIDELITY.md](TEXTURE_FIDELITY.md); this is proposed engineering work, not a new verified Meta API feature or completed implementation.
+
+
+## Selected-scene implementation — October 29
+
+Jim authorized implementation on the chair/cabinet/vase example and requested adjustable lighting. Texture copying was planned in Phase 3.6; editable main/fill XYZ/intensity and ambient lighting are now added to scope. CPU triangle/depth rasterization transfers accepted source pixels directly into existing UV atlases, avoiding a new GPU/model service. Room surfaces repeat clean observed photo patches, with an original-texture restore path. This preserves editable meshes and avoids source-photo exposure in future public viewers. No additional inference is necessary. Detailed physical material recovery and unseen texture truth remain outside the one-photo guarantee.

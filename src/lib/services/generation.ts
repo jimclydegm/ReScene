@@ -12,6 +12,7 @@ import { segmentConcept } from "@/lib/ai/segment";
 import { getSam3dClient } from "@/lib/ai/sam3d";
 import { downloadFalArtifact, inspectGlb } from "@/lib/ai/glb";
 import { composeRoom, compositionSchema, glbBounds, modelPlacementSchema, type CompositionInput } from "@/lib/scene/composition";
+import { defaultLighting, lightingSchema } from "@/lib/scene/lighting";
 import { record, sceneEnvironment } from "./composition";
 import { runInputSchema, objectEditsSchema } from "@/lib/validation/generation";
 import type { z } from "zod";
@@ -222,7 +223,16 @@ export async function workspace(sceneId: string, ownerId: string) {
     await failRun(run.id);
     return workspace(sceneId, ownerId);
   }
+  const applied = record(record(scene.settings).appearance);
+  async function textureUrl(id: unknown) {
+    if (typeof id !== "string") return null;
+    const asset = await getDb().asset.findFirst({ where: { id, sceneId, kind: "SURFACE_TEXTURE", status: "READY" } });
+    return asset ? signRead(asset) : null;
+  }
+  const stage = compositionSchema.safeParse(scene.stage).data ?? null;
   return { id: scene.id, title: scene.title, status: scene.status, revision: scene.revision,
+    lighting: lightingSchema.safeParse(record(scene.settings).lighting).data ?? defaultLighting(stage),
+    appearance: { applied: applied.version === "photo-bake-v1", floorUrl: await textureUrl(applied.floorId), wallUrl: await textureUrl(applied.wallId) },
     composition: compositionSchema.safeParse(scene.stage).data ?? null, canRestoreLayout: Boolean(record(scene.settings).layoutBackup),
     image: scene.normalizedAsset ? { url: await signRead(scene.normalizedAsset), width: scene.normalizedAsset.width!, height: scene.normalizedAsset.height! } : null,
     generationEnabled: process.env.GENERATION_ENABLED === "true", objects: await Promise.all(objects.map(async o => ({
@@ -234,9 +244,9 @@ export async function workspace(sceneId: string, ownerId: string) {
       errorCode: run.errorCode, errorMessage: run.errorMessage, canResume: run.status === "QUEUED" || (run.status === "FAILED" && run.errorCode === "KNOWN_JOB_INTERRUPTED") } : null };
 }
 export async function saveObjects(sceneId: string, ownerId: string, input: z.infer<typeof objectEditsSchema>) {
-  await ownedScene(sceneId, ownerId);
+  const scene = await ownedScene(sceneId, ownerId);
   await getDb().$transaction(async tx => {
-    const count = await tx.scene.updateMany({ where: { id: sceneId, ownerId, revision: input.expectedRevision, status: "READY", archivedAt: null }, data: { revision: { increment: 1 } } });
+    const count = await tx.scene.updateMany({ where: { id: sceneId, ownerId, revision: input.expectedRevision, status: "READY", archivedAt: null }, data: { revision: { increment: 1 }, ...(input.lighting ? { settings: asJson({ ...record(scene.settings), lighting: input.lighting }) } : {}) } });
     if (count.count !== 1) throw new AppError(409, "REVISION_CONFLICT", "The scene changed. Reload before saving.");
     for (const edit of input.objects) {
       const changed = await tx.sceneObject.updateMany({ where: { id: edit.id, sceneId, status: "READY" }, data: {

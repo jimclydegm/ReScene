@@ -132,8 +132,8 @@ See [TEXTURE_FIDELITY.md](TEXTURE_FIDELITY.md) for evidence, implementation desi
 - [x] Verify current textured-GLB request and actual saved assets. Five inspected bedroom objects contain 1024×1024 maps, UVs and base-color bindings.
 - [x] Research Meta export behavior, hosted controls and Muse Image's role. Source-photo detail transfer is a separate graphics step; generated texture export is already enabled.
 - [ ] Add a focused texture audit/unlit comparison and identify model-detail loss versus renderer/lighting errors on the simple input.
-- [ ] Prototype mask/depth-gated source-photo projection on one object's visible surfaces, preserving SAM appearance elsewhere. Verify camera/geometry alignment and texture attachment during edits.
-- [ ] Bake a passing result into a new embedded-texture GLB, persist with revision/provenance checks and retain the original fallback.
+- [x] Prototype mask/depth-gated source-photo projection on one object's visible surfaces, preserving SAM appearance elsewhere. Verify camera/geometry alignment and texture attachment during edits.
+- [x] Bake a passing result into a new embedded-texture GLB, persist with revision/provenance checks and retain the original fallback.
 - [ ] Validate saved/exported appearance and anonymous-viewer privacy without delivering the full source photo.
 
 **Pass:** observed cabinet grain/fabric detail resembles the reference better, does not slide or pick up background pixels when edited, and persists without raw-photo exposure. Unseen surfaces and physical material properties remain inferred.
@@ -238,3 +238,16 @@ Runtime/editor PR #2 merged into `main` on October 29 (`8f56977`). Both PR CI ru
 - [x] Local integration: copied real assets, confirmation requirement, concurrent resets, clearing boundaries, reupload, stale/origin/ownership rejection pass. Local dialog/cancel visually checked.
 - [x] Fresh deployed Meta analysis/environment + SAM masks + composed 3D, then return/rebuild and confirm refreshed results. Two usable masks; chair NO_MATCH is excluded. Both GPU runs reached READY; signed downloads and saved edits pass.
 - [x] Deployed restart integration, desktop/mobile dialog and saved-room browser QA, CI and production deployment (PR #4). Fresh rebuild visual QA follows below.
+
+
+## Photo-texture and lighting implementation (October 29)
+
+- [x] CPU UV bake with source-camera visibility/depth/object-ID masks and front-face checks; original AI texture retained outside accepted samples.
+- [x] Immutable baked GLBs, geometry-preserving model swaps, revision guards and original-texture restore.
+- [x] Clean photo patch extraction/repetition for floor/wall with no object foreground in accepted patches; no full-photo backdrop.
+- [x] Main/fill source XYZ/intensity and ambient controls with live preview and atomic save alongside edits.
+- [x] Add/apply SURFACE_TEXTURE enum migration; restart invalidation covers those assets.
+- [x] QA clone service checks and 28 focused tests pass; no new inference.
+- [ ] Complete browser/deployment verification and apply to Jim's selected scene; preserve original assets.
+
+Room patches repeat observed detail; hidden object surfaces remain inferred and source lighting is baked into copied colors. This does not implement physical material/illumination recovery.

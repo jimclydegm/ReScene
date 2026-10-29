@@ -1,3 +1,4 @@
+import { lightingSchema } from "@/lib/scene/lighting";
 import { z } from "zod";
 export const restartInputSchema = z.object({
   target: z.enum(["PHOTO", "ANALYSIS", "RECONSTRUCTION"]), expectedRevision: z.number().int().nonnegative(),
@@ -12,7 +13,7 @@ export const runInputSchema = z.object({
     ctx.addIssue({ code: "custom", message: "Select one to three different objects.", path: ["objectIds"] });
   }
 });
-export const objectEditsSchema = z.object({ expectedRevision: z.number().int().nonnegative(),
+export const objectEditsSchema = z.object({ expectedRevision: z.number().int().nonnegative(), lighting: lightingSchema.optional(),
   objects: z.array(z.object({ id: z.uuid(), label: z.string().trim().min(1).max(120),
     positionX: z.number().finite().min(-20).max(20), positionY: z.number().finite().min(-5).max(20), positionZ: z.number().finite().min(-20).max(20),
     yaw: z.number().finite().min(-Math.PI * 4).max(Math.PI * 4), scale: z.number().finite().min(0.1).max(5), visible: z.boolean()

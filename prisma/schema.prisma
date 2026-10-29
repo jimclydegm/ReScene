@@ -23,6 +23,7 @@ enum SceneStatus {
 }
 
 enum AssetKind {
+  SURFACE_TEXTURE
   UPLOAD_STAGING
   SOURCE_IMAGE
   NORMALIZED_IMAGE
