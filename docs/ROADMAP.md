@@ -269,7 +269,7 @@ This is a presentation/query change; no inference or schema migration is needed.
 - [x] Private object thumbnail from the existing source photo and reviewed mask; no inference or external URL fetching.
 - [x] Atomic product/object/light save with ownership, origin and revision checks. Invalid product updates roll back the save.
 - [x] Numeric transform/light inputs; object/product undo/redo across inspector tabs.
-- [x] 39 tests and local QA-clone persistence/thumbnail/geometry/auth checks pass.
+- [x] 39 tests, PR CI and local/production QA-clone persistence/thumbnail/geometry/auth checks pass. PR #7 merged and deployed.
 - [ ] Browser interaction/visual checks once access is available.
 
 Phase 4B: original rights-cleared replacement catalog and transactional mesh/product replacement remain unimplemented. Phase 5 publication remains unimplemented.
