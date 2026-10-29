@@ -4,7 +4,7 @@ import { getMetaClient, metaModels } from "./meta";
 import { analysisSchema, validateAnalysis, type ImageSize } from "./contracts";
 import { analysisSystemPrompt, analysisUserPrompt, defaultAnalysisOptions, type AnalysisOptions } from "./controls";
 
-export const analysisPromptVersion = "scene-products-v3";
+export const analysisPromptVersion = "scene-assemblies-v4";
 export async function analyzePhoto(imageUrl: string, size: ImageSize, options: AnalysisOptions = defaultAnalysisOptions) {
   const started = Date.now();
   const response = await getMetaClient().chat.completions.create({
@@ -17,7 +17,7 @@ export async function analyzePhoto(imageUrl: string, size: ImageSize, options: A
       ] }
     ],
     response_format: { type: "json_schema", json_schema: {
-      name: "scene_analysis", strict: true, schema: z.toJSONSchema(analysisSchema)
+      name: "scene_analysis", strict: true, schema: z.toJSONSchema(analysisSchema.extend({objects: analysisSchema.shape.objects.element.extend({parentCandidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/).nullable()}).strict().array().max(10)}))
     } }
   }, { maxRetries: 0 });
   const choice = response.choices[0];

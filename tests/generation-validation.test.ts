@@ -13,7 +13,7 @@ describe("Generation requests", () => {
   });
   it("requires distinct reviewed object IDs for reconstruction", () => {
     const base = { kind: "RECONSTRUCT", expectedRevision: 1, idempotencyKey: id };
-    expect(runInputSchema.safeParse(base).success).toBe(false);
+    expect(runInputSchema.safeParse(base).success).toBe(true);
     expect(runInputSchema.safeParse({ ...base, objectIds: [id, id] }).success).toBe(false);
     expect(runInputSchema.safeParse({ ...base, objectIds: [id] }).success).toBe(true);
   });

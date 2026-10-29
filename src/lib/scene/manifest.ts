@@ -10,8 +10,8 @@ export const snapshotSchema=z.object({
  schemaVersion:z.literal(2),coordinates:z.object({handedness:z.literal("right"),upAxis:z.literal("Y"),units:z.literal("approximate")}).strict(),title:z.string().min(1).max(160),description:z.string().max(2000).nullable(),revision:z.number().int().nonnegative(),approximateGeometry:z.literal(true),
  composition:compositionSchema.nullable(),lighting:lightingSchema,
  surfaces:z.object({floorAssetId:z.uuid().nullable(),wallAssetId:z.uuid().nullable()}).strict(),
- objects:z.array(z.object({id:z.uuid(),label:z.string().min(1).max(120),modelAssetId:z.uuid(),transform:worldTransformSchema,productId:z.uuid().nullable()}).strict()).min(1).max(5),
- products:z.array(productSchema.extend({id:z.uuid(),imageAssetId:z.uuid().nullable(),currency:productSchema.shape.currency.nullable()}).strict().refine(p=>(p.price===null)===(p.currency===null),"Price and currency must be paired")).max(5)
+ objects:z.array(z.object({id:z.uuid(),label:z.string().min(1).max(120),modelAssetId:z.uuid(),transform:worldTransformSchema,productId:z.uuid().nullable()}).strict()).min(1).max(10),
+ products:z.array(productSchema.extend({id:z.uuid(),imageAssetId:z.uuid().nullable(),currency:productSchema.shape.currency.nullable()}).strict().refine(p=>(p.price===null)===(p.currency===null),"Price and currency must be paired")).max(10)
 }).strict().superRefine((m,ctx)=>{
  if(new Set(m.objects.map(o=>o.id)).size!==m.objects.length||new Set(m.products.map(p=>p.id)).size!==m.products.length)ctx.addIssue({code:"custom",message:"Duplicate object/product IDs"});
  const ids=new Set(m.products.map(p=>p.id)),used=new Set(m.objects.flatMap(o=>o.productId?[o.productId]:[]));

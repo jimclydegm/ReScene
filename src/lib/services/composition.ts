@@ -69,12 +69,12 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
   let result: ReturnType<typeof composeRoom>;
   try {
     const inputs: CompositionInput[] = [];
-    for (const object of objects) {
+    for (const object of objects.filter(o=>!record(o.provenance).parentObjectId)) {
       if (!object.model || object.model.sceneId !== sceneId || object.model.status !== "READY") throw new Error("MODEL_UNAVAILABLE");
       const bytes = await readLimited(object.model!.storageKey, 40 * 1024 * 1024);
       inspectGlb(bytes);
       const provenance = record(object.provenance);
-      inputs.push({ id: object.id, metadata: provenance.metadata, bounds: glbBounds(bytes), imageBounds: object.imageBounds,
+      inputs.push({ id: object.id, metadata: provenance.metadata, bounds: glbBounds(bytes), imageBounds: provenance.layoutImageBounds ?? object.imageBounds,
         support: typeof provenance.support === "string" ? provenance.support : ["bed", "seating", "table", "storage"].includes(object.category ?? "") ? "floor" : "unknown" });
     }
     const environment = await sceneEnvironment(scene);
@@ -92,7 +92,8 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
       camera: asJson(result.composition.camera), stage: asJson(result.composition), settings: asJson({ ...record(scene.settings), layoutBackup: backup }), revision: { increment: 1 }
     } });
     if (changed.count !== 1) throw new AppError(409, "REVISION_CONFLICT", "The scene changed. Reload before matching the photo.");
-    for (const o of result.objects) await tx.sceneObject.update({ where: { id: o.id, sceneId }, data: {
+    const placements=objects.map(object=>{const root=record(object.provenance).parentObjectId ?? object.id;const composed=result.objects.find(o=>o.id===root);if(!composed)throw new AppError(422,"ASSEMBLY_LAYOUT","The complete subject layout is unavailable.");return {...composed,id:object.id};});
+    for (const o of placements) await tx.sceneObject.update({ where: { id: o.id, sceneId }, data: {
       positionX: o.position[0], positionY: o.position[1], positionZ: o.position[2],
       rotationX: 0, rotationY: 0, rotationZ: 0, rotationW: 1, scaleX: 1, scaleY: 1, scaleZ: 1, initialTransform: asJson(o.placement)
     } });

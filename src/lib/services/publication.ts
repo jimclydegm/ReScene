@@ -1,6 +1,7 @@
 import "server-only";
 import { randomBytes,randomUUID,createHash } from "node:crypto";
 import { z } from "zod";
+import {Matrix4,Quaternion,Vector3} from "three";
 import { getDb } from "@/lib/db";
 import { Prisma } from "@/generated/prisma/client";
 import { ownedScene } from "./scenes";
@@ -22,7 +23,12 @@ export async function publish(sceneId:string,ownerId:string,revision:number){
  if(scene.status!=="READY"||scene.revision!==revision)throw new AppError(409,"REVISION_CONFLICT","Save or reload the ready scene before publishing.");
  const existing=await db.scenePublication.findFirst({where:{sceneId,revision,revokedAt:null}});if(existing)return {id:existing.id,slug:existing.slug};
  const objects=await db.sceneObject.findMany({where:{sceneId,status:"READY",visible:true,modelAssetId:{not:null}},include:{model:true,product:{include:{imageAsset:true}}},orderBy:{sortOrder:"asc"}});
- if(!objects.length||objects.length>5)throw new AppError(422,"NO_OBJECTS","Publish one to five visible 3D objects.");
+ if(!objects.length||objects.length>10)throw new AppError(422,"NO_OBJECTS","Publish one to ten visible 3D objects.");
+ // Part GLBs retain the shared appearance atlas. Publish assemblies only when
+ // every reconstructed member is approved as visible, never a hidden body/part.
+ const assemblyMembers=await db.sceneObject.findMany({where:{sceneId,status:"READY",modelAssetId:{not:null}},select:{id:true,provenance:true}});
+ for(const o of objects){const root=record(o.provenance).assemblyRootId;if(typeof root!=="string")continue;const members=assemblyMembers.filter(m=>record(m.provenance).assemblyRootId===root);if(members.some(m=>!objects.some(v=>v.id===m.id)))throw new AppError(422,"ASSEMBLY_VISIBILITY","Show the complete subject and all of its product regions before publishing this shared-geometry assembly.");}
+
  const composition=compositionSchema.safeParse(scene.stage).data??null,applied=record(record(scene.settings).appearance);
  const m:Snapshot={schemaVersion:2,coordinates:{handedness:"right",upAxis:"Y",units:"approximate"},title:scene.title,description:scene.description,revision,approximateGeometry:true,composition,lighting:lightingSchema.safeParse(record(scene.settings).lighting).data??defaultLighting(composition),surfaces:{floorAssetId:typeof applied.floorId==="string"?applied.floorId:null,wallAssetId:typeof applied.wallId==="string"?applied.wallId:null},objects:[],products:[]};
  for(const o of objects){
@@ -30,7 +36,9 @@ export async function publish(sceneId:string,ownerId:string,revision:number){
   const bytes=await readLimited(o.model.storageKey,40*1024*1024);inspectGlb(bytes);
   const product=o.product;
   if(product&&product.sceneId!==sceneId)throw new AppError(422,"INVALID_PRODUCT","A product belongs to another scene.");
-  m.objects.push({id:o.id,label:o.label,modelAssetId:o.model.id,transform:flattenTransform(o,glbBounds(bytes)),productId:product?.id??null});
+  const bounds=glbBounds(bytes),transform=flattenTransform(o,bounds);
+  m.objects.push({id:o.id,label:o.label,modelAssetId:o.model.id,transform,productId:product?.id??null});
+  if(m.composition){const matrix=new Matrix4().compose(new Vector3(...transform.position),new Quaternion(...transform.rotation),new Vector3(...transform.scale));const bottoms=[0,1].flatMap(x=>[0,1].flatMap(y=>[0,1].map(z=>new Vector3((x?bounds.max:bounds.min)[0],(y?bounds.max:bounds.min)[1],(z?bounds.max:bounds.min)[2]).applyMatrix4(matrix).y)));m.composition.floorY=Math.min(m.composition.floorY??0,...bottoms);}
   if(product&&!m.products.some(p=>p.id===product.id))m.products.push({id:product.id,name:product.name,description:product.description??"",brand:product.brand??"",price:product.price?.toFixed(2)??null,currency:(product.price===null?null:product.currency) as Snapshot["products"][number]["currency"],productUrl:product.productUrl??"",imageAssetId:product.imageAssetId});
  }
  const manifest=snapshotSchema.parse(m),ids=snapshotAssets(manifest);

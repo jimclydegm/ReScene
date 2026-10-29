@@ -63,6 +63,11 @@
               "type": "string",
               "const": "sam3d-room-v1"
             },
+            "floorY": {
+              "type": "number",
+              "minimum": -1000,
+              "maximum": 1000
+            },
             "backdrop": {
               "type": "string",
               "enum": [
@@ -376,7 +381,7 @@
     },
     "objects": {
       "minItems": 1,
-      "maxItems": 5,
+      "maxItems": 10,
       "type": "array",
       "items": {
         "type": "object",
@@ -505,7 +510,7 @@
       }
     },
     "products": {
-      "maxItems": 5,
+      "maxItems": 10,
       "type": "array",
       "items": {
         "type": "object",
@@ -606,5 +611,5 @@
   ],
   "additionalProperties": false,
   "title": "ReScene frozen render snapshot v2",
-  "description": "Service validates reference uniqueness, camera separation, unit rotations, price/currency pairing and exact render-only asset membership. V1 is historical proposed architecture."
+  "description": "Explicit render assets, complete subject assemblies and conservative floor placement; source photos and masks stay private."
 }

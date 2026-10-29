@@ -3,6 +3,7 @@ import type { Lighting } from "@/lib/scene/lighting";
 import type { ModelPlacement, SceneComposition } from "@/lib/scene/composition";
 import type { AnalysisOptions, ReconstructionOptions, SegmentationOptions } from "@/lib/ai/controls";
 export type SceneObjectView = { id: string; label: string; status: string; errorCode: string | null;
+  parentObjectId:string|null;assemblyRootId:string|null;
   concept:string;confidence:number|null;bounds:SegmentationOptions["box"]|null;segmentation:SegmentationOptions|null;
   maskAlternatives:{assetId:string;confidence:number|null;bounds:NonNullable<SegmentationOptions["box"]>;area:number;url:string;selected:boolean}[];
   canRestoreOriginal: boolean; product: (ProductFields & { imageUrl: string | null }) | null; maskUrl: string | null; modelUrl: string | null; positionX: number; positionY: number; positionZ: number;
