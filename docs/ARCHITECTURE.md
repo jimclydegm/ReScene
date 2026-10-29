@@ -128,7 +128,7 @@ Vercel documents a [4.5 MB function payload limit](https://vercel.com/docs/error
 3. `POST .../uploads/:assetId/complete` checks HEAD size/type and streams a bounded read for signature/decoder validation. Accept only JPEG/PNG/WebP, <=12 MiB original, with a decoded-pixel limit (e.g. 24 megapixels). Reject SVG, archives, malformed files, and unsupported animation.
 4. Snapshot the accepted bytes to a **new server-only immutable key** and create a SOURCE_IMAGE asset. The pipeline never reads the reusable staging key. This prevents an unexpired PUT URL changing an accepted input after finalization.
 5. Analyze workflow normalizes orientation, strips EXIF, resizes to longest side <=1600 px / <=2.56 MP, and writes a normalized image target <=2 MiB. Save actual dimensions and SHA-256. All segmentation and reconstruction use that exact image.
-6. Delete rejected/stale uploads with lifecycle/cleanup. A staged URL can recreate its object until expiry, so use a one-day staging lifecycle rather than assuming immediate deletion revokes the URL.
+6. Delete the accepted staging object after completion. A staged URL can recreate its object until expiry; accepted input uses an immutable server-only key and is unaffected. **Current retention decision:** Jim chose to leave automatic staging deletion disabled on October 29. Rejected/stale staging files require deliberate manual cleanup; the former one-day expiry proposal is deferred.
 
 Normalization is CPU image work in a bounded Node step, not GPU inference. Treat browser resizing as a convenience only. An immutable asset transitions PENDING→READY only after all validation and metadata writes succeed.
 
@@ -273,6 +273,6 @@ Before freeze, run the main journey on the deployed URL with a fresh photo and a
 
 MVP scene deletion is archival: reject new work, revoke publications, stop result application. A separate owner/admin cleanup script removes R2 objects after job completion and signed-URL expiry. Do not hard-delete shared assets independently. Preserve the demo scene through judging.
 
-Proposed housekeeping: one-day staging expiry; seven-day retention for failed/unreferenced raw provider outputs; no automatic deletion of live/publication assets. Apply lifecycle rules only to matching prefixes, never the whole scene tree. Record actual retention in setup docs when implemented.
+Current housekeeping: completion attempts immediate staging deletion; automatic staging expiry is disabled at Jim's request. The pre-existing seven-day incomplete-multipart abort rule is unchanged. Seven-day retention for failed/unreferenced raw provider outputs remains proposed; no automatic deletion of live/publication assets. Any future approved lifecycle rule must target only its matching prefix, never the whole scene tree. See setup docs for actual retention.
 
 The MVP does not promise high availability, exact reconstruction, exact-once third-party billing, or production commerce scale. It does require persistent jobs, clear failures, ownership checks, and a working complete demo.

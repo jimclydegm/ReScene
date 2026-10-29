@@ -11,10 +11,10 @@ ReScene is Jim's prototype for Meta's Global AI Developer Hackathon. The first d
 - Landing page with a selectable, movable 3D sample room (illustrated geometry, not AI reconstruction).
 - Neon Managed Better Auth sign-up/sign-in/sign-out and Google sign-in integration.
 - Private scene dashboard, persistence, ownership checks, and revision-aware updates.
-- Signed R2 upload reservation, image validation/normalization, and immutable asset storage code.
+- Working private R2 photo uploads, image validation/normalization, and immutable source/preview storage.
 - Eight-model Prisma schema/migration, server-only Meta/fal adapters, and GitHub CI.
 
-R2 writes currently require a permission fix to the supplied read-only token. Uploaded-photo reconstruction, products, and publishing are the next phases. See [setup and verified limitations](docs/SETUP.md).
+Photo upload and reload persistence are verified on the live app. Object reconstruction, product editing, and publishing are the next phases. See [setup and verified limitations](docs/SETUP.md).
 
 ## Development
 

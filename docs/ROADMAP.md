@@ -52,15 +52,17 @@ If a target slips, remove optional work before weakening the complete core flow.
 - [x] Reuse checkout and create `codex/app-foundation`; keep planning context.
 - [x] Scaffold Next.js/React/TypeScript, sample viewer, and styled UI with pinned dependencies/lockfile. Plain CSS is sufficient for the foundation; Tailwind is deferred.
 - [x] Configure Node 22, server-only lazy environment helpers, and client bundle boundaries.
-- [ ] Link the correct Vercel project/GitHub repository; deploy a minimal stable staging origin.
+- [x] Link the correct Vercel project/GitHub repository; deploy production and a stable feature-branch preview alias.
 - [ ] Provision/link the chosen Neon project and a development environment. Enable Neon Managed Better Auth; configure origin allowlist and cookie secret.
 - [x] Install Prisma 7.10.1 CLI/client/adapter; review/apply initial migration with constraints; preserve `neon_auth`.
 - [x] Implement auth proxy, sign-up/sign-in/sign-out, sessions, AppUser upsert, and protected dashboard/API. Email/session flows tested; Google consent remains untested.
-- [ ] Configure private R2 bucket/credentials, environment separation, CORS, staging lifecycle, and server signing helper.
+- [x] Configure private R2 bucket, Object Read & Write credentials, CORS, and server signing helpers; verify deployed uploads. Public development URL is disabled.
+- [x] Record retention choice: Jim requested automatic staging deletion remain disabled. Preserve the existing seven-day incomplete-multipart abort rule; no uploaded-object expiration rule is enabled.
+- [ ] Separate development/production database, Auth, and storage credentials before broader use.
 - [x] Add Scene create/list/read/update, owner-scoped DTOs, revision conflicts, and upload reservation/completion services.
 - [x] Add GitHub CI for install/generate, typecheck, lint, tests, and build; migrations remain separate.
 
-**Foundation status, Oct 29:** deployed to the existing production origin with Next.js/Node 22 and encrypted server secrets. Local production-build/API smoke and mobile layout checks pass. Separate staging/development branches are not yet created; the prototype shares the supplied Neon branch/Auth. R2 credentials are active but read-only; write, CORS, lifecycle, and image round-trip checks remain blocked on permissions. Phase 1 is not fully complete until those checks pass.
+**Foundation status, Oct 29:** deployed to the existing production origin with Next.js/Node 22 and encrypted server secrets. Local/deployed account checks, mobile layout, nine deployed storage checks, and browser upload/refresh pass. Private R2 writes/CORS work with the rotated credentials. Automatic staging deletion is disabled at Jim's request. The stable feature preview exists; separate database/Auth/storage environments remain deferred and share the supplied prototype resources.
 
 **Pass:** deploy succeeds; login survives reload; two accounts see only their own scenes; an authorized staging upload round-trip works; schema applies in development without affecting auth tables.
 
@@ -68,8 +70,8 @@ If a target slips, remove optional work before weakening the complete core flow.
 
 **Estimate: 4–6 hours, October 30.** Depends on Phase 1.
 
-- [ ] Build create-scene/upload screen with format/size hints, progress, and retry.
-- [ ] Implement staging reservation, direct PUT, completion verification, immutable source snapshot, and bounded image normalization/EXIF stripping.
+- [x] Build create-scene/upload screen with format/size hints, progress, and retry.
+- [x] Implement and verify staging reservation, direct PUT, completion verification, immutable source snapshot, bounded normalization/EXIF stripping, and malformed-image rejection.
 - [ ] Implement Run/Step persistence, idempotency, active-run/budget gate, workflow dispatch/claim, and DB-backed progress polling.
 - [ ] Add Spark scene-analysis adapter with validated bounded structured output and prompt versioning.
 - [ ] Add SAM 3.1 adapter using the official parser; handle zero matches, request-local IDs, masks, corrected boxes, and concept grouping.

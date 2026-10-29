@@ -17,7 +17,8 @@
     "db:generate": "prisma generate",
     "db:validate": "prisma validate",
     "db:migrate": "prisma migrate deploy",
-    "services:check": "tsx scripts/check-services.ts"
+    "services:check": "tsx scripts/check-services.ts",
+    "storage:smoke": "tsx scripts/smoke-upload.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1159.0",

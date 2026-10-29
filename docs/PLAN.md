@@ -1,6 +1,6 @@
 # ReScene implementation plan
 
-Prepared October 29, 2026. All implementation phases are pending. Schedule times are Asia/Manila unless labeled otherwise.
+Prepared October 29, 2026. App/auth/database/private upload foundation is implemented; model reconstruction and the complete shopping flow remain pending. Schedule times are Asia/Manila unless labeled otherwise.
 
 ## 1. Product outcome
 
@@ -149,4 +149,6 @@ Phase 0 needs Meta access, a reconstruction credential, and participant rules. P
 | Oct 29 | Nov 2 freeze despite Nov 4 public submission date | User target preserved |
 | Oct 29 | Build the requested Vercel/auth/database foundation while live 3D spike remains pending | Implemented; no claim of reconstruction feasibility |
 | Oct 29 | Use plain CSS for foundation; keep Zustand/Tailwind/shadcn optional for editor | Implemented |
+| Oct 29 | Verify rotated R2 credentials, private bucket, browser CORS, normalization, and immutable input on the live app | Nine storage checks and browser upload/refresh pass |
+| Oct 29 | Leave automatic staging deletion disabled at Jim's request | No object-expiration rule enabled; setup script preserves lifecycle |
 | Oct 29 | Reuse supplied Neon branch/Auth and R2 prototype namespace initially | Implemented; environment separation remains future work |

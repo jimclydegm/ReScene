@@ -1,10 +1,6 @@
 import { config } from "dotenv";
 import { readFile } from "node:fs/promises";
-import {
-  S3Client, GetBucketCorsCommand, PutBucketCorsCommand,
-  GetBucketLifecycleConfigurationCommand, PutBucketLifecycleConfigurationCommand,
-  type CORSRule, type LifecycleRule
-} from "@aws-sdk/client-s3";
+import { S3Client, GetBucketCorsCommand, PutBucketCorsCommand, type CORSRule } from "@aws-sdk/client-s3";
 
 config({ path: ".env.local", quiet: true });
 const Bucket = process.env.R2_BUCKET;
@@ -20,16 +16,8 @@ try {
   }
   await client.send(new PutBucketCorsCommand({ Bucket, CORSConfiguration: { CORSRules: rules } }));
   console.log("R2 browser origins configured; existing rules preserved.");
-
-  let lifecycle: LifecycleRule[] = [];
-  try { lifecycle = (await client.send(new GetBucketLifecycleConfigurationCommand({ Bucket }))).Rules ?? []; }
-  catch (error) { if ((error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode !== 404) throw error; }
-  const prefix = process.env.R2_PREFIX ?? "prototype";
-  if (!/^[a-z0-9-]+$/i.test(prefix)) throw new Error("Invalid storage prefix");
-  const id = `rescene-${prefix}-staging`;
-  if (!lifecycle.some(rule => rule.ID === id)) lifecycle.push({ ID: id, Status: "Enabled", Filter: { Prefix: `${prefix}/staging/` }, Expiration: { Days: 1 } });
-  await client.send(new PutBucketLifecycleConfigurationCommand({ Bucket, LifecycleConfiguration: { Rules: lifecycle } }));
-  console.log("R2 staging expiry configured; scene assets are outside its prefix.");
+  // Jim chose to leave staging auto-deletion disabled. Never change lifecycle here.
+  console.log("Bucket lifecycle unchanged; automatic staging deletion remains disabled.");
 } catch (error) {
   const safe = error as { name?: string; $metadata?: { httpStatusCode?: number } };
   console.error("R2 configuration failed:", safe.name ?? "Error", safe.$metadata?.httpStatusCode ?? "");
