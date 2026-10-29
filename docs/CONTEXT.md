@@ -1,6 +1,6 @@
 # ReScene — current handoff
 
-Updated October 29, 2026 (Asia/Manila). Read this, then only task-relevant technical files. Historical milestones are in docs/history; they are not the active work queue.
+Updated October 30, 2026 (Asia/Manila). Read this, then only task-relevant technical files. Historical milestones are in docs/history; they are not the active work queue.
 
 ## Objective and working style
 
@@ -43,7 +43,7 @@ PR #10 merged at 648010b and production is READY. All 52 tests and the single PR
 
 ## Remaining access/human gates
 
-Browser access is still disabled in Work settings. Do not claim desktop/mobile visual interaction, clipboard/dialogs, frame rate or final recording verified. Actual Google consent is unverified. Indie demo/submission draft is in release/DEMO.md; private portal fields/video limit and final contest submission remain pending. Continue app work independently and report these concrete limits without restarting micro-phases.
+Browser access became available October 30 through Chrome. Desktop scene inspection is now possible; record exactly which controls/breakpoints were verified. Final recording/Google consent are not automatically verified. Actual Google consent is unverified. Indie demo/submission draft is in release/DEMO.md; private portal fields/video limit and final contest submission remain pending. Continue app work independently and report these concrete limits without restarting micro-phases.
 
 Technical references: ARCHITECTURE.md, DATA_MODEL.md + prisma/schema.prisma, META_MODELS.md, TEXTURE_FIDELITY.md, CATALOG.md, TESTING.md, SETUP.md. Runtime publication contract: contracts/scene-manifest-v2.schema.json; v1 is historical proposed architecture.
 
@@ -56,3 +56,9 @@ SAM raster decoding now resamples a bounded low-resolution mask into its source-
 The existing clothing scene 2b495855-65dc-4ca3-ad93-1460e53eb5fe is READY with the complete person plus three linked product regions, all at a common baseline and floorY=0. One automatic Spark call found the four linked entries with no count/focus instructions. One full-person Objects job completed in 26 seconds; existing outputs were reused for adoption. 5,218 triangles were conserved once (2,867 body/context, 1,281 shirt, 838 shorts, 232 shoes). A private upgrade backup retains earlier objects/stage; merchant associations were preserved and no public snapshot was created. Offline static rendering shows the complete figure; do not call it browser verification.
 
 65 unit cases, schema/lint/build/type checks pass. The reusable saved-data regression passed and restored the QA fixture. Actual complete-subject edit/save/restore and partial-assembly publication rejection pass; source transforms/visibility were restored and no share/inference created by those checks. Production is READY at rescene-qh4lsrwsp-jimclydegms-projects.vercel.app (dpl_3x5X3wAa2TcLRgDaAFEYek1g2hyW), aliased to rescene-eta.vercel.app. CI and bounded production controls/auth/recovery smoke checks pass. No additional inference was used by post-deploy checks; keep the external browser gate separate from numerical/API evidence.
+
+## Current quality correction
+
+Work is on codex/scene-support-and-detail. scene-relations-v5 balances general categories and distinguishes attached parts from supported independent objects. Support links are validated/persisted; tabletop contacts use support height or a shared plane when its mesh is missing, then actual vertex-bottom refinement. Photo transfer now supports ten meshes/shared regions, bounded per-root registration and up-to-2K source-pixel baking. Refresh rebakes from original meshes; future workflows attempt it once after geometry ingestion without inference. See SCENE_QUALITY.md for limits and model roles.
+
+Desk example c9035519-8cf4-45cd-88c2-36d32571eff1 is repaired with source detail on all six mesh regions and independent object bottoms verified at Y=0. Existing assets/masks were reused; no new desk reconstruction. One v5 Spark analysis independently found four objects supported by a desk. Body and Align each ran once on the saved clothing photo; both GLBs have no textures/UVs and were retained as private diagnostics, not swapped into the appearance scene. Chrome browser access now works; desktop WebGL shows improved lettering/contact. Local checks and production release are tracked in ROADMAP/TESTING; do not carry forward the old blanket browser-disabled claim.

@@ -1,0 +1,32 @@
+# General scene relationships, contact and source detail
+
+October 30, 2026, Asia/Manila. This follows PR #12's complete-subject correction and addresses the desk example c9035519-8cf4-45cd-88c2-36d32571eff1.
+
+## Diagnosis
+
+The example has six reconstructed mesh regions and an unreconstructed desk candidate. Independent mug/mouse/clock baselines were 0.2317 / 0.4477 / 0.3016 above the common stage surface. The previous composer preserved provider estimates without solving tabletop contact. These numbers are scene units, not measured meters.
+
+The source-transfer endpoint still limited input to three meshes, despite the expanded scene pipeline. The example therefore had no photo-detail transfer applied. Existing generated textures contain approximate colors/marks, not exact source lettering. The earlier broad scene prompt also overexplained people and did not distinguish physical support from attachment.
+
+## Implemented correction
+
+- `scene-relations-v5` gives balanced instructions for animals, food, tools, electronics, furniture, plants, people and other visible subjects. Animals/food/tools/surfaces have explicit category values. `supportedByCandidateId` is separate from `parentCandidateId`: a mug on a desk is independent; a keyboard within a laptop is an attached region. Validation rejects absent, partial and cyclic support targets. These links persist privately as supportedByObjectId and survive reconstruction restart.
+- Complete-root placement now settles tabletop objects onto the identified support's estimated top. When the support mesh is absent, tabletop peers share an estimated contact plane. Contact anchors follow their camera ray while moving vertically, limiting image-position drift. A final vertex pass removes the remaining small gap introduced by conservative rotated accessor boxes. Attached regions receive the same baseline; they are not snapped separately. This is a contact heuristic, not dense depth recovery or collision simulation. Sloped, overhanging and highly irregular supports remain approximate.
+- Source transfer handles up to ten meshes, including shared-geometry parts. It computes the photo camera from original root geometry without contact adjustments, then fits a bounded per-root silhouette registration. It copies only visible, depth-gated, reviewed-mask pixels into up-to-2048 texture atlases. Hidden/background pixels retain generated appearance. Increasing atlas size alone is not the improvement: actual source pixels, bounded alignment and stronger replacement on well-facing surfaces restore visible lettering and logos. No OCR rewriting or AI-generated lettering is used.
+- APPLY can refresh an earlier bake from the original immutable meshes rather than repeatedly baking a baked model. Original restore remains exact; per-object failures retain originals/previous accepted bake. Workspace retains the same photo-bake-v1 compatibility envelope with method=registered-2k-v2. The UI adds Refresh source detail. New reconstruction workflows attempt this CPU-only improvement once after successful ingestion; optional transfer failure never discards geometry or resubmits paid inference.
+
+## Body and Align: tested roles
+
+[Body API](https://fal.ai/models/fal-ai/sam-3/3d-body/api) estimates human anatomy/pose and supports a person mask, GLB/PLY output and keypoints/camera metadata. [Align API](https://fal.ai/models/fal-ai/sam-3/3d-align/api) explicitly requires a SAM 3D Body mesh and fits it into the MoGe/Objects frame; an object mesh is optional for a combined scene. It is not a general desk-object contact solver.
+
+One Body call and one Align call on the existing private clothing sample both completed. The inspected GLBs were 738,504 and 738,496 bytes, each with one mesh, no image textures and no UV coordinates. Their output supplies an anatomy/pose scaffold, not textured clothing/face likeness. The aligner returned a large scale conversion (~1019.6), illustrating why it must be validated against the app's coordinate convention before applying it to a saved textured subject. The diagnostic artifacts remain private and did not replace the person's appearance mesh. These models are tested experiments, not automatic runtime defaults. A future human-specific registration/retopology pipeline can use them as a scaffold; that requires transferring appearance and keeping garment/body topology consistent rather than merely swapping the GLB.
+
+The current default stays Meta SAM 3D Objects for textured general subjects. The [Objects API](https://fal.ai/models/fal-ai/sam-3/3d-objects/api) also accepts external pointmap/depth data. Shared depth could improve difficult spatial layouts, but a verified compatible depth provider, units, intrinsics and artifact handling are required before calling it implemented. No new provider was introduced.
+
+## Evidence
+
+The v5 prompt was sent once to Spark on the desk photo without extra subject focus. It found laptop, mouse, mug, clock and desk, with all four independent objects supported by the desk and none falsely attached to it. The saved scene was corrected using existing meshes/masks; it was not resegmented or reconstructed again. Numeric world-vertex checks show the independent laptop, mug, mouse and clock bottoms at Y=0. Keyboard/screen remain above the laptop base as intended.
+
+Photo transfer accepted all six mesh regions, with copied texels from 176,602 (keyboard) to 1,299,942 (clock). An offline textured render shows reference keyboard lettering, the subtle mouse logo, and 10:24 on the clock, compared with the earlier generated approximate marks. Browser access became available during this work: the actual production WebGL scene was inspected on desktop, showing the applied lettering and contact improvement. This does not establish exact logo fidelity at all angles, every key's readability or unseen geometry.
+
+The original-model restore, other-owner/stale-revision rejection and reapplication all passed. Existing original mesh identities were retained. The reusable saved-scene regression passed once with restoration and revocation; no additional inference was used by it. Source photographs and signed URLs are not in these docs; public snapshots still expose only approved derived render assets.
