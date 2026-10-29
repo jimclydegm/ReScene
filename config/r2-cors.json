@@ -3,7 +3,8 @@
     "AllowedOrigins": [
       "http://localhost:3000",
       "http://127.0.0.1:3000",
-      "https://rescene-eta.vercel.app"
+      "https://rescene-eta.vercel.app",
+      "https://rescene-git-codex-app-foundation-jimclydegms-projects.vercel.app"
     ],
     "AllowedMethods": ["GET", "HEAD", "PUT"],
     "AllowedHeaders": ["Content-Type"],

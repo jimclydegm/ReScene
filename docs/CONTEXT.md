@@ -24,7 +24,7 @@ Jim is building ReScene for Meta's Global AI Developer Hackathon. A seller uploa
 - Landing/sample viewer, managed auth, private scene dashboard, ownership, revision-aware API, and upload code are implemented. Sample geometry is illustrated, not reconstructed.
 - Migration `20261029040000_init` applied all 8 app tables/constraints; managed auth tables untouched. Prisma 7.10.1.
 - Secrets are in ignored `.env.local` and Vercel production/preview secrets. Do not print them. Runtime generation is disabled.
-- Build/lint/typecheck/6 tests and local 9-check account/ownership smoke pass. Browser sign-in/dashboard and 390px upload layout checked.
+- Build/lint/typecheck/6 tests, GitHub CI, and local/deployed 9-check account/ownership smoke pass. Browser sign-in/dashboard and 390px upload layout checked. Draft review: https://github.com/jimclydegm/ReScene/pull/1.
 - Meta model discovery, Neon DB/Auth/JWKS, R2 read, and fal missing-job queue response work. R2 PUT/settings return 403; token metadata confirms read-only access. Jim was asked to fix permissions; no answer yet.
 - Vercel CLI configured/authenticated; existing plugin guidance available. Jim explicitly requested keeping MCP OAuth pending.
 - See `SETUP.md` for commands, resource setup, tested limits, and remaining dependencies. Prototype local/production currently share the supplied Neon branch/Auth and storage namespace.

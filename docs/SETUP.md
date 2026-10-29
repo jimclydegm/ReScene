@@ -6,12 +6,13 @@ Updated October 29, 2026. This is the implemented foundation; AI reconstruction 
 
 - Vercel project: `jimclydegms-projects/rescene`; existing GitHub import reused.
 - Production URL: [rescene-eta.vercel.app](https://rescene-eta.vercel.app).
+- Foundation review: [PR #1](https://github.com/jimclydegm/ReScene/pull/1). GitHub deploys the feature branch to its stable, protected preview alias.
 - Framework: Next.js 16.4.3; runtime Node 22; Functions region `iad1`.
 - Vercel CLI: 65.2.0, authenticated. Existing Vercel plugin guidance is installed.
 - Shared Vercel MCP endpoint is already configured at `https://mcp.vercel.com`. OAuth remains pending **at Jim's request**; the CLI handles project operations.
 - Neon project: `rescene-db`, AWS us-east-1; supplied database/Auth integration reused.
 - Initial application migration: `20261029040000_init`. All eight application tables and the additional SQL constraints are applied. Managed `neon_auth` tables are not changed by our migrations.
-- Neon trusted origins: production URL and `http://127.0.0.1:3000`; localhost is enabled by the managed service.
+- Neon trusted origins: production URL, the verified `codex/app-foundation` preview alias, and `http://127.0.0.1:3000`; localhost is enabled by the managed service.
 - Canonical JWKS URL ends in `/.well-known/jwks.json` (the supplied `.js` path returned 404).
 - Google sign-in is wired to Neon's configured shared development provider. Starting/finishing consent with a real Google identity was not exercised; configure own OAuth credentials for a public production launch.
 - Local and deployed prototype currently share the supplied Neon branch/Auth and R2 `prototype` namespace. Create separate development data/Auth/storage credentials before handling real merchant data at scale.
@@ -52,7 +53,7 @@ The supplied token is active and permits reads, but object PUT and bucket config
 
 Required for normal app operation: **Object Read & Write** access scoped to bucket `rescene`. To configure bucket CORS/lifecycle through the setup script, use appropriate bucket administration permissions temporarily, or configure those settings in Cloudflare's dashboard.
 
-The ready-to-apply browser policy is [config/r2-cors.json](../config/r2-cors.json). Keep the bucket private. It allows GET/HEAD/PUT from the two local origins and production. It does not grant public access to objects. For staging cleanup, add a lifecycle rule expiring only `prototype/staging/` after one day.
+The ready-to-apply browser policy is [config/r2-cors.json](../config/r2-cors.json). Keep the bucket private. It allows GET/HEAD/PUT from the two local origins, production, and the verified branch preview alias. It does not grant public access to objects. For staging cleanup, add a lifecycle rule expiring only `prototype/staging/` after one day.
 
 Once the credential permissions are fixed:
 
@@ -88,7 +89,8 @@ It creates isolated `example.com` QA identities and a private QA scene, verifies
 ## Current validation
 
 - Production build, lint, TypeScript, and six focused tests pass.
-- Local API smoke check passes all nine checks, including two-account isolation and sign-out.
+- Local and deployed API smoke checks pass all nine checks, including two-account isolation and sign-out.
+- GitHub Actions passed clean install, schema validation, lint, six tests, production build, and typecheck without cloud secrets.
 - Browser sign-in and dashboard rendering work with an isolated QA identity.
 - The upload screen has no horizontal overflow at a 390px phone breakpoint; the temporary browser viewport was restored afterward.
 - Desktop sample renders and supports object selection, movement, hide/show, and reset.
