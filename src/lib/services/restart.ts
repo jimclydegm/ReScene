@@ -51,9 +51,9 @@ export async function restartScene(sceneId: string, ownerId: string, input: z.in
     await tx.product.deleteMany({ where: { sceneId } });
     await tx.scenePublication.updateMany({ where: { sceneId, revokedAt: null }, data: { revokedAt: new Date() } });
     const kinds = input.target === "PHOTO"
-      ? ["SOURCE_IMAGE", "NORMALIZED_IMAGE", "MASK", "CUTOUT", "MODEL_GLB", "PRODUCT_IMAGE", "POSTER", "UPLOAD_STAGING"] as const
-      : input.target === "ANALYSIS" ? ["MASK", "CUTOUT", "MODEL_GLB", "PRODUCT_IMAGE", "POSTER"] as const
-      : ["MODEL_GLB", "PRODUCT_IMAGE", "POSTER"] as const;
+      ? ["SOURCE_IMAGE", "NORMALIZED_IMAGE", "MASK", "CUTOUT", "MODEL_GLB", "PRODUCT_IMAGE", "POSTER", "SURFACE_TEXTURE", "UPLOAD_STAGING"] as const
+      : input.target === "ANALYSIS" ? ["MASK", "CUTOUT", "MODEL_GLB", "PRODUCT_IMAGE", "POSTER", "SURFACE_TEXTURE"] as const
+      : ["MODEL_GLB", "PRODUCT_IMAGE", "POSTER", "SURFACE_TEXTURE"] as const;
     // Logical deletion immediately prevents new signing/attachment. No bucket-wide lifecycle change.
     await tx.asset.updateMany({ where: { sceneId, kind: { in: [...kinds] }, status: { not: "DELETED" } }, data: { status: "DELETED", deletedAt: new Date() } });
     return { revision, status: input.target === "RECONSTRUCTION" ? "REVIEW" : "DRAFT" };

@@ -62,3 +62,12 @@ Use reviewed floor/wall masks and fitted room planes. Extract clean visible patc
 Exact backside patterns, folds, specular response and hidden surfaces cannot be copied from a single photograph that does not show them. Additional source views or merchant-supplied models/materials are the route to higher confidence; they are outside the lean single-photo prototype.
 
 Keep existing textured GLBs usable throughout this work. Stop after a one-object quality experiment if projection artifacts outweigh detail gains; do not replace independent editable meshes with a combined splat/world solely for photo resemblance. Splats returned by the current provider can be an optional appearance diagnostic, not a substitute for the edit/product-link requirements.
+
+
+## Implemented follow-up (October 29)
+
+The current implementation uses CPU UV/depth rasterization on the server, rather than the initially proposed browser shader/GPU bake. It writes only accepted visible source samples into new embedded PNG GLBs and retains the generated atlas elsewhere. The source photograph is not included in the output GLB. Main/fill light position/intensity and ambient settings are saved independently or atomically with object edits. Clean foreground-free top/bottom patches produce repeated room textures; they are a bounded approximation, not full room texture unwrapping.
+
+Settings.appearance (`photo-bake-v1`) stores original/baked model mappings, copied texel counts and floor/wall texture asset IDs. New immutable MODEL_GLBs derive from original meshes; SURFACE_TEXTURE assets derive from the normalized photo. RESTORE restores model references and drops room texture pointers while retaining lighting. Revision/owner/READY guards prevent stale or foreign model swaps. Restart invalidates all later appearance data. The service computes projection from reconstruction baseline metadata, so later draft transformations do not slide the baked texture.
+
+On the selected example the bake accepted 245,668 chair, 174,617 cabinet and 94,877 vase texels; individual bake/PNG encodes took 62–74ms locally, excluding DB/storage/visibility setup. These counts are copied atlas texels, not a measurement of photo fidelity. The one-scene service integration (including R2 reads/writes and restore/reapply) took about 24 seconds. Browser inspection and deployment are recorded in TESTING.md after completion. Source lighting remains in copied colors; neutral/soft lighting avoids double shading, and full de-lighting is not implemented.

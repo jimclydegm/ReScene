@@ -31,11 +31,13 @@ Jim is building ReScene for Meta's Global AI Developer Hackathon: one private ro
 
 Browser access is now working. Desktop confirmation/cancel, 390px confirmation/reference dialogs, and the saved three-object composition/selection/hide/reload are visually checked. SAM GLBs omitted metallicFactor (glTF defaults to metal); the preview now uses dielectric materials only when that field/map is unspecified. Explicit metal settings are preserved. Mobile verification found a canvas intrinsic-width overflow; CSS now uses a minmax(0,1fr) track and shrinkable viewport/inspector. Detailed floor textures, windows, wall geometry, lighting recovery, and real-photo quality remain incomplete. Product cards, catalog replacement, immutable publication, and anonymous viewer are next implementation phases. Follow NEXT_STEPS.md.
 
-## Texture fidelity research (latest request)
+## Photo textures and lighting (current work)
 
-Jim reports poor photo resemblance. Read-only audit of five objects in two saved non-QA bedrooms confirms embedded 1024×1024 PNGs, UVs and baseColorTexture bindings; textured export is already on. Meta's exporter bakes generated appearance, not a direct original-pixel transfer at export. Hosted schema exposes no texture resolution/reprojection setting. No new inference/application change was made for this research.
+Jim selected scene `1cc4e890-1ca8-4435-ac00-722dccefb995` (chair/cabinet/vase). Phase 3.6 now implements CPU UV baking of source pixels onto visible, depth/mask/front-face-checked surfaces. Existing SAM appearance remains elsewhere; new embedded PNG GLBs preserve geometry/transforms and original assets. Clean top/bottom photo patches provide repeated wall/floor textures (estimated extension, not a recovered room scan). AssetKind.SURFACE_TEXTURE migration `20261029110000_surface_texture` applied to shared Neon.
 
-Phase 3.6 now explicitly proposes texture audit/unlit comparison → one-object source-photo projection using initial poses/camera plus mask/depth/visibility gates → bake accepted visible detail into a new GLB, keeping SAM textures for unseen regions. Alignment/occlusion/lighting errors limit fidelity. Do not expose the full private source image to an anonymous viewer as a projection texture. Room surfaces remain a separate pending gate. See TEXTURE_FIDELITY.md; projection/baking is not implemented or quality-validated.
+POST appearance APPLY/RESTORE/LIGHTING is owner/origin/revision/READY-guarded. Settings.appearance retains original/baked model IDs and room texture IDs; explicit restore switches back. Main/fill lights have XYZ/intensity controls, plus ambient intensity, live preview and saved settings. Object edits can save lighting atomically to avoid losing draft changes. Restarts clear downstream surface textures/settings. Snapshots must allowlist only baked assets, never the full private source photo.
+
+Offline bake on the requested scene copied 245,668 chair, 174,617 cabinet and 94,877 vase texels. A separate QA clone passes persistence, geometry preservation, lighting save, stale/non-owner rejection and exact texture restore. 28 focused tests and production build pass. Browser/deployment verification is in progress; no new inference submitted. TEXTURE_FIDELITY.md contains initial design and current implementation notes.
 
 ## Spending and open dependencies
 
