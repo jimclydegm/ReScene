@@ -183,3 +183,7 @@ Scene.settings.resetRevision identifies the current workflow epoch without chang
 ### Appearance data (October 29)
 
 `AssetKind.SURFACE_TEXTURE` is added by migration 20261029110000_surface_texture for private PNG floor/wall patches. Baked models remain embedded-texture MODEL_GLB assets with derivedFromId pointing to the original mesh and provenance describing the photo/bake version. Settings.appearance stores photo-bake-v1, per-object originalId/bakedId/copied texel counts, and floorId/wallId. Settings.lighting stores bounded key/fill XYZ/intensity and ambient fill. Workspace signs only same-scene READY surface assets. Restore keeps original immutable assets and swaps references under revision/ownership checks. No source photographs are embedded in baked GLBs; public serialization must allowlist only approved derived assets.
+
+### Phase 4A implemented behavior
+
+PATCH objects optionally includes merchant product fields or null (unlink); omission preserves the existing association for older clients. Product/asset IDs are server-owned. Product creates/updates share the transform/light transaction and expectedRevision CAS. PRODUCT_IMAGE cutouts are immutable, privately stored, and derived from the reviewed mask with source-photo/object provenance. A cutout upload can outlive a conflicting save; no automatic byte cleanup is enabled. Unlinked Product rows remain private for future snapshot/history support. Publication must freeze fields rather than joining live Product records.

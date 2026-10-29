@@ -179,3 +179,7 @@ Jim authorized implementation on the chair/cabinet/vase example and requested ad
 ### October 29 — Dashboard and editor navigation
 
 Jim requested smaller project thumbnails, project previews/progress, pagination, and a clearer editor menu. Implement compact photo-preview cards with stage/object/date details and six-item server pagination. Expose Objects, Textures and Lighting as top-level inspector tabs; keep tab navigation/save actions fixed while the body scrolls. Preserve draft state across tabs and the existing atomic object/light save. This adds no model calls or database migration. Dashboard images are owner-authenticated signed assets, explicitly labeled source photos unless a saved scene poster exists.
+
+### October 29 — Phase 4A: merchant product cards
+
+Split Phase 4 into testable slices: 4A ships merchant-entered product fields/cards, private mask-derived thumbnails, numeric transform/light inputs, and object undo/redo. 4B remains a trusted rights-cleared replacement catalog plus transactional mesh/product replacement. Phase 5 remains immutable sharing; no anonymous access is added in 4A. Existing Product/Asset/SceneObject tables suffice. Product fields save atomically with object transforms and lighting under the scene revision guard. Thumbnail work uses existing photos/masks and CPU processing, with no inference or merchant-URL fetching. Preserve original geometry/baselines and private source access.

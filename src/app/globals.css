@@ -1912,3 +1912,23 @@ svg {
 @media (prefers-reduced-motion: reduce) {
   .project-card, .project-arrow, .switch-input, .switch-input::after { transition: none; }
 }
+/* Seller product cards and precise scene editing */
+.inspector-footer .editor-actions { grid-template-columns: auto auto minmax(0,1fr); }
+.range-heading .range-number, .transform-fields .range-heading .range-number { width: 62px; min-width: 0; padding: 4px; border: 1px solid #dce4d2; border-radius: 5px; background: #f3f6ec; color: #527048; font-size: 10px; text-align: right; }
+.light-position-fields .range-heading .range-number { width: 100%; }
+.product-controls > .button { margin-top: 16px; font-size: 11px; gap: 7px; }
+.product-fields { display: flex; flex-direction: column; gap: 14px; padding: 0; border: 0; margin: 20px 0 24px; min-width: 0; }
+.product-fields label { display: flex; flex-direction: column; gap: 7px; font-size: 11px; color: #607652; min-width: 0; }
+.product-fields input, .product-fields textarea, .product-fields select { width: 100%; min-width: 0; border: 1px solid #dce4d2; background: #fafbf6; border-radius: 7px; padding: 10px; font: inherit; color: #334c31; }
+.product-fields textarea { resize: vertical; }
+.product-price-fields { display: grid; grid-template-columns: minmax(0,1fr) 90px; gap: 10px; }
+.merchant-card { border: 1px solid #dce3d3; border-radius: 10px; overflow: hidden; background: #fffefa; }
+.merchant-card > img { width: 100%; height: 160px; object-fit: contain; background: #edf0e6; padding: 12px; }
+.merchant-card > div:not(.product-image-placeholder) { padding: 15px; }
+.merchant-card small { font-size: 10px; color: #7d8a70; }
+.merchant-card h4 { margin: 7px 0 9px; font-size: 15px; font-weight: 550; overflow-wrap: anywhere; }
+.merchant-card strong { font-size: 14px; color: #426741; }
+.merchant-card p { font-size: 11px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; color: #738166; }
+.merchant-card .button { font-size: 11px; padding: 10px; margin-top: 14px; }
+.product-image-placeholder { height: 120px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 9px; background: #eef2e7; color: #87997b; font-size: 10px; }
+.inspector-tabs button { flex-basis: 72px; gap: 5px; padding: 10px 6px; font-size: 10px; }

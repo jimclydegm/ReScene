@@ -2,6 +2,8 @@ import "server-only";
 import { randomUUID, createHash } from "node:crypto";
 import { getDb } from "@/lib/db";
 import { AppError } from "@/lib/http";
+import { productSchema } from "@/lib/validation/products";
+import { productThumbnail } from "./product-thumbnail";
 import { ownedScene } from "./scenes";
 import { bucket, storagePrefix, putObject, signRead, readLimited } from "@/lib/storage/r2";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -216,7 +218,7 @@ export async function failRun(runId: string) {
 export async function workspace(sceneId: string, ownerId: string) {
   const scene = await ownedScene(sceneId, ownerId);
   const [objects, run] = await Promise.all([
-    getDb().sceneObject.findMany({ where: { sceneId }, include: { mask: true, model: true }, orderBy: { sortOrder: "asc" } }),
+    getDb().sceneObject.findMany({ where: { sceneId }, include: { mask: true, model: true, product: { include: { imageAsset: true } } }, orderBy: { sortOrder: "asc" } }),
     getDb().generationRun.findFirst({ where: { sceneId, inputRevision: { gte: Number(record(scene.settings).resetRevision ?? 0) } }, orderBy: { createdAt: "desc" } })
   ]);
   if (run && active.includes(run.status as typeof active[number]) && run.expiresAt < new Date()) {
@@ -237,6 +239,7 @@ export async function workspace(sceneId: string, ownerId: string) {
     image: scene.normalizedAsset ? { url: await signRead(scene.normalizedAsset), width: scene.normalizedAsset.width!, height: scene.normalizedAsset.height! } : null,
     generationEnabled: process.env.GENERATION_ENABLED === "true", objects: await Promise.all(objects.map(async o => ({
       id: o.id, label: o.label, status: o.status, errorCode: o.lastErrorCode,
+      product: o.product && o.product.sceneId === sceneId ? { name: o.product.name, description: o.product.description ?? "", brand: o.product.brand ?? "", price: o.product.price?.toString() ?? null, currency: productSchema.shape.currency.parse(o.product.currency ?? "USD"), productUrl: o.product.productUrl ?? "", imageUrl: o.product.imageAsset?.status === "READY" && o.product.imageAsset.sceneId === sceneId ? await signRead(o.product.imageAsset) : null } : null,
       maskUrl: o.mask ? await signRead(o.mask) : null, modelUrl: o.model ? await signRead(o.model) : null,
       placement: modelPlacementSchema.safeParse(o.initialTransform).data ?? null,
       positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, yaw: Math.atan2(2 * o.rotationW * o.rotationY, 1 - 2 * o.rotationY * o.rotationY), scale: o.scaleX, visible: o.visible
@@ -245,12 +248,37 @@ export async function workspace(sceneId: string, ownerId: string) {
 }
 export async function saveObjects(sceneId: string, ownerId: string, input: z.infer<typeof objectEditsSchema>) {
   const scene = await ownedScene(sceneId, ownerId);
+  const thumbnails = new Map<string, string>();
+  // Only new product cards need a cutout. Validate every object before any storage work.
+  const originals = await getDb().sceneObject.findMany({ where: { sceneId, status: "READY", id: { in: input.objects.map(o => o.id) } } });
+  if (originals.length !== input.objects.length) throw new AppError(400, "INVALID_OBJECT", "The selected object is unavailable.");
+  if (scene.status !== "READY" || scene.revision !== input.expectedRevision) throw new AppError(409, "REVISION_CONFLICT", "The scene changed. Reload before saving.");
+  for (const edit of input.objects) {
+    const original = originals.find(o => o.id === edit.id)!;
+    if (edit.product && !original.productId) {
+      const id = await productThumbnail(sceneId, original.id);
+      if (id) thumbnails.set(edit.id, id);
+    }
+  }
   await getDb().$transaction(async tx => {
     const count = await tx.scene.updateMany({ where: { id: sceneId, ownerId, revision: input.expectedRevision, status: "READY", archivedAt: null }, data: { revision: { increment: 1 }, ...(input.lighting ? { settings: asJson({ ...record(scene.settings), lighting: input.lighting }) } : {}) } });
     if (count.count !== 1) throw new AppError(409, "REVISION_CONFLICT", "The scene changed. Reload before saving.");
     for (const edit of input.objects) {
+      const original = originals.find(o => o.id === edit.id)!;
+      let productId = original.productId;
+      if (edit.product === null) productId = null;
+      else if (edit.product) {
+        const fields = { ...edit.product, price: edit.product.price, productUrl: edit.product.productUrl || null };
+        if (productId) {
+          const updated = await tx.product.updateMany({ where: { id: productId, sceneId }, data: fields });
+          if (updated.count !== 1) throw new AppError(400, "INVALID_PRODUCT", "The product is unavailable.");
+        } else {
+          const product = await tx.product.create({ data: { ...fields, sceneId, imageAssetId: thumbnails.get(edit.id) ?? null } });
+          productId = product.id;
+        }
+      }
       const changed = await tx.sceneObject.updateMany({ where: { id: edit.id, sceneId, status: "READY" }, data: {
-        label: edit.label, positionX: edit.positionX, positionY: edit.positionY, positionZ: edit.positionZ,
+        productId, label: edit.label, positionX: edit.positionX, positionY: edit.positionY, positionZ: edit.positionZ,
         rotationX: 0, rotationY: Math.sin(edit.yaw / 2), rotationZ: 0, rotationW: Math.cos(edit.yaw / 2),
         scaleX: edit.scale, scaleY: edit.scale, scaleZ: edit.scale, visible: edit.visible
       } });
