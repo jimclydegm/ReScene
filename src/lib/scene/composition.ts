@@ -18,6 +18,7 @@ export const modelPlacementSchema = z.object({
 export type ModelPlacement = z.infer<typeof modelPlacementSchema>;
 export const compositionSchema = z.object({
   version: z.literal("sam3d-room-v1"),
+  backdrop:z.enum(["room","studio","none"]).optional(),
   camera: z.object({ position: vector, target: vector, fov: z.number().min(20).max(85), aspect: z.number().positive() }),
   room: z.object({ centerX: z.number().finite(), centerZ: z.number().finite(), width: z.number().positive(),
     depth: z.number().positive(), height: z.number().positive() }),

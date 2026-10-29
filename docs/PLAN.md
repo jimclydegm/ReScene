@@ -19,3 +19,11 @@ Keep the working furniture/home-decor prototype: Meta Muse Spark + SAM 3.1 via M
 ## Delivery gates
 
 App functionality and recorded verification form one deliverable. Desktop/mobile browser appearance, recording, private portal fields and final contest submission remain explicit human/access gates, not additional coding phases. Indie developer track is confirmed. November 2 Asia/Manila remains the build freeze. Demo/submission draft: release/DEMO.md.
+
+## General scene and product correction — October 29
+
+Jim clarified that ReScene accepts any scene or product, including apparel and footwear. Furniture/home decor is a demonstration choice, never a model category or UX restriction. The earlier room-first analysis prompt/category enum was a functional bug: the clothing sample returned zero Spark candidates, so no SAM request ran. This correction is one implementation/release bundle, not a new micro-phase schedule.
+
+Implement generic scene/product analysis with explicit focus, candidate count and bounded user instructions. Keep up to five analyzed candidates, up to ten total with manually added items, and three selected meshes per reconstruction. Support independent SEGMENT_OBJECT runs against the exact normalized image, using the existing RunKind without a migration. Freeze text or spatial prompts with each attempt; prohibit mixing concept text and spatial grammar. Preserve prior accepted masks when an explicit retry fails. Store multiple returned masks privately and let the owner choose or union instances (e.g. shoes) without inference. Confidence filtering is local review of returned scores, not an invented Meta detection-threshold API.
+
+Fit photo and WebGL previews to viewport height without cropping or losing source aspect. Provide analysis empty-result recovery, item-by-item prompt refinement, visible phase retry/restart controls, a deterministic 3D seed and no-cost backdrop/placement recovery. Photo/analysis/reconstruction resets retain their existing confirmation and later-result invalidation rules. A successful outline is not evidence of accurate garment geometry or fit. Browser interaction QA remains unavailable while Work browser access is disabled.

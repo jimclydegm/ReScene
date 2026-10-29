@@ -21,8 +21,8 @@ export async function restartScene(sceneId: string, ownerId: string, input: z.in
     if (input.target === "RECONSTRUCTION" && !objects.some(o => o.maskAssetId)) throw new AppError(409, "MASKS_REQUIRED", "Analyze the photo and review object outlines first.");
     const revision = scene.revision + 1;
     const previousSettings = record(scene.settings);
-    const settings = input.target === "RECONSTRUCTION" && previousSettings.environment
-      ? { environment: previousSettings.environment, resetRevision: revision }
+    const settings = input.target === "RECONSTRUCTION"
+      ? { ...Object.fromEntries(["environment","analysisOptions","analysisSummary","sceneType","preferredBackdrop","reconstructionOptions"].filter(k=>k in previousSettings).map(k=>[k,previousSettings[k]])), resetRevision: revision }
       : { resetRevision: revision };
     const updated = await tx.scene.updateMany({ where: { id: sceneId, ownerId, revision: input.expectedRevision, archivedAt: null }, data: {
       status: input.target === "RECONSTRUCTION" ? "REVIEW" : "DRAFT", revision,
@@ -38,7 +38,7 @@ export async function restartScene(sceneId: string, ownerId: string, input: z.in
       for (const object of objects) {
         const provenance = record(object.provenance);
         // Keep only source/segmentation facts; the old provider pose belongs to the deleted mesh.
-        const retained = Object.fromEntries(["model", "promptVersion", "support", "requestLocalId", "foregroundArea"].filter(k => k in provenance).map(k => [k, provenance[k]]));
+        const retained = Object.fromEntries(["model", "promptVersion", "support", "requestLocalId", "foregroundArea", "maskAlternatives", "segmentationOptions", "segmentationModel"].filter(k => k in provenance).map(k => [k, provenance[k]]));
         await tx.sceneObject.update({ where: { id: object.id, sceneId }, data: {
           modelAssetId: null, productId: null, status: object.maskAssetId ? "CONFIRMED" : "FAILED", representation: "PROXY",
           positionX: 0, positionY: 0, positionZ: 0, rotationX: 0, rotationY: 0, rotationZ: 0, rotationW: 1,

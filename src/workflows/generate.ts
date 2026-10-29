@@ -13,10 +13,16 @@ async function analyze(runId: string) {
 analyze.maxRetries = 0;
 async function segment(runId: string, objectId: string) {
   "use step";
-  const { segmentRunObject } = await import("@/lib/services/generation");
-  await segmentRunObject(runId, objectId);
+  const { segmentRunObject,markOutlineFailure } = await import("@/lib/services/generation");
+  try { await segmentRunObject(runId, objectId); }
+  catch { await markOutlineFailure(runId,objectId); }
 }
 segment.maxRetries = 0;
+async function requestedObject(runId:string){
+  "use step";
+  const {segmentRequestedObject}=await import("@/lib/services/generation");
+  return segmentRequestedObject(runId);
+}
 async function completeAnalysis(runId: string) {
   "use step";
   const { finishAnalysis } = await import("@/lib/services/generation");
@@ -52,6 +58,9 @@ export async function generateScene(runId: string, kind: string) {
     if (kind === "ANALYZE") {
       const objects = await analyze(runId);
       for (const id of objects) await segment(runId, id);
+      await completeAnalysis(runId);
+    } else if(kind === "SEGMENT_OBJECT"){
+      await segment(runId,await requestedObject(runId));
       await completeAnalysis(runId);
     } else {
       const requestId = await submit(runId);

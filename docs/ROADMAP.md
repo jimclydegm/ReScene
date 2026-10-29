@@ -17,6 +17,17 @@ Do all items within one branch/PR. Do not stop after each item or request anothe
 
 Release bundle shipped in PR #10 at 648010b. All 52 tests and PR CI pass, the single saved-data regression passes, and the bounded read-only production smoke passes. No new inference, QA projects or photo/model uploads.
 
+## Current correction bundle: any scene or product
+
+Jim deferred recording/portal work and requested a single broader UX/pipeline correction.
+
+- [x] Remove furniture-only analysis categories, room-specific entry copy and lighting-based candidate priority.
+- [x] Analysis focus/instructions/item limit; manually add items even after zero candidates.
+- [x] Independent outline retries with text or box/include/exclude points; keep other accepted masks.
+- [x] Persist multiple matches, select saved outlines, combine multi-part product masks without inference.
+- [x] Fit portrait photo/3D views, improve review controls, reconstruction seed, backdrop and placement resets.
+- [ ] Complete targeted live clothing/recovery checks, one PR/release and bounded production verification.
+
 ## External completion gates
 
 Browser desktop/mobile visual checks and recording need browser access, which is currently disabled. Participant video limits/private portal fields and actual submission need the authenticated portal and final user review. Keep these separate from implemented app functionality. Continue independent work; do not label these gates as passed.

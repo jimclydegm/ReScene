@@ -8,7 +8,7 @@ export const analysisSchema = z.object({
   objects: z.array(z.object({
     candidateId: z.string().regex(/^candidate-[1-5]$/),
     label: z.string().min(1).max(80),
-    category: z.enum(["bed", "seating", "table", "lighting", "storage", "decor"]),
+    category: z.enum(["bed", "seating", "table", "lighting", "storage", "decor", "clothing", "footwear", "accessory", "person", "vehicle", "plant", "electronics", "other"]),
     segmentationConcept: z.string().min(1).max(80),
     bbox: z.object({
       xMin: z.number().int().nonnegative(), yMin: z.number().int().nonnegative(),

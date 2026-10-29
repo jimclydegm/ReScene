@@ -61,13 +61,14 @@ function Room({ composition, appearance }: { composition: SceneComposition; appe
   const { room: r, environment: e } = composition;
   const back = r.centerZ - r.depth / 2;
   const side = r.centerX + (e.sideWall === "left" ? -1 : 1) * r.width / 2;
+  if(composition.backdrop === "none")return null;
   return <group>
     <mesh receiveShadow position={[r.centerX, -0.012, r.centerZ]} rotation={[-Math.PI / 2, 0, 0]}>
       <planeGeometry args={[r.width, r.depth]}/><SurfaceMaterial url={appearance.floorUrl} color={e.floorColor} repeat={[r.width / 2, r.depth]} roughness={e.floorMaterial === "tile" ? 0.5 : 0.9}/>
     </mesh>
-    <mesh receiveShadow position={[r.centerX, r.height / 2, back]}><planeGeometry args={[r.width, r.height]}/><SurfaceMaterial url={appearance.wallUrl} color={e.wallColor} repeat={[1, 1]} roughness={1}/></mesh>
-    <mesh receiveShadow position={[r.centerX, 0.07, back + 0.02]}><boxGeometry args={[r.width, 0.14, 0.035]}/><meshStandardMaterial color={e.wallColor}/></mesh>
-    {e.sideWall !== "none" && <mesh receiveShadow position={[side, r.height / 2, r.centerZ]} rotation={[0, e.sideWall === "left" ? Math.PI / 2 : -Math.PI / 2, 0]}>
+    {composition.backdrop !== "studio"&&<><mesh receiveShadow position={[r.centerX, r.height / 2, back]}><planeGeometry args={[r.width, r.height]}/><SurfaceMaterial url={appearance.wallUrl} color={e.wallColor} repeat={[1, 1]} roughness={1}/></mesh>
+    <mesh receiveShadow position={[r.centerX, 0.07, back + 0.02]}><boxGeometry args={[r.width, 0.14, 0.035]}/><meshStandardMaterial color={e.wallColor}/></mesh></>}
+    {composition.backdrop !== "studio"&&e.sideWall !== "none" && <mesh receiveShadow position={[side, r.height / 2, r.centerZ]} rotation={[0, e.sideWall === "left" ? Math.PI / 2 : -Math.PI / 2, 0]}>
       <planeGeometry args={[r.depth, r.height]}/><SurfaceMaterial url={appearance.wallUrl} color={e.wallColor} repeat={[1, 1]} roughness={1}/>
     </mesh>}
     {!appearance.floorUrl && e.floorMaterial === "wood" && Array.from({ length: Math.floor(r.depth / 0.38) }, (_, i) => <mesh key={i} position={[r.centerX, -0.01, back + (i + 1) * 0.38]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -100,7 +101,7 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
       <Suspense fallback={null}>{objects.filter(o => o.modelUrl).map(o => <Model key={o.id} object={o} selected={selected === o.id} select={() => onSelect(o.id)}/>)}</Suspense>
       {(!composition || grid) && <Grid position={[0, 0.005, 0]} args={[30, 30]} cellSize={0.5} sectionSize={2} fadeDistance={20} cellColor="#c5c6ba" sectionColor="#a8b1a1"/>}
       <OrbitControls ref={bindControls} makeDefault target={target} minDistance={0.3}
-        maxDistance={Math.max(40, c ? new Vector3(...c.position).distanceTo(new Vector3(...c.target)) * 2 : 40)} maxPolarAngle={Math.PI / 2 - 0.01}/>
+        maxDistance={Math.max(40, c ? new Vector3(...c.position).distanceTo(new Vector3(...c.target)) * 2 : 40)} maxPolarAngle={composition?.backdrop === "none" ? Math.PI-.01 : Math.PI / 2 - 0.01}/>
     </Canvas>
     <div className="viewer-toolbar"><button onClick={() => controls.current?.reset()}>{readOnly ? "Reset view" : composition ? "Photo view" : "Reset camera"}</button>
       {composition && !readOnly && <button aria-pressed={grid} onClick={() => setGrid(value => !value)}>{grid ? "Hide grid" : "Show grid"}</button>}</div>
