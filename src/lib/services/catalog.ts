@@ -49,6 +49,7 @@ export async function replaceObject(sceneId:string,ownerId:string,input:z.infer<
     const changed=await tx.scene.updateMany({where:{id:sceneId,ownerId,revision:input.expectedRevision,status:"READY",archivedAt:null},data:{revision:{increment:1}}});
     if(!changed.count)throw new AppError(409,"REVISION_CONFLICT","The scene changed. Reload before replacing.");
     const object=await tx.sceneObject.findFirst({where:{id:input.objectId,sceneId,status:"READY",modelAssetId:{not:null}}});
+    if(object&&record(object.provenance).assemblyRootId)throw new AppError(409,"ASSEMBLY_REPLACEMENT","Shared-geometry product regions cannot be replaced with standalone catalog models.");
     if(!object)throw new AppError(404,"NOT_FOUND","Object not found.");
     const provenance=record(object.provenance),saved=backupSchema.safeParse(provenance.replacementBackup);
     if(input.action==="RESTORE"){

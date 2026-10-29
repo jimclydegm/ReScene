@@ -26,9 +26,9 @@ describe("Model output boundaries", () => {
     expect([...result.pixels]).toEqual([0, 0, 0, 0, 0, 255, 0, 0, 0, 0, 255, 0]);
     expect(result.area).toBe(2);
   });
-  it("rejects mask dimension mismatch, empty foreground, and out-of-frame placement", () => {
+  it("resamples valid cropped rasters and rejects empty/out-of-frame masks", () => {
     const frame = { width: 4, height: 3 };
-    expect(() => placeMask(new Uint8Array([1]), { width: 1, height: 1 }, { left: 0, top: 0, right: 2, bottom: 1 }, frame)).toThrow();
+    expect([...placeMask(new Uint8Array([1]), { width: 1, height: 1 }, { left: 0, top: 0, right: 2, bottom: 1 }, frame).pixels].slice(0,2)).toEqual([255,255]);
     expect(() => placeMask(new Uint8Array([0]), { width: 1, height: 1 }, { left: 0, top: 0, right: 1, bottom: 1 }, frame)).toThrow();
     expect(() => placeMask(new Uint8Array([1]), { width: 1, height: 1 }, { left: 4, top: 0, right: 5, bottom: 1 }, frame)).toThrow();
   });

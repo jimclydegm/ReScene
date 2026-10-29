@@ -9,11 +9,11 @@ export const restartInputSchema = z.object({
 export type RestartTarget = z.infer<typeof restartInputSchema>["target"];
 export const runInputSchema = z.object({
   kind: z.enum(["ANALYZE", "SEGMENT_OBJECT", "RECONSTRUCT"]), expectedRevision: z.number().int().nonnegative(),
-  idempotencyKey: z.uuid(), objectIds: z.array(z.uuid()).min(1).max(3).optional(),
+  idempotencyKey: z.uuid(), objectIds: z.array(z.uuid()).min(1).max(10).optional(),
   analysis: analysisOptionsSchema.optional(), segmentation: segmentationOptionsSchema.optional(), reconstruction: reconstructionOptionsSchema.optional()
 }).strict().superRefine((input, ctx) => {
-  if (input.kind === "RECONSTRUCT" && (!input.objectIds || new Set(input.objectIds).size !== input.objectIds.length)) {
-    ctx.addIssue({ code: "custom", message: "Select one to three different objects.", path: ["objectIds"] });
+  if (input.kind === "RECONSTRUCT" && (input.objectIds && new Set(input.objectIds).size !== input.objectIds.length)) {
+    ctx.addIssue({ code: "custom", message: "Select different objects, or use automatic selection.", path: ["objectIds"] });
   }
   if (input.kind === "SEGMENT_OBJECT" && !input.segmentation) ctx.addIssue({code:"custom",message:"Choose an object and its segmentation prompt.",path:["segmentation"]});
   if (input.kind !== "SEGMENT_OBJECT" && input.segmentation || input.kind !== "ANALYZE" && input.analysis || input.kind !== "RECONSTRUCT" && (input.reconstruction || input.objectIds)) ctx.addIssue({code:"custom",message:"These controls belong to a different step."});

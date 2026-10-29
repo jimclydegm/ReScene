@@ -12,7 +12,8 @@ ReScene is Jim's prototype for Meta's Global AI Developer Hackathon. Upload a sc
 - Neon Managed Better Auth sign-up/sign-in/sign-out and Google sign-in integration.
 - Private scene dashboard, persistence, ownership checks, and revision-aware updates.
 - Private R2 uploads, image validation/normalization, and immutable source/preview storage.
-- General scene/product analysis with focus/instructions/item-count controls; independent SAM text/box/include/exclude-point retries, manual candidates, multiple-mask selection and no-inference mask combination.
+- General scene/product analysis with automatic complete-subject/product-part detection and optional focus/instructions; independent SAM text/box/include/exclude-point retries, manual candidates, multiple-mask selection and no-inference mask combination.
+- Complete subjects reconstructed once, with selectable product regions sharing geometry, textures and placement. Automatic shoe-pair handling and conservative floor placement.
 - Durable hosted SAM 3D generation with a seed control, fitted portrait previews and an editable mesh viewer.
 - Move, rotate, resize, hide, undo/redo, precise numeric controls, and save/reload generated objects.
 - Merchant product cards, private object thumbnails, an original demo replacement catalog and original-object restore.

@@ -41,7 +41,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const [lightDirty, setLightDirty] = useState(false);
   const [draft, setDraft] = useState(initial.objects);
   const [selected, setSelected] = useState(initial.objects[0]?.id ?? "");
-  const [chosen, setChosen] = useState<string[]>([]);
+  const [chosen, setChosen] = useState<string[]>(initial.objects.filter(o=>o.maskUrl).map(o=>o.id));
   const [busy, setBusy] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState("");
@@ -52,7 +52,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const running = Boolean(data.run && ["QUEUED", "RUNNING", "WAITING"].includes(data.run.status));
   const reload = useCallback(async () => {
     const next = await apiJson<SceneWorkspace>(`${base}/workspace`);
-    setData(next); setChosen(prev=>prev.filter(id=>next.objects.some(o=>o.id===id&&o.maskUrl))); setDraft(next.objects); setLights(next.lighting); setLightDirty(false); setDirty(false); setHistory([]); setFuture([]);
+    setData(next); setChosen(prev=>next.status==="REVIEW"&&renderedStatus.current!=="REVIEW"?next.objects.filter(o=>o.maskUrl).map(o=>o.id):prev.filter(id=>next.objects.some(o=>o.id===id&&o.maskUrl))); setDraft(next.objects); setLights(next.lighting); setLightDirty(false); setDirty(false); setHistory([]); setFuture([]);
     if (renderedStatus.current !== next.status) { renderedStatus.current = next.status; router.refresh(); }
     const selectable = next.status === "READY" ? next.objects.filter(o => o.modelUrl) : next.objects;
     setSelected(prev => selectable.some(o => o.id === prev) ? prev : selectable[0]?.id ?? "");
@@ -109,7 +109,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   }
   async function chooseMask(objectId:string,mask:string|string[]){
     setBusy(true);setError("");setMessage("");
-    try{await apiJson(`${base}/masks`,{method:"PATCH",body:JSON.stringify({expectedRevision:data.revision,objectId,...(Array.isArray(mask)?{maskAssetIds:mask}:{maskAssetId:mask})})});await reload();setMessage("Outline selected and saved. No inference used.");}
+    try{await apiJson(`${base}/masks`,{method:"PATCH",body:JSON.stringify({expectedRevision:data.revision,objectId,...(Array.isArray(mask)?{maskAssetIds:mask}:{maskAssetId:mask})})});await reload();setChosen(prev=>[...new Set([...prev,objectId])]);setMessage("Outline selected and saved. No inference used.");}
     catch(e){setError(e instanceof Error?e.message:"Could not select this outline.");}
     finally{setBusy(false);}
   }
@@ -122,7 +122,11 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   function edit(id: string, fields: Partial<SceneObjectView>) {
     setFuture([]);
     setHistory(prev => [...prev.slice(-19), draft]);
-    setDraft(prev => prev.map(o => o.id === id ? { ...o, ...fields } : o)); setDirty(true); setMessage("");
+    setDraft(prev => prev.map(o => {
+      if(o.id===id)return {...o,...fields};
+      if(o.assemblyRootId===id){const shared=Object.fromEntries(Object.entries(fields).filter(([k])=>["positionX","positionY","positionZ","yaw","scale","visible"].includes(k)));return {...o,...shared};}
+      return o;
+    })); setDirty(true); setMessage("");
   }
   async function save() {
     setBusy(true); setError("");
@@ -237,7 +241,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
               {([ ["positionX", "Left / right", -10, 10, 0.1], ["positionZ", "Forward / back", -10, 10, 0.1], ["positionY", "Height", -2, 5, 0.1], ["yaw", "Rotation", -Math.PI, Math.PI, 0.05], ["scale", "Size", 0.1, 5, 0.1] ] as const).map(([field, label, min, max, step]) => <RangeField key={field} label={label} min={min} max={max} step={step} value={current[field]} precision={2} onChange={value => edit(current.id, { [field]: value })}/>)}
               <label className="visibility-toggle"><span><Eye size={15}/>Show object</span><input className="switch-input" role="switch" type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/></label>
             </fieldset>}
-          </> : panel === "products" ? current?.modelUrl ? <><CatalogControls items={catalogItems} busy={busy} dirty={dirty || lightDirty} canRestore={current.canRestoreOriginal} onSeed={() => catalogAction("SEED")} onReplace={id => catalogAction("REPLACE", id)} onRestore={() => catalogAction("RESTORE")}/><ProductControls object={current} busy={busy} onChange={product => edit(current.id, { product })}/></> : <p>Select an object first.</p> : <AppearanceControls panel={panel} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={busy} texturesBlocked={hasReplacements} applied={data.appearance.applied} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
+          </> : panel === "products" ? current?.modelUrl ? <>{current.assemblyRootId ? <p className="control-hint">This product region shares geometry with its complete subject. Move the complete subject to keep the assembly together. Catalog replacements currently apply to standalone objects.</p> : <CatalogControls items={catalogItems} busy={busy} dirty={dirty || lightDirty} canRestore={current.canRestoreOriginal} onSeed={() => catalogAction("SEED")} onReplace={id => catalogAction("REPLACE", id)} onRestore={() => catalogAction("RESTORE")}/>}<ProductControls object={current} busy={busy} onChange={product => edit(current.id, { product })}/></> : <p>Select an object first.</p> : <AppearanceControls panel={panel} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={busy} texturesBlocked={hasReplacements} applied={data.appearance.applied} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
         </div>
         <div className="inspector-footer"><div className="editor-actions"><button className="button button-light" disabled={!history.length || busy} onClick={() => { setFuture(prev => [...prev, draft]); setDraft(history[history.length - 1]); setHistory(history.slice(0, -1)); setDirty(true); }}><RotateCcw size={14}/>Undo</button><button className="button button-light redo-button" aria-label="Redo object edit" title="Redo object edit" disabled={!future.length || busy} onClick={() => { setHistory(prev => [...prev, draft]); setDraft(future[future.length - 1]); setFuture(future.slice(0, -1)); setDirty(true); }}><Redo2 size={14}/></button><button className="button button-dark" disabled={(!dirty && !lightDirty) || busy} onClick={save}><Save size={14}/>{busy ? "Saving…" : "Save changes"}</button></div>
           <button className="inspector-reload" disabled={busy} onClick={requestReload}><RefreshCw size={12}/>Reload saved scene</button>

@@ -30,6 +30,16 @@ Jim deferred recording/portal work and requested a single broader UX/pipeline co
 
 The clothing correction has 61 passing unit cases, passed CI/build and saved-data/API checks, and a real three-item clothing reconstruction saved privately. Production controls/authorization/recovery smoke checks pass with no further inference. Native browser interaction remains unverified.
 
+## Complete subjects and automatic discovery correction
+
+- [x] Research Objects vs Body/Align and diagnose missing subject, mask-scale rejection and median-floor bugs.
+- [x] Automatic complete subjects plus product relationships; remove count question and arbitrary three-piece selection limit.
+- [x] Reconstruct roots once; derive disjoint product regions with shared geometry/appearance/placement and whole-subject editing.
+- [x] Conservative ground envelope, legacy editor-plane correction and frozen public floor placement.
+- [x] Rescaled-mask handling, automatic shoe-pair union, grouped publication/privacy guards and safe partial fallback.
+- [x] Live full-person experiment/adoption plus 65 tests and reusable saved-data/assembly checks.
+- [ ] One PR/production release and bounded deployed verification.
+
 ## External completion gates
 
 Browser desktop/mobile visual checks and recording need browser access, which is currently disabled. Participant video limits/private portal fields and actual submission need the authenticated portal and final user review. Keep these separate from implemented app functionality. Continue independent work; do not label these gates as passed.

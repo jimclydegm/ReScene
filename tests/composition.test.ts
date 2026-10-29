@@ -24,9 +24,17 @@ describe("SAM 3D scene import", () => {
     expect(large.placement.size[1] / small.placement.size[1]).toBeCloseTo(2);
     expect(large.position[0]).toBeGreaterThan(small.position[0]);
     expect(large.position[2]).toBeGreaterThan(small.position[2]);
-    expect(small.position[1]).toBe(0); expect(large.position[1]).toBe(0);
+    expect(Math.min(small.position[1],large.position[1])).toBe(0); expect(small.position[1]).toBeGreaterThanOrEqual(0);expect(large.position[1]).toBeGreaterThanOrEqual(0);
     expect(result.composition.camera.position[2]).toBeGreaterThan(result.composition.camera.target[2]);
     expect(result.composition.camera.aspect).toBe(1.5);
+  });
+  it("places the floor below shoes when garment support is unknown",()=>{
+    const items=[input("shirt",0,5,1),input("shorts",0,5,1),input("shoes",0,5,1)];
+    items.forEach((o,i)=>{o.support="unknown";(o.metadata as {translation:number[][]}).translation[0][1]=3-i*1.5;});
+    const result=composeRoom(items,{width:100,height:150},environment,"spark");
+    expect(result.objects.find(o=>o.id==="shoes")!.position[1]).toBe(0);
+    expect(result.objects.every(o=>o.position[1]>=0)).toBe(true);
+    expect(result.composition.floorY).toBe(0);
   });
   it("recovers photo framing from a projected cube instead of using a fixed orbit camera", () => {
     const item = input("cube", 0, 5, 1);

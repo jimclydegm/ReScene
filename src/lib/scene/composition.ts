@@ -18,6 +18,7 @@ export const modelPlacementSchema = z.object({
 export type ModelPlacement = z.infer<typeof modelPlacementSchema>;
 export const compositionSchema = z.object({
   version: z.literal("sam3d-room-v1"),
+  floorY:z.number().finite().min(-1000).max(1000).optional(),
   backdrop:z.enum(["room","studio","none"]).optional(),
   camera: z.object({ position: vector, target: vector, fov: z.number().min(20).max(85), aspect: z.number().positive() }),
   room: z.object({ centerX: z.number().finite(), centerZ: z.number().finite(), width: z.number().positive(),
@@ -85,8 +86,9 @@ export function composeRoom(inputs: CompositionInput[], image: { width: number; 
   const level = new Quaternion().setFromUnitVectors(estimatedUp, up);
   const leveled = posed.map(o => ({ ...o, points: o.points.map(p => p.clone().applyQuaternion(level)) }));
   const bounds = new Box3().setFromPoints(leveled.flatMap(o => o.points));
-  const floor = median((supports.length ? leveled.filter(o => o.support === "floor") : leveled)
-    .map(o => Math.min(...o.points.map(p => p.y))));
+  // A median across garment bottoms can bisect the subject. The conservative
+  // lower envelope keeps every reconstructed surface above the floor.
+  const floor = Math.min(...leveled.flatMap(o => o.points.map(p => p.y)));
   const center = bounds.getCenter(new Vector3());
   // ONE conversion for the whole scene. Never normalize each object independently.
   const unit = 5 / Math.max(...bounds.getSize(new Vector3()).toArray(), 0.01);
@@ -122,17 +124,17 @@ export function composeRoom(inputs: CompositionInput[], image: { width: number; 
     const pivot = localBox.getCenter(new Vector3()); pivot.y = localBox.min.y;
     const position = toWorld(o.pose.position).add(pivot);
     // Ground contact correction only for objects the analyzer identifies as floor-supported.
-    if (o.support === "floor") position.y = 0;
+    if (position.y < 1e-8) position.y = 0;
     return { id: o.id, position: position.toArray() as [number, number, number],
       placement: modelPlacementSchema.parse({ version: "sam3d-layout-v1", rotation: rotation.toArray(), scale: scale.toArray(),
         offset: pivot.clone().negate().toArray(), size: localBox.getSize(new Vector3()).toArray() }) };
   });
-  const composition = compositionSchema.parse({ version: "sam3d-room-v1",
+  const composition = compositionSchema.parse({ version: "sam3d-room-v1", floorY:0,
     camera: { position: cameraPosition.toArray(), target: cameraTarget.toArray(), fov, aspect },
     room: { centerX: worldCenter.x, centerZ: worldBounds.min.z - 0.3 + roomDepth / 2, width: Math.max(size.x + 3, 8),
       depth: roomDepth, height: Math.max(size.y * 1.65, 4) },
     environment, environmentSource, projectionError,
-    warnings: ["Room surfaces and lighting are estimated; hidden surfaces are generated.",
+    warnings: ["Scene surfaces and lighting are estimated; the floor is kept below reconstructed geometry.",
       ...(projectionError > 0.12 ? ["The pose and photo disagree. Check the layout against the reference and adjust it."] : [])]
   });
   return { composition, objects };
