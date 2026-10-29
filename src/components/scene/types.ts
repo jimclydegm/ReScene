@@ -10,3 +10,5 @@ export type SceneWorkspace = { id: string; title: string; status: string; revisi
   image: { url: string; width: number; height: number } | null; objects: SceneObjectView[];
   run: { id: string; kind: string; status: string; stage: string | null; progress: number;
     errorCode: string | null; errorMessage: string | null; canResume: boolean } | null };
+
+export type RenderObject = Pick<SceneObjectView, "id" | "label" | "modelUrl" | "positionX" | "positionY" | "positionZ" | "yaw" | "scale" | "visible" | "placement"> & { worldTransform?: import("@/lib/scene/manifest").WorldTransform };

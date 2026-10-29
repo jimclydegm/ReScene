@@ -156,12 +156,12 @@ See [TEXTURE_FIDELITY.md](TEXTURE_FIDELITY.md) for evidence, implementation desi
 
 **Estimate: 4–6 hours, November 1.** Depends on Phase 4.
 
-- [ ] Build manifest serializer and validate the canonical JSON schema plus semantic asset/product checks.
-- [ ] Publish a consistent revision as immutable JSON; store the reachable render-asset allowlist and random slug.
-- [ ] Build anonymous shared viewer/product sheet using shared rendering components.
-- [ ] Resolve only snapshot assets to short-lived signed GET URLs; support refresh without draft/raw-media exposure.
-- [ ] Add revoke/archival behavior, noindex/no-store/referrer settings, and safe external product links.
-- [ ] Verify later draft edits/replacements do not change the publication or break old asset references.
+- [x] Build manifest serializer and validate the canonical JSON schema plus semantic asset/product checks.
+- [x] Publish a consistent revision as immutable JSON; store the reachable render-asset allowlist and random slug.
+- [x] Build anonymous shared viewer/product sheet using shared rendering components.
+- [x] Resolve only snapshot assets to short-lived signed GET URLs; support refresh without draft/raw-media exposure.
+- [x] Add revoke/archival behavior, noindex/no-store/referrer settings, and safe external product links.
+- [x] Verify later draft edits/replacements do not change the publication or break old asset references.
 - [ ] Run two-account authorization checks for all fetch, mutate, publish, sign, run, and replacement paths.
 - [ ] Test job failure/partial success, no matches, stale upload signature, interrupted dispatch, known-provider-job retry, and uncertain submission handling.
 - [ ] Test real GLB downloads/CORS on production-like storage; test mobile selection and a WebGL fallback.
@@ -178,7 +178,7 @@ See [TEXTURE_FIDELITY.md](TEXTURE_FIDELITY.md) for evidence, implementation desi
 - [ ] Fix blocking defects before visual polish; freeze scope. Voice/embeds/extra samples remain optional.
 - [ ] Save a fully generated reference scene and confirm it works independently of model availability.
 - [ ] Polish empty/loading/error states, responsive layout, product-card clarity, and approximate-preview wording.
-- [ ] Add actual setup/run/deployment instructions and model/asset attribution to README; no secrets or private images in git.
+- [x] Add actual setup/run/deployment instructions and model/asset attribution to README; no secrets or private images in git.
 - [ ] Record the demo at the participant-required length and prepare screenshots, project description, architecture explanation, source link, and live URL.
 - [ ] Verify the correct track, required model evidence, licenses, final deadline, and submission fields against the participant portal.
 - [ ] Submit through the participant process when authorized; retain the working deployment through judging.
@@ -284,3 +284,18 @@ Phase 4B is implemented below. Phase 5 publication remains unimplemented.
 - [ ] Desktop/mobile replacement interaction checks when browser access is available.
 
 Next implementation phase: Phase 5 immutable publication and anonymous shopper viewer. Catalog assets are illustrative demos; exact measurements and real product identity are not inferred.
+
+## Phase 5 implementation / Phase 6 preparation (October 29)
+
+- [x] Strict canonical v2 manifest, semantic reference validation and full draft × imported transform flattening.
+- [x] Immutable JSON, SHA validation, exact render asset allowlist, idempotent revision publication and random 192-bit unlisted slug.
+- [x] Anonymous shopper renderer/product cards; no editor/photo/mask/raw/provenance data.
+- [x] Owner confirmation/list/copy/open/revoke controls, archival and restart invalidation, no-store/noindex/referrer protection, asset URL refresh.
+- [x] 47 tests, lint/typecheck/build and local snapshot isolation/auth/asset/CORS/revoke/lifecycle checks.
+- [x] Fresh live Meta analysis + two-object reconstruction reaches READY for the release run.
+- [x] README/setup accuracy, attribution and demo/submission draft prepared in docs/release/DEMO.md.
+- [ ] Deployed publication + complete fresh author-to-shopper verification; record final report in TESTING.md.
+- [ ] Browser desktop/mobile visual quality, selection/dialog/clipboard and actual frame performance (access disabled).
+- [ ] Record demo/screenshots; verify private portal track/fields/video limit and final requirements; review/submit when authorized.
+
+Phase 6 remains incomplete until the visual/demo/participant gates pass. Source photos remain private; publishing Jim's existing sample requires his explicit Publish confirmation in the app.

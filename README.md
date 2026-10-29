@@ -13,10 +13,13 @@ ReScene is Jim's prototype for Meta's Global AI Developer Hackathon. The first d
 - Private scene dashboard, persistence, ownership checks, and revision-aware updates.
 - Private R2 uploads, image validation/normalization, and immutable source/preview storage.
 - Meta object detection and mask review, durable hosted SAM 3D generation, and an editable mesh viewer.
-- Move, rotate, resize, hide, undo, and save/reload generated objects.
+- Move, rotate, resize, hide, undo/redo, precise numeric controls, and save/reload generated objects.
+- Merchant product cards, private object thumbnails, an original demo replacement catalog and original-object restore.
+- Photo-detail texture transfer, estimated room composition, editable main/fill/ambient lighting.
+- Confirmed unlisted publication, frozen read-only shopper viewer, revocable links and render-only asset allowlists.
 - Eight-model Prisma schema/migration, server-only Meta/fal adapters, and GitHub CI.
 
-The local and deployed upload→analysis→masks→three meshes→saved edits API flow passes. Browser controls and rendered appearance still need visual QA because browser access is disabled in Work settings. Merchant product editing, replacements, and publishing remain later phases. See [testing instructions](docs/TESTING.md) and [setup](docs/SETUP.md).
+The local and deployed upload→analysis→masks→three meshes→saved edits API flow passes. Browser controls and rendered appearance still need visual QA because browser access is disabled in Work settings. Product editing, replacements and immutable sharing are implemented. Browser interaction QA, the final demo recording and authenticated participant-portal submission remain release gates. See [testing instructions](docs/TESTING.md) and [setup](docs/SETUP.md).
 
 ## Development
 
@@ -40,7 +43,7 @@ Read [the short handoff](docs/CONTEXT.md) first. Open other files only for the t
 | [Data model](docs/DATA_MODEL.md) | Entity relationships, ownership, invariants, JSON contracts, and migrations |
 | [Prisma schema](prisma/schema.prisma) | Applied eight-model application database schema |
 | [SQL constraints](prisma/constraints.sql) | Reference for constraints included in the initial migration |
-| [Scene manifest schema](contracts/scene-manifest.schema.json) | Versioned viewer/publication data contract |
+| [Scene manifest v2 schema](contracts/scene-manifest-v2.schema.json) | Implemented frozen viewer/publication contract (v1 retained as historical design) |
 | [Example manifest](contracts/examples/scene-manifest.json) | Synthetic contract example; not a generated scene |
 | [Roadmap](docs/ROADMAP.md) | Ordered implementation phases, dates, acceptance checks, and cut lines |
 | [Next steps](docs/NEXT_STEPS.md) | Immediate Meta feasibility experiment, evidence, and next implementation slices |
@@ -52,4 +55,10 @@ Read [the short handoff](docs/CONTEXT.md) first. Open other files only for the t
 
 Next.js / TypeScript on Vercel; React Three Fiber / Three.js for the viewer; Neon Postgres with Prisma; Neon Auth (Managed Better Auth); Cloudflare R2 for media; Meta Model API for Muse Spark and SAM 3.1; hosted Meta SAM 3D Objects for reconstruction. GitHub holds code, CI, and planning context.
 
-The live fal test returned independent textured GLBs from Meta SAM 3D Objects. Objects use approximate manual stage placement; faithful automatic room layout remains unverified.
+The live fal test returned independent textured GLBs from Meta SAM 3D Objects. Saved SAM poses provide approximate relative placement and room framing. Visible source texture detail can be baked onto the meshes, while hidden surfaces remain inferred. This is not a dimensionally accurate scan.
+
+## Publish and test
+
+Save a ready scene, scroll to **Publish snapshot**, and review the confirmation. Anyone with the unlisted link can view/download the approved meshes, room textures, product thumbnails and merchant fields. The full source photo, masks and provider records stay private. Subsequent draft edits do not change the snapshot; publish again to share a new saved revision. Revoke stops new viewer access, while previously signed asset links can work for up to 15 minutes and downloaded copies cannot be recalled.
+
+Tests: `npm test` (47 focused cases), plus the explicit QA runners in TESTING.md. `scripts/smoke-release.mjs prepare` and `reconstruct` submit paid inference and require explicit use; status/report commands do not. Release/demo preparation is in [DEMO.md](docs/release/DEMO.md).

@@ -6,9 +6,9 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSPr
 import type { OrbitControls as OrbitControlsType } from "three-stdlib";
 import type { SceneComposition } from "@/lib/scene/composition";
 import type { Lighting } from "@/lib/scene/lighting";
-import type { SceneObjectView, SceneWorkspace } from "./types";
+import type { RenderObject, SceneWorkspace } from "./types";
 
-function Model({ object, selected, select }: { object: SceneObjectView; selected: boolean; select: () => void }) {
+function Model({ object, selected, select }: { object: RenderObject; selected: boolean; select: () => void }) {
   const gltf = useGLTF(object.modelUrl!);
   const model = useMemo(() => {
     const cloned = gltf.scene.clone(true);
@@ -37,13 +37,14 @@ function Model({ object, selected, select }: { object: SceneObjectView; selected
   useEffect(() => () => { model.ownedMaterials.forEach(material => material.dispose()); }, [model]);
   if (!object.visible) return null;
   const base = object.placement;
+  const world = object.worldTransform;
   const radius = base ? Math.max(base.size[0], base.size[2]) * 0.58 : 0.85;
-  return <group position={[object.positionX, object.positionY, object.positionZ]} rotation={[0, object.yaw, 0]} scale={object.scale}
+  return <group position={world?.position ?? [object.positionX, object.positionY, object.positionZ]} rotation={world ? undefined : [0, object.yaw, 0]} quaternion={world?.rotation} scale={world?.scale ?? object.scale}
     onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); select(); }}>
-    <group position={base?.offset ?? model.offset}>
-      <primitive object={model.cloned} quaternion={base?.rotation ?? [0, 0, 0, 1]} scale={base?.scale ?? model.factor}/>
+    <group position={world ? [0,0,0] : base?.offset ?? model.offset}>
+      <primitive object={model.cloned} quaternion={world ? [0,0,0,1] : base?.rotation ?? [0, 0, 0, 1]} scale={world ? 1 : base?.scale ?? model.factor}/>
     </group>
-    {selected && <mesh position={[0, 0.018, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[radius, radius + 0.025, 64]}/><meshBasicMaterial color="#42785c" depthWrite={false}/></mesh>}
+    {selected && !world && <mesh position={[0, 0.018, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[radius, radius + 0.025, 64]}/><meshBasicMaterial color="#42785c" depthWrite={false}/></mesh>}
   </group>;
 }
 function SurfaceMaterial({ url, color, repeat, roughness = 0.9 }: { url: string | null; color: string; repeat: [number, number]; roughness?: number }) {
@@ -74,7 +75,8 @@ function Room({ composition, appearance }: { composition: SceneComposition; appe
     </mesh>)}
   </group>;
 }
-export default function ModelCanvas({ objects, selected, onSelect, composition, lighting, appearance }: { objects: SceneObjectView[]; selected: string; onSelect: (id: string) => void; composition: SceneComposition | null; lighting: Lighting; appearance: SceneWorkspace["appearance"] }) {
+export default function ModelCanvas({ objects, selected, onSelect, composition, lighting, appearance }: { objects: RenderObject[]; selected: string; onSelect: (id: string) => void; composition: SceneComposition | null; lighting: Lighting; appearance: SceneWorkspace["appearance"] }) {
+  const readOnly = objects.some(o => Boolean(o.worldTransform));
   const controls = useRef<OrbitControlsType>(null);
   const bindControls = useCallback((value: OrbitControlsType | null) => {
     controls.current = value;
@@ -88,7 +90,7 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
   const target = c?.target ?? [0, 0.5, 0] as [number, number, number];
   return <div className="model-viewport" style={{ "--scene-aspect": c?.aspect ?? 1.5 } as CSSProperties}>
     <Canvas shadows camera={{ position: c?.position ?? [5, 4, 7], fov: c?.fov ?? 42, near: 0.01, far: 200 }} dpr={[1, 1.5]}
-      fallback={<p className="canvas-loading">WebGL is unavailable in this browser. Your saved scene is safe.</p>}>
+      fallback={<p className="canvas-loading">WebGL is unavailable in this browser. You can still browse the scene details.</p>}>
       <color attach="background" args={[composition?.environment.wallColor ?? "#edece5"]}/>
       <hemisphereLight args={["#fffaf0", composition?.environment.floorColor ?? "#b1a38d", lighting.ambient]}/>
       <directionalLight position={lighting.key.position} intensity={lighting.key.intensity} color={lightingColor} castShadow
@@ -100,8 +102,8 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
       <OrbitControls ref={bindControls} makeDefault target={target} minDistance={0.3}
         maxDistance={Math.max(40, c ? new Vector3(...c.position).distanceTo(new Vector3(...c.target)) * 2 : 40)} maxPolarAngle={Math.PI / 2 - 0.01}/>
     </Canvas>
-    <div className="viewer-toolbar"><button onClick={() => controls.current?.reset()}>{composition ? "Photo view" : "Reset camera"}</button>
-      {composition && <button aria-pressed={grid} onClick={() => setGrid(value => !value)}>{grid ? "Hide grid" : "Show grid"}</button>}</div>
+    <div className="viewer-toolbar"><button onClick={() => controls.current?.reset()}>{readOnly ? "Reset view" : composition ? "Photo view" : "Reset camera"}</button>
+      {composition && !readOnly && <button aria-pressed={grid} onClick={() => setGrid(value => !value)}>{grid ? "Hide grid" : "Show grid"}</button>}</div>
     <span className="viewer-help">Drag to orbit · right-drag to pan · scroll to zoom</span>
   </div>;
 }
