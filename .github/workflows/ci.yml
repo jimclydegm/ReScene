@@ -1,7 +1,11 @@
 name: CI
 on:
   push:
+    branches: [main]
   pull_request:
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
@@ -9,13 +13,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+      - name: Detect verification scope
+        id: scope
+        env:
+          CHANGE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: node scripts/ci-scope.mjs
       - run: npm ci
-      - run: npm run db:validate
-      - run: npm run lint
-      - run: npm test
-      - run: npm run build
-      - run: npm run typecheck
+        if: steps.scope.outputs.suite == 'true'
+      - run: npm run check
+        if: steps.scope.outputs.suite == 'true'

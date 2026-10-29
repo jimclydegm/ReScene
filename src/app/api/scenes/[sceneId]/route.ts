@@ -19,13 +19,15 @@ export const PATCH = (request: Request, context: Context) => api(async () => {
   checkOrigin(request);
   const user = await requireUser();
   const { sceneId } = await context.params;
-  const scene = await ownedScene(sceneId, user.id);
-  const { expectedRevision, ...changes } = updateSceneSchema.parse(await readJson(request));
-  if (["ANALYZING", "RECONSTRUCTING"].includes(scene.status)) throw new AppError(409, "SCENE_BUSY", "Wait for the current operation to finish.");
-  const updated = await getDb().scene.updateMany({
-    where: { id: sceneId, ownerId: user.id, revision: expectedRevision, archivedAt: null, status: { notIn: ["ANALYZING", "RECONSTRUCTING"] } },
-    data: { ...changes, revision: { increment: 1 } }
-  });
-  if (!updated.count) throw new AppError(409, "REVISION_CONFLICT", "This scene changed in another window. Reload it before saving.");
-  return Response.json({ scene: sceneSummary(await ownedScene(sceneId, user.id)) });
+  await ownedScene(sceneId,user.id);
+  const {expectedRevision,...changes}=updateSceneSchema.parse(await readJson(request));
+  await getDb().$transaction(async tx=>{
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(839172640)`;
+    const scene=await tx.scene.findFirst({where:{id:sceneId,ownerId:user.id,archivedAt:null}});
+    if(!scene)throw new AppError(404,"NOT_FOUND","Scene not found.");
+    if(["ANALYZING","RECONSTRUCTING"].includes(scene.status))throw new AppError(409,"SCENE_BUSY","Wait for the current operation to finish.");
+    const updated=await tx.scene.updateMany({where:{id:sceneId,ownerId:user.id,revision:expectedRevision,archivedAt:null,status:{notIn:["ANALYZING","RECONSTRUCTING"]}},data:{...changes,revision:{increment:1}}});
+    if(!updated.count)throw new AppError(409,"REVISION_CONFLICT","This scene changed in another window. Reload it before saving.");
+  },{timeout:20000});
+  return Response.json({scene:sceneSummary(await ownedScene(sceneId,user.id))});
 });

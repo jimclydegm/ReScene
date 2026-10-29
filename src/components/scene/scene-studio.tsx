@@ -7,6 +7,8 @@ import { Scan, Box, Check, LoaderCircle, Save, RotateCcw, Palette, Lightbulb, Re
 import { apiJson } from "@/lib/client-api";
 import type { SceneWorkspace, SceneObjectView } from "./types";
 import { RangeField } from "@/components/ui/range-field";
+import { ProjectDetails } from "./project-details";
+import { UnsavedNavigation } from "./unsaved-navigation";
 import { PublicationControls } from "./publication-controls";
 import { CatalogControls, type CatalogItem } from "./catalog-controls";
 import { ProductControls } from "./product-controls";
@@ -24,8 +26,10 @@ class ViewerBoundary extends Component<{ children: ReactNode }, { failed: boolea
 }
 export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const router = useRouter();
+  const discardDialog = useRef<HTMLDialogElement>(null);
   const restartDialog = useRef<HTMLDialogElement>(null);
   const [restartTarget, setRestartTarget] = useState<RestartTarget>("ANALYSIS");
+  const [viewerRetry,setViewerRetry]=useState(0);
   const [data, setData] = useState(initial);
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
   const [panel, setPanel] = useState<"objects" | "textures" | "lighting" | "products">("objects");
@@ -137,6 +141,8 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     } catch (e) { setError(e instanceof Error ? e.message : "Appearance could not be saved."); }
     finally { setBusy(false); }
   }
+  async function reloadSaved(){setBusy(true);setError("");try{await reload();setViewerRetry(v=>v+1);discardDialog.current?.close();setMessage("Saved scene reloaded.");}catch(e){setError(e instanceof Error?e.message:"Could not reload.");}finally{setBusy(false);}}
+  function requestReload(){if(dirty||lightDirty)discardDialog.current?.showModal();else void reloadSaved();}
   function editLights(value: Lighting) { setLights(value); setLightDirty(true); }
   function askRestart(target: RestartTarget) {
     setRestartTarget(target);
@@ -168,8 +174,11 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     ANALYSIS: { title: "Analyze this photo again?", detail: "This keeps your photo and clears the object analysis, outlines, 3D models, room layout, and saved edits. You can then run Find objects again.", confirm: "Clear results and analyze again" },
     RECONSTRUCTION: { title: "Return to object review?", detail: "This keeps your photo and object outlines, and clears all 3D models, room layout, and saved edits. Select the objects you want and build them again.", confirm: "Clear 3D and review objects" }
   }[restartTarget];
-  if (!data.image) return <UploadForm scene={{ id: data.id, title: data.title, revision: data.revision }}/>;
+  if (!data.image) return <UploadForm key={data.revision} scene={{ id: data.id, title: data.title, revision: data.revision }}/>;
   return <div className="generation-studio">
+    <UnsavedNavigation dirty={dirty||lightDirty}/>
+    <div className="scene-quick-actions"><ProjectDetails id={data.id} title={data.title} description={data.description} revision={data.revision} disabled={busy||running||dirty||lightDirty} onSaved={async()=>{await reload();router.refresh();}}/>{ready&&<a href="#publish-scene" className="button button-dark">Publish & share</a>}<span>{dirty||lightDirty?"Unsaved changes":"All changes saved"}</span></div>
+    <dialog ref={discardDialog} className="restart-dialog" aria-labelledby="discard-scene-title" onCancel={e=>{if(busy)e.preventDefault();}}><h2 id="discard-scene-title">Discard unsaved changes?</h2><p>This reloads the latest saved scene, including changes from another window. Your unsaved object, product and lighting edits will be discarded.</p><div className="editor-actions"><button className="button button-light" disabled={busy} autoFocus onClick={()=>discardDialog.current?.close()}>Keep editing</button><button className="button button-dark" disabled={busy} onClick={reloadSaved}>{busy?"Reloading…":"Discard and reload"}</button></div></dialog>
     {data.image && <div className="studio-reference-bar"><div><span className="eyebrow">SCENE STUDIO</span><p>{ready ? "Compare your scene with the original photo." : "Your photo is the reference for this scene."}</p></div><ReferencePhoto image={data.image} title={data.title}/></div>}
     <nav className="generation-steps" aria-label="Scene steps"><button className="done" disabled={busy || running} onClick={() => askRestart("PHOTO")}><Check size={14}/>1 · Photo</button>
       <button className={data.objects.length ? "done" : ""} disabled={busy || running || !hasMasks || data.status === "REVIEW"} aria-current={!ready ? "step" : undefined} onClick={() => askRestart("RECONSTRUCTION")}>2 · Review objects</button>
@@ -188,7 +197,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     {message && <p role="status" className="save-message">{message}</p>}
     {data.run?.errorMessage && <div className="generation-error"><p>{data.run.errorMessage}</p>{data.run.canResume && <button className="button button-dark" disabled={busy} onClick={resume}>Resume existing generation</button>}</div>}
     {running && <div className="generation-progress" role="status"><LoaderCircle className="spin" size={20}/><div><strong>{data.run?.stage}</strong><p>You can close this page. Your progress is saved.</p><progress value={data.run?.progress} max={100}/></div>{data.run?.canResume && <button className="button button-light" onClick={resume} disabled={busy}>Resume</button>}</div>}
-    {ready ? <div className="editor-layout"><div className="editor-canvas-column"><ViewerBoundary key={data.revision}><ModelCanvas objects={draft} selected={selected} onSelect={setSelected} composition={data.composition} lighting={lights} appearance={data.appearance}/></ViewerBoundary>
+    {ready ? <div className="editor-layout"><div className="editor-canvas-column"><ViewerBoundary key={`${data.revision}:${viewerRetry}`}><ModelCanvas objects={draft} selected={selected} onSelect={setSelected} composition={data.composition} lighting={lights} appearance={data.appearance}/></ViewerBoundary>
       <div className="scene-layout-tools"><div><strong>{data.composition ? "Photo layout · estimated room" : "Manual stage · photo layout available"}</strong><p>{data.composition ? "Relative size, orientation, depth, and camera use the saved SAM 3D estimates. Room surfaces and lighting are approximate." : "Apply the saved AI poses to restore relative sizes, depth, orientation, and a matching camera. No new generation needed."}</p></div>
         <button className="button button-light" disabled={busy || dirty || lightDirty || hasReplacements} onClick={() => matchLayout("MATCH_PHOTO")}>{busy ? "Working…" : "Match photo layout"}</button>
         {data.canRestoreLayout && <button className="text-link" disabled={busy || dirty || lightDirty || hasReplacements} onClick={() => matchLayout("RESTORE")}>Undo photo layout</button>}
@@ -211,7 +220,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
           </> : panel === "products" ? current?.modelUrl ? <><CatalogControls items={catalogItems} busy={busy} dirty={dirty || lightDirty} canRestore={current.canRestoreOriginal} onSeed={() => catalogAction("SEED")} onReplace={id => catalogAction("REPLACE", id)} onRestore={() => catalogAction("RESTORE")}/><ProductControls object={current} busy={busy} onChange={product => edit(current.id, { product })}/></> : <p>Select an object first.</p> : <AppearanceControls panel={panel} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={busy} texturesBlocked={hasReplacements} applied={data.appearance.applied} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
         </div>
         <div className="inspector-footer"><div className="editor-actions"><button className="button button-light" disabled={!history.length || busy} onClick={() => { setFuture(prev => [...prev, draft]); setDraft(history[history.length - 1]); setHistory(history.slice(0, -1)); setDirty(true); }}><RotateCcw size={14}/>Undo</button><button className="button button-light redo-button" aria-label="Redo object edit" title="Redo object edit" disabled={!future.length || busy} onClick={() => { setHistory(prev => [...prev, draft]); setDraft(future[future.length - 1]); setFuture(future.slice(0, -1)); setDirty(true); }}><Redo2 size={14}/></button><button className="button button-dark" disabled={(!dirty && !lightDirty) || busy} onClick={save}><Save size={14}/>{busy ? "Saving…" : "Save changes"}</button></div>
-          <button className="inspector-reload" disabled={busy || dirty || lightDirty} onClick={() => void reload().catch(() => setError("Could not reload."))}><RefreshCw size={12}/>Reload saved scene</button>
+          <button className="inspector-reload" disabled={busy} onClick={requestReload}><RefreshCw size={12}/>Reload saved scene</button>
         </div>
       </aside></div> : <div className="analysis-layout"><div className="review-photo">{data.image && <Image src={data.image.url} alt={data.title} width={data.image.width} height={data.image.height} unoptimized/>}{data.objects.filter(o => chosen.includes(o.id) && o.maskUrl).map(o => <Image key={o.id} className="mask-overlay" src={o.maskUrl!} alt={`${o.label} outline`} fill unoptimized/>)}</div>
       <aside className="object-inspector"><span className="eyebrow">TURN THE PHOTO INTO A SCENE</span><h2>{data.objects.length ? "Choose your objects." : "Find what’s in the room."}</h2>

@@ -17,3 +17,9 @@ export function dashboardProgress(scene: {
   const next = scene.status === "READY" ? "Edit your scene" : scene.status === "FAILED" ? "Open scene to continue" : activeRun?.currentStage ?? (running ? "Generation in progress" : scene.status === "REVIEW" ? "Choose objects to build" : scene.normalizedAssetId ? "Next: find objects" : "Next: upload a photo");
   return { completed, label, next, running, attention: scene.status === "FAILED", runProgress: activeRun ? Math.max(0, Math.min(100, activeRun.progress)) : null };
 }
+export function dashboardQuery(query:{q?:string|string[];view?:string|string[];filter?:string|string[]}){
+ const q=typeof query.q==="string"?query.q.trim().slice(0,100):"";
+ const archived=query.view==="archived";
+ const filter=!archived&&typeof query.filter==="string"&&["READY","GENERATING","FAILED","PUBLISHED"].includes(query.filter)?query.filter:"ALL";
+ return {q,archived,filter};
+}
