@@ -31,6 +31,12 @@ Jim is building ReScene for Meta's Global AI Developer Hackathon: one private ro
 
 Browser access is now working. Desktop confirmation/cancel, 390px confirmation/reference dialogs, and the saved three-object composition/selection/hide/reload are visually checked. SAM GLBs omitted metallicFactor (glTF defaults to metal); the preview now uses dielectric materials only when that field/map is unspecified. Explicit metal settings are preserved. Mobile verification found a canvas intrinsic-width overflow; CSS now uses a minmax(0,1fr) track and shrinkable viewport/inspector. Detailed floor textures, windows, wall geometry, lighting recovery, and real-photo quality remain incomplete. Product cards, catalog replacement, immutable publication, and anonymous viewer are next implementation phases. Follow NEXT_STEPS.md.
 
+## Texture fidelity research (latest request)
+
+Jim reports poor photo resemblance. Read-only audit of five objects in two saved non-QA bedrooms confirms embedded 1024×1024 PNGs, UVs and baseColorTexture bindings; textured export is already on. Meta's exporter bakes generated appearance, not a direct original-pixel transfer at export. Hosted schema exposes no texture resolution/reprojection setting. No new inference/application change was made for this research.
+
+Phase 3.6 now explicitly proposes texture audit/unlit comparison → one-object source-photo projection using initial poses/camera plus mask/depth/visibility gates → bake accepted visible detail into a new GLB, keeping SAM textures for unseen regions. Alignment/occlusion/lighting errors limit fidelity. Do not expose the full private source image to an anonymous viewer as a projection texture. Room surfaces remain a separate pending gate. See TEXTURE_FIDELITY.md; projection/baking is not implemented or quality-validated.
+
 ## Spending and open dependencies
 
 Jim explicitly requested **removing the cumulative app cap and continuing live testing** on October 29 after reporting $149.91 remaining Meta credits. This supersedes the earlier $10 development cap. `GENERATION_BUDGET_USD` and its guard are removed locally/Vercel; usage estimates/history stay recorded, provider balances/limits still apply, and fal is billed separately. Keep idempotency, one-active-user limits, and no automatic paid retries. Do not run unrelated bulk inference. The private billing URL was not accessible through public retrieval; the balance is Jim's reported value.
@@ -39,4 +45,4 @@ Actual Google consent is unverified (Neon development provider configured). Veri
 
 ## Task documents
 
-PLAN.md: product scope; META_MODELS.md: model/pose evidence; ARCHITECTURE.md: services/pipeline; DATA_MODEL.md + Prisma: storage/coordinates; ROADMAP.md: phases; TESTING.md: runnable checks; SETUP.md: provisioned resources.
+TEXTURE_FIDELITY.md: latest appearance research; PLAN.md: product scope; META_MODELS.md: model/pose evidence; ARCHITECTURE.md: services/pipeline; DATA_MODEL.md + Prisma: storage/coordinates; ROADMAP.md: phases; TESTING.md: runnable checks; SETUP.md: provisioned resources.

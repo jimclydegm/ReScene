@@ -210,3 +210,12 @@ After Jim removed the app cap on October 29, `room-and-objects-v2` passed on pro
 Browser access is now enabled. Saved three-object poses are upright with relative sizes/depth and floor contact; object selection/hide/reload and mobile reference/confirmation dialogs were inspected. SAM exported materials omit metallicFactor, whose glTF default is 1. The preview clones and defaults unspecified generated materials to a dielectric surface (metalness=0), preserving explicit factors/maps. This corrects blackened wood/fabric without changing stored GLBs. Full room textures, precise wall boundaries, windows, physical lighting, and real-photo quality remain gaps.
 
 The earlier $10/$7.50 reservation caps are historical: Jim explicitly removed the cumulative app limit and authorized further focused testing. Provider balances/limits and separate fal billing still apply; recorded request/usage history is retained.
+
+
+## Texture fidelity investigation — October 29
+
+ReScene already sends export_textured_glb=true. Read-only inspection of five saved objects across two non-QA bedroom scenes confirmed embedded 1024×1024 PNGs, TEXCOORD_0 and baseColorTexture bindings; no vertex colors. The viewer retains those maps when cloning materials. Texture presence is verified; exact photo likeness is not.
+
+The [fal schema](https://fal.ai/models/fal-ai/sam-3/3d-objects/api) exposes textured export but no texture-resolution/source-projection setting. Meta's [exporter](https://github.com/facebookresearch/sam-3d-objects/blob/main/sam3d_objects/model/backbone/tdfy_dit/utils/postprocessing_utils.py) bakes renders of its generated appearance representation; the [pipeline call](https://github.com/facebookresearch/sam-3d-objects/blob/main/sam3d_objects/pipeline/inference_pipeline.py) specifies 1024 texture size. This does not directly copy observed source pixels at export or guarantee recovered grain/weave. Larger atlases alone do not restore absent details. Muse Image is documented for 2D reference/editing, not a mesh UV-baking endpoint.
+
+The proposed source-photo projection and UV bake are separate graphics work using Meta geometry/masks, with visibility/occlusion/camera checks and SAM appearance on unseen surfaces. It is not implemented or validated. [TEXTURE_FIDELITY.md](TEXTURE_FIDELITY.md) records the recommended experiment and privacy/persistence constraints. No paid requests were made during this investigation.

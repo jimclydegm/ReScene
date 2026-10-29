@@ -165,3 +165,8 @@ Jim requested a complete browser-testable core and approved $10 total developmen
 ## Step restarts — October 29 request
 
 Earlier steps must be reachable within an existing scene. Change photo returns to upload and clears all later results. Analyze again keeps the source photo and clears candidates, masks, meshes and edits. Return to review/Rebuild 3D retains the photo and masks but clears models, room/camera and saved edits. Each destructive navigation shows a confirmation listing lost results and credit consequences, with Keep current scene as the initial focus. Clearing is explicit; it does not automatically submit a paid job. Active generations must finish first. Historical usage and provider request records remain; discarded assets are logically deleted and no longer signed, without changing R2 lifecycle rules.
+
+
+## Texture-fidelity clarification — October 29
+
+Textured SAM GLBs are already requested and stored, but generated appearance alone does not meet Jim's photo-likeness expectation. Add the explicit Phase 3.6 quality gate in ROADMAP.md before merchandise/publication: diagnose stored texture versus display fidelity, test source-photo detail projection on visible mesh surfaces, then bake a successful result into a private validated GLB. Preserve generated hidden surfaces and original fallback assets. Background plane textures remain a separate room-quality gate. See [TEXTURE_FIDELITY.md](TEXTURE_FIDELITY.md); this is proposed engineering work, not a new verified Meta API feature or completed implementation.

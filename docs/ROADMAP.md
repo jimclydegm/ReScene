@@ -125,6 +125,19 @@ Time-box the first quality pass after visual comparison; keep the November 2 fre
 
 A one-photo approximation may be enough for the hackathon, but floor-texture/window fidelity, true dimensions, and unseen geometry must not be marked complete merely because mesh generation works. Read META_MODELS.md for current evidence; no extra inference is authorized by this checklist.
 
+## Phase 3.6 — Object texture fidelity (research added October 29)
+
+See [TEXTURE_FIDELITY.md](TEXTURE_FIDELITY.md) for evidence, implementation design, privacy constraints and acceptance gates. This quality work precedes the product/sharing phase; it is not complete.
+
+- [x] Verify current textured-GLB request and actual saved assets. Five inspected bedroom objects contain 1024×1024 maps, UVs and base-color bindings.
+- [x] Research Meta export behavior, hosted controls and Muse Image's role. Source-photo detail transfer is a separate graphics step; generated texture export is already enabled.
+- [ ] Add a focused texture audit/unlit comparison and identify model-detail loss versus renderer/lighting errors on the simple input.
+- [ ] Prototype mask/depth-gated source-photo projection on one object's visible surfaces, preserving SAM appearance elsewhere. Verify camera/geometry alignment and texture attachment during edits.
+- [ ] Bake a passing result into a new embedded-texture GLB, persist with revision/provenance checks and retain the original fallback.
+- [ ] Validate saved/exported appearance and anonymous-viewer privacy without delivering the full source photo.
+
+**Pass:** observed cabinet grain/fabric detail resembles the reference better, does not slide or pick up background pixels when edited, and persists without raw-photo exposure. Unseen surfaces and physical material properties remain inferred.
+
 ## Phase 4 — Editable and shoppable draft
 
 **Estimate: 5–7 hours, October 31.** Depends on Phase 3.
