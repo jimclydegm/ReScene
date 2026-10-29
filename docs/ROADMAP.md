@@ -272,7 +272,7 @@ This is a presentation/query change; no inference or schema migration is needed.
 - [x] 39 tests, PR CI and local/production QA-clone persistence/thumbnail/geometry/auth checks pass. PR #7 merged and deployed.
 - [ ] Browser interaction/visual checks once access is available.
 
-Phase 4B: original rights-cleared replacement catalog and transactional mesh/product replacement remain unimplemented. Phase 5 publication remains unimplemented.
+Phase 4B is implemented below. Phase 5 publication remains unimplemented.
 
 ## Phase 4B — catalog replacements (October 29)
 
@@ -280,7 +280,7 @@ Phase 4B: original rights-cleared replacement catalog and transactional mesh/pro
 - [x] Trusted per-scene seed script and owner-only seed action; sample scene seeded.
 - [x] Atomic same-scene mesh/product/baseline swap, cloned merchant card, original backup and persistent restore.
 - [x] Uniform size fitting / bottom-center pivot, preserved placement edits, photo-operation compatibility guards and editable lighting.
-- [x] Pure geometry/bounds tests (42 total tests) and production build/typecheck; integration validation recorded in TESTING.md.
+- [x] Pure geometry/bounds tests (42 total tests), lint/build/typecheck/PR CI, and local + production disposable-copy integration pass. PR #8 merged and production deployed; see TESTING.md.
 - [ ] Desktop/mobile replacement interaction checks when browser access is available.
 
 Next implementation phase: Phase 5 immutable publication and anonymous shopper viewer. Catalog assets are illustrative demos; exact measurements and real product identity are not inferred.
