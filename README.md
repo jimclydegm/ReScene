@@ -16,7 +16,7 @@ ReScene is Jim's prototype for Meta's Global AI Developer Hackathon. The first d
 - Move, rotate, resize, hide, undo, and save/reload generated objects.
 - Eight-model Prisma schema/migration, server-only Meta/fal adapters, and GitHub CI.
 
-The local upload→analysis→masks→three meshes→saved edits API flow passes. Deployed generation verification and browser controls QA are in progress. Merchant product editing, replacements, and publishing remain later phases. See [testing instructions](docs/TESTING.md) and [setup](docs/SETUP.md).
+The local and deployed upload→analysis→masks→three meshes→saved edits API flow passes. Browser controls and rendered appearance still need visual QA because browser access is disabled in Work settings. Merchant product editing, replacements, and publishing remain later phases. See [testing instructions](docs/TESTING.md) and [setup](docs/SETUP.md).
 
 ## Development
 

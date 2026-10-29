@@ -152,3 +152,8 @@ Phase 0 needs Meta access, a reconstruction credential, and participant rules. P
 | Oct 29 | Verify rotated R2 credentials, private bucket, browser CORS, normalization, and immutable input on the live app | Nine storage checks and browser upload/refresh pass |
 | Oct 29 | Leave automatic staging deletion disabled at Jim's request | No object-expiration rule enabled; setup script preserves lifecycle |
 | Oct 29 | Reuse supplied Neon branch/Auth and R2 prototype namespace initially | Implemented; environment separation remains future work |
+
+
+### October 29 implementation update
+
+Jim requested a complete browser-testable core and approved $10 total development inference. The app now implements private upload, Spark/SAM analysis and mask review, durable fal SAM 3D generation, object selection/transform/hide/undo controls, and revision-aware saved edits. Local and production API flows produced three real meshes and passed persistence and ownership checks. Browser visual QA remains blocked by Work settings. Product cards, prepared replacement, and publication are still planned. Approximate manual stage placement is used while provider poses remain unverified.

@@ -1,6 +1,6 @@
 # Test the photo-to-3D prototype
 
-Updated October 29, 2026. Production generation verification is in progress; local end-to-end API checks pass. Browser automation is currently disabled in Work settings, so rendered controls/mesh appearance have not been visually verified in this phase.
+Updated October 29, 2026. Production and local end-to-end API checks pass: upload → analysis/masks → three meshes → saved edits. Browser automation is currently disabled in Work settings, so rendered controls/mesh appearance have not been visually verified in this phase.
 
 ## Browser journey
 
@@ -29,7 +29,7 @@ npm run typecheck
 
 Local app: configure `.env.local`, set `GENERATION_ENABLED=true`, choose the **remaining approved** global `GENERATION_BUDGET_USD`, and run `npm run dev`. Never choose a new budget without accounting for existing CLI and DB reservations. Workflow uses its local development world automatically; deployed execution uses Vercel's managed world.
 
-`scripts/smoke-generation.ts` is an explicit integration helper. It uses the QA account file produced by `smoke-foundation.ts`; it never prints credentials or signed URLs. `prepare` uploads the synthetic room, `start` spends analysis inference, `reconstruct` spends GPU inference, `status` reads progress, and `save` verifies persistence/revision/origin/two-account isolation. Paid modes require prior authorization; they are not CI tasks.
+`scripts/smoke-generation.ts` is an explicit integration helper. It uses the QA account file produced by `smoke-foundation.ts`; it never prints credentials or signed URLs. `prepare` uploads the synthetic room, `start` spends analysis inference, `reconstruct` spends GPU inference, `status` reads progress, and `save` verifies signed GLB downloads/CORS plus persistence/revision/origin/two-account isolation. Paid modes require prior authorization; they are not CI tasks.
 
 ```sh
 QA_CREDENTIAL_FILE=/absolute/path/to/qa.json npm exec tsx scripts/smoke-generation.ts status
@@ -41,7 +41,7 @@ To test production, also set `SMOKE_BASE_URL=https://rescene-eta.vercel.app` and
 
 - CLI experiment: one Spark request, two SAM concepts, one two-object reconstruction; independent nightstand/chair GLBs passed bounded ingestion. Their textures match the intended object types; automatic poses remain unverified.
 - Local app: fresh synthetic upload, one analysis with three SAM concepts, and one reconstruction reached READY with bed/chair/nightstand meshes. Repeated starts returned the same run ID. Saved model positions persisted; stale revisions, cross-origin mutations, and second-account access were rejected.
-- First production analysis: Spark succeeded; SAM received HTTP 400 because its media fetcher rejected a signed R2 URL. The workflow stopped without automatic resubmission. The fix sends bounded normalized image bytes inline to Meta; a direct live SAM diagnostic accepted this format. Fresh deployed verification is pending.
+- First production analysis: Spark succeeded; SAM received HTTP 400 because its media fetcher rejected a signed R2 URL. The workflow stopped without automatic resubmission. The fix sends bounded normalized image bytes inline to Meta; a direct live SAM diagnostic accepted this format. The corrected fresh production run passed: analysis/masks took 28.8 seconds and reconstruction/ingestion took 93.7 seconds; bed/nightstand/chair reached READY, with save/reload, revision/origin/ownership checks passing.
 - Production budget pool is $7.50 across database runs. CLI reserve is $2.405 plus $0.0025 for the inline-SAM diagnostic. The rejected production run was manually reconciled to $0.02 with an audit note and observed Spark usage. These are conservative reservations/usage estimates, not provider invoices.
 - Automatic staging expiry remains disabled at Jim's request. No source photos, masks, or raw model responses are public.
 - Visual browser controls, mobile editor layout, real-photo quality beyond the synthetic fixture, partial mesh success, individual resegmentation, and publication remain unchecked.

@@ -2,6 +2,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import assert from "node:assert/strict";
+import { inspectGlb } from "../src/lib/ai/glb";
 const base = process.env.SMOKE_BASE_URL ?? "http://localhost:3000";
 const phase = process.argv[2] ?? "status";
 const file = process.env.GENERATION_QA_FILE ?? "test-results/generation-qa.json";
@@ -45,7 +46,17 @@ if (phase === "prepare") {
     const repeat = await ok(`${path}/runs`, "POST", body);
     assert.equal(first.runId, repeat.runId, "Idempotency must return the same run");
     console.log(JSON.stringify({ phase, idempotent: true, runId: first.runId }));
+  } else if (phase === "resume") {
+    const result = await request(`${path}/runs/${workspace.run.id}/resume`, "POST", {});
+    assert([202, 409].includes(result.status), `Resume failed: HTTP ${result.status}`);
+    console.log(result.status === 202 ? "Resumed the saved run without a new reservation or provider submission." : "Run already advanced; duplicate resume was rejected without resubmission.");
   } else if (phase === "save") {
+    for (const object of workspace.objects.filter((o: { modelUrl: string | null }) => o.modelUrl)) {
+      const response = await fetch(object.modelUrl, { headers: { Origin: base } });
+      assert.equal(response.status, 200, "Owner model download failed");
+      assert.equal(response.headers.get("access-control-allow-origin"), base, "Model CORS failed");
+      inspectGlb(Buffer.from(await response.arrayBuffer()));
+    }
     const edits = workspace.objects.filter((o: { modelUrl: string | null }) => o.modelUrl).map((o: Record<string, unknown>) => ({
       id: o.id, label: o.label, positionX: Number(o.positionX) + 0.2, positionY: o.positionY, positionZ: o.positionZ,
       yaw: o.yaw, scale: o.scale, visible: o.visible
@@ -59,7 +70,7 @@ if (phase === "prepare") {
     cookies.clear(); await ok("/api/auth/sign-in/email", "POST", qa.other);
     assert.equal((await request(`${path}/workspace`)).status, 404);
     assert.equal((await request(`${path}/objects`, "PATCH", { expectedRevision: reloaded.revision, objects: edits })).status, 404);
-    console.log("Model edits persist; stale revision, cross-origin, and second-account access denied.");
+    console.log("Signed GLB downloads/CORS pass. Model edits persist; stale revision, cross-origin, and second-account access denied.");
   }
   workspace = await ok(`${path}/workspace`).catch(() => null);
   if (workspace) console.log(JSON.stringify({ sceneId: state.sceneId, revision: workspace.revision, sceneStatus: workspace.status,

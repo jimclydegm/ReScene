@@ -10,7 +10,7 @@ One real room photo → two reviewed masks → two independent Meta-generated GL
 
 Time-box the experiment to 2–4 focused hours after the input and billing prerequisites are ready. Keep `GENERATION_ENABLED=false` for the public app during the experiment. Do not enable generation merely because model discovery succeeds.
 
-**October 29 update:** Jim approved **US$10 total development inference** and requested a browser-testable upload-to-3D editor. Live Spark/SAM and hosted Meta SAM 3D have succeeded on the synthetic bedroom. The app workflow/review/editor is implemented and local API checks pass; deployed validation and visual QA are in progress. See [TESTING.md](TESTING.md). Product information, replacement, and publication remain later work.
+**October 29 update:** Jim approved **US$10 total development inference** and requested a browser-testable upload-to-3D editor. Live Spark/SAM and hosted Meta SAM 3D have succeeded on the synthetic bedroom. The app workflow/review/editor is implemented and local and deployed API checks pass; visual QA is pending browser access. See [TESTING.md](TESTING.md). Product information, replacement, and publication remain later work.
 
 ## 1. Prepare the bounded experiment
 

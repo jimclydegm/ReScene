@@ -28,7 +28,7 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
     const scene = await tx.scene.findFirstOrThrow({ where: { id: sceneId, ownerId, archivedAt: null } });
     const prior = await tx.generationRun.findUnique({ where: { sceneId_idempotencyKey: { sceneId, idempotencyKey: input.idempotencyKey } } });
     if (prior) {
-      if (prior.kind !== input.kind || JSON.stringify((prior.input as { objectIds?: string[] }).objectIds ?? []) !== JSON.stringify(input.objectIds ?? [])) throw new AppError(409, "IDEMPOTENCY_CONFLICT", "This request key was used for different inputs.");
+      if (prior.kind !== input.kind || prior.inputRevision !== input.expectedRevision || JSON.stringify((prior.input as { objectIds?: string[] }).objectIds ?? []) !== JSON.stringify(input.objectIds ?? [])) throw new AppError(409, "IDEMPOTENCY_CONFLICT", "This request key was used for different inputs.");
       return prior;
     }
     if (scene.revision !== input.expectedRevision) throw new AppError(409, "REVISION_CONFLICT", "Reload this scene before starting.");
