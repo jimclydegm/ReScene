@@ -26,7 +26,7 @@ Finish a usable furniture/home-decor hackathon app quickly. Jim confirmed **Indi
 
 Project name/description editing, searchable/status-filtered dashboard and active share indicators; reversible archive/restore that retains assets and revokes old shares; publish shortcut, discard/reload conflict recovery, unsaved navigation/sign-out protection and viewer retry reset. Archive/metadata mutations serialize with generation starts. No migration or inference is needed.
 
-Delivery: CI checks PR changes once (no duplicate feature-push job), cancels superseded runs, and uses npm run check. Docs-only CI skips reinstall/build. Vercel ignoreCommand skips docs/test/tooling-only deployments; app/config/schema changes and unknown comparisons always build. scripts/verify-release.mjs is the single reusable saved-data regression; --smoke is bounded/read-only for post-deploy. Historical smoke runners remain available only for a specific regression, not a default sweep.
+Delivery: CI checks PR changes once (no duplicate feature-push job), cancels superseded runs, and uses npm run check. Docs-only CI skips reinstall/build. Vercel ignoreCommand compares against the prior successful deployment and skips docs/test/tooling-only deployments; .vercelignore must retain .git in the build workspace for this comparison; app/config/schema changes and unknown comparisons always build. scripts/verify-release.mjs is the single reusable saved-data regression; --smoke is bounded/read-only for post-deploy. Historical smoke runners remain available only for a specific regression, not a default sweep.
 
 ## Evidence and fixtures
 
