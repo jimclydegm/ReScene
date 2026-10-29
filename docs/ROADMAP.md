@@ -142,9 +142,9 @@ See [TEXTURE_FIDELITY.md](TEXTURE_FIDELITY.md) for evidence, implementation desi
 
 **Estimate: 5–7 hours, October 31.** Depends on Phase 3.
 
-- [ ] Add floor translation, vertical rotation, uniform scale multiplier, hide/restore, numeric controls, and local undo/redo.
+- [x] Add floor translation, vertical rotation, uniform scale multiplier, hide/restore, numeric controls, and local undo/redo (4A; browser checks pending).
 - [x] Implement atomic transform saves with expectedRevision, conflict feedback, and reload persistence; edit APIs reject busy scenes. Local/deployed API checks pass.
-- [ ] Build merchant product form/card with price/currency validation, HTTPS link, description, and thumbnail.
+- [x] Build merchant product form/card with price/currency validation, HTTPS link, description, and thumbnail (4A).
 - [ ] Seed 2–3 rights-cleared replacement products/GLBs in the scene catalog through a trusted script.
 - [ ] Implement mesh+product replacement in one transaction with normalized pivot/size and undo.
 - [ ] Add responsive object list/product sheet and keyboard-accessible controls.
@@ -262,3 +262,14 @@ Room patches repeat observed detail; hidden object surfaces remain inferred and 
 - [ ] Desktop/mobile visual interaction checks: local browser access is disabled in Work settings; implementation includes responsive layouts but visual verification remains pending.
 
 This is a presentation/query change; no inference or schema migration is needed. Source previews stay private and are signed only after owner authentication.
+
+## Phase 4A — merchant product cards (October 29)
+
+- [x] Product form/card: merchant-entered name, brand, description, decimal price, supported currency and validated HTTPS URL.
+- [x] Private object thumbnail from the existing source photo and reviewed mask; no inference or external URL fetching.
+- [x] Atomic product/object/light save with ownership, origin and revision checks. Invalid product updates roll back the save.
+- [x] Numeric transform/light inputs; object/product undo/redo across inspector tabs.
+- [x] 39 tests and local QA-clone persistence/thumbnail/geometry/auth checks pass.
+- [ ] Browser interaction/visual checks once access is available.
+
+Phase 4B: original rights-cleared replacement catalog and transactional mesh/product replacement remain unimplemented. Phase 5 publication remains unimplemented.

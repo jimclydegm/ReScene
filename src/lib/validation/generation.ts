@@ -1,4 +1,5 @@
 import { lightingSchema } from "@/lib/scene/lighting";
+import { productSchema } from "./products";
 import { z } from "zod";
 export const restartInputSchema = z.object({
   target: z.enum(["PHOTO", "ANALYSIS", "RECONSTRUCTION"]), expectedRevision: z.number().int().nonnegative(),
@@ -16,6 +17,6 @@ export const runInputSchema = z.object({
 export const objectEditsSchema = z.object({ expectedRevision: z.number().int().nonnegative(), lighting: lightingSchema.optional(),
   objects: z.array(z.object({ id: z.uuid(), label: z.string().trim().min(1).max(120),
     positionX: z.number().finite().min(-20).max(20), positionY: z.number().finite().min(-5).max(20), positionZ: z.number().finite().min(-20).max(20),
-    yaw: z.number().finite().min(-Math.PI * 4).max(Math.PI * 4), scale: z.number().finite().min(0.1).max(5), visible: z.boolean()
+    yaw: z.number().finite().min(-Math.PI * 4).max(Math.PI * 4), scale: z.number().finite().min(0.1).max(5), visible: z.boolean(), product: productSchema.nullable().optional()
   }).strict()).min(1).max(10)
 }).strict().refine(input => new Set(input.objects.map(o => o.id)).size === input.objects.length, "Duplicate object IDs.");

@@ -3,10 +3,11 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState, Component, type ReactNode, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Scan, Box, Check, LoaderCircle, Save, RotateCcw, Palette, Lightbulb, RefreshCw, Eye } from "lucide-react";
+import { Scan, Box, Check, LoaderCircle, Save, RotateCcw, Palette, Lightbulb, RefreshCw, Eye, ShoppingBag, Redo2 } from "lucide-react";
 import { apiJson } from "@/lib/client-api";
 import type { SceneWorkspace, SceneObjectView } from "./types";
 import { RangeField } from "@/components/ui/range-field";
+import { ProductControls } from "./product-controls";
 import { AppearanceControls } from "./appearance-controls";
 import { defaultLighting, type Lighting } from "@/lib/scene/lighting";
 import { ReferencePhoto } from "./reference-photo";
@@ -24,7 +25,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const restartDialog = useRef<HTMLDialogElement>(null);
   const [restartTarget, setRestartTarget] = useState<RestartTarget>("ANALYSIS");
   const [data, setData] = useState(initial);
-  const [panel, setPanel] = useState<"objects" | "textures" | "lighting">("objects");
+  const [panel, setPanel] = useState<"objects" | "textures" | "lighting" | "products">("objects");
   const renderedStatus = useRef(initial.status);
   const [lights, setLights] = useState(initial.lighting);
   const [lightDirty, setLightDirty] = useState(false);
@@ -35,12 +36,13 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [future, setFuture] = useState<SceneObjectView[][]>([]);
   const [history, setHistory] = useState<SceneObjectView[][]>([]);
   const base = `/api/scenes/${data.id}`;
   const running = Boolean(data.run && ["QUEUED", "RUNNING", "WAITING"].includes(data.run.status));
   const reload = useCallback(async () => {
     const next = await apiJson<SceneWorkspace>(`${base}/workspace`);
-    setData(next); setDraft(next.objects); setLights(next.lighting); setLightDirty(false); setDirty(false); setHistory([]);
+    setData(next); setDraft(next.objects); setLights(next.lighting); setLightDirty(false); setDirty(false); setHistory([]); setFuture([]);
     if (renderedStatus.current !== next.status) { renderedStatus.current = next.status; router.refresh(); }
     const selectable = next.status === "READY" ? next.objects.filter(o => o.modelUrl) : next.objects;
     setSelected(prev => selectable.some(o => o.id === prev) ? prev : selectable[0]?.id ?? "");
@@ -86,6 +88,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     finally { setBusy(false); }
   }
   function edit(id: string, fields: Partial<SceneObjectView>) {
+    setFuture([]);
     setHistory(prev => [...prev.slice(-19), draft]);
     setDraft(prev => prev.map(o => o.id === id ? { ...o, ...fields } : o)); setDirty(true); setMessage("");
   }
@@ -93,7 +96,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     setBusy(true); setError("");
     try {
       await apiJson(`${base}/objects`, { method: "PATCH", body: JSON.stringify({ expectedRevision: data.revision,
-        ...(lightDirty ? { lighting: lights } : {}), objects: draft.filter(o => o.modelUrl).map(o => ({ id: o.id, label: o.label, positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, yaw: o.yaw, scale: o.scale, visible: o.visible })) }) });
+        ...(lightDirty ? { lighting: lights } : {}), objects: draft.filter(o => o.modelUrl).map(o => ({ id: o.id, label: o.label, positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, yaw: o.yaw, scale: o.scale, visible: o.visible, product: o.product ? { ...o.product, imageUrl: undefined } : null })) }) });
       await reload(); setMessage("Scene saved. Your layout will be here when you return.");
     } catch (e) { setError(e instanceof Error ? e.message : "Could not save."); }
     finally { setBusy(false); }
@@ -131,7 +134,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     finally { setBusy(false); }
   }
   function moveTab(event: KeyboardEvent<HTMLButtonElement>, index: number) {
-    const tabs = ["objects", "textures", "lighting"] as const;
+    const tabs = ["objects", "textures", "lighting", "products"] as const;
     const next = event.key === "ArrowRight" ? (index + 1) % tabs.length : event.key === "ArrowLeft" ? (index + tabs.length - 1) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
     if (next === null) return;
     event.preventDefault(); setPanel(tabs[next]);
@@ -175,7 +178,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
       <aside className="object-inspector editor-inspector" aria-label="Scene controls">
         <div className="inspector-header"><div><span className="eyebrow">SCENE CONTROLS</span><strong>Make it yours</strong></div><span className={`save-indicator${dirty || lightDirty ? " unsaved" : ""}`}><span className="tiny-dot"/>{dirty || lightDirty ? "Unsaved" : "Saved"}</span></div>
         <div className="inspector-tabs" role="tablist" aria-label="Scene control sections">{([
-          ["objects", "Objects", Box], ["textures", "Textures", Palette], ["lighting", "Lighting", Lightbulb]
+          ["objects", "Objects", Box], ["textures", "Textures", Palette], ["lighting", "Lighting", Lightbulb], ["products", "Products", ShoppingBag]
         ] as const).map(([value, label, Icon], index) => <button key={value} id={`inspector-tab-${value}`} role="tab" type="button" aria-selected={panel === value} aria-controls={panel === value ? `inspector-panel-${value}` : undefined} tabIndex={panel === value ? 0 : -1} onKeyDown={event => moveTab(event, index)} onClick={() => setPanel(value)}><Icon size={15}/>{label}</button>)}</div>
         <div className="inspector-scroll" key={panel} id={`inspector-panel-${panel}`} role="tabpanel" aria-labelledby={`inspector-tab-${panel}`} tabIndex={0}>
           {panel === "objects" ? <><div className="inspector-section-heading"><h3>Your objects</h3><span className="setting-badge">{draft.filter(o => o.modelUrl).length} meshes</span></div><p className="inspector-description">Select a piece to adjust its placement.</p>
@@ -184,9 +187,9 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
               {([ ["positionX", "Left / right", -10, 10, 0.1], ["positionZ", "Forward / back", -10, 10, 0.1], ["positionY", "Height", -2, 5, 0.1], ["yaw", "Rotation", -Math.PI, Math.PI, 0.05], ["scale", "Size", 0.1, 5, 0.1] ] as const).map(([field, label, min, max, step]) => <RangeField key={field} label={label} min={min} max={max} step={step} value={current[field]} precision={2} onChange={value => edit(current.id, { [field]: value })}/>)}
               <label className="visibility-toggle"><span><Eye size={15}/>Show object</span><input className="switch-input" role="switch" type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/></label>
             </fieldset>}
-          </> : <AppearanceControls panel={panel} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={busy} applied={data.appearance.applied} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
+          </> : panel === "products" ? current?.modelUrl ? <ProductControls object={current} busy={busy} onChange={product => edit(current.id, { product })}/> : <p>Select an object first.</p> : <AppearanceControls panel={panel} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={busy} applied={data.appearance.applied} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
         </div>
-        <div className="inspector-footer"><div className="editor-actions"><button className="button button-light" disabled={!history.length || busy} onClick={() => { setDraft(history[history.length - 1]); setHistory(history.slice(0, -1)); setDirty(true); }}><RotateCcw size={14}/>Undo</button><button className="button button-dark" disabled={(!dirty && !lightDirty) || busy} onClick={save}><Save size={14}/>{busy ? "Saving…" : "Save changes"}</button></div>
+        <div className="inspector-footer"><div className="editor-actions"><button className="button button-light" disabled={!history.length || busy} onClick={() => { setFuture(prev => [...prev, draft]); setDraft(history[history.length - 1]); setHistory(history.slice(0, -1)); setDirty(true); }}><RotateCcw size={14}/>Undo</button><button className="button button-light redo-button" aria-label="Redo object edit" title="Redo object edit" disabled={!future.length || busy} onClick={() => { setHistory(prev => [...prev, draft]); setDraft(future[future.length - 1]); setFuture(future.slice(0, -1)); setDirty(true); }}><Redo2 size={14}/></button><button className="button button-dark" disabled={(!dirty && !lightDirty) || busy} onClick={save}><Save size={14}/>{busy ? "Saving…" : "Save changes"}</button></div>
           <button className="inspector-reload" disabled={busy || dirty || lightDirty} onClick={() => void reload().catch(() => setError("Could not reload."))}><RefreshCw size={12}/>Reload saved scene</button>
         </div>
       </aside></div> : <div className="analysis-layout"><div className="review-photo">{data.image && <Image src={data.image.url} alt={data.title} width={data.image.width} height={data.image.height} unoptimized/>}{data.objects.filter(o => chosen.includes(o.id) && o.maskUrl).map(o => <Image key={o.id} className="mask-overlay" src={o.maskUrl!} alt={`${o.label} outline`} fill unoptimized/>)}</div>
