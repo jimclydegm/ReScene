@@ -104,7 +104,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
       await apiJson(`${base}/runs`, { method: "POST", body: JSON.stringify({ kind, expectedRevision: data.revision,
         idempotencyKey: crypto.randomUUID(), ...(kind === "ANALYZE" ? {analysis:analysisOptions} : kind === "SEGMENT_OBJECT" ? {segmentation} : { objectIds: chosen, reconstruction:reconstructionOptions }) }) });
       await reload();
-    } catch (e) { setError(e instanceof Error ? e.message : "Generation could not start."); }
+    } catch (e) { await reload().catch(()=>{}); setError(e instanceof Error ? e.message : "Generation could not start."); }
     finally { setBusy(false); }
   }
   async function chooseMask(objectId:string,mask:string|string[]){
@@ -242,7 +242,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
         <div className="inspector-footer"><div className="editor-actions"><button className="button button-light" disabled={!history.length || busy} onClick={() => { setFuture(prev => [...prev, draft]); setDraft(history[history.length - 1]); setHistory(history.slice(0, -1)); setDirty(true); }}><RotateCcw size={14}/>Undo</button><button className="button button-light redo-button" aria-label="Redo object edit" title="Redo object edit" disabled={!future.length || busy} onClick={() => { setHistory(prev => [...prev, draft]); setDraft(future[future.length - 1]); setFuture(future.slice(0, -1)); setDirty(true); }}><Redo2 size={14}/></button><button className="button button-dark" disabled={(!dirty && !lightDirty) || busy} onClick={save}><Save size={14}/>{busy ? "Saving…" : "Save changes"}</button></div>
           <button className="inspector-reload" disabled={busy} onClick={requestReload}><RefreshCw size={12}/>Reload saved scene</button>
         </div>
-      </aside></div> : <ObjectReview data={data} busy={busy} running={running} chosen={chosen} setChosen={setChosen} analysis={analysisOptions} setAnalysis={setAnalysisOptions} reconstruction={reconstructionOptions} setReconstruction={setReconstructionOptions} onAnalyze={()=>data.status==="DRAFT"?void action("ANALYZE"):askRestart("ANALYSIS")} onSegment={value=>action("SEGMENT_OBJECT",value)} onMask={chooseMask} onBuild={()=>action("RECONSTRUCT")} onReview={()=>askRestart("RECONSTRUCTION")}/>}
+      </aside></div> : <ObjectReview key={data.objects.map(o=>o.id).join(":")} data={data} busy={busy} running={running} chosen={chosen} setChosen={setChosen} analysis={analysisOptions} setAnalysis={setAnalysisOptions} reconstruction={reconstructionOptions} setReconstruction={setReconstructionOptions} onAnalyze={()=>data.status==="DRAFT"?void action("ANALYZE"):askRestart("ANALYSIS")} onSegment={value=>action("SEGMENT_OBJECT",value)} onMask={chooseMask} onBuild={()=>action("RECONSTRUCT")} onReview={()=>askRestart("RECONSTRUCTION")}/>}
 
     {ready && <PublicationControls sceneId={data.id} revision={data.revision} disabled={busy || dirty || lightDirty || running}/>}
   </div>;
