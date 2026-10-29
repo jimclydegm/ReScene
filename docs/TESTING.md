@@ -11,7 +11,7 @@ Updated October 29, 2026. Production and local end-to-end API checks pass: uploa
 5. Click **Build … objects in 3D**. The server submits one hosted Meta SAM 3D Objects job with the ordered reviewed masks. Wait for the editor; reload preserves job progress.
 6. Select an object from the list or click its mesh. Drag the viewport to orbit, right-drag to pan, and scroll to zoom. Use **Photo view** to return to the fitted photo camera (older manual stages say Reset camera).
 7. Adjust **Left / right**, **Forward / back**, **Height**, **Rotation**, or **Size**. Uncheck **Show object** to hide it. **Undo** restores the previous local edit.
-8. Click **Save scene**, refresh, and verify that the layout persists. Another browser tab saving an older revision receives a conflict instead of overwriting changes.
+8. Click **Save changes**, refresh, and verify that the layout persists. Another browser tab saving an older revision receives a conflict instead of overwriting changes.
 
 Jim requested removing the cumulative app allowance on October 29. Generation no longer checks `GENERATION_BUDGET_USD`; run estimates ($1.42 analysis/$1 reconstruction) remain historical bookkeeping. Repeated starts with the same idempotency key reuse the run, one active generation per user is enforced, and paid submissions have no automatic retries. Meta credits and fal billing remain separate.
 
@@ -95,6 +95,6 @@ Room texture sheets copy clean observed patches and extend them with mirrored wr
 
 ## Dashboard and inspector layout — October 29
 
-Dashboard pagination/progress tests cover malformed/repeated/out-of-range query values, empty libraries, historical run completion after restart, partial analysis, active generation and interrupted runs. Local production-build HTTP checks verified 16 projects across three pages without duplicates, all cards owned by the session, signed preview downloads, invalid-page bounds, anonymous redirect and second-account isolation. Scene SSR includes the tablist, scrolling body, fixed save footer and visibility switch. No inference or scene edits were submitted.
+Dashboard pagination/progress tests cover malformed/repeated/out-of-range query values, empty libraries, historical run completion after restart, partial analysis, active generation and interrupted runs. Local production-build HTTP checks verified 16 projects across three pages without duplicates, all cards owned by the session, signed preview downloads, invalid-page bounds, anonymous redirect and second-account isolation. Scene SSR includes the tablist, scrolling body, fixed save footer and visibility switch. The same HTTP checks pass against production after PR #6 (aa0aed1), including all 16 projects/three pages and signed previews. All 34 tests, lint/typecheck/build and PR CI pass. No inference or scene edits were submitted. The generation smoke script now checks the Save changes label; it was not run because it would submit inference.
 
 Browser access is disabled in Work settings. Responsive CSS, keyboard tab navigation and panel changes are implemented, but desktop/mobile visual and interaction checks are not yet verified. Do not report them as passing.

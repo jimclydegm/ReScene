@@ -258,7 +258,7 @@ Room patches repeat observed detail; hidden object surfaces remain inferred and 
 - [x] Server-side pagination: six owned projects per page, stable updatedAt/id order, bounded query parameters, counts and page navigation.
 - [x] Split the inspector into Objects / Textures / Lighting tabs with keyboard navigation and horizontal overflow support.
 - [x] Add an independently scrolling inspector body, persistent save bar, compact light position fields, styled range inputs, switches and review checkboxes.
-- [x] Local HTTP checks: 16 projects over three pages without duplicates, valid signed previews, invalid-page handling, anonymous redirect and second-account isolation.
+- [x] Local and production HTTP checks: 16 projects over three pages without duplicates, valid signed previews, invalid-page handling, anonymous redirect and second-account isolation. PR #6 merged and deployed; 34 tests and CI pass.
 - [ ] Desktop/mobile visual interaction checks: local browser access is disabled in Work settings; implementation includes responsive layouts but visual verification remains pending.
 
 This is a presentation/query change; no inference or schema migration is needed. Source previews stay private and are signed only after owner authentication.

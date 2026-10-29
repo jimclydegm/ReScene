@@ -65,7 +65,7 @@ if (phase === "prepare") {
     const page = await fetch(`${base}/scenes/${state.sceneId}`, { headers: { Cookie: [...cookies].map(([k, v]) => `${k}=${v}`).join("; ") } });
     assert.equal(page.status, 200, "Owner editor page failed");
     const html = await page.text();
-    assert(html.includes("Save scene") && html.includes("Rotation") && html.includes("Show object"), "Deployed page did not render the editor controls");
+    assert(html.includes("Save changes") && html.includes("Rotation") && html.includes("Show object"), "Deployed page did not render the editor controls");
     for (const object of workspace.objects.filter((o: { modelUrl: string | null }) => o.modelUrl)) {
       const response = await fetch(object.modelUrl, { headers: { Origin: base } });
       assert.equal(response.status, 200, "Owner model download failed");
