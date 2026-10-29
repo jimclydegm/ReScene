@@ -38,7 +38,18 @@ if (phase === "prepare") {
   assert.equal(state.base, base);
   const path = `/api/scenes/${state.sceneId}`;
   let workspace = await ok(`${path}/workspace`);
-  if (phase === "start" || phase === "reconstruct") {
+  if (phase === "restart-review" || phase === "restart-analysis") {
+    await ok(`${path}/restart`, "POST", { target: phase === "restart-review" ? "RECONSTRUCTION" : "ANALYSIS", expectedRevision: workspace.revision, confirmed: true });
+    state.reconstructKey = randomUUID();
+    if (phase === "restart-analysis") state.analysisKey = randomUUID();
+    await writeFile(file, JSON.stringify(state), { mode: 0o600 });
+    const cleared = await ok(`${path}/workspace`);
+    assert.equal(cleared.status, phase === "restart-review" ? "REVIEW" : "DRAFT");
+    assert(cleared.objects.every((o: { modelUrl: string | null }) => !o.modelUrl));
+    if (phase === "restart-review") assert(cleared.objects.some((o: { maskUrl: string | null }) => o.maskUrl));
+    else assert.equal(cleared.objects.length, 0);
+    console.log("Later results cleared; the next generation uses a new idempotency key.");
+  } else if (phase === "start" || phase === "reconstruct") {
     const body = { kind: phase === "start" ? "ANALYZE" : "RECONSTRUCT", expectedRevision: workspace.revision,
       idempotencyKey: phase === "start" ? state.analysisKey : state.reconstructKey,
       ...(phase === "reconstruct" ? { objectIds: workspace.objects.filter((o: { maskUrl: string | null }) => o.maskUrl).map((o: { id: string }) => o.id) } : {}) };

@@ -21,6 +21,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const restartDialog = useRef<HTMLDialogElement>(null);
   const [restartTarget, setRestartTarget] = useState<RestartTarget>("ANALYSIS");
   const [data, setData] = useState(initial);
+  const renderedStatus = useRef(initial.status);
   const [draft, setDraft] = useState(initial.objects);
   const [selected, setSelected] = useState(initial.objects[0]?.id ?? "");
   const [chosen, setChosen] = useState<string[]>([]);
@@ -34,10 +35,11 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const reload = useCallback(async () => {
     const next = await apiJson<SceneWorkspace>(`${base}/workspace`);
     setData(next); setDraft(next.objects); setDirty(false); setHistory([]);
+    if (renderedStatus.current !== next.status) { renderedStatus.current = next.status; router.refresh(); }
     const selectable = next.status === "READY" ? next.objects.filter(o => o.modelUrl) : next.objects;
     setSelected(prev => selectable.some(o => o.id === prev) ? prev : selectable[0]?.id ?? "");
     return next;
-  }, [base]);
+  }, [base, router]);
   useEffect(() => {
     if (!dirty) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); };
