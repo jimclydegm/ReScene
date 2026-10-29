@@ -38,7 +38,7 @@ The clothing correction has 61 passing unit cases, passed CI/build and saved-dat
 - [x] Conservative ground envelope, legacy editor-plane correction and frozen public floor placement.
 - [x] Rescaled-mask handling, automatic shoe-pair union, grouped publication/privacy guards and safe partial fallback.
 - [x] Live full-person experiment/adoption plus 65 tests and reusable saved-data/assembly checks.
-- [ ] One PR/production release and bounded deployed verification.
+- [x] PR #12 merged at f58d4eb; READY production release and bounded deployed verification pass.
 
 ## External completion gates
 
