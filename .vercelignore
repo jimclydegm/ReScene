@@ -8,3 +8,5 @@ docs
 AGENTS.md
 test-results
 tests
+.workflow-data
+.swc

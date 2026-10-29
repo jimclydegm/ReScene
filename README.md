@@ -4,17 +4,19 @@ Turn one product scene photo into an editable, shoppable 3D scene.
 
 ReScene is Jim's prototype for Meta's Global AI Developer Hackathon. The first demo focuses on furniture and home decor: upload a room photo, identify a few objects, reconstruct them, attach product information, edit the layout, and share an interactive viewer.
 
-**Build freeze: November 2, 2026, Asia/Manila.** The Next.js foundation is implemented and deployed at [rescene-eta.vercel.app](https://rescene-eta.vercel.app).
+**Build freeze: November 2, 2026, Asia/Manila.** ReScene is deployed at [rescene-eta.vercel.app](https://rescene-eta.vercel.app).
 
 ## Working foundation
 
 - Landing page with a selectable, movable 3D sample room (illustrated geometry, not AI reconstruction).
 - Neon Managed Better Auth sign-up/sign-in/sign-out and Google sign-in integration.
 - Private scene dashboard, persistence, ownership checks, and revision-aware updates.
-- Working private R2 photo uploads, image validation/normalization, and immutable source/preview storage.
+- Private R2 uploads, image validation/normalization, and immutable source/preview storage.
+- Meta object detection and mask review, durable hosted SAM 3D generation, and an editable mesh viewer.
+- Move, rotate, resize, hide, undo, and save/reload generated objects.
 - Eight-model Prisma schema/migration, server-only Meta/fal adapters, and GitHub CI.
 
-Photo upload and reload persistence are verified on the live app. Object reconstruction, product editing, and publishing are the next phases. See [setup and verified limitations](docs/SETUP.md).
+The local upload→analysis→masks→three meshes→saved edits API flow passes. Deployed generation verification and browser controls QA are in progress. Merchant product editing, replacements, and publishing remain later phases. See [testing instructions](docs/TESTING.md) and [setup](docs/SETUP.md).
 
 ## Development
 
@@ -50,4 +52,4 @@ Read [the short handoff](docs/CONTEXT.md) first. Open other files only for the t
 
 Next.js / TypeScript on Vercel; React Three Fiber / Three.js for the viewer; Neon Postgres with Prisma; Neon Auth (Managed Better Auth); Cloudflare R2 for media; Meta Model API for Muse Spark and SAM 3.1; hosted Meta SAM 3D Objects for reconstruction. GitHub holds code, CI, and planning context.
 
-The fal queue responds to authenticated reads. Live SAM 3D outputs and transforms still require the Phase 0 reconstruction spike.
+The live fal test returned independent textured GLBs from Meta SAM 3D Objects. Objects use approximate manual stage placement; faithful automatic room layout remains unverified.

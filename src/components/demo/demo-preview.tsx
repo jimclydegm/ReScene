@@ -40,6 +40,6 @@ export function DemoPreview() {
         <button type="button" title="Reset sample scene" aria-label="Reset sample scene" onClick={resetScene}><RotateCcw size={16}/></button>
       </div>
     </div>
-    <div className="demo-caption"><Scan size={13}/> Illustrated 3D sample. Uploaded-photo reconstruction is in development.</div>
+    <div className="demo-caption"><Scan size={13}/> Illustrated 3D sample. Open your studio to reconstruct objects from a photo.</div>
   </div>;
 }

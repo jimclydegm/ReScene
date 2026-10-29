@@ -119,7 +119,7 @@ async function main() {
           const key = `${storagePrefix()}/spikes/${state.id}/${file}`;
           await writeFile(join(directory, file), mask.png, { mode: 0o600 });
           await putObject(key, mask.png, "image/png");
-          const gray = await sharp(mask.png).raw().toBuffer();
+          const gray = await sharp(mask.png).greyscale().raw().toBuffer();
           const rgba = await sharp(image).ensureAlpha().raw().toBuffer();
           for (let i = 0; i < gray.length; i++) rgba[i * 4 + 3] = gray[i];
           await sharp(rgba, { raw: { width: state.width, height: state.height, channels: 4 } }).png().toFile(join(directory, `${name}-${index}-cutout.png`));

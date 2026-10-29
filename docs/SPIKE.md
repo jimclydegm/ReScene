@@ -1,6 +1,6 @@
 # Private Meta feasibility runner
 
-**Current authorization: code preparation only.** Jim selected this on October 29, 2026. Do not execute paid commands until he changes that instruction and sets a spending cap. The public app remains `GENERATION_ENABLED=false`; this branch adds no generation route or dashboard action.
+**Current authorization: US$10 total development inference**, approved October 29, 2026. This replaces the earlier code-only instruction. The CLI experiment has now produced two independent GLBs; the app also implements the private generation/review/editor flow described in [TESTING.md](TESTING.md). Do not reset the existing experiment or run additional paid tests outside the remaining allowance.
 
 ## Prepared input
 

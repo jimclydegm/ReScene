@@ -70,6 +70,6 @@ export function UploadForm({ scene: existing }: { scene?: Scene }) {
     {file && !stage && <button className="remove-file" type="button" onClick={() => { setFile(null); setPreview(null); }}><X size={13}/> Choose a different photo</button>}
     {error && <p className="form-error" role="alert">{error}</p>}
     <div className="upload-form-bottom"><span><LockKeyhole size={14}/> Private to your account</span><button className="button button-dark" type="submit" disabled={!file || !title.trim() || Boolean(stage)}>{stage ? <><LoaderCircle size={16} className="spin"/>{stage}</> : <>Save your photo <ArrowUpRight size={17}/></>}</button></div>
-    <p className="upload-next-note">Start with a clear room photo. This first build saves your photo; object reconstruction comes next.</p>
+    <p className="upload-next-note">Start with a clear room photo. Review the object outlines, then build your editable 3D preview.</p>
   </form>;
 }
