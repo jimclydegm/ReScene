@@ -175,3 +175,7 @@ Textured SAM GLBs are already requested and stored, but generated appearance alo
 ## Selected-scene implementation — October 29
 
 Jim authorized implementation on the chair/cabinet/vase example and requested adjustable lighting. Texture copying was planned in Phase 3.6; editable main/fill XYZ/intensity and ambient lighting are now added to scope. CPU triangle/depth rasterization transfers accepted source pixels directly into existing UV atlases, avoiding a new GPU/model service. Room surfaces repeat clean observed photo patches, with an original-texture restore path. This preserves editable meshes and avoids source-photo exposure in future public viewers. No additional inference is necessary. Detailed physical material recovery and unseen texture truth remain outside the one-photo guarantee.
+
+### October 29 — Dashboard and editor navigation
+
+Jim requested smaller project thumbnails, project previews/progress, pagination, and a clearer editor menu. Implement compact photo-preview cards with stage/object/date details and six-item server pagination. Expose Objects, Textures and Lighting as top-level inspector tabs; keep tab navigation/save actions fixed while the body scrolls. Preserve draft state across tabs and the existing atomic object/light save. This adds no model calls or database migration. Dashboard images are owner-authenticated signed assets, explicitly labeled source photos unless a saved scene poster exists.

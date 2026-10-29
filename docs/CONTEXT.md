@@ -48,3 +48,9 @@ Actual Google consent is unverified (Neon development provider configured). Veri
 ## Task documents
 
 TEXTURE_FIDELITY.md: latest appearance research; PLAN.md: product scope; META_MODELS.md: model/pose evidence; ARCHITECTURE.md: services/pipeline; DATA_MODEL.md + Prisma: storage/coordinates; ROADMAP.md: phases; TESTING.md: runnable checks; SETUP.md: provisioned resources.
+
+## Dashboard / inspector design (latest work)
+
+Compact owner-only source-photo preview cards replace dashboard placeholders, with object counts, saved workflow stages, active run progress, updated dates and six-project server pagination. Invalid/repeated pages clamp safely; ordering is updatedAt/id. Inspector now has Objects / Textures / Lighting tabs, horizontal overflow/keyboard navigation, a vertically scrolling body and fixed Save changes footer. Draft object/light edits remain in SceneStudio across tabs. Range fields, object visibility switches and mask-review checkboxes share styled controls. Reload is disabled while drafts are unsaved.
+
+Local production-build HTTP checks pass for 16 projects/three pages, unique owner cards, signed previews, invalid pages, anonymous redirect, other-account isolation and studio control markup. No model calls/schema changes. Browser access is currently disabled in Work settings, so desktop/mobile visual interaction QA is pending. Next: verify the layout in a browser once enabled, then resume product cards/publication work.

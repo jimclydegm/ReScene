@@ -251,3 +251,14 @@ Runtime/editor PR #2 merged into `main` on October 29 (`8f56977`). Both PR CI ru
 - [x] Apply to Jim's selected scene with original assets preserved; service/HTTP and browser checks pass. PR #5 merged (4db7874); production API/CORS and visual verification pass (TESTING.md).
 
 Room patches repeat observed detail; hidden object surfaces remain inferred and source lighting is baked into copied colors. This does not implement physical material/illumination recovery.
+
+## Dashboard and inspector design pass (October 29)
+
+- [x] Replace placeholder dashboard covers with compact private source-photo previews (saved poster preferred when available), object counts, updated date, workflow stages and active-run progress.
+- [x] Server-side pagination: six owned projects per page, stable updatedAt/id order, bounded query parameters, counts and page navigation.
+- [x] Split the inspector into Objects / Textures / Lighting tabs with keyboard navigation and horizontal overflow support.
+- [x] Add an independently scrolling inspector body, persistent save bar, compact light position fields, styled range inputs, switches and review checkboxes.
+- [x] Local HTTP checks: 16 projects over three pages without duplicates, valid signed previews, invalid-page handling, anonymous redirect and second-account isolation.
+- [ ] Desktop/mobile visual interaction checks: local browser access is disabled in Work settings; implementation includes responsive layouts but visual verification remains pending.
+
+This is a presentation/query change; no inference or schema migration is needed. Source previews stay private and are signed only after owner authentication.
