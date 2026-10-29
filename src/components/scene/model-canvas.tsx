@@ -1,7 +1,7 @@
 "use client";
 import { Canvas, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Grid, useTexture } from "@react-three/drei";
-import { Box3, Color, Mesh, MeshStandardMaterial, RepeatWrapping, SRGBColorSpace, Vector3 } from "three";
+import { Box3, Color, Mesh, MeshStandardMaterial, MirroredRepeatWrapping, SRGBColorSpace, Vector3 } from "three";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { OrbitControls as OrbitControlsType } from "three-stdlib";
 import type { SceneComposition } from "@/lib/scene/composition";
@@ -52,7 +52,7 @@ function SurfaceMaterial({ url, color, repeat, roughness = 0.9 }: { url: string 
 function PhotoSurface({ url, repeat, roughness }: { url: string; repeat: [number, number]; roughness: number }) {
   const source = useTexture(url);
   const [repeatX, repeatY] = repeat;
-  const map = useMemo(() => { const t = source.clone(); t.wrapS = t.wrapT = RepeatWrapping; t.repeat.set(repeatX, repeatY); t.colorSpace = SRGBColorSpace; t.needsUpdate = true; return t; }, [source, repeatX, repeatY]);
+  const map = useMemo(() => { const t = source.clone(); t.wrapS = t.wrapT = MirroredRepeatWrapping; t.repeat.set(repeatX, repeatY); t.colorSpace = SRGBColorSpace; t.needsUpdate = true; return t; }, [source, repeatX, repeatY]);
   useEffect(() => () => map.dispose(), [map]);
   return <meshStandardMaterial map={map} color="white" roughness={roughness}/>;
 }
@@ -64,10 +64,10 @@ function Room({ composition, appearance }: { composition: SceneComposition; appe
     <mesh receiveShadow position={[r.centerX, -0.012, r.centerZ]} rotation={[-Math.PI / 2, 0, 0]}>
       <planeGeometry args={[r.width, r.depth]}/><SurfaceMaterial url={appearance.floorUrl} color={e.floorColor} repeat={[r.width / 2, r.depth]} roughness={e.floorMaterial === "tile" ? 0.5 : 0.9}/>
     </mesh>
-    <mesh receiveShadow position={[r.centerX, r.height / 2, back]}><planeGeometry args={[r.width, r.height]}/><SurfaceMaterial url={appearance.wallUrl} color={e.wallColor} repeat={[4, 5]} roughness={1}/></mesh>
+    <mesh receiveShadow position={[r.centerX, r.height / 2, back]}><planeGeometry args={[r.width, r.height]}/><SurfaceMaterial url={appearance.wallUrl} color={e.wallColor} repeat={[1, 1]} roughness={1}/></mesh>
     <mesh receiveShadow position={[r.centerX, 0.07, back + 0.02]}><boxGeometry args={[r.width, 0.14, 0.035]}/><meshStandardMaterial color={e.wallColor}/></mesh>
     {e.sideWall !== "none" && <mesh receiveShadow position={[side, r.height / 2, r.centerZ]} rotation={[0, e.sideWall === "left" ? Math.PI / 2 : -Math.PI / 2, 0]}>
-      <planeGeometry args={[r.depth, r.height]}/><SurfaceMaterial url={appearance.wallUrl} color={e.wallColor} repeat={[4, 5]} roughness={1}/>
+      <planeGeometry args={[r.depth, r.height]}/><SurfaceMaterial url={appearance.wallUrl} color={e.wallColor} repeat={[1, 1]} roughness={1}/>
     </mesh>}
     {!appearance.floorUrl && e.floorMaterial === "wood" && Array.from({ length: Math.floor(r.depth / 0.38) }, (_, i) => <mesh key={i} position={[r.centerX, -0.01, back + (i + 1) * 0.38]} rotation={[-Math.PI / 2, 0, 0]}>
       <planeGeometry args={[r.width, 0.006]}/><meshStandardMaterial color={new Color(e.floorColor).multiplyScalar(0.7)} roughness={1} transparent opacity={0.35}/>
