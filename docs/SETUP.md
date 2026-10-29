@@ -24,7 +24,7 @@ Local credentials are in ignored `.env.local`, with restricted file permissions.
 
 `CLOUDFLARE_API_TOKEN` is a local management credential; the app uses only the R2 S3 access/secret pair. It is not deployed as a runtime management token. No key, database password, cookie secret, or OIDC token belongs in GitHub, docs, screenshots, or public `NEXT_PUBLIC_*` variables.
 
-Jim approved $10 total development inference. The prototype now uses `GENERATION_ENABLED=true` with a global `$7.50` DB reservation pool, in addition to the private CLI/diagnostic allowances described in TESTING.md. New copies default to disabled/zero budget. Reservations are serialized in a DB transaction; failed/unknown submissions are not automatically refunded.
+Jim initially approved $10 development inference, then requested removing the cumulative app cap and continuing live testing on October 29. `GENERATION_ENABLED=true` remains the operator switch; `GENERATION_BUDGET_USD` was removed from local and Vercel environments. New copies default to generation disabled. Run estimates and charges remain auditable; Meta/fal provider balances and limits still apply independently. Starts/restarts are serialized, and failed/unknown submissions have no automatic refund/retry.
 
 ## Run locally
 

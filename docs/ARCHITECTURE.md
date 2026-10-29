@@ -184,7 +184,7 @@ Keep a checked importer version for axis/scale/pivot normalization. If layout me
 
 - Run: QUEUED→RUNNING/WAITING→SUCCEEDED, PARTIAL, FAILED, or CANCELED.
 - Step attempts are separate rows keyed by run/step/attempt; successful outputs are reused.
-- One active run per scene and one per user. Reserve budget/check limits transactionally before dispatch.
+- One active run per scene and one per user. Serialize starts/restarts and check revision/active-job limits transactionally before dispatch. Historical cost estimates remain; Jim removed the cumulative app spending cap.
 - Create a run with a scene-scoped idempotency key. Repeated requests return that run, not new work. Reject reuse with different parameters.
 - The first workflow step atomically binds/claims the run. Duplicate workflow dispatches cannot both submit paid inference.
 - Run creation and workflow dispatch are not one transaction. If dispatch fails or its response is lost, the saved QUEUED run remains discoverable. A Retry/Resume action redispatches that same run; the claim prevents duplicate execution. Expose this recovery before calling the pipeline complete.
@@ -298,3 +298,12 @@ New analysis requests include floor/wall base colors, floor material, broad ligh
 New reconstructions attempt composition during ingestion; unsupported/missing pose contracts retain usable independent meshes on a clearly labeled manual stage. Existing scenes change only when their owner clicks Match photo layout. Keep a visible expanded-reference comparison in all studio states. Its native dialog supports Escape, a close button, focus containment, and backdrop dismissal; source access still uses owner-issued short-lived URLs.
 
 Publication is not implemented. Its serializer MUST flatten imported baseline + draft transforms into the public manifest convention; emitting draft `scaleX`/yaw alone would repeat the old normalization bug. Private room JSON is versioned independently of the proposed public manifest.
+
+
+## Confirmed step restart and uncapped prototype testing — October 29
+
+Jim removed the cumulative app spending cap. Generation estimates remain for accounting but are not compared against an allowance. GENERATION_ENABLED, owner sessions, one active run per user, serialized starts and idempotency still apply; uncertain submissions are never automatically repeated. Meta credit and fal billing are separate.
+
+POST `/api/scenes/:id/restart` accepts `{target: PHOTO|ANALYSIS|RECONSTRUCTION, expectedRevision, confirmed:true}`. One transaction uses the same advisory lock as run reservation/resume and a revision CAS. It rejects active work. PHOTO clears the source/normalized pointers plus candidates/masks/models; ANALYSIS preserves the photo but clears candidates/masks/models; RECONSTRUCTION preserves candidates/masks and resets only models/baselines/draft transforms. All targets clear camera/stage/layout backup/products and revoke later publications. Invalidated assets become DELETED and stop receiving new signatures; bytes/raw responses and billing history are retained privately, with no new R2 lifecycle policy. Existing signed links last until expiry.
+
+`Scene.settings.resetRevision` hides earlier runs from the active workspace. Old failed resumable jobs become CANCELED; the idempotency lookup refuses attempts from before that revision. Resume claims and resets share the lock, preventing a late resume from overwriting a cleared scene. The UI does not submit a new paid job until the user explicitly clicks Find objects or Build in 3D.

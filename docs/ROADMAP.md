@@ -215,3 +215,13 @@ Runtime/editor PR #2 merged into `main` on October 29 (`8f56977`). Both PR CI ru
 
 
 **Composition correction verification, October 29:** [PR #3](https://github.com/jimclydegm/ReScene/pull/3) merged at `81bf9ac`. Both PR CI runs, Vercel preview, main CI, and production deployment passed. Local and deployed existing-GLB checks pass matching/persistence/base-pose preservation/exact restore/stale revision/origin/second-account isolation and server-rendered reference controls. No new inference. Visual/mobile QA and revised Spark environment-output validation remain unchecked above.
+
+
+## Step-restart correction — October 29
+
+- [x] Remove cumulative app generation cap and Vercel/local allowance variable at Jim's request; preserve usage records and start/idempotency guards.
+- [x] Add Change photo / Analyze again / Rebuild 3D with an explicit consequence/credit confirmation and cancel.
+- [x] Implement transactional downstream clearing, asset invalidation, old-run resume rejection, revision conflicts and active-run guard.
+- [x] Local integration: copied real assets, confirmation requirement, concurrent resets, clearing boundaries, reupload, stale/origin/ownership rejection pass. Local dialog/cancel visually checked.
+- [ ] Fresh deployed Meta analysis/environment + SAM masks + composed 3D, then return/rebuild and confirm refreshed results.
+- [ ] Deployed restart integration, desktop/mobile browser QA, CI and production deployment.

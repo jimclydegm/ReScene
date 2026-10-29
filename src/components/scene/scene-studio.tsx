@@ -1,11 +1,14 @@
 "use client";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useCallback, useEffect, useState, Component, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, Component, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { Scan, Box, Check, LoaderCircle, Save, RotateCcw } from "lucide-react";
 import { apiJson } from "@/lib/client-api";
 import type { SceneWorkspace, SceneObjectView } from "./types";
 import { ReferencePhoto } from "./reference-photo";
+import { UploadForm } from "@/components/upload-form";
+import type { RestartTarget } from "@/lib/validation/generation";
 
 const ModelCanvas = dynamic(() => import("./model-canvas"), { ssr: false, loading: () => <div className="canvas-loading">Opening the 3D viewer…</div> });
 class ViewerBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
@@ -14,6 +17,9 @@ class ViewerBoundary extends Component<{ children: ReactNode }, { failed: boolea
   render() { return this.state.failed ? <div className="viewer-error">A 3D asset could not load. Reload to refresh its access link. Your scene is saved.</div> : this.props.children; }
 }
 export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
+  const router = useRouter();
+  const restartDialog = useRef<HTMLDialogElement>(null);
+  const [restartTarget, setRestartTarget] = useState<RestartTarget>("ANALYSIS");
   const [data, setData] = useState(initial);
   const [draft, setDraft] = useState(initial.objects);
   const [selected, setSelected] = useState(initial.objects[0]?.id ?? "");
@@ -93,11 +99,44 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     } catch (e) { setError(e instanceof Error ? e.message : "Could not match the photo layout."); }
     finally { setBusy(false); }
   }
+  function askRestart(target: RestartTarget) {
+    setRestartTarget(target);
+    restartDialog.current?.showModal();
+  }
+  async function restart() {
+    setBusy(true); setError(""); setMessage("");
+    try {
+      await apiJson(`${base}/restart`, { method: "POST", body: JSON.stringify({ target: restartTarget, expectedRevision: data.revision, confirmed: true }) });
+      await reload(); setChosen([]); setSelected("");
+      setMessage(restartTarget === "RECONSTRUCTION" ? "3D results cleared. Review the outlines and build your scene again." : "Later steps cleared. You can start this step again.");
+      restartDialog.current?.close(); router.refresh();
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not restart this step."); restartDialog.current?.close(); }
+    finally { setBusy(false); }
+  }
   const current = draft.find(o => o.id === selected);
   const ready = data.status === "READY" && draft.some(o => o.modelUrl);
+  const hasMasks = data.objects.some(o => o.maskUrl);
+  const restartCopy = {
+    PHOTO: { title: "Change the photo?", detail: "This clears the current photo, object analysis, outlines, 3D models, room layout, and saved edits. You will upload a new photo in this scene.", confirm: "Clear scene and change photo" },
+    ANALYSIS: { title: "Analyze this photo again?", detail: "This keeps your photo and clears the object analysis, outlines, 3D models, room layout, and saved edits. You can then run Find objects again.", confirm: "Clear results and analyze again" },
+    RECONSTRUCTION: { title: "Return to object review?", detail: "This keeps your photo and object outlines, and clears all 3D models, room layout, and saved edits. Select the objects you want and build them again.", confirm: "Clear 3D and review objects" }
+  }[restartTarget];
+  if (!data.image) return <UploadForm scene={{ id: data.id, title: data.title, revision: data.revision }}/>;
   return <div className="generation-studio">
     {data.image && <div className="studio-reference-bar"><div><span className="eyebrow">SCENE STUDIO</span><p>{ready ? "Compare your scene with the original photo." : "Your photo is the reference for this scene."}</p></div><ReferencePhoto image={data.image} title={data.title}/></div>}
-    <div className="generation-steps"><span className="done"><Check size={14}/>Photo saved</span><span className={data.objects.length ? "done" : ""}>2 · Review objects</span><span className={ready ? "done" : ""}>3 · Edit your scene</span></div>
+    <nav className="generation-steps" aria-label="Scene steps"><button className="done" disabled={busy || running} onClick={() => askRestart("PHOTO")}><Check size={14}/>1 · Photo</button>
+      <button className={data.objects.length ? "done" : ""} disabled={busy || running || !hasMasks || data.status === "REVIEW"} aria-current={!ready ? "step" : undefined} onClick={() => askRestart("RECONSTRUCTION")}>2 · Review objects</button>
+      <span className={ready ? "done" : ""} aria-current={ready ? "step" : undefined}>3 · Edit your scene</span></nav>
+    <div className="restart-actions"><button className="text-link" disabled={busy || running} onClick={() => askRestart("PHOTO")}>Change photo</button>
+      {(data.objects.length > 0 || data.status === "FAILED") && <button className="text-link" disabled={busy || running} onClick={() => askRestart("ANALYSIS")}>Analyze again</button>}
+      {hasMasks && data.status !== "REVIEW" && <button className="text-link" disabled={busy || running} onClick={() => askRestart("RECONSTRUCTION")}>Rebuild 3D</button>}
+      {running && <small>Previous steps become available when generation finishes.</small>}</div>
+    <dialog ref={restartDialog} className="restart-dialog" aria-labelledby="restart-heading" aria-describedby="restart-description" onCancel={event => { if (busy) event.preventDefault(); }}>
+      <h2 id="restart-heading">{restartCopy.title}</h2><p id="restart-description">{restartCopy.detail}</p>
+      <p>This cannot be undone. Generation already billed will not be refunded. Running Find objects or Build in 3D again uses API credits.{dirty && " Your unsaved edits will also be discarded."}</p>
+      <div className="editor-actions"><button className="button button-light" autoFocus disabled={busy} onClick={() => restartDialog.current?.close()}>Keep current scene</button>
+        <button className="button button-dark" disabled={busy} onClick={restart}>{busy ? "Clearing…" : restartCopy.confirm}</button></div>
+    </dialog>
     {error && <p role="alert" className="form-error">{error}</p>}
     {message && <p role="status" className="save-message">{message}</p>}
     {data.run?.errorMessage && <div className="generation-error"><p>{data.run.errorMessage}</p>{data.run.canResume && <button className="button button-dark" disabled={busy} onClick={resume}>Resume existing generation</button>}</div>}
@@ -123,7 +162,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
         {!data.generationEnabled && <p>Generation is temporarily disabled.</p>}
         {data.objects.map(o => <label className="review-object" key={o.id}><input type="checkbox" checked={chosen.includes(o.id)} disabled={!o.maskUrl || running} onChange={e => { setChosen(prev => e.target.checked ? [...prev, o.id].slice(0, 3) : prev.filter(id => id !== o.id)); setSelected(o.id); }}/><div><strong>{o.label}</strong><small>{o.maskUrl ? "Outline ready · select to preview" : o.errorCode ? "No clear outline found" : "Finding outline…"}</small></div></label>)}
         {data.status === "REVIEW" && <><p className="preview-caveat">Check that each highlighted outline covers the intended object. Select up to three; smaller selections are faster.</p><button className="button button-dark" disabled={busy || !chosen.length || !data.generationEnabled} onClick={() => action("RECONSTRUCT")}><Box size={16}/>{busy ? "Starting…" : `Build ${chosen.length || "your"} object${chosen.length === 1 ? "" : "s"} in 3D`}</button></>}
-        {data.status === "FAILED" && !data.run?.canResume && <p>The generation stopped. Your photo is saved. Start a new scene to try a different photo.</p>}
+        {data.status === "FAILED" && !data.run?.canResume && <p>The generation stopped. Your photo is saved. Use Analyze again, Rebuild 3D, or Change photo above to restart the relevant step.</p>}
       </aside></div>}
   </div>;
 }
