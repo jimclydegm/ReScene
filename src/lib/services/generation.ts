@@ -238,7 +238,7 @@ export async function workspace(sceneId: string, ownerId: string) {
     composition: compositionSchema.safeParse(scene.stage).data ?? null, canRestoreLayout: Boolean(record(scene.settings).layoutBackup),
     image: scene.normalizedAsset ? { url: await signRead(scene.normalizedAsset), width: scene.normalizedAsset.width!, height: scene.normalizedAsset.height! } : null,
     generationEnabled: process.env.GENERATION_ENABLED === "true", objects: await Promise.all(objects.map(async o => ({
-      id: o.id, label: o.label, status: o.status, errorCode: o.lastErrorCode,
+      id: o.id, label: o.label, status: o.status, errorCode: o.lastErrorCode, canRestoreOriginal: Boolean(record(o.provenance).replacementBackup),
       product: o.product && o.product.sceneId === sceneId ? { name: o.product.name, description: o.product.description ?? "", brand: o.product.brand ?? "", price: o.product.price?.toString() ?? null, currency: productSchema.shape.currency.parse(o.product.currency ?? "USD"), productUrl: o.product.productUrl ?? "", imageUrl: o.product.imageAsset?.status === "READY" && o.product.imageAsset.sceneId === sceneId ? await signRead(o.product.imageAsset) : null } : null,
       maskUrl: o.mask ? await signRead(o.mask) : null, modelUrl: o.model ? await signRead(o.model) : null,
       placement: modelPlacementSchema.safeParse(o.initialTransform).data ?? null,
@@ -256,7 +256,8 @@ export async function saveObjects(sceneId: string, ownerId: string, input: z.inf
   for (const edit of input.objects) {
     const original = originals.find(o => o.id === edit.id)!;
     if (edit.product && !original.productId) {
-      const id = await productThumbnail(sceneId, original.id);
+      const demo = record(original.provenance).replacementBackup ? await getDb().product.findFirst({ where: { sceneId, modelAssetId: original.modelAssetId, attributes: { path: ["catalogVersion"], equals: "demo-v1" } } }) : null;
+      const id = demo?.imageAssetId ?? (record(original.provenance).replacementBackup ? null : await productThumbnail(sceneId, original.id));
       if (id) thumbnails.set(edit.id, id);
     }
   }
@@ -268,7 +269,7 @@ export async function saveObjects(sceneId: string, ownerId: string, input: z.inf
       let productId = original.productId;
       if (edit.product === null) productId = null;
       else if (edit.product) {
-        const fields = { ...edit.product, price: edit.product.price, productUrl: edit.product.productUrl || null };
+        const fields = { ...edit.product, price: edit.product.price, currency: edit.product.price === null ? null : edit.product.currency, productUrl: edit.product.productUrl || null };
         if (productId) {
           const updated = await tx.product.updateMany({ where: { id: productId, sceneId }, data: fields });
           if (updated.count !== 1) throw new AppError(400, "INVALID_PRODUCT", "The product is unavailable.");

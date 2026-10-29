@@ -1932,3 +1932,11 @@ svg {
 .merchant-card .button { font-size: 11px; padding: 10px; margin-top: 14px; }
 .product-image-placeholder { height: 120px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 9px; background: #eef2e7; color: #87997b; font-size: 10px; }
 .inspector-tabs button { flex-basis: 72px; gap: 5px; padding: 10px 6px; font-size: 10px; }
+.catalog-controls { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #dfe5d5; }
+.catalog-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; margin: 14px 0; }
+.catalog-item { min-width: 0; display: flex; flex-direction: column; border: 1px solid #dae3ce; border-radius: 8px; padding: 5px; background: #f7faf1; color: #416139; text-align: left; }
+.catalog-item:hover:not(:disabled) { border-color: #729b65; background: #eaf1e2; }
+.catalog-item img { width: 100%; height: auto; border-radius: 5px; }
+.catalog-item span { font-size: 10px; line-height: 1.5; padding: 5px 2px; overflow-wrap: anywhere; }
+.catalog-item small { font-size: 8px; color: #819573; padding: 3px 2px; margin-top: auto; }
+.catalog-controls > .button { font-size: 11px; gap: 7px; padding: 12px; }
