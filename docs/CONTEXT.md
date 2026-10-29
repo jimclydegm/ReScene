@@ -17,7 +17,7 @@ Jim is building ReScene for Meta's Global AI Developer Hackathon: one private ro
 
 ## Implemented
 
-- Production: https://rescene-eta.vercel.app. Foundation PR1 merged `66771fa`; runtime/editor PR2 merged `8f56977`. Live Spark/SAM → reviewed masks → three real independent GLBs → move/yaw/uniform scale/hide/undo/save/reload pass local and deployed API tests. Sample landing geometry is illustrated, not inferred.
+- Production: https://rescene-eta.vercel.app. Foundation PR1 merged `66771fa`; runtime/editor PR2 merged `8f56977`. Scene-composition PR3 merged into `main` at `81bf9ac`; production is deployed. Live Spark/SAM → reviewed masks → three real independent GLBs → move/yaw/uniform scale/hide/undo/save/reload pass local and deployed API tests. Sample landing geometry is illustrated, not inferred.
 - Meta receives bounded inline normalized WebP bytes after a production signed-URL fetch rejection. fal receives one-hour private URLs. Source/mask/model/raw artifacts remain private.
 - Scene-composition correction: imported SAM poses convert Meta WXYZ row-vector/Z-up coordinates into Three.js XYZW/Y-up. One scene scale preserves relative size/depth. Common floor/camera fit plus estimated room planes/colors/light replace the neutral stage for supported poses. Full baseline rotation/scale/offset is stored in `initialTransform`; draft position/yaw/scale operate outside it. **Publication must flatten both**, not export only draft multipliers.
 - `Scene.stage` stores `sam3d-room-v1`, `Scene.camera` the photo viewpoint, and settings room observations/one previous layout backup. No migration. Owner-only POST composition with MATCH_PHOTO/RESTORE uses existing assets, revision checks, no new inference. Existing scenes upgrade only when clicked.
@@ -25,7 +25,7 @@ Jim is building ReScene for Meta's Global AI Developer Hackathon: one private ro
 
 ## Verification and next action
 
-22 focused tests, lint/typecheck/build pass. Local composition integration checks pass: common sizes/poses/camera, save preserving baseline, exact backup restore, stale revision/origin/second-account rejection, and server-rendered reference controls. Saved three-object box reprojection RMSE ~1.4% of frame; this is geometric consistency, not scan accuracy. Deployed verification/merge are being completed; see TESTING.md for final evidence.
+22 focused tests, lint/typecheck/build pass. Local composition integration checks pass: common sizes/poses/camera, save preserving baseline, exact backup restore, stale revision/origin/second-account rejection, and server-rendered reference controls. Saved three-object box reprojection RMSE ~1.4% of frame; this is geometric consistency, not scan accuracy. Both local and deployed composition integration passed. PR3 CI/preview checks and main CI passed; Vercel production serves the merged correction. Checkout is on `main`. See TESTING.md for evidence.
 
 Browser automation still reports disabled in Work settings despite Jim's earlier intent to enable it. Actual editor visuals/mobile interaction are unverified. Detailed floor textures, windows, wall geometry, lighting recovery, and real-photo quality remain incomplete. Product cards, catalog replacement, immutable publication, and anonymous viewer are next implementation phases. Follow NEXT_STEPS.md.
 

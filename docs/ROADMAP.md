@@ -107,11 +107,23 @@ If a target slips, remove optional work before weakening the complete core flow.
 - [x] Add a clickable reference thumbnail and expanded native dialog to Scene Studio.
 - [x] Add owner-only Match photo layout / Undo photo layout using saved assets, revision checks, and no new inference.
 - [x] Add pose/projection/GLB hierarchy regressions. Preserve usable meshes on unsupported-layout fallback.
-- [ ] Complete local/deployed integration verification and merge the correction.
+- [x] Complete local/deployed integration verification and merge the correction (PR #3, `81bf9ac`).
 - [ ] Visually compare the reconstructed bedroom with its photo; check mobile dialog, camera reset, selection, and mesh orientation once browser access is enabled.
 - [ ] Validate the revised Spark environment response on a future authorized inference; current saved scenes use the color fallback.
 
 Room surfaces and lighting are approximate. Full background texture/depth reconstruction remains a separate quality gate, not a completed capability.
+
+## Next room-quality gate — before calling the photo recreation complete
+
+Time-box the first quality pass after visual comparison; keep the November 2 freeze and approved inference cap.
+
+- [ ] Compare the saved bedroom from Photo view with the reference: floor/wall boundary, wall corner, object contacts, bed/chair facing, proportions, shadows, and missing objects. Record visible mismatches separately from coarse projection error.
+- [ ] If room surfaces are the main gap, use reviewed floor/wall segmentation and image-space boundary/vanishing-line estimates to fit planes/camera. Validate the provider's supported prompts before adding calls; bounding boxes alone do not determine room geometry.
+- [ ] Evaluate a clean floor/wall texture from documented Muse Image editing, removing furniture from texture regions first. This is a future paid experiment, not an implemented endpoint. Do not put the untouched photo behind movable meshes, which would leave furniture ghosts.
+- [ ] Project only reviewed clean surface textures onto the fitted planes. Label extrapolated/hidden surfaces as generated, retain neutral fallback on failure, and check moved/hidden objects do not remain in room textures.
+- [ ] Validate material/light observations from the revised Spark prompt and compare exposure/shadow direction visually. Keep broad lights until a more reliable estimate is measured.
+
+A one-photo approximation may be enough for the hackathon, but floor-texture/window fidelity, true dimensions, and unseen geometry must not be marked complete merely because mesh generation works. Read META_MODELS.md for current evidence; no extra inference is authorized by this checklist.
 
 ## Phase 4 — Editable and shoppable draft
 
@@ -200,3 +212,6 @@ The foundation work subsequently resolved DDL generation and applied the reviewe
 **Current runtime gate, October 29:** production upload→Spark/SAM→review data→three independent GLBs→saved transform API passes; signed downloads/CORS, replayed starts, stale saves, origin rejection, and second-account isolation pass. Browser control is disabled in Work settings, so visual mesh/interaction/mobile QA is still pending. Product cards/replacement/publication remain future work. See TESTING.md.
 
 Runtime/editor PR #2 merged into `main` on October 29 (`8f56977`). Both PR CI runs and Vercel checks passed. The deployed three-object API flow and editor-page rendering checks pass; visual browser QA is the next verification action.
+
+
+**Composition correction verification, October 29:** [PR #3](https://github.com/jimclydegm/ReScene/pull/3) merged at `81bf9ac`. Both PR CI runs, Vercel preview, main CI, and production deployment passed. Local and deployed existing-GLB checks pass matching/persistence/base-pose preservation/exact restore/stale revision/origin/second-account isolation and server-rendered reference controls. No new inference. Visual/mobile QA and revised Spark environment-output validation remain unchecked above.
