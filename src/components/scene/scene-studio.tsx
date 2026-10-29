@@ -7,6 +7,7 @@ import { Scan, Box, Check, LoaderCircle, Save, RotateCcw, Palette, Lightbulb, Re
 import { apiJson } from "@/lib/client-api";
 import type { SceneWorkspace, SceneObjectView } from "./types";
 import { RangeField } from "@/components/ui/range-field";
+import { PublicationControls } from "./publication-controls";
 import { CatalogControls, type CatalogItem } from "./catalog-controls";
 import { ProductControls } from "./product-controls";
 import { AppearanceControls } from "./appearance-controls";
@@ -179,7 +180,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
       {running && <small>Previous steps become available when generation finishes.</small>}</div>
     <dialog ref={restartDialog} className="restart-dialog" aria-labelledby="restart-heading" aria-describedby="restart-description" onCancel={event => { if (busy) event.preventDefault(); }}>
       <h2 id="restart-heading">{restartCopy.title}</h2><p id="restart-description">{restartCopy.detail}</p>
-      <p>This cannot be undone. Generation already billed will not be refunded. Running Find objects or Build in 3D again uses API credits.{dirty && " Your unsaved edits will also be discarded."}</p>
+      <p>Active share links will also be revoked. This cannot be undone. Generation already billed will not be refunded. Running Find objects or Build in 3D again uses API credits.{dirty && " Your unsaved edits will also be discarded."}</p>
       <div className="editor-actions"><button className="button button-light" autoFocus disabled={busy} onClick={() => restartDialog.current?.close()}>Keep current scene</button>
         <button className="button button-dark" disabled={busy} onClick={restart}>{busy ? "Clearing…" : restartCopy.confirm}</button></div>
     </dialog>
@@ -221,5 +222,6 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
         {data.status === "REVIEW" && <><p className="preview-caveat">Check that each highlighted outline covers the intended object. Select up to three; smaller selections are faster.</p><button className="button button-dark" disabled={busy || !chosen.length || !data.generationEnabled} onClick={() => action("RECONSTRUCT")}><Box size={16}/>{busy ? "Starting…" : `Build ${chosen.length || "your"} object${chosen.length === 1 ? "" : "s"} in 3D`}</button></>}
         {data.status === "FAILED" && !data.run?.canResume && <p>The generation stopped. Your photo is saved. Use Analyze again, Rebuild 3D, or Change photo above to restart the relevant step.</p>}
       </aside></div>}
+    {ready && <PublicationControls sceneId={data.id} revision={data.revision} disabled={busy || dirty || lightDirty || running}/>}
   </div>;
 }

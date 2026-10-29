@@ -116,3 +116,17 @@ Use the fresh disposable catalog QA copy `6800b8a2-7c39-4a52-8fde-790eb03ab46c`,
 42 tests cover original GLB validation/bounds, uniform fitting/bottom-center anchoring and degenerate inputs. Lint/typecheck/build and PR CI pass. PR #8 merged at 77cd137; production is READY and the full fresh-copy check passes locally and on production, with original QA metadata restored. Browser interaction QA remains pending because access is disabled. R2 seed/copy bytes from failed transactions remain private; automatic cleanup stays disabled.
 
 Manual: open the chair/cabinet/vase example → Products → select an object → choose a demo replacement. Check its product card, position and size, then refresh. Edit its price and Save changes; templates must stay unchanged. Restore original object recovers the original mesh/card at the current placement. Photo matching/texture actions become available again. Demo products contain no real merchant price/link until supplied by you.
+
+## Phase 5 publication / Phase 6 release
+
+47 tests include matrix-vs-nested-transform equivalence, manual bottom-center normalization, strict snapshot fields, unit rotations, exact reachable IDs and product reference/price/link validation. Runtime contract is contracts/scene-manifest-v2.schema.json; original v1 is historical.
+
+`SMOKE_CREDENTIAL_FILE=/absolute/path/to/qa.json SMOKE_SCENE_ID=6800b8a2-7c39-4a52-8fde-790eb03ab46c SMOKE_BASE_URL=http://localhost:3000 node scripts/smoke-publication.mjs`
+
+Local production-build check passes: owner/confirmation/stale/origin guards; duplicate publish reuses the link; anonymous product page renders; GLBs, product images and two QA room textures download; draft merchant/transform edits and model replacement leave the frozen snapshot unchanged; public DTO has no source/mask/editor metadata; other-account revoke is denied; revoke blocks new JSON access. It revokes all test links and restores metadata. Next may stream a not-found page with HTTP 200 after headers have started: the test checks unavailable content/no listing, while the JSON resolver returns 404. No live snapshot URLs are printed or committed.
+
+`scripts/smoke-publication-lifecycle.ts` with SMOKE_OWNER_SCENE_ID and `node --conditions=react-server --import tsx` uses original procedural QA assets to verify archive/restore/restart behavior; it archives its temporary scene and revokes its links. This passes. Direct adversarial QA setup also tried using a source photo ID as a room surface; publication rejected it with 422.
+
+Fresh paid release runner: `scripts/smoke-release.mjs prepare`, `status`, `reconstruct`, `finish`. SMOKE_CREDENTIAL_FILE is required. prepare uploads the approved synthetic input and starts one idempotent Meta analysis; reconstruct submits one two-object job. These two phases spend inference credits; status/report/finish do not. State/timestamps are saved to ignored test-results/release-qa.json. Finish verifies saved merchant fields, catalog replacement, publication, anonymous real GLBs/CORS and revoke. Run release-report.ts with react-server/tsx to save provider/timing/size evidence without secret provider IDs. Null actual cost means unknown, not free.
+
+Browser access remains disabled, so physical appearance, camera orbit/mobile selection, dialogs/clipboard and frame rate are not verified. Google consent, recording and authenticated participant-portal submission remain release gates. See docs/release/DEMO.md.
