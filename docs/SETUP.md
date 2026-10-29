@@ -6,7 +6,7 @@ Updated October 29, 2026. This is the implemented foundation; AI reconstruction 
 
 - Vercel project: `jimclydegms-projects/rescene`; existing GitHub import reused.
 - Production URL: [rescene-eta.vercel.app](https://rescene-eta.vercel.app).
-- Foundation review: [PR #1](https://github.com/jimclydegm/ReScene/pull/1). GitHub deploys the feature branch to its stable, protected preview alias.
+- Foundation merged into `main`: [PR #1](https://github.com/jimclydegm/ReScene/pull/1), merge commit `66771fa`. GitHub deploys `main` to production; the retained foundation feature branch also has a stable, protected preview alias.
 - Framework: Next.js 16.4.3; runtime Node 22; Functions region `iad1`.
 - Vercel CLI: 65.2.0, authenticated. Upgrade to the available 65.7.0 release is recommended with `npm i -g vercel@latest`. Existing Vercel plugin guidance is installed.
 - Shared Vercel MCP endpoint is already configured at `https://mcp.vercel.com`. OAuth remains pending **at Jim's request**; the CLI handles project operations.

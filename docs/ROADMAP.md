@@ -14,6 +14,8 @@ Phases are ordered by dependency. Finish each acceptance gate before expanding s
 
 The app foundation is implemented. Jim requested Vercel setup and base code while the reconstruction spike remains pending. Unchecked boxes still describe future work; model-account access is not a completed reconstruction gate. See [SETUP.md](SETUP.md) for actual deployment/access status.
 
+Foundation PR #1 merged into `main` on October 29 (`66771fa`). The immediate experiment and the following implementation slices are prepared in [NEXT_STEPS.md](NEXT_STEPS.md); live model calls have not started.
+
 ## Calendar
 
 | Date | Target | Exit condition |

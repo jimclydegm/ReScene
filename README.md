@@ -41,6 +41,7 @@ Read [the short handoff](docs/CONTEXT.md) first. Open other files only for the t
 | [Scene manifest schema](contracts/scene-manifest.schema.json) | Versioned viewer/publication data contract |
 | [Example manifest](contracts/examples/scene-manifest.json) | Synthetic contract example; not a generated scene |
 | [Roadmap](docs/ROADMAP.md) | Ordered implementation phases, dates, acceptance checks, and cut lines |
+| [Next steps](docs/NEXT_STEPS.md) | Immediate Meta feasibility experiment, evidence, and next implementation slices |
 | [Environment template](.env.example) | Configuration names; contains no credentials |
 | [Implemented setup](docs/SETUP.md) | Deployment, migration, provider access, local commands, and current limits |
 

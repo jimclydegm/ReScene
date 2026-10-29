@@ -20,11 +20,11 @@ Jim is building ReScene for Meta's Global AI Developer Hackathon. A seller uploa
 
 ## Current state
 
-- Live foundation: https://rescene-eta.vercel.app; existing Vercel project and Neon `rescene-db` reused. Branch: `codex/app-foundation`.
+- Live foundation: https://rescene-eta.vercel.app; existing Vercel project and Neon `rescene-db` reused. PR #1 merged October 29 at commit `66771fa`; checkout is now `main`.
 - Landing/sample viewer, managed auth, private scene dashboard, ownership, revision-aware API, and upload code are implemented. Sample geometry is illustrated, not reconstructed.
 - Migration `20261029040000_init` applied all 8 app tables/constraints; managed auth tables untouched. Prisma 7.10.1.
 - Secrets are in ignored `.env.local` and Vercel production/preview secrets. Do not print them. Runtime generation is disabled.
-- Build/lint/typecheck/6 tests, GitHub CI, and local/deployed 9-check account/ownership smoke pass. Nine deployed storage checks and real browser upload/refresh pass using synthetic images. Browser sign-in/dashboard and 390px upload layout checked. Draft review: https://github.com/jimclydegm/ReScene/pull/1.
+- Build/lint/typecheck/6 tests, GitHub CI, and local/deployed 9-check account/ownership smoke pass. Nine deployed storage checks and real browser upload/refresh pass using synthetic images. Browser sign-in/dashboard and 390px upload layout checked. Merged foundation: https://github.com/jimclydegm/ReScene/pull/1.
 - Updated R2 Object Read & Write credentials are stored locally and in Vercel production/preview; production was redeployed. Bucket settings were applied through Cloudflare's dashboard because runtime credentials intentionally cannot administer settings. The setup script only configures CORS; it must not enable automatic deletion.
 - Meta model discovery, Neon DB/Auth/JWKS, R2 write/read/delete, and fal missing-job queue response work. No paid inference yet.
 - Vercel CLI configured/authenticated; existing plugin guidance available. Jim explicitly requested keeping MCP OAuth pending.
@@ -32,7 +32,7 @@ Jim is building ReScene for Meta's Global AI Developer Hackathon. A seller uploa
 
 ## Next action
 
-Run the real Spark + SAM + SAM 3D feasibility test before implementing photo reconstruction; account access alone does not prove output quality or object/pose mapping. The private upload foundation is ready.
+Follow [NEXT_STEPS.md](NEXT_STEPS.md): choose a rights-cleared two-object photo, verify current pricing and agree the experiment cap, then run one bounded Spark + SAM + SAM 3D test. No cap or real input has been selected yet. Keep public generation disabled until independent meshes, object mapping, and importer behavior are demonstrated. Begin implementation from `main` on `codex/meta-feasibility`; the checkout stays on `main` during preparation.
 
 ## Open dependencies
 
@@ -47,3 +47,4 @@ Keys/account configuration and R2 access now work. Google uses Neon's shared dev
 - Routes, pipeline, storage, UI modules: `ARCHITECTURE.md`
 - Tables/validation: `DATA_MODEL.md`, `../prisma/schema.prisma`, `../contracts/scene-manifest.schema.json`
 - Work order/checks: `ROADMAP.md`
+- Immediate experiment and next implementation slices: `NEXT_STEPS.md`
