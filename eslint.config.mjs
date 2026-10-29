@@ -5,5 +5,5 @@ import nextTypescript from "eslint-config-next/typescript";
 export default defineConfig([
   ...nextVitals,
   ...nextTypescript,
-  globalIgnores([".next/**", "out/**", "src/generated/**", "next-env.d.ts", "coverage/**"])
+  globalIgnores([".next/**", "out/**", "src/generated/**", "src/app/.well-known/workflow/**", "next-env.d.ts", "coverage/**", ".workflow-data/**"])
 ]);

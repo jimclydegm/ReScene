@@ -37,6 +37,9 @@ next-env.d.ts
 
 # generated application code and local diagnostics
 /src/generated/prisma/
+/src/app/.well-known/workflow/
+/.workflow-data/
 /test-results/
 /playwright-report/
 .env*
+/.swc

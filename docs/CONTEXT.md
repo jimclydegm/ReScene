@@ -20,19 +20,22 @@ Jim is building ReScene for Meta's Global AI Developer Hackathon. A seller uploa
 
 ## Current state
 
-- Live foundation: https://rescene-eta.vercel.app; existing Vercel project and Neon `rescene-db` reused. PR #1 merged October 29 at commit `66771fa`; checkout is now `main`.
+- Live foundation: https://rescene-eta.vercel.app; existing Vercel project and Neon `rescene-db` reused. PR #1 merged October 29 at commit `66771fa`. Active preparation branch: `codex/meta-feasibility`, based on `main`.
 - Landing/sample viewer, managed auth, private scene dashboard, ownership, revision-aware API, and upload code are implemented. Sample geometry is illustrated, not reconstructed.
 - Migration `20261029040000_init` applied all 8 app tables/constraints; managed auth tables untouched. Prisma 7.10.1.
-- Secrets are in ignored `.env.local` and Vercel production/preview secrets. Do not print them. Runtime generation is disabled.
+- Secrets are in ignored `.env.local` and Vercel production/preview secrets. Do not print them. Generation is enabled for the bounded prototype test.
 - Build/lint/typecheck/6 tests, GitHub CI, and local/deployed 9-check account/ownership smoke pass. Nine deployed storage checks and real browser upload/refresh pass using synthetic images. Browser sign-in/dashboard and 390px upload layout checked. Merged foundation: https://github.com/jimclydegm/ReScene/pull/1.
 - Updated R2 Object Read & Write credentials are stored locally and in Vercel production/preview; production was redeployed. Bucket settings were applied through Cloudflare's dashboard because runtime credentials intentionally cannot administer settings. The setup script only configures CORS; it must not enable automatic deletion.
-- Meta model discovery, Neon DB/Auth/JWKS, R2 write/read/delete, and fal missing-job queue response work. No paid inference yet.
+- Meta model discovery, Neon DB/Auth/JWKS, R2 write/read/delete, and fal missing-job queue response work. Live Spark/SAM and hosted SAM 3D calls have now succeeded.
+- Jim approved **US$10 total development inference** on October 29, replacing the earlier code-only instruction. The CLI produced two independent GLBs; the local app workflow produced three real bedroom object meshes and passed API save/reload, revision, origin, and ownership checks. Fresh production validation also passed: three real meshes, signed downloads/CORS, saved edits, stale/origin/ownership rejection.
 - Vercel CLI configured/authenticated; existing plugin guidance available. Jim explicitly requested keeping MCP OAuth pending.
 - See `SETUP.md` for commands, resource setup, tested limits, and remaining dependencies. Prototype local/production currently share the supplied Neon branch/Auth and storage namespace.
 
 ## Next action
 
-Follow [NEXT_STEPS.md](NEXT_STEPS.md): choose a rights-cleared two-object photo, verify current pricing and agree the experiment cap, then run one bounded Spark + SAM + SAM 3D test. No cap or real input has been selected yet. Keep public generation disabled until independent meshes, object mapping, and importer behavior are demonstrated. Begin implementation from `main` on `codex/meta-feasibility`; the checkout stays on `main` during preparation.
+Follow [TESTING.md](TESTING.md) for the working deployed flow. Browser controls/appearance still need visual QA because computer access is disabled. The app now has Find objects → review masks → Build in 3D → move/rotate/scale/hide/undo/save/reload. Vercel Workflow 5.2.3 persists jobs; paid submissions have no automatic retries. Local/preview/production share prototype DB/Auth/R2. Browser automation is disabled in Work settings; Jim said he will enable it but it still reports disabled. Product cards, replacement, and sharing remain unimplemented.
+
+The app has a cumulative **$7.50 reservation pool**, separate from the CLI’s $2.405 reserve plus a $0.0025 inline-SAM diagnostic, keeping conservative allowances below the $10 cap. The first production SAM request received HTTP 400 media-fetch rejection; its run retains $0.02 after manual usage reconciliation. Meta calls now inline bounded normalized bytes to avoid remote fetching. Never blindly repeat an uncertain submission.
 
 ## Open dependencies
 

@@ -1,6 +1,6 @@
 # ReScene system architecture
 
-Architecture target, October 29, 2026. The app/auth/database foundation is implemented; durable generation, reconstruction, product editing, and publication remain planned. See [SETUP.md](SETUP.md) for verified deployment/access status, [PLAN.md](PLAN.md) for scope, and [DATA_MODEL.md](DATA_MODEL.md) for constraints.
+Architecture target, October 29, 2026. The app/auth/database, durable analysis/reconstruction, mask review, and saved object-transform editor are implemented. Product editing and publication remain planned. Visual browser QA is pending. See [SETUP.md](SETUP.md) for verified deployment/access status, [PLAN.md](PLAN.md) for scope, and [DATA_MODEL.md](DATA_MODEL.md) for constraints.
 
 ## 1. System boundaries
 
@@ -276,3 +276,10 @@ MVP scene deletion is archival: reject new work, revoke publications, stop resul
 Current housekeeping: completion attempts immediate staging deletion; automatic staging expiry is disabled at Jim's request. The pre-existing seven-day incomplete-multipart abort rule is unchanged. Seven-day retention for failed/unreferenced raw provider outputs remains proposed; no automatic deletion of live/publication assets. Any future approved lifecycle rule must target only its matching prefix, never the whole scene tree. See setup docs for actual retention.
 
 The MVP does not promise high availability, exact reconstruction, exact-once third-party billing, or production commerce scale. It does require persistent jobs, clear failures, ownership checks, and a working complete demo.
+
+
+## Implemented prototype behavior, October 29
+
+The app now uses Workflow 5.2.3 with per-scene Run/Step records and a serialized global budget reservation. Analysis uses Standard Spark, then up to three single-concept SAM requests. Exactly one mask per concept is accepted; ambiguous/no-match objects cannot be reconstructed. Owners review masks, choose up to three objects, and submit one fal SAM 3D job. Known request IDs are saved before polling; unknown submissions stop without automatic retries. Fresh local and production runs produced three independent GLBs.
+
+Meta input is a bounded inline normalized WebP to avoid the SAM remote-media fetch rejection observed in production; fal receives one-hour private input/mask URLs. The viewer clones each object, preserves its GLB geometry, fits its longest side to 1.5 approximate stage units, and uses a bottom-center pivot. Seller transforms are persisted with revision checks. Provider layout metadata is retained privately but is not applied automatically: placement and scale are approximate/manual. Product editing, complete manifest/publication, and real-photo/visual QA remain later work. See TESTING.md for the measured result and limitations.

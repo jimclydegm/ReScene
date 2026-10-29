@@ -169,3 +169,24 @@ Proposed UX targets: photo preview immediately, first analysis/review within 60 
 ## 10. Observed access during foundation setup
 
 Meta's authenticated `/models` read succeeded with Spark 1.3, SAM 3.1, Muse Image, Voice Transcribe, and Wonder listed. A fal queue-status read returned the expected missing-job response. No paid inference was submitted. These checks establish discovery/endpoint access, not segmentation quality, GPU entitlement, object mapping, or a successful reconstruction; the live Phase 0 experiment remains required.
+
+## 11. Code preparation, October 29
+
+Jim requested code preparation only; no paid model call is approved. The synthetic bedroom input was normalized to 1536×1024 and uploaded privately to the experiment namespace. The spike intentionally uses local checkpoints/R2 without touching application Scene/GenerationRun records.
+
+- `analyze.ts` uses Standard Spark Chat Completions with JSON Schema, a 4096-output-token cap, runtime bounds/ID checks, and no automatic retry.
+- `segment.ts` uses Responses streaming plus installed `@meta-sam/parser` 0.1.0. The parser's `bounds` refer to the source-pixel crop; the decoded raster is placed into a full-frame black/white PNG. Empty/malformed/out-of-bounds masks stop that path. Both request-local and application candidate IDs are preserved.
+- The checked fal types describe `individual_glbs`, `metadata.object_index`, nested scale/translation arrays, and quaternion `[x,y,z,w]`. These are documented contracts, not observed coordinate/baked-transform behavior.
+- The [fal model page](https://fal.ai/models/fal-ai/sam-3/3d-objects) currently shows $0.02/unit/generation; the effective multi-object/textured-job billing and account balance have **not** been verified. The CLI reserves $1.00 for the first reconstruction as a conservative experiment allowance. This is not a guaranteed provider-enforced charge cap.
+- Meta's [pricing page](https://dev.meta.ai/products/meta-model-api) still lists Spark 1.3 at $1.25/M input and $4.25/M output, SAM at $2.50/1k images. The runner conservatively reserves $1.40 for analysis (full context plus bounded output) and $0.0025 per SAM concept; it retains reservations for ambiguous attempts.
+
+The private CLI checkpoints before paid submission, saves a returned reconstruction request ID before polling, freezes selections, requires a consistent explicit budget, and disables fal automatic retries. A lost submission response stays STARTED and requires manual reconciliation. Full end-to-end execution, cost accounting, instance quality, file-to-mask mapping, transforms, importer normalization, and independent browser movement remain untested. See [SPIKE.md](SPIKE.md).
+
+
+## 12. Live development results, October 29
+
+Jim approved a $10 total development inference cap, replacing the earlier code-only instruction. Spark identified all four objects in the synthetic bedroom. The CLI segmented a nightstand and chair and ingested two independent textured GLBs (1,175,784 and 1,490,588 bytes); texture inspection matches wood drawers and mustard upholstery. No GLB node transforms were present; Y-axis geometry bounds were consistent with upright objects, but a complete visual transform/importer check is still pending.
+
+The local app and a fresh production app run independently produced bed/chair/nightstand masks and three real object GLBs. Production analysis/masks completed in 28.8 seconds; reconstruction/ingestion in 93.7 seconds. The app uses approximate bottom-center manual stage placement rather than unverified provider poses. Signed downloads/CORS and persistent transform API checks pass. Browser appearance/interaction and real-photo quality remain unverified because Work browser control is disabled.
+
+An earlier production SAM request rejected a signed R2 image URL with HTTP 400. The app now sends bounded inline normalized bytes to Meta; a direct diagnostic and the fresh production run succeeded. The rejected attempt was manually reconciled to a conservative $0.02 reserve from observed Spark usage plus one SAM-image allowance, with an audit note retained. Provider invoices/actual GPU charges have not been read; global conservative reservation controls remain below the approved cap.

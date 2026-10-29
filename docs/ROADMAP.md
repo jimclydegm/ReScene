@@ -34,10 +34,11 @@ If a target slips, remove optional work before weakening the complete core flow.
 
 - [ ] Read the participant rules/details and record track, final deadline/timezone, model requirements, allowed hosts/assets, team rules, judging rubric, and submission format in PLAN.md. Do not treat marketing copy as the final rules.
 - [x] Verify account/model discovery access to `muse-spark-1.3` and `sam-3.1`. Secrets are local/platform-side; live inference is still pending.
+- [x] Prepare Spark/SAM adapters, private checkpointed spike CLI, offline contract/mask/artifact tests, and normalized synthetic bedroom input. Jim subsequently approved $10 total development inference. See [SPIKE.md](SPIKE.md) and [TESTING.md](TESTING.md).
 - [ ] Select one rights-cleared photo with 3–5 clear furniture/decor objects; use two objects for the first test.
-- [ ] Run Spark analysis and SAM masks; save sanitized request/response fixtures plus private full artifacts.
+- [x] Run live Spark analysis and SAM masks; retain full private artifacts. Synthetic-fixture results are in META_MODELS.md; sanitized real protocol regression fixtures remain later work.
 - [ ] Check current hosted SAM 3D price/billing unit/credits and set the experimental spending cap before paid tests.
-- [ ] Run one multi-object Meta SAM 3D job. Save provider request ID, model identity, duration, bytes, actual/quoted cost, and output inventory.
+- [x] Run a two-object CLI job and three-object local/deployed app jobs; save IDs, raw results, bytes and timings privately. Actual GPU invoices remain unverified; conservative reservation controls are active.
 - [ ] Load independent GLBs in a minimal viewer and verify mask→object→mesh identity.
 - [ ] Verify coordinate frame, quaternion ordering, camera matrix direction, baked transforms, scale, pivots, bounds, and manual correction needs.
 - [ ] Test polling a known job and one failure/recovery outcome. Mark unresolved submission ambiguity honestly.
@@ -74,12 +75,12 @@ If a target slips, remove optional work before weakening the complete core flow.
 
 - [x] Build create-scene/upload screen with format/size hints, progress, and retry.
 - [x] Implement and verify staging reservation, direct PUT, completion verification, immutable source snapshot, bounded normalization/EXIF stripping, and malformed-image rejection.
-- [ ] Implement Run/Step persistence, idempotency, active-run/budget gate, workflow dispatch/claim, and DB-backed progress polling.
-- [ ] Add Spark scene-analysis adapter with validated bounded structured output and prompt versioning.
+- [x] Implement Run/Step persistence, idempotency, active-run/budget gate, workflow dispatch/claim, and DB-backed progress polling. Local/deployed start replay checks pass.
+- [x] Add and live-test Spark scene-analysis adapter with bounded structured output and prompt versioning.
 - [ ] Add SAM 3.1 adapter using the official parser; handle zero matches, request-local IDs, masks, corrected boxes, and concept grouping.
 - [ ] Store masks/cutouts in normalized-image space and match candidates to instances.
 - [ ] Build object list/overlay review: rename, exclude, confirm, correct box, resegment one object.
-- [ ] Add safe error states and resume of a saved queued run if initial dispatch fails.
+- [x] Add safe error states, uncertain-submission stop, queued dispatch recovery, and known-job resume. Production failure stopped without resubmitting; browser recovery controls remain visually untested.
 
 **Pass:** a fresh upload reaches REVIEW with correctly aligned masks for at least three objects; review survives refresh; closing/reopening does not lose work; malformed or oversized uploads are rejected server-side. Private image signing cannot be used on another user's asset.
 
@@ -87,9 +88,9 @@ If a target slips, remove optional work before weakening the complete core flow.
 
 **Estimate: 4–6 hours, October 30.** Depends on Phases 0 and 2.
 
-- [ ] Freeze confirmed object/mask order and scene revision in the reconstruction run input.
-- [ ] Submit queued SAM 3D request, persist its ID, and poll durably with deadline/cancel checks.
-- [ ] Ingest per-object GLBs and private raw metadata; validate sizes, format, self-contained resources, finite transforms, and output mapping.
+- [x] Freeze confirmed object/mask order and scene revision in the reconstruction run input.
+- [x] Submit queued SAM 3D, persist its ID, and poll durably with a deadline. Cancellation UI is not implemented.
+- [x] Ingest independent GLBs/raw metadata with bounded host/byte/container/resource/finite-transform checks. Mapping uses frozen input order; full visual identity/importer checks remain pending.
 - [ ] Apply the tested coordinate/pivot importer exactly once. Record importer version and provenance.
 - [ ] Assemble an initialized stage/camera and render objects as stable semantic groups.
 - [ ] Add orbit/pan/zoom, raycast selection, loading/error fallbacks, and reset camera.
@@ -103,7 +104,7 @@ If a target slips, remove optional work before weakening the complete core flow.
 **Estimate: 5–7 hours, October 31.** Depends on Phase 3.
 
 - [ ] Add floor translation, vertical rotation, uniform scale multiplier, hide/restore, numeric controls, and local undo/redo.
-- [ ] Implement atomic saves with expectedRevision, conflict feedback, and reload persistence. Reject structural edits during generation.
+- [x] Implement atomic transform saves with expectedRevision, conflict feedback, and reload persistence; edit APIs reject busy scenes. Local/deployed API checks pass.
 - [ ] Build merchant product form/card with price/currency validation, HTTPS link, description, and thumbnail.
 - [ ] Seed 2–3 rights-cleared replacement products/GLBs in the scene catalog through a trusted script.
 - [ ] Implement mesh+product replacement in one transaction with normalized pivot/size and undo.
@@ -180,3 +181,6 @@ Checked October 29, 2026:
 These checks validate planning artifacts, not model access, reconstruction quality, or the running application. Remaining gates are deliberately unchecked above.
 
 The foundation work subsequently resolved DDL generation and applied the reviewed migration. Current validation is recorded in [SETUP.md](SETUP.md); the historical planning-only statements above do not describe the current deployment.
+
+
+**Current runtime gate, October 29:** production upload→Spark/SAM→review data→three independent GLBs→saved transform API passes; signed downloads/CORS, replayed starts, stale saves, origin rejection, and second-account isolation pass. Browser control is disabled in Work settings, so visual mesh/interaction/mobile QA is still pending. Product cards/replacement/publication remain future work. See TESTING.md.

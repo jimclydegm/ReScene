@@ -1,6 +1,6 @@
 # ReScene foundation setup
 
-Updated October 29, 2026. This is the implemented foundation; AI reconstruction and publication remain later phases.
+Updated October 29, 2026. The private upload→Meta analysis/review→3D generation→saved editor is implemented. Product editing and publication remain later phases.
 
 ## Deployment and account setup
 
@@ -23,7 +23,7 @@ Local credentials are in ignored `.env.local`, with restricted file permissions.
 
 `CLOUDFLARE_API_TOKEN` is a local management credential; the app uses only the R2 S3 access/secret pair. It is not deployed as a runtime management token. No key, database password, cookie secret, or OIDC token belongs in GitHub, docs, screenshots, or public `NEXT_PUBLIC_*` variables.
 
-The prototype keeps `GENERATION_ENABLED=false`. Provider clients are present, but no public generation endpoint can consume the model credentials yet.
+Jim approved $10 total development inference. The prototype now uses `GENERATION_ENABLED=true` with a global `$7.50` DB reservation pool, in addition to the private CLI/diagnostic allowances described in TESTING.md. New copies default to disabled/zero budget. Reservations are serialized in a DB transaction; failed/unknown submissions are not automatically refunded.
 
 ## Run locally
 
@@ -106,4 +106,6 @@ For a deployed foundation check, set `SMOKE_BASE_URL=https://rescene-eta.vercel.
 - Dependency overrides update the SDK's Better Auth and Zod dependencies past the reported high/critical advisories. Audit currently reports seven low-severity transitive advisories and no moderate/high/critical advisories. Full type/build/auth checks passed with these overrides.
 - Nine deployed storage smoke checks pass: signed reservation, CORS allowlist, direct PUT/completion, normalized preview/persistence, database checksums/lineage, idempotent completion, unsigned denial, immutable accepted source, and malformed-image rejection. A 2400×1200 JPEG with EXIF orientation 6 becomes an 800×1600 metadata-free WebP.
 - Cloudflare dashboard confirms private bucket settings and the CORS allowlist. Automatic staging deletion remains disabled at Jim's request.
-- Live photo analysis, SAM masks, GPU reconstruction, model-output mapping, product editing, and publication are not implemented or validated in this foundation.
+- Local and fresh production API tests passed upload→Spark/SAM→three GLBs→saved edits, signed model downloads/CORS, replayed start IDs, stale/origin/second-account rejection.
+- Deployed analysis/masks took 28.8 seconds; reconstruction/ingestion took 93.7 seconds on the synthetic bedroom. Visual browser QA is blocked by disabled Work browser access; real-photo quality, automatic poses, product editing, and publication remain unchecked.
+- Workflow 5.2.3 is installed; `withWorkflow` emits its internal endpoints, excluded by the existing auth matcher. Runtime generation data stays in Neon/R2; private local workflow state is ignored. `undici` is overridden to 7.30.1; audit has seven low advisories and no moderate/high/critical ones.
