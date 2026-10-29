@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "sceneId": "10000000-0000-4000-8000-000000000001",
+  "revision": 4,
+  "title": "Synthetic contract example",
+  "description": "Illustrative data only; these asset IDs do not point to generated media.",
+  "coordinates": { "handedness": "right", "upAxis": "Y", "units": "approximate" },
+  "approximateGeometry": true,
+  "camera": {
+    "position": [4, 3, 5], "target": [0, 0.6, 0],
+    "fovDegrees": 50, "minDistance": 1, "maxDistance": 12, "maxPolarAngle": 1.5
+  },
+  "stage": {
+    "type": "simple-room", "size": [6, 3, 6],
+    "floorColor": "#e9e5df", "wallColor": "#f5f3ef", "showWalls": false
+  },
+  "posterAssetId": "10000000-0000-4000-8000-000000000002",
+  "objects": [
+    {
+      "id": "10000000-0000-4000-8000-000000000003",
+      "label": "Table lamp", "category": "lighting",
+      "representation": "MESH", "geometrySource": "SAM3D",
+      "modelAssetId": "10000000-0000-4000-8000-000000000004",
+      "cutoutAssetId": null,
+      "productId": "10000000-0000-4000-8000-000000000005",
+      "visible": true,
+      "transform": { "position": [0, 0.7, 0], "rotation": [0, 0, 0, 1], "scale": [1, 1, 1] },
+      "localBounds": [0.3, 0.5, 0.3]
+    }
+  ],
+  "products": [
+    {
+      "id": "10000000-0000-4000-8000-000000000005",
+      "name": "Example table lamp", "description": "Seller-entered example details.",
+      "brand": "Example brand", "sku": "EXAMPLE-LAMP",
+      "price": "49.00", "currency": "USD",
+      "productUrl": "https://example.com/products/lamp",
+      "imageAssetId": "10000000-0000-4000-8000-000000000006",
+      "attributes": { "material": "Seller-supplied example" }
+    }
+  ]
+}
