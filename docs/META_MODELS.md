@@ -1,0 +1,171 @@
+# Meta models: capabilities and integration research
+
+Checked against primary sources on October 29, 2026. “Documented” below means the public documentation describes a capability; it does not mean ReScene has exercised the endpoint or has account access. Implementation choices and quality expectations are our engineering judgments.
+
+## 1. What each model contributes
+
+| Model/tool | Documented capability | ReScene decision |
+| --- | --- | --- |
+| Muse Spark series | Multimodal perception, text output, tools, structured output | Core: inspect the normalized photo and propose object labels/categories |
+| Muse Wonder | Reasoning, complex coding, long-running agents, computer use | Development/review or optional difficult analysis; unnecessary in the core runtime |
+| Muse Image | Text/image-to-image generation and editing | Optional scene/image enhancement or replacement concept; does not output meshes |
+| Muse Voice Transcribe | Speech-to-text with streaming/file paths | Stretch: short voice commands; does not generate speech or manipulate scenes itself |
+| SAM 3.1 | Object detection, segmentation, video tracking | Core: masks for the objects selected for reconstruction |
+| SAM 3D Objects | Geometry, appearance, and pose reconstruction from an image and masks | Core proposed mesh engine, through a GPU host |
+| SAM 3D Body | Human body/shape estimation | Later fashion research; body estimation is not a garment reconstruction/fit system |
+| Muse Glimmer | Open-weight 30B multimodal agent model, local deployment | Optional future local analysis; no need to operate a model server in the MVP |
+| Muse Spark Open | Open-weight multimodal/agentic model | Future alternative inference deployment; avoid adding GPU operations for this deadline |
+| Muse Code | Coding agent for terminal/CI | Development tool, separate from ReScene's runtime model usage |
+| WorldGen | Text-to-navigable-world research | Excluded from the build path: official announcement says unavailable to developers |
+| Meta 3D Gen / AssetGen | Research on text-to-3D assets and materials | Related research; no verified public production endpoint for this build |
+
+The model list in the invitation is not itself proof that every model must be integrated. Confirm the final participant rules before submission. Extra models should support a user-visible feature, rather than consume the schedule just to increase a count.
+
+## 2. Muse Spark: scene understanding
+
+Use `muse-spark-1.3` through the Meta API. The [model catalog](https://dev.meta.ai/docs/models) documents multimodal input, text output, and structured output; it also distinguishes Standard from Contributor mode. Choose Standard for uploaded seller photos. The [Spark model page](https://dev.meta.ai/models/muse-spark) describes its image/video perception.
+
+Proposed analysis output, validated by our service:
+
+```json
+{
+  "sceneType": "bedroom",
+  "summary": "A bed with a side table and lamp.",
+  "objects": [
+    {
+      "candidateId": "candidate-1",
+      "label": "table lamp",
+      "category": "lighting",
+      "segmentationConcept": "table lamp",
+      "bbox": { "xMin": 420, "yMin": 180, "xMax": 620, "yMax": 520 },
+      "support": "tabletop",
+      "notes": "Partially obscured base"
+    }
+  ]
+}
+```
+
+These are illustrative values, not a model response. Bounds are integers in the normalized image's pixel space. Supply image width/height in the prompt; clamp and validate every returned box. Candidate IDs are assigned/stabilized by our backend. Candidate boxes help review and matching; SAM provides the actual segmentation.
+
+Use a bounded schema (at most eight proposals, at most five confirmed objects), one scene-analysis call, and a short output limit. Do not request exact metric positions, product names, brands, prices, or a full Three.js program. Reconstruction supplies poses where available; a seller corrects layout in the editor.
+
+The [structured-output guide](https://dev.meta.ai/docs/structured-output) documents JSON-schema constraints through Chat Completions. Use the supported schema subset and independently validate values, bounds, refusal/error outcomes, and object count. A schema-conforming answer can still describe the scene incorrectly.
+
+## 3. SAM 3.1: segmentation
+
+The exact API model ID is **`sam-3.1`**. The marketing-page spelling `sam-3-1` is not the request ID. Use the Responses endpoint with text plus `input_image`. The [segmentation guide](https://dev.meta.ai/docs/sam/segmenting) specifies one short noun concept per request, or box/point prompts. It does not support a comma-separated object list.
+
+Implementation consequences:
+
+- Group candidates by concept so two lamps can share one request; then match instances by box overlap and user review.
+- Request at most five concepts with concurrency two. For ambiguous instances use explicit box prompts after review.
+- Associate instances using `(request/concept, returned object ID)`; IDs from separate calls are not globally unique.
+- Zero matches is a valid result; show correction/exclusion instead of fabricating a mask.
+- A mask is not a depth map or mesh. Keep reconstruction as its own step.
+
+The [overview](https://dev.meta.ai/docs/sam/overview) describes special-token segmentation output in the Responses text lane. It is not ordinary JSON and not an automatic PNG URL. Use the official [client libraries](https://dev.meta.ai/docs/sam/client-libraries): `@meta-sam/parser`, `parseImageStream`, and mask decoding. Confidence support requires a compatible parser version (the guide names 0.0.13+); verify the installed version.
+
+Decode each mask into a binary raster and encode a full-image PNG with the same orientation and dimensions as the normalized input. Persist the PNG in R2. Generate a transparent cutout separately with the mask for the editor; never resize the image without applying the same transform to masks/boxes. Test foreground polarity, raster shape, and no-match behavior with saved real fixtures.
+
+## 4. SAM 3D Objects: the reconstruction engine
+
+Meta's [official repository](https://github.com/facebookresearch/sam-3d-objects) and [research announcement](https://ai.meta.com/blog/sam-3d/) describe single-image reconstruction of individual objects and scene layout, including texture and pose. This is the model closest to ReScene's core promise. The official [setup guide](https://github.com/facebookresearch/sam-3d-objects/blob/main/doc/setup.md) requires Linux and an NVIDIA GPU with at least 32 GB VRAM for its documented environment. It is not a model to load inside a normal Vercel function.
+
+The [official weights/model card](https://huggingface.co/facebook/sam-3d-objects) require access/license review. Keep the exact model/host attribution and license reference with generated assets. Do not assume the licenses of other Meta models apply to SAM 3D.
+
+### Proposed hosted integration
+
+The [fal API reference](https://fal.ai/models/fal-ai/sam-3/3d-objects/api) documents `fal-ai/sam-3/3d-objects`: image URL, per-object `mask_urls`, optional depth/pointmap, textured-GLB export, queued submission/status/results, individual GLBs, and per-object transform metadata. Proposed use: send the original normalized photo plus all confirmed full-image masks in one request. Keep the mask order mapped to our stable object IDs; ingest individual files into R2.
+
+This adds **fal as a GPU inference host for a Meta model**. Spark and SAM 3.1 still run directly on Meta Model API. The public Meta model catalog checked for this plan does not establish a hosted SAM 3D endpoint under Meta Model API. Do not invent one. If participant access later exposes one with the needed outputs, evaluate that documented endpoint before introducing a second host.
+
+### Mandatory Phase 0 experiment
+
+Use one photo with two clearly separated objects before the full demo:
+
+1. Generate masks through Meta SAM 3.1, save the original response and decoded masks.
+2. Submit the photo and both masks to the 3D host. Save its request ID and raw result privately.
+3. Confirm that two independent GLBs return, not just a combined scene or splat.
+4. Verify which `object_index` corresponds to which input mask. Do not assume array order without checking a recognizable pair.
+5. Load both objects in a minimal browser viewer and compare their placement to the source.
+6. Determine if transforms are baked into GLBs, provided separately, or both. Document camera matrix direction, axis convention, quaternion order, scale shape, and units. Avoid applying transforms twice.
+7. Normalize to our contract: right-handed, Y up, local object coordinates, a single root transform per object, approximate units. Validate bounds and pivots.
+8. Record wall time, file size, charge, and quality. Test one failure plus retry using the existing request ID.
+
+The provider schema alone cannot answer all coordinate/mapping questions. Save conclusions in this file and a small fixture report when tested. Until then, scene placement is an explicit integration risk. Do not claim automatic layout is verified.
+
+### Fallback order
+
+1. Retry a known submitted job by polling its existing ID.
+2. Retry reconstruction for a failed object only, preserving successful objects. One-object jobs lose multi-object alignment; apply reviewed/manual placement rather than silently mixing unverified coordinate systems.
+3. If a different documented host serves Meta SAM 3D with the required outputs, swap the adapter during the time-boxed spike.
+4. If no viable hosted path exists, consider a short-lived GPU runner using Meta's own code only if access, cost, and setup fit the time box.
+5. Offer labeled cutout/proxy fallback in the editor. A cutout-only demo does not satisfy the mesh release gate.
+
+No new depth-estimation service or splat renderer is required for the first prototype. Multi-object reconstruction plus manual placement is a leaner starting point.
+
+## 5. WorldGen, 3D Gen, and fashion boundaries
+
+Meta's [WorldGen announcement](https://www.meta.com/blog/worldgen-3d-world-generation-reality-labs-generative-ai-research/) describes a research system for navigable worlds from text. It explicitly says the work is still research and is not available to developers. This rules it out as a dependency unless Meta supplies documented participant access.
+
+Meta's [3D Gen research](https://ai.meta.com/research/publications/meta-3d-gen) covers text-to-3D and materials. A research announcement is not enough to design a production API call around it. SAM 3D Objects has a more direct relationship to our existing-photo workflow.
+
+Meta's [SAM 3D collection announcement](https://about.fb.com/news/2025/11/new-sam-models-detect-objects-create-3d-reconstructions/) distinguishes Objects and Body. Engineering inference: human body reconstruction does not establish faithful clothing backs, fabric behavior, separate garment meshes, or a sizing/try-on solution. Furniture is the first vertical; a mannequin/garment viewer is future research.
+
+## 6. Muse Image: optional enrichment
+
+The [Muse Image page](https://dev.meta.ai/models/muse-image) documents generation/editing. The [API guide](https://dev.meta.ai/docs/image-generation) names `muse-image-1.0`, `/images/generations`, `/images/edits`, and Responses-based multi-turn editing. The output is an image. The guide says the compatibility `background` response is always opaque, so use SAM for transparent cutouts.
+
+Potential post-core feature: generate an isolated alternative furniture concept, segment it, reconstruct it, and label it synthetic. A faster first replacement feature uses prepared merchant GLBs. An image edit is not an automatic material/geometry edit to an existing 3D mesh.
+
+Background cleanup is optional reference imagery. Do not spend the schedule trying to infer a complete room behind occluded furniture. Do not use generated replacement imagery as evidence of an actual product's appearance.
+
+## 7. Voice, open weights, and coding tools
+
+- [Muse Voice Transcribe](https://dev.meta.ai/models/muse-voice-transcribe): possible short commands such as “hide the lamp.” The [API overview](https://dev.meta.ai/docs/overview) lists file transcription at `/v1/asr/transcribe` and realtime at `wss://api.meta.ai/v1/asr/realtime`. Start with a capped recording only after the editor works. Feed transcript into a small allowlisted command parser; preserve normal authorization/undo and resolve ambiguity in the UI.
+- [Muse Glimmer](https://dev.meta.ai/models/muse-glimmer): open-weight 30B agent model under Apache 2.0, intended for local use. A future local tagging assistant is plausible; serving it adds operational work that the core hosted pipeline avoids.
+- [Muse Spark Open](https://dev.meta.ai/models/muse-spark-open): open-weight multimodal/agentic deployment option. It is not a mesh generator. Hardware requirements and host support need their own check before deployment.
+- [Muse Wonder](https://dev.meta.ai/models/muse-wonder): higher-capability coding/agentic reasoning option. Wonder Full is described as subscription-only in Muse Code, so do not assume an API model ID grants access to it.
+- [Muse Code](https://dev.meta.ai/lp/muse-code): development agent, not a backend job engine. If Jim uses it, give it this repo's context files and bounded implementation phases. Do not install or run a remote installer as part of this planning task.
+
+## 8. Provider adapter boundaries
+
+Use the `openai` SDK only as a client compatible with Meta's API; the service endpoint and credentials are Meta's. No OpenAI runtime key is needed for this plan.
+
+```text
+META_API_BASE_URL=https://api.meta.ai/v1
+MODEL_API_KEY=<server secret>
+META_ANALYSIS_MODEL=muse-spark-1.3
+META_SEGMENTATION_MODEL=sam-3.1
+META_IMAGE_MODEL=muse-image-1.0
+META_TRANSCRIPTION_MODEL=muse-voice-transcribe-1.0
+SAM3D_PROVIDER=fal
+SAM3D_MODEL=fal-ai/sam-3/3d-objects
+FAL_KEY=<server secret>
+```
+
+Service interfaces return our own typed outputs, not raw SDK responses:
+
+```text
+analyzePhoto(assetId) -> candidates + summary + usage + providerRequestId?
+segmentObjects(assetId, reviewedPrompts) -> masks/boxes + instance mapping + usage
+submitReconstruction(assetId, orderedObjectMasks) -> providerRequestId
+checkReconstruction(providerRequestId) -> queued | running | done | failed
+ingestReconstruction(providerRequestId) -> local GLB asset IDs + normalized poses
+```
+
+Pass asset IDs between workflow steps. Resolve fresh signed URLs immediately before a provider fetch, with enough lifetime for queue delay. Preserve response artifacts privately; redact signed URLs, credentials, and photos from ordinary logs. Version prompts and importer logic for repeatability.
+
+## 9. Cost and latency assumptions
+
+The [Meta API pricing page](https://dev.meta.ai/products/meta-model-api) lists Standard Spark 1.3 at $1.25/M input tokens and $4.25/M output tokens, SAM at $2.50/1,000 images, Muse Image at $0.01/image, and voice at $0.18/hour when checked. Verify dashboard pricing before use; tokenized image input and repeated concept calls matter.
+
+Illustrative calculation, not measured usage: a Spark call with 20,000 billed input tokens and 2,000 output tokens costs `$0.025 + $0.0085 = $0.0335`. Five separately billed SAM image requests would add `$0.0125`. Add the current hosted SAM 3D charge, retries, storage, and platform usage. Do not treat an entire five-object pipeline as one billed image without checking the host's billing unit.
+
+The host's public model pages contain differing price references, so this plan does not pin a GPU price. Record the actual quoted unit/rate and observed job cost in Phase 0. Credits and free-tier availability are account-specific, not guaranteed.
+
+Proposed UX targets: photo preview immediately, first analysis/review within 60 seconds when available, full 3–5 object scene within five minutes on the selected demo input. These are targets to measure, not provider SLAs. Use an eight-minute initial run deadline; allow a retry of known jobs rather than guessing completion.
+
+## 10. Observed access during foundation setup
+
+Meta's authenticated `/models` read succeeded with Spark 1.3, SAM 3.1, Muse Image, Voice Transcribe, and Wonder listed. A fal queue-status read returned the expected missing-job response. No paid inference was submitted. These checks establish discovery/endpoint access, not segmentation quality, GPU entitlement, object mapping, or a successful reconstruction; the live Phase 0 experiment remains required.

@@ -1,0 +1,62 @@
+{
+  "name": "rescene",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:validate": "prisma validate",
+    "db:migrate": "prisma migrate deploy",
+    "services:check": "tsx scripts/check-services.ts",
+    "storage:smoke": "tsx scripts/smoke-upload.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1159.0",
+    "@aws-sdk/s3-request-presigner": "3.1159.0",
+    "@fal-ai/client": "1.10.1",
+    "@meta-sam/parser": "0.1.0",
+    "@neondatabase/auth": "0.7.0-beta",
+    "@neondatabase/serverless": "1.2.0",
+    "@prisma/adapter-neon": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "@react-three/drei": "10.7.9",
+    "@react-three/fiber": "9.8.2",
+    "clsx": "2.1.1",
+    "dotenv": "18.0.9",
+    "lucide-react": "1.63.0",
+    "next": "16.4.3",
+    "openai": "7.45.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "server-only": "0.0.1",
+    "sharp": "0.35.5",
+    "three": "0.186.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/three": "0.186.0",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.4.3",
+    "prisma": "7.10.1",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5"
+  },
+  "overrides": {
+    "better-auth": "1.7.14",
+    "zod": "$zod"
+  }
+}

@@ -1,0 +1,340 @@
+// ReScene application schema. Proposed MVP, October 29, 2026.
+// Prisma 7: configure migration datasource URL in prisma.config.ts at scaffolding.
+// Runtime uses a Neon driver adapter and the pooled DATABASE_URL.
+// Managed Neon Auth owns neon_auth; do not generate auth tables here.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SceneStatus {
+  DRAFT
+  ANALYZING
+  REVIEW
+  RECONSTRUCTING
+  READY
+  FAILED
+  ARCHIVED
+}
+
+enum AssetKind {
+  UPLOAD_STAGING
+  SOURCE_IMAGE
+  NORMALIZED_IMAGE
+  MASK
+  CUTOUT
+  MODEL_GLB
+  PRODUCT_IMAGE
+  POSTER
+  PROVIDER_RESPONSE
+  SCENE_MANIFEST
+}
+
+enum AssetStatus {
+  PENDING
+  VALIDATING
+  READY
+  REJECTED
+  DELETING
+  DELETED
+}
+
+enum ObjectStatus {
+  DETECTED
+  CONFIRMED
+  RECONSTRUCTING
+  READY
+  FAILED
+  EXCLUDED
+}
+
+enum Representation {
+  MESH
+  CUTOUT
+  PROXY
+}
+
+enum RunKind {
+  ANALYZE
+  SEGMENT_OBJECT
+  RECONSTRUCT
+  RECONSTRUCT_OBJECT
+  IMAGE_EDIT
+}
+
+enum RunStatus {
+  QUEUED
+  RUNNING
+  WAITING
+  CANCEL_REQUESTED
+  SUCCEEDED
+  PARTIAL
+  FAILED
+  CANCELED
+}
+
+enum StepStatus {
+  PENDING
+  RUNNING
+  WAITING
+  SUBMISSION_UNCERTAIN
+  SUCCEEDED
+  FAILED
+  SKIPPED
+}
+
+enum Provider {
+  INTERNAL
+  META
+  FAL
+}
+
+// Only the opaque managed-auth subject is mirrored; no passwords or sessions.
+model AppUser {
+  id          String   @id @default(uuid()) @db.Uuid
+  authSubject String   @unique @db.VarChar(255)
+  displayName String?  @db.VarChar(120)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+
+  scenes Scene[]
+}
+
+model Scene {
+  id                String      @id @default(uuid()) @db.Uuid
+  ownerId           String      @db.Uuid
+  title             String      @db.VarChar(160)
+  description       String?     @db.VarChar(2000)
+  status            SceneStatus @default(DRAFT)
+  revision          Int         @default(0)
+  sourceAssetId     String?     @db.Uuid
+  normalizedAssetId String?     @db.Uuid
+  posterAssetId     String?     @db.Uuid
+  // See DATA_MODEL.md. Empty until the corresponding initialization step succeeds.
+  camera            Json        @default("{}")
+  stage             Json        @default("{}")
+  settings          Json        @default("{}")
+  lastErrorCode     String?     @db.VarChar(80)
+  createdAt         DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime    @updatedAt @db.Timestamptz(3)
+  archivedAt        DateTime?   @db.Timestamptz(3)
+
+  owner           AppUser            @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  sourceAsset     Asset?             @relation("SceneSource", fields: [sourceAssetId], references: [id], onDelete: SetNull)
+  normalizedAsset Asset?             @relation("SceneNormalized", fields: [normalizedAssetId], references: [id], onDelete: SetNull)
+  posterAsset     Asset?             @relation("ScenePoster", fields: [posterAssetId], references: [id], onDelete: SetNull)
+  assets          Asset[]            @relation("SceneAssets")
+  products        Product[]
+  objects         SceneObject[]
+  runs            GenerationRun[]
+  publications    ScenePublication[]
+
+  @@index([ownerId, archivedAt, updatedAt])
+  @@index([status, updatedAt])
+}
+
+// Every asset belongs to one scene; ownership is inherited from Scene.ownerId.
+// Never put expiring signed URLs in storageKey. READY objects are immutable.
+model Asset {
+  id              String      @id @default(uuid()) @db.Uuid
+  sceneId         String      @db.Uuid
+  kind            AssetKind
+  status          AssetStatus @default(PENDING)
+  bucket          String      @db.VarChar(128)
+  storageKey      String      @db.VarChar(1024)
+  mimeType        String      @db.VarChar(100)
+  byteSize        Int?
+  sha256          String?     @db.Char(64)
+  width           Int?
+  height          Int?
+  derivedFromId   String?     @db.Uuid
+  // Source model, run/step, importer version, rights/license, and validation stats.
+  provenance      Json        @default("{}")
+  metadata        Json        @default("{}")
+  uploadExpiresAt DateTime?   @db.Timestamptz(3)
+  readyAt         DateTime?   @db.Timestamptz(3)
+  createdAt       DateTime    @default(now()) @db.Timestamptz(3)
+  deletedAt       DateTime?   @db.Timestamptz(3)
+
+  scene               Scene             @relation("SceneAssets", fields: [sceneId], references: [id], onDelete: Cascade)
+  derivedFrom         Asset?            @relation("AssetDerivation", fields: [derivedFromId], references: [id], onDelete: SetNull)
+  derivatives         Asset[]           @relation("AssetDerivation")
+  sourceForScenes     Scene[]           @relation("SceneSource")
+  normalizedForScenes Scene[]           @relation("SceneNormalized")
+  posterForScenes     Scene[]           @relation("ScenePoster")
+  masksForObjects     SceneObject[]     @relation("ObjectMask")
+  cutoutsForObjects   SceneObject[]     @relation("ObjectCutout")
+  modelsForObjects    SceneObject[]     @relation("ObjectModel")
+  imagesForProducts   Product[]         @relation("ProductImage")
+  modelsForProducts   Product[]         @relation("ProductModel")
+  responsesForSteps   GenerationStep[]  @relation("StepResponse")
+  publication         ScenePublication? @relation("PublicationManifest")
+
+  @@unique([bucket, storageKey])
+  @@index([sceneId, kind, status])
+  @@index([derivedFromId])
+  @@index([status, uploadExpiresAt])
+}
+
+// A small per-scene catalog keeps the MVP simpler than a global product system.
+model Product {
+  id           String   @id @default(uuid()) @db.Uuid
+  sceneId      String   @db.Uuid
+  name         String   @db.VarChar(160)
+  description  String?  @db.VarChar(4000)
+  brand        String?  @db.VarChar(120)
+  sku          String?  @db.VarChar(120)
+  price        Decimal? @db.Decimal(12, 2)
+  currency     String?  @db.Char(3)
+  productUrl   String?  @db.VarChar(2048)
+  imageAssetId String?  @db.Uuid
+  modelAssetId String?  @db.Uuid
+  // Merchant-supplied fields only, e.g. material/color. Not generated product truth.
+  attributes   Json     @default("{}")
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+
+  scene      Scene         @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  imageAsset Asset?        @relation("ProductImage", fields: [imageAssetId], references: [id], onDelete: SetNull)
+  modelAsset Asset?        @relation("ProductModel", fields: [modelAssetId], references: [id], onDelete: SetNull)
+  objects    SceneObject[]
+
+  @@index([sceneId, createdAt])
+}
+
+model SceneObject {
+  id                  String         @id @default(uuid()) @db.Uuid
+  sceneId             String         @db.Uuid
+  originRunId         String?        @db.Uuid
+  // Stable candidate number in this source photo, independent of provider IDs.
+  sourceOrdinal       Int
+  label               String         @db.VarChar(120)
+  category            String         @db.VarChar(80)
+  status              ObjectStatus   @default(DETECTED)
+  representation      Representation @default(PROXY)
+  segmentationConcept String?        @db.VarChar(160)
+  confidence          Float?
+  imageBounds         Json?
+  maskAssetId         String?        @db.Uuid
+  cutoutAssetId       String?        @db.Uuid
+  modelAssetId        String?        @db.Uuid
+  productId           String?        @db.Uuid
+  positionX           Float          @default(0)
+  positionY           Float          @default(0)
+  positionZ           Float          @default(0)
+  rotationX           Float          @default(0)
+  rotationY           Float          @default(0)
+  rotationZ           Float          @default(0)
+  rotationW           Float          @default(1)
+  scaleX              Float          @default(1)
+  scaleY              Float          @default(1)
+  scaleZ              Float          @default(1)
+  // Local mesh bounding size and initial normalized transform; nullable before 3D.
+  localBounds         Json?
+  initialTransform    Json?
+  visible             Boolean        @default(true)
+  sortOrder           Int            @default(0)
+  provenance          Json           @default("{}")
+  lastErrorCode       String?        @db.VarChar(80)
+  createdAt           DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime       @updatedAt @db.Timestamptz(3)
+
+  scene     Scene          @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  originRun GenerationRun? @relation("ObjectOrigin", fields: [originRunId], references: [id], onDelete: SetNull)
+  mask      Asset?         @relation("ObjectMask", fields: [maskAssetId], references: [id], onDelete: SetNull)
+  cutout    Asset?         @relation("ObjectCutout", fields: [cutoutAssetId], references: [id], onDelete: SetNull)
+  model     Asset?         @relation("ObjectModel", fields: [modelAssetId], references: [id], onDelete: SetNull)
+  product   Product?       @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@unique([sceneId, sourceOrdinal])
+  @@index([sceneId, status, sortOrder])
+  @@index([productId])
+  @@index([originRunId])
+}
+
+model GenerationRun {
+  id              String    @id @default(uuid()) @db.Uuid
+  sceneId         String    @db.Uuid
+  kind            RunKind
+  status          RunStatus @default(QUEUED)
+  idempotencyKey  String    @db.VarChar(128)
+  workflowRunId   String?   @unique @db.VarChar(255)
+  inputRevision   Int
+  input           Json      @default("{}")
+  // Stage-based progress; never infer completion solely from this percentage.
+  progress        Int       @default(0)
+  currentStage    String?   @db.VarChar(80)
+  reservedCostUsd Decimal   @default(0) @db.Decimal(10, 4)
+  actualCostUsd   Decimal?  @db.Decimal(10, 4)
+  errorCode       String?   @db.VarChar(80)
+  errorMessage    String?   @db.VarChar(1000)
+  expiresAt       DateTime  @db.Timestamptz(3)
+  startedAt       DateTime? @db.Timestamptz(3)
+  completedAt     DateTime? @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @db.Timestamptz(3)
+
+  scene         Scene            @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  steps         GenerationStep[]
+  originObjects SceneObject[]    @relation("ObjectOrigin")
+  // Add a partial unique active-run index in migration SQL; see DATA_MODEL.md.
+
+  @@unique([sceneId, idempotencyKey])
+  @@index([sceneId, createdAt])
+  @@index([status, expiresAt])
+}
+
+model GenerationStep {
+  id                String     @id @default(uuid()) @db.Uuid
+  runId             String     @db.Uuid
+  key               String     @db.VarChar(160)
+  attempt           Int        @default(1)
+  status            StepStatus @default(PENDING)
+  provider          Provider   @default(INTERNAL)
+  modelId           String?    @db.VarChar(255)
+  providerRequestId String?    @db.VarChar(255)
+  input             Json       @default("{}")
+  output            Json       @default("{}")
+  responseAssetId   String?    @db.Uuid
+  inputTokens       Int?
+  outputTokens      Int?
+  imageCount        Int?
+  costUsd           Decimal?   @db.Decimal(10, 4)
+  errorCode         String?    @db.VarChar(80)
+  errorMessage      String?    @db.VarChar(1000)
+  startedAt         DateTime?  @db.Timestamptz(3)
+  completedAt       DateTime?  @db.Timestamptz(3)
+  createdAt         DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime   @updatedAt @db.Timestamptz(3)
+
+  run      GenerationRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  response Asset?        @relation("StepResponse", fields: [responseAssetId], references: [id], onDelete: SetNull)
+
+  @@unique([runId, key, attempt])
+  @@index([runId, key, status])
+  @@index([provider, providerRequestId])
+}
+
+// Frozen publication points to a validated immutable manifest in private R2.
+model ScenePublication {
+  id              String    @id @default(uuid()) @db.Uuid
+  sceneId         String    @db.Uuid
+  // 24 cryptographically random bytes encoded as base64url; never a scene ID.
+  slug            String    @unique @db.VarChar(48)
+  revision        Int
+  manifestAssetId String    @unique @db.Uuid
+  // Exact allowlist of viewer asset IDs, including poster; no source/mask/raw files.
+  assetIds        Json
+  publishedAt     DateTime  @default(now()) @db.Timestamptz(3)
+  revokedAt       DateTime? @db.Timestamptz(3)
+
+  scene    Scene @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  manifest Asset @relation("PublicationManifest", fields: [manifestAssetId], references: [id], onDelete: Restrict)
+
+  @@index([sceneId, publishedAt])
+}
