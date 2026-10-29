@@ -10,10 +10,12 @@ Core flow already works: private photo → live Meta analysis/masks → separate
 - [x] Complete editor flow: publish shortcut, project details, consistent saved state, explicit discard/reload recovery and protection against leaving unsaved work.
 - [x] Release reliability: retry/expired-asset recovery, clear loading/empty/error states, preserve owned data and snapshot isolation.
 - [x] Reduce repeated work: one PR CI run per feature change, cancel superseded runs, skip docs-only Vercel builds, one reusable saved-data regression command.
-- [ ] One combined verification pass: focused unit tests + lint/typecheck/build + one saved-scene integration run; one production deployment and bounded post-deploy check.
+- [x] One combined verification pass: focused unit tests + lint/typecheck/build + one saved-scene integration run; one production deployment and bounded post-deploy check.
 - [x] Refresh the short handoff and Indie developer demo/submission documents around the final release.
 
 Do all items within one branch/PR. Do not stop after each item or request another “next phase” instruction. Fix failures within the same pass, and repeat only affected checks when something changed.
+
+Release bundle shipped in PR #10 at 648010b. All 52 tests and PR CI pass, the single saved-data regression passes, and the bounded read-only production smoke passes. No new inference, QA projects or photo/model uploads.
 
 ## External completion gates
 

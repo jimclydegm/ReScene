@@ -39,7 +39,7 @@ PRs #1–#9 implement the core. PR #9 (be841d8) and production passed 47 tests p
 
 Jim removed the cumulative generation cap; do not reintroduce GENERATION_BUDGET_USD. Still avoid paid inference in routine development: reuse saved assets unless a specific generation bug requires a new call. Keep idempotency, provider job IDs, one active user job and **zero automatic paid retries**. Meta and fal bills are separate.
 
-Local consolidated schema/lint/unit/build checks pass (51 cases at the full run, plus the affected five-case delivery-scope check after adding the conservative-history test; 52 total cases). The single saved-data regression passes, restores its original metadata and revokes its link. No new scenes/uploads/inference were created. One PR/production deployment follows.
+PR #10 merged at 648010b and production is READY. All 52 tests and the single PR CI run pass. The one saved-data regression passes, restores original metadata and revokes its temporary share; bounded read-only production smoke passes. No fresh inference, QA scenes or photo/model uploads. App functionality in this release bundle is complete; remaining access/human gates are below.
 
 ## Remaining access/human gates
 
