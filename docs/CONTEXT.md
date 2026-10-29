@@ -20,7 +20,7 @@ Jim is building ReScene for Meta's Global AI Developer Hackathon. A seller uploa
 
 ## Current state
 
-- Live foundation: https://rescene-eta.vercel.app; existing Vercel project and Neon `rescene-db` reused. PR #1 merged October 29 at commit `66771fa`. Active preparation branch: `codex/meta-feasibility`, based on `main`.
+- Live foundation: https://rescene-eta.vercel.app; existing Vercel project and Neon `rescene-db` reused. PR #1 merged October 29 at commit `66771fa`. Runtime/editor PR #2 merged October 29 at `8f56977`; checkout is on `main`.
 - Landing/sample viewer, managed auth, private scene dashboard, ownership, revision-aware API, and upload code are implemented. Sample geometry is illustrated, not reconstructed.
 - Migration `20261029040000_init` applied all 8 app tables/constraints; managed auth tables untouched. Prisma 7.10.1.
 - Secrets are in ignored `.env.local` and Vercel production/preview secrets. Do not print them. Generation is enabled for the bounded prototype test.

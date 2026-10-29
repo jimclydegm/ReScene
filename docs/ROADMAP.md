@@ -184,3 +184,5 @@ The foundation work subsequently resolved DDL generation and applied the reviewe
 
 
 **Current runtime gate, October 29:** production upload→Spark/SAM→review data→three independent GLBs→saved transform API passes; signed downloads/CORS, replayed starts, stale saves, origin rejection, and second-account isolation pass. Browser control is disabled in Work settings, so visual mesh/interaction/mobile QA is still pending. Product cards/replacement/publication remain future work. See TESTING.md.
+
+Runtime/editor PR #2 merged into `main` on October 29 (`8f56977`). Both PR CI runs and Vercel checks passed. The deployed three-object API flow and editor-page rendering checks pass; visual browser QA is the next verification action.
