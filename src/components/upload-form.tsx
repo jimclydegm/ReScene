@@ -62,14 +62,14 @@ export function UploadForm({ scene: existing }: { scene?: Scene }) {
   }
 
   return <form className="upload-form" onSubmit={submit}>
-    {!existing && <label className="field-label">Scene name<input value={title} onChange={event => setTitle(event.target.value)} maxLength={160} placeholder="Sunday in the living room" required disabled={Boolean(stage) || Boolean(scene)}/></label>}
+    {!existing && <label className="field-label">Scene name<input value={title} onChange={event => setTitle(event.target.value)} maxLength={160} placeholder="Summer outfit or product collection" required disabled={Boolean(stage) || Boolean(scene)}/></label>}
     <label className={`upload-dropzone${dragging ? " dragging" : ""}${preview ? " has-preview" : ""}`} onDragOver={event => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={drop}>
-      <input className="file-input" aria-label="Choose a room photo" type="file" accept="image/jpeg,image/png,image/webp" disabled={Boolean(stage)} onChange={event => selectFile(event.target.files?.[0])}/>
+      <input className="file-input" aria-label="Choose a scene or product photo" type="file" accept="image/jpeg,image/png,image/webp" disabled={Boolean(stage)} onChange={event => selectFile(event.target.files?.[0])}/>
       {preview ? <><Image src={preview} alt="Selected scene photo" fill unoptimized style={{ objectFit: "contain" }}/><span className="photo-selected"><ImagePlus size={14}/>{file?.name}</span></> : <><span className="upload-icon"><Upload size={27} strokeWidth={1.3}/></span><h2>Drop your photo here</h2><p>or <span>browse your files</span></p><small>JPEG, PNG, or WebP · up to 12 MB</small></>}
     </label>
     {file && !stage && <button className="remove-file" type="button" onClick={() => { setFile(null); setPreview(null); }}><X size={13}/> Choose a different photo</button>}
     {error && <p className="form-error" role="alert">{error}</p>}
-    <div className="upload-form-bottom"><span><LockKeyhole size={14}/> Private to your account</span><button className="button button-dark" type="submit" disabled={!file || !title.trim() || Boolean(stage)}>{stage ? <><LoaderCircle size={16} className="spin"/>{stage}</> : <>Save your photo <ArrowUpRight size={17}/></>}</button></div>
-    <p className="upload-next-note">Start with a clear room photo. Review the object outlines, then build your editable 3D preview.</p>
+    <div className="upload-form-bottom"><span><LockKeyhole size={14}/> Private to your account</span><button className="button button-dark" type="submit" disabled={!file || !title.trim() || Boolean(stage)}>{stage ? <><LoaderCircle size={16} className="spin"/>{stage}</> : <>{error ? "Retry upload" : "Save your photo"} <ArrowUpRight size={17}/></>}</button></div>
+    <p className="upload-next-note">Start with a clear photo of a scene, outfit, or product. Review the object outlines, then build your editable 3D preview.</p>
   </form>;
 }

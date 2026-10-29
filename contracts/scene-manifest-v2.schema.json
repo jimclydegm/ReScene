@@ -63,6 +63,14 @@
               "type": "string",
               "const": "sam3d-room-v1"
             },
+            "backdrop": {
+              "type": "string",
+              "enum": [
+                "room",
+                "studio",
+                "none"
+              ]
+            },
             "camera": {
               "type": "object",
               "properties": {

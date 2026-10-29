@@ -201,3 +201,9 @@ ScenePublication points to immutable SCENE_MANIFEST bytes with SHA-256 and a ded
 ## Release project management
 
 Owner-only manage actions archive/restore under expectedRevision and the same advisory lock as generation starts. Archive preserves assets/products/stage/camera, records the previous status in settings.archive, sets archivedAt/status and revokes every active share. Restore recovers the saved status, clears archival bookkeeping and keeps old links revoked. Archived objects are excluded from active APIs/signing; only their owner can list private archived previews or restore them. Metadata edits also serialize with generation starts and increment revision; earlier snapshots keep frozen titles/descriptions.
+
+## General scene correction
+
+No migration: SEGMENT_OBJECT already exists in RunKind. GenerationRun.input stores analysis/segmentation/reconstruction controls, exact normalized asset identity and a hash used with the idempotency key. A single-object attempt stores its resolved object ID; no new Spark call is needed. SceneObject.provenance.maskAlternatives stores bounded same-scene MASK IDs, confidence, image bounds and foreground area. Workspace signs only READY masks; selecting/combining validates this exact object-specific list and commits through the scene revision boundary. Combined masks are new immutable binary unions, not in-place edits. Old provider attempts and assets remain private.
+
+Analysis options/summary/type/preferred backdrop live in Scene.settings; reconstruction restarts preserve them and mask alternatives. The optional Scene.stage.backdrop is room/studio/none. Publication v2 freezes it with the rest of composition; omitted legacy values render as room. New category labels remain strings in SQL. General input support does not add user-supplied asset URLs or widen publication allowlists.

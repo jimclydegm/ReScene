@@ -3,13 +3,14 @@ import { parseImageStream, recordsOfKind, decodeMaskToRaster } from "@meta-sam/p
 import sharp from "sharp";
 import { getMetaClient, metaModels } from "./meta";
 import { placeMask, type ImageSize } from "./contracts";
+import { segmentationPrompt, type SegmentationOptions } from "./controls";
 
-export async function segmentConcept(imageUrl: string, concept: string, size: ImageSize) {
+export async function segmentConcept(imageUrl: string, concept: string, size: ImageSize, options?: SegmentationOptions) {
   const started = Date.now();
   const events = await getMetaClient().responses.create({
     model: metaModels.segmentation(), stream: true,
     input: [{ role: "user", content: [
-      { type: "input_text", text: concept },
+      { type: "input_text", text: options ? segmentationPrompt(options, size) : concept },
       { type: "input_image", image_url: imageUrl, detail: "auto" }
     ] }], metadata: { mask_encoding: "one_bit", include_confidence: "true" }
   }, { maxRetries: 0 });

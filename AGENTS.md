@@ -9,7 +9,7 @@
 
 ## Product constraints
 
-- Build freeze: November 2, 2026, Asia/Manila. Prioritize a complete furniture/home-decor demo.
+- Build freeze: November 2, 2026, Asia/Manila. Support any uploaded scene or product, including clothing and footwear; furniture/home decor is a demo example, never a detection restriction.
 - Core path: upload → Meta analysis → review masks → object meshes → edit/product links → publish/read-only viewer.
 - Meta runtime models are required. Do not replace them with another model provider without Jim's instruction.
 - WorldGen has no verified developer API. SAM 3.1 is segmentation; SAM 3D Objects is reconstruction. Keep these distinct.

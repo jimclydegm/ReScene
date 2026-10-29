@@ -11,12 +11,13 @@ import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { getR2 } from "@/lib/storage/r2";
 import { analyzePhoto } from "@/lib/ai/analyze";
 import { segmentConcept } from "@/lib/ai/segment";
+import { analysisOptionsSchema, maskAlternativeSchema, pixelBoxSchema, reconstructionOptionsSchema, segmentationOptionsSchema, segmentationPrompt } from "@/lib/ai/controls";
 import { getSam3dClient } from "@/lib/ai/sam3d";
 import { downloadFalArtifact, inspectGlb } from "@/lib/ai/glb";
 import { composeRoom, compositionSchema, glbBounds, modelPlacementSchema, type CompositionInput } from "@/lib/scene/composition";
 import { defaultLighting, lightingSchema } from "@/lib/scene/lighting";
 import { record, sceneEnvironment } from "./composition";
-import { runInputSchema, objectEditsSchema } from "@/lib/validation/generation";
+import { runInputSchema, objectEditsSchema, maskSelectionSchema } from "@/lib/validation/generation";
 import type { z } from "zod";
 import type { Prisma, AssetKind } from "@/generated/prisma/client";
 
@@ -32,28 +33,47 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(839172640)`;
     const scene = await tx.scene.findFirst({ where: { id: sceneId, ownerId, archivedAt: null } });
     if (!scene) throw new AppError(404, "NOT_FOUND", "Scene not found.");
+    const options = { ...(input.analysis ? {analysis:input.analysis} : {}), ...(input.segmentation ? {segmentation:input.segmentation} : {}), ...(input.reconstruction ? {reconstruction:input.reconstruction} : {}), objectIds:input.objectIds ?? [] };
+    const requestHash = digest(Buffer.from(JSON.stringify(options)));
     const prior = await tx.generationRun.findUnique({ where: { sceneId_idempotencyKey: { sceneId, idempotencyKey: input.idempotencyKey } } });
     if (prior) {
       if (prior.status === "CANCELED" || prior.inputRevision < Number(record(scene.settings).resetRevision ?? 0)) throw new AppError(409, "RUN_SUPERSEDED", "That attempt belongs to an earlier version of this scene. Start the step again.");
-      if (prior.kind !== input.kind || prior.inputRevision !== input.expectedRevision || JSON.stringify((prior.input as { objectIds?: string[] }).objectIds ?? []) !== JSON.stringify(input.objectIds ?? [])) throw new AppError(409, "IDEMPOTENCY_CONFLICT", "This request key was used for different inputs.");
+      if (prior.kind !== input.kind || prior.inputRevision !== input.expectedRevision || (record(prior.input).requestHash ? record(prior.input).requestHash !== requestHash : JSON.stringify((prior.input as { objectIds?: string[] }).objectIds ?? []) !== JSON.stringify(input.objectIds ?? []))) throw new AppError(409, "IDEMPOTENCY_CONFLICT", "This request key was used for different inputs.");
       return prior;
     }
     if (scene.revision !== input.expectedRevision) throw new AppError(409, "REVISION_CONFLICT", "Reload this scene before starting.");
     if (!scene.normalizedAssetId) throw new AppError(400, "PHOTO_REQUIRED", "Upload a photo first.");
     const userActive = await tx.generationRun.count({ where: { scene: { ownerId }, status: { in: [...active] } } });
     if (userActive) throw new AppError(409, "RUN_ACTIVE", "Your generation is already running. Open it to see progress.");
-    const allowed = input.kind === "ANALYZE" ? ["DRAFT"] : ["REVIEW"];
+    const allowed = input.kind === "ANALYZE" ? ["DRAFT"] : input.kind === "SEGMENT_OBJECT" ? ["DRAFT", "REVIEW", "FAILED"] : ["REVIEW"];
     if (!allowed.includes(scene.status)) throw new AppError(409, "SCENE_STATE", "This scene is not ready for that operation.");
     if (input.kind === "RECONSTRUCT") {
-      const objects = await tx.sceneObject.findMany({ where: { sceneId, id: { in: input.objectIds }, maskAssetId: { not: null }, modelAssetId: null } });
+      const objects = await tx.sceneObject.findMany({ where: { sceneId, id: { in: input.objectIds }, mask: {status:"READY",sceneId,kind:"MASK"}, modelAssetId: null } });
       if (objects.length !== input.objectIds!.length) throw new AppError(400, "INVALID_OBJECTS", "Select objects with reviewed masks.");
     }
-    const reserved = input.kind === "ANALYZE" ? 1.42 : 1;
+    if (input.kind === "SEGMENT_OBJECT") {
+      if (await tx.sceneObject.count({where:{sceneId,modelAssetId:{not:null}}})) throw new AppError(409,"MODELS_EXIST","Return to object review before changing outlines. This clears later 3D results after confirmation.");
+      const image=await tx.asset.findFirstOrThrow({where:{id:scene.normalizedAssetId,sceneId,kind:"NORMALIZED_IMAGE",status:"READY"}});
+      try { segmentationPrompt(input.segmentation!, {width:image.width!,height:image.height!}); }
+      catch { throw new AppError(400,"INVALID_PROMPT","Keep the box and points inside your photo, and provide a short concept or a location prompt."); }
+      if (input.segmentation!.objectId && !await tx.sceneObject.findFirst({where:{sceneId,id:input.segmentation!.objectId}})) throw new AppError(404,"NOT_FOUND","Object not found.");
+      if (!input.segmentation!.objectId && await tx.sceneObject.count({where:{sceneId}}) >= 10) throw new AppError(409,"OBJECT_LIMIT","This scene already has ten candidates. Reanalyze to start a new object list.");
+    }
+    const reserved = input.kind === "ANALYZE" ? 1.42 : input.kind === "SEGMENT_OBJECT" ? 0.0025 : 1;
     // Historical estimates remain auditable; Jim removed the app's cumulative spending cap.
     const run = await tx.generationRun.create({ data: { sceneId, kind: input.kind, idempotencyKey: input.idempotencyKey,
-      inputRevision: scene.revision, input: { objectIds: input.objectIds ?? [], normalizedAssetId: scene.normalizedAssetId }, reservedCostUsd: reserved,
+      inputRevision: scene.revision, input: asJson({ ...options, requestHash, normalizedAssetId: scene.normalizedAssetId }), reservedCostUsd: reserved,
       expiresAt: new Date(Date.now() + 15 * 60_000), currentStage: "Waiting to start" } });
-    await tx.scene.update({ where: { id: sceneId }, data: { status: input.kind === "ANALYZE" ? "ANALYZING" : "RECONSTRUCTING", lastErrorCode: null } });
+    if (input.kind === "SEGMENT_OBJECT") {
+      let objectId = input.segmentation!.objectId;
+      if (!objectId) {
+        const last = await tx.sceneObject.aggregate({where:{sceneId},_max:{sourceOrdinal:true}});
+        const object = await tx.sceneObject.create({data:{sceneId,originRunId:run.id,sourceOrdinal:(last._max.sourceOrdinal ?? -1)+1,sortOrder:(last._max.sourceOrdinal ?? -1)+1,label:input.segmentation!.label,category:"other",segmentationConcept:input.segmentation!.concept || input.segmentation!.label,provenance:{support:"unknown",source:"user-prompt"}}});
+        objectId = object.id;
+      }
+      await tx.generationRun.update({where:{id:run.id},data:{input:asJson({...record(run.input),segmentObjectId:objectId})}});
+    }
+    await tx.scene.update({ where: { id: sceneId }, data: { status: input.kind === "RECONSTRUCT" ? "RECONSTRUCTING" : "ANALYZING", lastErrorCode: null } });
     return run;
   }, { timeout: 20_000 });
 }
@@ -89,12 +109,12 @@ async function beginStep(runId: string, key: string, provider: "META" | "FAL", m
 export async function analyzeRun(runId: string) {
   const run = await loadRun(runId);
   const image = run.scene.normalizedAsset!;
-  await getDb().generationRun.update({ where: { id: runId }, data: { currentStage: "Identifying furniture", progress: 10 } });
+  await getDb().generationRun.update({ where: { id: runId }, data: { currentStage: "Identifying objects and products", progress: 10 } });
   const step = await beginStep(runId, "spark", "META", process.env.META_ANALYSIS_MODEL ?? "muse-spark-1.3");
-  const result = await analyzePhoto(await metaInput(image), { width: image.width!, height: image.height! });
+  const options = analysisOptionsSchema.parse(record(run.input).analysis ?? {});
+  const result = await analyzePhoto(await metaInput(image), { width: image.width!, height: image.height! }, options);
   const response = await artifact(run.sceneId, runId, "PROVIDER_RESPONSE", Buffer.from(JSON.stringify(result.raw)), "application/json");
-  // Three clear furniture candidates; model order is retained as the source ordinal.
-  const candidates = [...result.analysis.objects].sort((a, b) => Number(a.category === "lighting") - Number(b.category === "lighting")).slice(0, 3);
+  const candidates = result.analysis.objects.slice(0, options.maxObjects);
   await getDb().$transaction(async tx => {
     await tx.generationStep.update({ where: { id: step.id }, data: { status: "SUCCEEDED", providerRequestId: result.requestId, responseAssetId: response.id,
       inputTokens: result.usage?.prompt_tokens, outputTokens: result.usage?.completion_tokens,
@@ -103,7 +123,8 @@ export async function analyzeRun(runId: string) {
       label: object.label, category: object.category, segmentationConcept: object.segmentationConcept, imageBounds: object.bbox, sortOrder: index,
       positionX: ((object.bbox.xMin + object.bbox.xMax) / 2 / image.width! - 0.5) * 5,
       provenance: { model: result.model, promptVersion: result.promptVersion, support: object.support, placement: "approximate-stage" } } });
-    await tx.scene.update({ where: { id: run.sceneId }, data: { settings: asJson({ ...record(run.scene.settings), environment: result.analysis.environment }) } });
+    await tx.scene.update({ where: { id: run.sceneId }, data: { settings: asJson({ ...record(run.scene.settings), environment: result.analysis.environment, analysisOptions:options, sceneType:result.analysis.sceneType, analysisSummary:result.analysis.summary,
+      preferredBackdrop: options.focus === "clothing" || options.focus === "products" || candidates.length > 0 && candidates.every(o=>["clothing","footwear","accessory","person","electronics","other"].includes(o.category)) ? "studio" : "room" }) } });
     await tx.generationRun.update({ where: { id: runId }, data: { currentStage: "Finding object outlines", progress: 25 } });
   });
   return (await getDb().sceneObject.findMany({ where: { sceneId: run.sceneId, originRunId: runId }, orderBy: { sourceOrdinal: "asc" } })).map(o => o.id);
@@ -111,30 +132,51 @@ export async function analyzeRun(runId: string) {
 
 export async function segmentRunObject(runId: string, objectId: string) {
   const run = await loadRun(runId);
-  const object = await getDb().sceneObject.findFirstOrThrow({ where: { id: objectId, sceneId: run.sceneId, originRunId: runId } });
+  const object = await getDb().sceneObject.findFirstOrThrow({ where: { id: objectId, sceneId: run.sceneId, ...(run.kind === "ANALYZE" ? {originRunId:runId} : {}) } });
+  const options = run.kind === "SEGMENT_OBJECT" ? segmentationOptionsSchema.parse(record(run.input).segmentation) : undefined;
   const image = run.scene.normalizedAsset!;
   await getDb().generationRun.update({ where: { id: runId }, data: { currentStage: `Outlining ${object.label}`, progress: 30 + object.sourceOrdinal * 15 } });
   const step = await beginStep(runId, `sam-${objectId}`, "META", process.env.META_SEGMENTATION_MODEL ?? "sam-3.1");
-  const result = await segmentConcept(await metaInput(image), object.segmentationConcept!, { width: image.width!, height: image.height! });
+  const result = await segmentConcept(await metaInput(image), options?.concept ?? object.segmentationConcept!, { width: image.width!, height: image.height! }, options);
   const raw = await artifact(run.sceneId, runId, "PROVIDER_RESPONSE", Buffer.from(result.raw), "text/plain");
-  // Never silently choose between multiple matches of the same concept.
+  const alternatives = [];
+  for (const mask of result.masks) {
+    const stored = await artifact(run.sceneId,runId,"MASK",mask.png,"image/png",{width:image.width!,height:image.height!});
+    alternatives.push({assetId:stored.id,confidence:mask.confidence ?? null,bounds:{xMin:mask.bounds.left,yMin:mask.bounds.top,xMax:mask.bounds.right,yMax:mask.bounds.bottom},area:mask.area});
+  }
+  const provenance = asJson({...record(object.provenance), ...(options ? {segmentationOptions:options} : {}), maskAlternatives:alternatives, segmentationModel:result.model});
+  // Keep every instance for explicit selection. A failed retry preserves a previously reviewed mask.
   if (result.masks.length !== 1) {
-    await getDb().sceneObject.update({ where: { id: objectId }, data: { status: "FAILED", lastErrorCode: result.masks.length ? "AMBIGUOUS_MASK" : "NO_MATCH" } });
+    await getDb().sceneObject.update({ where: { id: objectId }, data: { provenance, ...(options ? {label:options.label,segmentationConcept:options.concept || options.label} : {}), status: object.maskAssetId ? "CONFIRMED" : "FAILED", lastErrorCode: result.masks.length ? "AMBIGUOUS_MASK" : "NO_MATCH" } });
   } else {
     const mask = result.masks[0];
-    const stored = await artifact(run.sceneId, runId, "MASK", mask.png, "image/png", { width: image.width!, height: image.height! });
-    await getDb().sceneObject.update({ where: { id: objectId }, data: { maskAssetId: stored.id, confidence: mask.confidence,
+    await getDb().sceneObject.update({ where: { id: objectId }, data: { maskAssetId: alternatives[0].assetId, confidence: mask.confidence, status:"CONFIRMED",lastErrorCode:null,
+      ...(options ? {label:options.label,segmentationConcept:options.concept || options.label} : {}),
       imageBounds: { xMin: mask.bounds.left, yMin: mask.bounds.top, xMax: mask.bounds.right, yMax: mask.bounds.bottom },
-      provenance: asJson({ ...record(object.provenance), model: result.model, requestLocalId: mask.objectId, foregroundArea: mask.area }) } });
+      provenance: asJson({ ...record(provenance), requestLocalId: mask.objectId, foregroundArea: mask.area }) } });
   }
   await getDb().generationStep.update({ where: { id: step.id }, data: { status: "SUCCEEDED", providerRequestId: result.requestId, responseAssetId: raw.id, imageCount: 1, costUsd: 0.0025, completedAt: new Date() } });
 }
 
+export async function segmentRequestedObject(runId:string) {
+  const run=await loadRun(runId);
+  return String(record(run.input).segmentObjectId);
+}
+export async function markOutlineFailure(runId:string, objectId:string) {
+  const run=await loadRun(runId);
+  const object=await getDb().sceneObject.findFirstOrThrow({where:{id:objectId,sceneId:run.sceneId}});
+  await getDb().sceneObject.update({where:{id:objectId},data:{status:object.maskAssetId ? "CONFIRMED" : "FAILED",lastErrorCode:"SEGMENTATION_INTERRUPTED"}});
+  await getDb().generationStep.updateMany({where:{runId,key:`sam-${objectId}`,status:"RUNNING"},data:{status:"SUBMISSION_UNCERTAIN",errorCode:"SEGMENTATION_INTERRUPTED",completedAt:new Date()}});
+}
+
 export async function finishAnalysis(runId: string) {
   const run = await loadRun(runId);
+  const objects = await getDb().sceneObject.findMany({where:{sceneId:run.sceneId}});
+  const incomplete=objects.some(o=>o.lastErrorCode);
+  const empty=!objects.length;
   await getDb().$transaction(async tx => {
     await tx.scene.update({ where: { id: run.sceneId, revision: run.inputRevision }, data: { status: "REVIEW", revision: { increment: 1 } } });
-    await tx.generationRun.update({ where: { id: runId }, data: { status: "SUCCEEDED", currentStage: "Review object outlines", progress: 100, completedAt: new Date() } });
+    await tx.generationRun.update({ where: { id: runId }, data: { status: incomplete ? "PARTIAL" : "SUCCEEDED", currentStage: empty ? "No objects identified" : "Review object outlines", errorCode:empty ? "NO_OBJECTS" : incomplete ? "OUTLINES_NEED_REVIEW" : null, errorMessage:empty ? "Analysis found no candidates. Adjust the focus and analyze again, or add an object yourself." : null, progress: 100, completedAt: new Date() } });
   });
 }
 
@@ -144,7 +186,8 @@ export async function submitReconstruction(runId: string) {
   const found = await getDb().sceneObject.findMany({ where: { sceneId: run.sceneId, id: { in: ids } }, include: { mask: true } });
   const objects = ids.map(id => found.find(o => o.id === id)!);
   if (objects.some(o => !o?.mask || o.mask.status !== "READY")) throw new Error("MASK_UNAVAILABLE");
-  const input = { image_url: await providerInput(run.scene.normalizedAsset!), mask_urls: await Promise.all(objects.map(o => providerInput(o.mask!))), export_textured_glb: true, seed: 42 };
+  const options=reconstructionOptionsSchema.parse(record(run.input).reconstruction ?? {});
+  const input = { image_url: await providerInput(run.scene.normalizedAsset!), mask_urls: await Promise.all(objects.map(o => providerInput(o.mask!))), export_textured_glb: true, seed: options.seed };
   const step = await beginStep(runId, "sam3d-submit", "FAL", process.env.SAM3D_MODEL ?? "fal-ai/sam-3/3d-objects");
   await getDb().generationRun.update({ where: { id: runId }, data: { currentStage: "Reconstructing 3D objects", progress: 15 } });
   const { client, model } = getSam3dClient();
@@ -186,6 +229,7 @@ export async function ingestRun(runId: string, requestId: string) {
     if (layoutInputs.length !== ids.length) throw new Error("LAYOUT_BOUNDS_MISSING");
     const environment = await sceneEnvironment(run.scene);
     layout = composeRoom(layoutInputs, { width: run.scene.normalizedAsset!.width!, height: run.scene.normalizedAsset!.height! }, environment.environment, environment.environmentSource);
+    layout.composition.backdrop=record(run.scene.settings).preferredBackdrop === "studio" ? "studio" : "room";
   } catch { /* Keep independent meshes usable if a provider changes its pose contract. The UI offers manual placement. */ }
   await getDb().$transaction(async tx => {
     for (const [index, id] of ids.entries()) {
@@ -196,7 +240,7 @@ export async function ingestRun(runId: string, requestId: string) {
       initialTransform: composed ? asJson(composed.placement) : { placement: "manual-stage", importer: "gltf-y-up-bottom-center-v1" },
       provenance: asJson({ ...record(objects.find(o => o.id === id)!.provenance), provider: "fal", model, requestId, maskInputIndex: index, metadata: result.metadata?.find(m => m.object_index === index), placement: composed ? "sam3d-layout-v1" : "manual-stage" })
     } }); }
-    await tx.scene.update({ where: { id: run.sceneId, revision: run.inputRevision }, data: { status: "READY", revision: { increment: 1 },
+    await tx.scene.update({ where: { id: run.sceneId, revision: run.inputRevision }, data: { status: "READY", revision: { increment: 1 },settings:asJson({...record(run.scene.settings),reconstructionOptions:reconstructionOptionsSchema.parse(record(run.input).reconstruction ?? {})}),
       ...(layout ? { camera: asJson(layout.composition.camera), stage: asJson(layout.composition) } : {}) } });
     await tx.generationStep.updateMany({ where: { runId, key: "sam3d-submit" }, data: { status: "SUCCEEDED", completedAt: new Date() } });
     await tx.generationRun.update({ where: { id: runId }, data: { status: "SUCCEEDED", currentStage: "Your 3D scene is ready", progress: 100, completedAt: new Date() } });
@@ -234,12 +278,21 @@ export async function workspace(sceneId: string, ownerId: string) {
   }
   const stage = compositionSchema.safeParse(scene.stage).data ?? null;
   return { id: scene.id, title: scene.title, description: scene.description, status: scene.status, revision: scene.revision,
+    analysisOptions:analysisOptionsSchema.safeParse(record(scene.settings).analysisOptions).data ?? analysisOptionsSchema.parse({}),
+    reconstructionOptions:reconstructionOptionsSchema.safeParse(record(scene.settings).reconstructionOptions).data ?? reconstructionOptionsSchema.parse({}),
+    analysisSummary:typeof record(scene.settings).analysisSummary === "string" ? String(record(scene.settings).analysisSummary) : null,
     lighting: lightingSchema.safeParse(record(scene.settings).lighting).data ?? defaultLighting(stage),
     appearance: { applied: applied.version === "photo-bake-v1", floorUrl: await textureUrl(applied.floorId), wallUrl: await textureUrl(applied.wallId) },
     composition: compositionSchema.safeParse(scene.stage).data ?? null, canRestoreLayout: Boolean(record(scene.settings).layoutBackup),
     image: scene.normalizedAsset ? { url: await signRead(scene.normalizedAsset), width: scene.normalizedAsset.width!, height: scene.normalizedAsset.height! } : null,
     generationEnabled: process.env.GENERATION_ENABLED === "true", objects: await Promise.all(objects.map(async o => ({
       id: o.id, label: o.label, status: o.status, errorCode: o.lastErrorCode, canRestoreOriginal: Boolean(record(o.provenance).replacementBackup),
+      concept:o.segmentationConcept ?? o.label, confidence:o.confidence, bounds:pixelBoxSchema.safeParse(o.imageBounds).data ?? null,
+      segmentation:segmentationOptionsSchema.safeParse(record(o.provenance).segmentationOptions).data ?? null,
+      maskAlternatives:await Promise.all((Array.isArray(record(o.provenance).maskAlternatives) ? record(o.provenance).maskAlternatives as unknown[] : []).slice(0,10).flatMap(v=>{const parsed=maskAlternativeSchema.safeParse(v);return parsed.success ? [parsed.data] : [];}).map(async variant=>{
+        const asset=await getDb().asset.findFirst({where:{id:variant.assetId,sceneId,kind:"MASK",status:"READY"}});
+        return asset ? {...variant,url:await signRead(asset),selected:asset.id===o.maskAssetId} : null;
+      })).then(values=>values.filter(v=>v!==null)),
       product: o.product && o.product.sceneId === sceneId ? { name: o.product.name, description: o.product.description ?? "", brand: o.product.brand ?? "", price: o.product.price?.toString() ?? null, currency: productSchema.shape.currency.parse(o.product.currency ?? "USD"), productUrl: o.product.productUrl ?? "", imageUrl: o.product.imageAsset?.status === "READY" && o.product.imageAsset.sceneId === sceneId ? await signRead(o.product.imageAsset) : null } : null,
       maskUrl: o.mask ? await signRead(o.mask) : null, modelUrl: o.model ? await signRead(o.model) : null,
       placement: modelPlacementSchema.safeParse(o.initialTransform).data ?? null,
@@ -247,6 +300,37 @@ export async function workspace(sceneId: string, ownerId: string) {
     }))), run: run ? { id: run.id, kind: run.kind, status: run.status, stage: run.currentStage, progress: run.progress,
       errorCode: run.errorCode, errorMessage: run.errorMessage, canResume: run.status === "QUEUED" || (run.status === "FAILED" && run.errorCode === "KNOWN_JOB_INTERRUPTED") } : null };
 }
+export async function selectMask(sceneId:string,ownerId:string,input:z.infer<typeof maskSelectionSchema>) {
+  const scene=await ownedScene(sceneId,ownerId);
+  const db=getDb();
+  const object=await db.sceneObject.findFirst({where:{id:input.objectId,sceneId,modelAssetId:null}});
+  if(!object)throw new AppError(404,"NOT_FOUND","Object not found.");
+  if(scene.revision!==input.expectedRevision||!["REVIEW","FAILED"].includes(scene.status))throw new AppError(409,"REVISION_CONFLICT","Reload or return to object review before changing outlines.");
+  const ids=input.maskAssetIds ?? [input.maskAssetId!];
+  const rawVariants=Array.isArray(record(object.provenance).maskAlternatives) ? record(object.provenance).maskAlternatives as unknown[] : [];
+  const variants=rawVariants.flatMap(v=>{const parsed=maskAlternativeSchema.safeParse(v);return parsed.success?[parsed.data]:[];});
+  const assets=await db.asset.findMany({where:{id:{in:ids},sceneId,kind:"MASK",status:"READY"}});
+  if(assets.length!==ids.length||ids.some(id=>!variants.some(v=>v.assetId===id)))throw new AppError(400,"INVALID_MASK","Choose only this object's saved outline options.");
+  let chosen=variants.find(v=>v.assetId===ids[0])!;
+  if(ids.length>1){
+    const {combineMasks}=await import("@/lib/ai/masks");
+    const merged=await combineMasks(await Promise.all(assets.map(a=>readLimited(a.storageKey,4*1024*1024))),{width:scene.normalizedAsset!.width!,height:scene.normalizedAsset!.height!});
+    const id=randomUUID(),key=`${storagePrefix()}/scenes/${sceneId}/masks/${id}`;
+    await putObject(key,merged.png,"image/png");
+    await db.asset.create({data:{id,sceneId,kind:"MASK",status:"READY",bucket:bucket(),storageKey:key,mimeType:"image/png",byteSize:merged.png.length,sha256:digest(merged.png),width:scene.normalizedAsset!.width!,height:scene.normalizedAsset!.height!,readyAt:new Date(),provenance:{source:"user-combined-mask",maskIds:ids}}});
+    chosen={assetId:id,confidence:null,bounds:merged.bounds,area:merged.area};
+  }
+  return db.$transaction(async tx=>{
+    await tx.$executeRaw`SELECT pg_advisory_xact_lock(839172640)`;
+    const current=await tx.scene.findFirst({where:{id:sceneId,ownerId,archivedAt:null,revision:input.expectedRevision,status:{in:["REVIEW","FAILED"]}}});
+    if(!current)throw new AppError(409,"REVISION_CONFLICT","The scene changed. Reload before choosing an outline.");
+    if(await tx.generationRun.count({where:{sceneId,status:{in:[...active]}}}))throw new AppError(409,"RUN_ACTIVE","Wait for the active generation to finish.");
+    const changed=await tx.scene.updateMany({where:{id:sceneId,ownerId,revision:input.expectedRevision,archivedAt:null},data:{revision:{increment:1},status:"REVIEW"}});
+    if(!changed.count)throw new AppError(409,"REVISION_CONFLICT","The scene changed. Reload before choosing an outline.");
+    await tx.sceneObject.update({where:{id:object.id,sceneId},data:{maskAssetId:chosen.assetId,confidence:chosen.confidence,imageBounds:chosen.bounds,status:"CONFIRMED",lastErrorCode:null,provenance:asJson({...record(object.provenance),foregroundArea:chosen.area,maskAlternatives:ids.length>1?[...variants.filter(v=>v.assetId!==chosen.assetId).slice(-9),chosen]:variants})}});
+  });
+}
+
 export async function saveObjects(sceneId: string, ownerId: string, input: z.infer<typeof objectEditsSchema>) {
   const scene = await ownedScene(sceneId, ownerId);
   const thumbnails = new Map<string, string>();

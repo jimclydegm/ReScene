@@ -4,7 +4,7 @@ Updated October 29, 2026 (Asia/Manila). Read this, then only task-relevant techn
 
 ## Objective and working style
 
-Finish a usable furniture/home-decor hackathon app quickly. Jim confirmed **Indie developer** track and a November 2 build freeze. He explicitly requested **bulk implementation**, fewer repeated tests/deployments, and no stopping for “next phase” after every subfeature. Follow the single release bundle in ROADMAP.md and consolidated PLAN.md. One branch/PR, one combined verification pass, one production release; repeat only checks affected by a failure/change.
+Finish a usable photo-to-shoppable-3D hackathon app quickly. Jim clarified that any scene/product, including clothing and footwear, is in scope; furniture/home decor is an example, never an input restriction. Jim confirmed **Indie developer** track and a November 2 build freeze. He explicitly requested **bulk implementation**, fewer repeated tests/deployments, and no stopping for “next phase” after every subfeature. Follow the single release bundle in ROADMAP.md and consolidated PLAN.md. One branch/PR, one combined verification pass, one production release; repeat only checks affected by a failure/change.
 
 ## Stack and access
 
@@ -46,3 +46,11 @@ PR #10 merged at 648010b and production is READY. All 52 tests and the single PR
 Browser access is still disabled in Work settings. Do not claim desktop/mobile visual interaction, clipboard/dialogs, frame rate or final recording verified. Actual Google consent is unverified. Indie demo/submission draft is in release/DEMO.md; private portal fields/video limit and final contest submission remain pending. Continue app work independently and report these concrete limits without restarting micro-phases.
 
 Technical references: ARCHITECTURE.md, DATA_MODEL.md + prisma/schema.prisma, META_MODELS.md, TEXTURE_FIDELITY.md, CATALOG.md, TESTING.md, SETUP.md. Runtime publication contract: contracts/scene-manifest-v2.schema.json; v1 is historical proposed architecture.
+
+## Current correction bundle
+
+Jim deferred external release/recording gates and requested generic product support plus controls/retries throughout. Work is on codex/flexible-scene-controls. scene-products-v3 replaces the restrictive room prompt and furniture category enum. Clothing scene 2b495855-65dc-4ca3-ad93-1460e53eb5fe had zero candidates and no SAM calls. The new live analysis found shirt, shorts and two shoe instances; accepted shirt/short masks and an owner-chosen union of both shoes now give three reviewed masks. A separate spatial prompt (box plus positive/negative points) succeeded; other masks stayed unchanged and duplicate request keys reused the run. No new source upload or automatic paid retry.
+
+New run options are frozen in GenerationRun.input; SEGMENT_OBJECT uses the existing enum/workflow branch. Candidates expose private mask alternatives, prompt data and confidence; no changes to public source-photo privacy. Confidence filter and mask union are no-inference review operations. Photo and canvas aspect remain intact within a viewport height bound. Studio/room/plain backdrop is saved in optional composition.backdrop and frozen in publication v2; old snapshots without it remain room-compatible. Current checks/deployment are recorded in ROADMAP/TESTING; do not claim native browser verification.
+
+The repaired clothing scene is now READY: one explicit three-item reconstruction completed in 104 seconds with textured GLB exports and accepted sam3d-layout-v1 placements, studio backdrop. No publication was created. Use this existing example rather than regenerating it to test the new controls. Local combined checks cover 61 tests, build/type checking/lint, one reusable saved-scene regression and focused controls API authorization/backdrop save/restore checks. Deployment verification is still pending at this checkpoint.

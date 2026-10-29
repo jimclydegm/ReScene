@@ -10,7 +10,7 @@ import { inspectGlb } from "@/lib/ai/glb";
 import { composeRoom, environmentSchema, glbBounds, type CompositionInput, type Environment } from "@/lib/scene/composition";
 
 const asJson = (value: unknown) => JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
-export const compositionInputSchema = z.object({ expectedRevision: z.number().int().nonnegative(), action: z.enum(["MATCH_PHOTO", "RESTORE"]) }).strict();
+export const compositionInputSchema = z.object({ expectedRevision: z.number().int().nonnegative(), action: z.enum(["MATCH_PHOTO", "RESTORE", "BACKGROUND"]),backdrop:z.enum(["room","studio","none"]).optional() }).strict().refine(v=>v.action!=="BACKGROUND"||v.backdrop!==undefined,"Choose a backdrop.");
 export function record(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
@@ -39,6 +39,14 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
   const scene = await ownedScene(sceneId, ownerId);
   if (scene.status !== "READY") throw new AppError(409, "SCENE_STATE", "Build your 3D objects first.");
   if (scene.revision !== input.expectedRevision) throw new AppError(409, "REVISION_CONFLICT", "The scene changed. Reload before matching the photo.");
+  if(input.action==="BACKGROUND"){
+    const {compositionSchema}=await import("@/lib/scene/composition");
+    const composition=compositionSchema.safeParse(scene.stage);
+    if(!composition.success)throw new AppError(422,"LAYOUT_UNAVAILABLE","Match the photo layout before choosing a backdrop.");
+    const saved=await getDb().scene.updateMany({where:{id:sceneId,ownerId,archivedAt:null,revision:input.expectedRevision,status:"READY"},data:{stage:asJson({...composition.data,backdrop:input.backdrop}),revision:{increment:1}}});
+    if(!saved.count)throw new AppError(409,"REVISION_CONFLICT","The scene changed. Reload before saving.");
+    return;
+  }
   const objects = await getDb().sceneObject.findMany({ where: { sceneId, status: "READY", modelAssetId: { not: null } }, include: { model: true }, orderBy: { sortOrder: "asc" } });
   if ((await getDb().sceneObject.findMany({ where: { sceneId }, select: { provenance: true } })).some(o => record(o.provenance).replacementBackup)) throw new AppError(409, "REPLACEMENTS_ACTIVE", "Restore original objects before matching the photo layout.");
   if (input.action === "RESTORE") {
@@ -71,6 +79,8 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
     }
     const environment = await sceneEnvironment(scene);
     result = composeRoom(inputs, { width: scene.normalizedAsset!.width!, height: scene.normalizedAsset!.height! }, environment.environment, environment.environmentSource);
+    const {compositionSchema}=await import("@/lib/scene/composition");
+    result.composition.backdrop=compositionSchema.safeParse(scene.stage).data?.backdrop ?? (record(scene.settings).preferredBackdrop === "studio" ? "studio" : "room");
   } catch {
     throw new AppError(422, "LAYOUT_UNAVAILABLE", "The saved reconstruction has no reliable room layout. Your current layout is unchanged.");
   }

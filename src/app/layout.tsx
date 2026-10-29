@@ -7,7 +7,7 @@ const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   title: { default: "ReScene — Give your photos another dimension", template: "%s · ReScene" },
-  description: "Turn a room photo into an editable, shoppable 3D scene. Built with Meta AI."
+  description: "Turn a photo into an editable, shoppable 3D scene. Built with Meta AI."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
