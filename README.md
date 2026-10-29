@@ -61,4 +61,10 @@ The live fal test returned independent textured GLBs from Meta SAM 3D Objects. S
 
 Save a ready scene, scroll to **Publish snapshot**, and review the confirmation. Anyone with the unlisted link can view/download the approved meshes, room textures, product thumbnails and merchant fields. The full source photo, masks and provider records stay private. Subsequent draft edits do not change the snapshot; publish again to share a new saved revision. Revoke stops new viewer access, while previously signed asset links can work for up to 15 minutes and downloaded copies cannot be recalled.
 
-Tests: `npm test` (47 focused cases), plus the explicit QA runners in TESTING.md. `scripts/smoke-release.mjs prepare` and `reconstruct` submit paid inference and require explicit use; status/report commands do not. Release/demo preparation is in [DEMO.md](docs/release/DEMO.md).
+Tests: `npm test` (52 focused cases), plus the explicit QA runners in TESTING.md. `scripts/smoke-release.mjs prepare` and `reconstruct` submit paid inference and require explicit use; status/report commands do not. Release/demo preparation is in [DEMO.md](docs/release/DEMO.md).
+
+## Completing and maintaining the release
+
+The remaining work is tracked as one release bundle in [ROADMAP.md](docs/ROADMAP.md), rather than small approval phases. Run `npm run check` once after a bundle and the reusable saved-data `npm run check:release` with an authorized disposable fixture; append `-- --smoke` for a read-only post-deploy check. Historical paid inference runners are opt-in tools for a specific generation regression. Documentation-only commits skip full CI installation/build and Vercel deployment when a valid comparison base is available; unknown comparisons always run.
+
+The dashboard supports project search/status filters, live-share counts and reversible archive/restore. Archiving retains saved assets and revokes share links; restoring does not revive old links. Project details can be changed from Scene Studio, and existing public snapshots retain their original metadata. Unsaved object/light/product edits are protected on navigation/sign-out, and Discard and reload provides recovery from stale saves.

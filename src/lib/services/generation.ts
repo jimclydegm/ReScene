@@ -30,7 +30,8 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
   return db.$transaction(async tx => {
     // Serialize generation starts/restarts, including concurrent accounts.
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(839172640)`;
-    const scene = await tx.scene.findFirstOrThrow({ where: { id: sceneId, ownerId, archivedAt: null } });
+    const scene = await tx.scene.findFirst({ where: { id: sceneId, ownerId, archivedAt: null } });
+    if (!scene) throw new AppError(404, "NOT_FOUND", "Scene not found.");
     const prior = await tx.generationRun.findUnique({ where: { sceneId_idempotencyKey: { sceneId, idempotencyKey: input.idempotencyKey } } });
     if (prior) {
       if (prior.status === "CANCELED" || prior.inputRevision < Number(record(scene.settings).resetRevision ?? 0)) throw new AppError(409, "RUN_SUPERSEDED", "That attempt belongs to an earlier version of this scene. Start the step again.");
@@ -232,7 +233,7 @@ export async function workspace(sceneId: string, ownerId: string) {
     return asset ? signRead(asset) : null;
   }
   const stage = compositionSchema.safeParse(scene.stage).data ?? null;
-  return { id: scene.id, title: scene.title, status: scene.status, revision: scene.revision,
+  return { id: scene.id, title: scene.title, description: scene.description, status: scene.status, revision: scene.revision,
     lighting: lightingSchema.safeParse(record(scene.settings).lighting).data ?? defaultLighting(stage),
     appearance: { applied: applied.version === "photo-bake-v1", floorUrl: await textureUrl(applied.floorId), wallUrl: await textureUrl(applied.wallId) },
     composition: compositionSchema.safeParse(scene.stage).data ?? null, canRestoreLayout: Boolean(record(scene.settings).layoutBackup),

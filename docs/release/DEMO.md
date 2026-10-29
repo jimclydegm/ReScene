@@ -50,3 +50,7 @@ Use a short recording suitable for the participant portal's actual limit. The ti
 ## Verified release evidence
 
 The deployed fresh author-to-shopper API flow passed on October 29 with two real Meta SAM 3D meshes. Server analysis/masking took 19.824 seconds and reconstruction/ingestion took 82.298 seconds; these exclude human review/editing time. The frozen viewer passed anonymous product/GLB access and revoke. See TESTING.md for limits and billing interpretation. Browser visual QA and recording remain pending.
+
+## Current completion approach
+
+Jim requested one bulk completion pass. Project details/search/archive/restore, sharing indicators, publish shortcut, unsaved-edit and sign-out protection, discard/reload and viewer recovery ship together. Use the single saved-data release check rather than repeatedly regenerating the demo or running every historical smoke script. The active plan is ROADMAP.md; earlier phases are historical. Final recording/private-portal review remain human/access gates.

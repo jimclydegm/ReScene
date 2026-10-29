@@ -3,13 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
+import {requestNavigation} from "@/lib/client-navigation";
 import { authClient } from "@/lib/auth/client";
 
 export function SignOut() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [failed, setFailed] = useState(false);
-  return <button className="signout-button" disabled={pending} onClick={async () => {
+  async function signOut(){
     setPending(true); setFailed(false);
     try {
       const result = await authClient.signOut();
@@ -17,5 +18,6 @@ export function SignOut() {
       router.replace("/");
       router.refresh();
     } catch { setFailed(true); setPending(false); }
-  }}><LogOut size={15}/>{failed ? "Retry sign out" : pending ? "Signing out…" : "Sign out"}</button>;
+  }
+  return <button className="signout-button" disabled={pending} onClick={()=>requestNavigation(()=>{void signOut();})}><LogOut size={15}/>{failed ? "Retry sign out" : pending ? "Signing out…" : "Sign out"}</button>;
 }
