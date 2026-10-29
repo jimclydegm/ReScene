@@ -1,8 +1,8 @@
 "use client";
 import { Canvas, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Grid } from "@react-three/drei";
-import { Box3, Color, Mesh, Vector3 } from "three";
-import { Suspense, useCallback, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Box3, Color, Mesh, MeshStandardMaterial, Vector3 } from "three";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { OrbitControls as OrbitControlsType } from "three-stdlib";
 import type { SceneComposition } from "@/lib/scene/composition";
 import type { SceneObjectView } from "./types";
@@ -11,14 +11,29 @@ function Model({ object, selected, select }: { object: SceneObjectView; selected
   const gltf = useGLTF(object.modelUrl!);
   const model = useMemo(() => {
     const cloned = gltf.scene.clone(true);
-    cloned.traverse(node => { if (node instanceof Mesh) { node.castShadow = true; node.receiveShadow = true; } });
+    const ownedMaterials: MeshStandardMaterial[] = [];
+    cloned.traverse(node => { if (node instanceof Mesh) {
+      node.castShadow = true; node.receiveShadow = true;
+      const materials = Array.isArray(node.material) ? node.material : [node.material];
+      const copies = materials.map(material => {
+        const index = gltf.parser.associations.get(material)?.materials;
+        const pbr = index === undefined ? undefined : gltf.parser.json.materials?.[index]?.pbrMetallicRoughness;
+        // SAM exports omit metallicFactor; glTF defaults it to 1, blackening fabric/wood
+        // without a reflection map. Treat unspecified generated materials as dielectric.
+        // Preserve explicit metallic factors/maps and never mutate the shared loader cache.
+        if (!(material instanceof MeshStandardMaterial) || pbr?.metallicFactor !== undefined || material.metalnessMap) return material;
+        const copy = material.clone(); copy.metalness = 0; ownedMaterials.push(copy); return copy;
+      });
+      node.material = Array.isArray(node.material) ? copies : copies[0];
+    } });
     cloned.updateMatrixWorld(true);
     const box = new Box3().setFromObject(cloned);
     const size = box.getSize(new Vector3());
     const center = box.getCenter(new Vector3());
     const factor = 1.5 / Math.max(size.x, size.y, size.z, 0.001);
-    return { cloned, factor, offset: [-center.x * factor, -box.min.y * factor, -center.z * factor] as [number, number, number] };
-  }, [gltf.scene]);
+    return { cloned, factor, ownedMaterials, offset: [-center.x * factor, -box.min.y * factor, -center.z * factor] as [number, number, number] };
+  }, [gltf.scene, gltf.parser]);
+  useEffect(() => () => { model.ownedMaterials.forEach(material => material.dispose()); }, [model]);
   if (!object.visible) return null;
   const base = object.placement;
   const radius = base ? Math.max(base.size[0], base.size[2]) * 0.58 : 0.85;

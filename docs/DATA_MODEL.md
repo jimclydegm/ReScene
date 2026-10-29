@@ -127,7 +127,7 @@ A SceneObject's modelAssetId controls current geometry; productId controls its c
 
 Use optimistic concurrency on every draft mutation. In one transaction, update Scene where `{id,ownerId,revision:expectedRevision}`; require exactly one matched row; increment revision and apply all related updates. A later failure rolls everything back. Bulk object edits verify every ID belongs to that scene before writing.
 
-Before starting a job, hold a short advisory transaction lock for the generation-budget gate; check global/user limits, active jobs, current scene revision, and budget reservation, then create the run. The supplied SQL adds one-active-run-per-scene uniqueness. One-active-run-per-user and a global budget span tables and need the transactional service gate; the Prisma schema alone does not enforce them.
+Before starting or restarting a job, hold a short advisory transaction lock; check active jobs, ownership and current scene revision, then create the run or clear later results. The supplied SQL adds one-active-run-per-scene uniqueness. One-active-run-per-user spans tables and needs the transactional service gate. Jim removed the cumulative app budget gate on October 29; reservedCostUsd is retained as an estimate, not an enforced allowance.
 
 Cost reservation is conservative accounting, not a guarantee that a provider cannot bill more. Set the host account's spending limit where supported, measure actual rates, count uncertain submissions conservatively, and default GENERATION_ENABLED off until configured. Null cost means unknown, not free.
 
@@ -173,3 +173,8 @@ Keep live-provider smoke tests explicit and small; normal CI uses sanitized fixt
 - `SceneObject.initialTransform`: `sam3d-layout-v1` with `rotation` XYZW quaternion, positive `scale`, `offset`, and rotated/scaled bound `size`, all numeric arrays. This is the imported mesh baseline. Draft position, quaternion yaw, and uniform scale fields operate on the baseline's bottom-center pivot. A future publication adapter must flatten both transforms.
 - Existing manual-stage baseline objects remain readable. Owner-triggered Match photo layout upgrades them using saved provider metadata; no hidden database migration or GET mutation occurs.
 - Object provenance retains support classification across segmentation and ingestion. Old floor-furniture categories supply a documented fallback when earlier code omitted it.
+
+
+### Step-restart state (October 29)
+
+Scene.settings.resetRevision identifies the current workflow epoch without changing the SQL schema. Workspace filters earlier runs; failed earlier runs become CANCELED and cannot resume. Earlier successful run/step usage remains historical. Cleared asset rows become DELETED; new signing rejects them. SOURCE/NORMALIZED pointers survive ANALYSIS/RECONSTRUCTION restart; mask/object IDs survive only RECONSTRUCTION. All targets clear room/camera/baseline edits and layout backups, clear product associations, and revoke later publications. R2 bytes are retained privately until a separately authorized cleanup; lifecycle rules stay unchanged.

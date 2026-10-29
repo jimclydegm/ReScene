@@ -1770,3 +1770,20 @@ svg {
   .reference-dialog-content { padding: 12px; }
   .viewer-help { font-size: 9px; }
 }
+
+.generation-steps button { display: inline-flex; gap: 6px; align-items: center; background: transparent; border: 0; padding: 0; font: inherit; color: inherit; cursor: pointer; }
+.generation-steps button.done { color: #42785c; }
+.generation-steps button:disabled { cursor: default; }
+.generation-steps button:not(:disabled):hover { text-decoration: underline; text-underline-offset: 4px; }
+.generation-steps [aria-current="step"] { font-weight: 700; }
+.restart-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; margin: -8px 0 22px; }
+.restart-actions .text-link { font-size: 12px; }
+.restart-actions button.text-link { border: 0; padding: 0; background: transparent; color: #42785c; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.restart-actions button.text-link:disabled { color: #899184; cursor: default; text-decoration: none; }
+.restart-actions button.text-link:focus-visible, .generation-steps button:focus-visible { outline: 2px solid #42785c; outline-offset: 4px; }
+.restart-actions small { color: #657164; font-size: 11px; }
+.restart-dialog { border: 1px solid #d8ddce; border-radius: 16px; width: min(540px, 92vw); max-height: 90dvh; overflow: auto; padding: 26px; color: #293a2d; background: #faf9f4; box-shadow: 0 24px 100px #0005; }
+.restart-dialog::backdrop { background: #17231fc9; }
+.restart-dialog h2 { font-size: 23px; margin: 0 0 14px; }
+.restart-dialog p { font-size: 13px; line-height: 1.7; color: #556350; }
+.restart-dialog .editor-actions { justify-content: flex-end; flex-wrap: wrap; margin-top: 22px; }

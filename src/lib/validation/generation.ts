@@ -1,4 +1,9 @@
 import { z } from "zod";
+export const restartInputSchema = z.object({
+  target: z.enum(["PHOTO", "ANALYSIS", "RECONSTRUCTION"]), expectedRevision: z.number().int().nonnegative(),
+  confirmed: z.literal(true)
+}).strict();
+export type RestartTarget = z.infer<typeof restartInputSchema>["target"];
 export const runInputSchema = z.object({
   kind: z.enum(["ANALYZE", "RECONSTRUCT"]), expectedRevision: z.number().int().nonnegative(),
   idempotencyKey: z.uuid(), objectIds: z.array(z.uuid()).min(1).max(3).optional()

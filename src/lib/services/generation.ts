@@ -25,11 +25,12 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
   const db = getDb();
   await ownedScene(sceneId, ownerId);
   return db.$transaction(async tx => {
-    // Serialize all prototype budget reservations, including concurrent accounts.
+    // Serialize generation starts/restarts, including concurrent accounts.
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(839172640)`;
     const scene = await tx.scene.findFirstOrThrow({ where: { id: sceneId, ownerId, archivedAt: null } });
     const prior = await tx.generationRun.findUnique({ where: { sceneId_idempotencyKey: { sceneId, idempotencyKey: input.idempotencyKey } } });
     if (prior) {
+      if (prior.status === "CANCELED" || prior.inputRevision < Number(record(scene.settings).resetRevision ?? 0)) throw new AppError(409, "RUN_SUPERSEDED", "That attempt belongs to an earlier version of this scene. Start the step again.");
       if (prior.kind !== input.kind || prior.inputRevision !== input.expectedRevision || JSON.stringify((prior.input as { objectIds?: string[] }).objectIds ?? []) !== JSON.stringify(input.objectIds ?? [])) throw new AppError(409, "IDEMPOTENCY_CONFLICT", "This request key was used for different inputs.");
       return prior;
     }
@@ -44,9 +45,7 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
       if (objects.length !== input.objectIds!.length) throw new AppError(400, "INVALID_OBJECTS", "Select objects with reviewed masks.");
     }
     const reserved = input.kind === "ANALYZE" ? 1.42 : 1;
-    const cap = Number(process.env.GENERATION_BUDGET_USD ?? "0");
-    const used = await tx.generationRun.aggregate({ _sum: { reservedCostUsd: true } });
-    if (!Number.isFinite(cap) || cap <= 0 || Number(used._sum.reservedCostUsd ?? 0) + reserved > cap) throw new AppError(429, "BUDGET_LIMIT", "The prototype's generation allowance is used. Your saved scenes are still available.");
+    // Historical estimates remain auditable; Jim removed the app's cumulative spending cap.
     const run = await tx.generationRun.create({ data: { sceneId, kind: input.kind, idempotencyKey: input.idempotencyKey,
       inputRevision: scene.revision, input: { objectIds: input.objectIds ?? [], normalizedAssetId: scene.normalizedAssetId }, reservedCostUsd: reserved,
       expiresAt: new Date(Date.now() + 15 * 60_000), currentStage: "Waiting to start" } });
@@ -62,7 +61,7 @@ export async function claimRun(runId: string, workflowRunId: string) {
 }
 async function loadRun(runId: string) {
   const run = await getDb().generationRun.findUniqueOrThrow({ where: { id: runId }, include: { scene: { include: { normalizedAsset: true } } } });
-  if (run.scene.archivedAt || run.scene.revision !== run.inputRevision || run.expiresAt < new Date()) throw new Error("RUN_STALE_OR_EXPIRED");
+  if (run.status === "CANCELED" || run.scene.archivedAt || run.scene.revision !== run.inputRevision || run.expiresAt < new Date()) throw new Error("RUN_STALE_OR_EXPIRED");
   return run;
 }
 async function providerInput(asset: { storageKey: string }) { return getSignedUrl(getR2(), new GetObjectCommand({ Bucket: bucket(), Key: asset.storageKey }), { expiresIn: 3600 }); }
@@ -202,7 +201,7 @@ export async function ingestRun(runId: string, requestId: string) {
 export async function failRun(runId: string) {
   const db = getDb();
   const run = await db.generationRun.findUnique({ where: { id: runId } });
-  if (!run || run.status === "SUCCEEDED") return;
+  if (!run || run.status === "SUCCEEDED" || run.status === "CANCELED") return;
   const steps = await db.generationStep.findMany({ where: { runId } });
   const uncertain = steps.some(s => s.status === "RUNNING" && !s.providerRequestId);
   const knownJob = steps.some(s => s.key === "sam3d-submit" && s.providerRequestId && s.status !== "SUCCEEDED");
@@ -217,7 +216,7 @@ export async function workspace(sceneId: string, ownerId: string) {
   const scene = await ownedScene(sceneId, ownerId);
   const [objects, run] = await Promise.all([
     getDb().sceneObject.findMany({ where: { sceneId }, include: { mask: true, model: true }, orderBy: { sortOrder: "asc" } }),
-    getDb().generationRun.findFirst({ where: { sceneId }, orderBy: { createdAt: "desc" } })
+    getDb().generationRun.findFirst({ where: { sceneId, inputRevision: { gte: Number(record(scene.settings).resetRevision ?? 0) } }, orderBy: { createdAt: "desc" } })
   ]);
   if (run && active.includes(run.status as typeof active[number]) && run.expiresAt < new Date()) {
     await failRun(run.id);

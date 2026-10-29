@@ -1,7 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { runInputSchema, objectEditsSchema } from "../src/lib/validation/generation";
+import { runInputSchema, objectEditsSchema, restartInputSchema } from "../src/lib/validation/generation";
 const id = "3ee61171-5730-4c80-8dc2-274eebd26576";
 describe("Generation requests", () => {
+  it("requires explicit confirmation and a current revision for each supported restart", () => {
+    for (const target of ["PHOTO", "ANALYSIS", "RECONSTRUCTION"]) {
+      expect(restartInputSchema.safeParse({ target, expectedRevision: 3, confirmed: true }).success).toBe(true);
+      expect(restartInputSchema.safeParse({ target, expectedRevision: 3 }).success).toBe(false);
+      expect(restartInputSchema.safeParse({ target, expectedRevision: 3, confirmed: false }).success).toBe(false);
+    }
+    expect(restartInputSchema.safeParse({ target: "ALL", expectedRevision: 3, confirmed: true }).success).toBe(false);
+    expect(restartInputSchema.safeParse({ target: "PHOTO", expectedRevision: -1, confirmed: true }).success).toBe(false);
+  });
   it("requires distinct reviewed object IDs for reconstruction", () => {
     const base = { kind: "RECONSTRUCT", expectedRevision: 1, idempotencyKey: id };
     expect(runInputSchema.safeParse(base).success).toBe(false);

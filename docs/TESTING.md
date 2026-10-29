@@ -13,7 +13,7 @@ Updated October 29, 2026. Production and local end-to-end API checks pass: uploa
 7. Adjust **Left / right**, **Forward / back**, **Height**, **Rotation**, or **Size**. Uncheck **Show object** to hide it. **Undo** restores the previous local edit.
 8. Click **Save scene**, refresh, and verify that the layout persists. Another browser tab saving an older revision receives a conflict instead of overwriting changes.
 
-The global prototype allowance is deliberately small. The app conservatively reserves $1.42 for analysis and $1 for reconstruction; repeated requests with the same idempotency key reuse the saved run. A budget-limit message leaves saved scenes readable. Ask before increasing allowance; Jim approved $10 total development inference, not unlimited generation.
+Jim requested removing the cumulative app allowance on October 29. Generation no longer checks `GENERATION_BUDGET_USD`; run estimates ($1.42 analysis/$1 reconstruction) remain historical bookkeeping. Repeated starts with the same idempotency key reuse the run, one active generation per user is enforced, and paid submissions have no automatic retries. Meta credits and fal billing remain separate.
 
 For an already generated scene, click **Match photo layout** below the viewer. It reuses saved SAM poses, preserves relative scale/orientation/depth, fits the photo camera, and adds an estimated floor/walls. It resets and saves transforms; **Undo photo layout** restores the previous composition. Save or reload unsaved edits first. New supported reconstructions compose during ingestion.
 
@@ -31,7 +31,7 @@ npm run build
 npm run typecheck
 ```
 
-Local app: configure `.env.local`, set `GENERATION_ENABLED=true`, choose the **remaining approved** global `GENERATION_BUDGET_USD`, and run `npm run dev`. Never choose a new budget without accounting for existing CLI and DB reservations. Workflow uses its local development world automatically; deployed execution uses Vercel's managed world.
+Local app: configure `.env.local`, set `GENERATION_ENABLED=true`, run `npm run dev`. There is no cumulative app allowance variable. Workflow uses its local development world automatically; deployed execution uses Vercel's managed world.
 
 `scripts/smoke-generation.ts` is an explicit integration helper. It uses the QA account file produced by `smoke-foundation.ts`; it never prints credentials or signed URLs. `prepare` uploads the synthetic room, `start` spends analysis inference, `reconstruct` spends GPU inference, `status` reads progress, and `save` verifies signed GLB downloads/CORS plus persistence/revision/origin/two-account isolation. Paid modes require prior authorization; they are not CI tasks.
 
@@ -63,4 +63,14 @@ npm exec tsx scripts/smoke-composition.ts
 
 Add `SMOKE_BASE_URL=https://rescene-eta.vercel.app` for production. Use a QA scene only; the runner temporarily changes its layout. Local integration passed with the real saved bed/nightstand/chair GLBs. Twenty-two focused tests cover pose ordering/axes, shared scale, camera fit, invalid/behind-camera data, GLB hierarchy/cycles, room-observation validation, masks, and existing contracts. Lint/typecheck/production build pass. The same composition runner passed on production after PR #3 merged (`81bf9ac`): matching/persistence, imported baseline preservation, exact previous-layout restore, stale revision/origin rejection, second-account isolation, and rendered reference controls. Both PR CI runs, Vercel preview, main CI, and production deployment passed. Visual/mobile behavior is still unverified because browser access remains disabled; the revised Spark environment prompt has not been called live.
 
-The database reservation sum is now $7.28 of $7.50. A fresh full generation is blocked by the remaining allowance; inspect existing scenes without new inference. No additional inference was submitted for this correction. The private color fallback is not evidence of live validation of the updated Spark prompt.
+At the end of composition work the database reservation sum was $7.28 of $7.50. Jim subsequently removed the app cap, so that historical value no longer blocks new runs. No additional inference was submitted for this correction. The private color fallback is not evidence of live validation of the updated Spark prompt.
+
+
+## Restart earlier steps
+
+- **Change photo** (also step 1): confirm to clear the photo and all later results, then upload again in the same scene.
+- **Analyze again**: confirm to keep the photo but clear candidates/masks/3D/layout/edits. Click Find objects to submit the new analysis.
+- **Rebuild 3D** (also step 2 from the editor): confirm to keep the photo and masks, clear models/layout/edits, then review/reselect and Build in 3D again.
+- **Keep current scene** or Escape cancels without a request. Restart controls are disabled during generation; stale tabs receive a revision conflict.
+
+`node --conditions=react-server --import tsx scripts/smoke-restarts.ts` with QA_CREDENTIAL_FILE and an existing GENERATION_QA_FILE creates a separate QA copy of real saved photo/mask/GLB assets. It tests confirmation, active/stale/origin/ownership guards, concurrent reset conflict, old-job resume denial, each clearing boundary, and reupload in the same scene. No inference is submitted by this runner. The local run passes. Invalidated assets are marked DELETED; historical provider/usage records remain. No automatic R2 expiry is added.

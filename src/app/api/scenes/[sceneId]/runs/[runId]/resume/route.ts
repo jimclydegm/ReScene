@@ -19,13 +19,20 @@ export const POST = (request: Request, context: { params: Promise<{ sceneId: str
   } else if (run.status === "FAILED" && run.errorCode === "KNOWN_JOB_INTERRUPTED") {
     const step = run.steps.find(s => s.key === "sam3d-submit" && s.providerRequestId);
     if (!step) throw new AppError(409, "NO_SAVED_JOB", "No saved provider job is available.");
-    const claimed = await getDb().generationRun.updateMany({ where: { id: runId, status: "FAILED" }, data: {
-      status: "WAITING", expiresAt: new Date(Date.now() + 15 * 60_000), errorCode: null, errorMessage: null, currentStage: "Retrieving existing 3D job" } });
-    if (!claimed.count) throw new AppError(409, "RUN_ACTIVE", "Generation already resumed.");
-    await getDb().scene.update({ where: { id: sceneId }, data: { status: "RECONSTRUCTING" } });
+    await getDb().$transaction(async tx => {
+      // The restart endpoint uses the same lock. An old resume cannot race a reset and revive its meshes.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(839172640)`;
+      const current = await tx.scene.findFirst({ where: { id: sceneId, ownerId: user.id, revision: run.inputRevision, archivedAt: null } });
+      if (!current) throw new AppError(409, "REVISION_CONFLICT", "This scene has changed.");
+      const claimed = await tx.generationRun.updateMany({ where: { id: runId, status: "FAILED", errorCode: "KNOWN_JOB_INTERRUPTED" }, data: {
+        status: "WAITING", expiresAt: new Date(Date.now() + 15 * 60_000), errorCode: null, errorMessage: null, currentStage: "Retrieving existing 3D job" } });
+      if (!claimed.count) throw new AppError(409, "RUN_ACTIVE", "Generation already resumed or was restarted.");
+      await tx.scene.update({ where: { id: sceneId }, data: { status: "RECONSTRUCTING" } });
+    });
     try { await start(resumeReconstruction, [runId, step.providerRequestId!]); }
     catch {
       await getDb().generationRun.update({ where: { id: runId }, data: { status: "FAILED", errorCode: "KNOWN_JOB_INTERRUPTED", errorMessage: "Resume could not be dispatched. Try Resume again." } });
+      await getDb().scene.updateMany({ where: { id: sceneId, revision: run.inputRevision, status: "RECONSTRUCTING" }, data: { status: "FAILED" } });
       throw new AppError(503, "DISPATCH_FAILED", "Resume could not start. Try again.");
     }
   } else throw new AppError(409, "CANNOT_RESUME", "This run cannot be resumed automatically.");
