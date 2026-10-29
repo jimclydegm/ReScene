@@ -47,7 +47,7 @@ The clothing correction has 61 passing unit cases, passed CI/build and saved-dat
 - [x] Tabletop contact settling, shared-plane fallback and actual vertex contact refinement.
 - [x] Ten-mesh source transfer, per-root registration, 2K copy, refresh/restore and optional automatic post-ingest application.
 - [x] Repair saved desk output, verify contact/source restore, static/browser appearance and focused tests.
-- [ ] One PR/production release and bounded deployed desktop/mobile checks.
+- [x] PR #13 merged at a6c8b76; 72 cases and CI pass, production READY, bounded deployed API checks and Chrome desktop/mobile controls pass.
 
 ## External completion gates
 
