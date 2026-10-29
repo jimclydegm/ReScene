@@ -37,6 +37,7 @@ enum AssetKind {
 
 enum AssetStatus {
   PENDING
+  VALIDATING
   READY
   REJECTED
   DELETING

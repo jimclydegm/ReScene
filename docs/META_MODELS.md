@@ -165,3 +165,7 @@ Illustrative calculation, not measured usage: a Spark call with 20,000 billed in
 The host's public model pages contain differing price references, so this plan does not pin a GPU price. Record the actual quoted unit/rate and observed job cost in Phase 0. Credits and free-tier availability are account-specific, not guaranteed.
 
 Proposed UX targets: photo preview immediately, first analysis/review within 60 seconds when available, full 3–5 object scene within five minutes on the selected demo input. These are targets to measure, not provider SLAs. Use an eight-minute initial run deadline; allow a retry of known jobs rather than guessing completion.
+
+## 10. Observed access during foundation setup
+
+Meta's authenticated `/models` read succeeded with Spark 1.3, SAM 3.1, Muse Image, Voice Transcribe, and Wonder listed. A fal queue-status read returned the expected missing-job response. No paid inference was submitted. These checks establish discovery/endpoint access, not segmentation quality, GPU entitlement, object mapping, or a successful reconstruction; the live Phase 0 experiment remains required.

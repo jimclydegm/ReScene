@@ -1,6 +1,6 @@
 # ReScene system architecture
 
-Proposed October 29, 2026. No services have been provisioned. Read [PLAN.md](PLAN.md) for scope and [DATA_MODEL.md](DATA_MODEL.md) for constraints.
+Architecture target, October 29, 2026. The app/auth/database foundation is implemented; durable generation, reconstruction, product editing, and publication remain planned. See [SETUP.md](SETUP.md) for verified deployment/access status, [PLAN.md](PLAN.md) for scope, and [DATA_MODEL.md](DATA_MODEL.md) for constraints.
 
 ## 1. System boundaries
 
@@ -29,7 +29,7 @@ No Python service, Redis, WebSockets, separate database REST service, or Cloudfl
 
 ## 2. Frontend
 
-Use [Next.js App Router](https://nextjs.org/docs/app), TypeScript, React, Tailwind, and a small set of shadcn components. Keep authentication, list pages, and initial data loading on the server. Dynamically import a client-only scene editor so WebGL dependencies do not enter server rendering.
+Use [Next.js App Router](https://nextjs.org/docs/app), TypeScript, and React. The implemented foundation uses plain CSS; Tailwind/shadcn remain optional for the editor. Keep authentication, list pages, and initial data loading on the server. Dynamically import WebGL components so they do not enter server rendering.
 
 Use [React Three Fiber](https://r3f.docs.pmnd.rs/getting-started/introduction) over [Three.js](https://threejs.org/docs/) with Drei controls/loaders. Zustand holds draft scene state and selection; React component state holds transient form UI. Fetch/poll server state using one approach (SWR or a small fetch hook), not multiple query libraries.
 

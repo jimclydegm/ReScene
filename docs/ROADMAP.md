@@ -12,7 +12,7 @@ Phases are ordered by dependency. Finish each acceptance gate before expanding s
 - [x] Save architecture, data model, detailed Prisma schema, scene contract, environment names, and phased work in the repo.
 - [x] Record offline validation results and remaining integration checks below.
 
-Implementation has not started. Unchecked boxes describe future work, not completed integrations.
+The app foundation is implemented. Jim requested Vercel setup and base code while the reconstruction spike remains pending. Unchecked boxes still describe future work; model-account access is not a completed reconstruction gate. See [SETUP.md](SETUP.md) for actual deployment/access status.
 
 ## Calendar
 
@@ -31,7 +31,7 @@ If a target slips, remove optional work before weakening the complete core flow.
 **Time box: 2–4 hours, October 29.** Dependencies: accepted-participant access, Meta key, chosen hosted SAM 3D credentials. No full UI work until the model path is credible.
 
 - [ ] Read the participant rules/details and record track, final deadline/timezone, model requirements, allowed hosts/assets, team rules, judging rubric, and submission format in PLAN.md. Do not treat marketing copy as the final rules.
-- [ ] Verify access to `muse-spark-1.3` and `sam-3.1` with the actual Meta account. Store secrets locally/platform-side; do not paste them into docs or commits.
+- [x] Verify account/model discovery access to `muse-spark-1.3` and `sam-3.1`. Secrets are local/platform-side; live inference is still pending.
 - [ ] Select one rights-cleared photo with 3–5 clear furniture/decor objects; use two objects for the first test.
 - [ ] Run Spark analysis and SAM masks; save sanitized request/response fixtures plus private full artifacts.
 - [ ] Check current hosted SAM 3D price/billing unit/credits and set the experimental spending cap before paid tests.
@@ -49,16 +49,18 @@ If a target slips, remove optional work before weakening the complete core flow.
 
 **Estimate: 4–6 hours, October 29.** Depends on Phase 0's provider decision. Can prepare account configuration while inference runs.
 
-- [ ] Use the existing checkout; create a `codex/` feature branch for implementation. Keep planning documents.
-- [ ] Scaffold compatible stable Next.js App Router, TypeScript, React, Tailwind, and basic UI. Pin versions and commit the lockfile; avoid Prisma's observed `latest` release-candidate tag.
-- [ ] Add Node 22 runtime/package engine and server-only environment validation. Keep missing provider secrets from being embedded in client code or required for static pages at build time.
+- [x] Reuse checkout and create `codex/app-foundation`; keep planning context.
+- [x] Scaffold Next.js/React/TypeScript, sample viewer, and styled UI with pinned dependencies/lockfile. Plain CSS is sufficient for the foundation; Tailwind is deferred.
+- [x] Configure Node 22, server-only lazy environment helpers, and client bundle boundaries.
 - [ ] Link the correct Vercel project/GitHub repository; deploy a minimal stable staging origin.
 - [ ] Provision/link the chosen Neon project and a development environment. Enable Neon Managed Better Auth; configure origin allowlist and cookie secret.
-- [ ] Install matching Prisma 7 CLI/client/Neon adapter, add prisma.config.ts with direct migration URL, and generate/review the initial migration plus constraints.sql. Confirm `neon_auth` is untouched.
-- [ ] Implement auth proxy, sign-up/sign-in/sign-out, session restoration, AppUser upsert, and a protected dashboard/API.
+- [x] Install Prisma 7.10.1 CLI/client/adapter; review/apply initial migration with constraints; preserve `neon_auth`.
+- [x] Implement auth proxy, sign-up/sign-in/sign-out, sessions, AppUser upsert, and protected dashboard/API. Email/session flows tested; Google consent remains untested.
 - [ ] Configure private R2 bucket/credentials, environment separation, CORS, staging lifecycle, and server signing helper.
-- [ ] Add minimal Scene create/list/read services and a ready-asset serializer.
-- [ ] Set up CI for install, generate, typecheck, lint, relevant checks, and build. Production migrations are a separate reviewed deployment action.
+- [x] Add Scene create/list/read/update, owner-scoped DTOs, revision conflicts, and upload reservation/completion services.
+- [x] Add GitHub CI for install/generate, typecheck, lint, tests, and build; migrations remain separate.
+
+**Foundation status, Oct 29:** deployed to the existing production origin with Next.js/Node 22 and encrypted server secrets. Local production-build/API smoke and mobile layout checks pass. Separate staging/development branches are not yet created; the prototype shares the supplied Neon branch/Auth. R2 credentials are active but read-only; write, CORS, lifecycle, and image round-trip checks remain blocked on permissions. Phase 1 is not fully complete until those checks pass.
 
 **Pass:** deploy succeeds; login survives reload; two accounts see only their own scenes; an authorized staging upload round-trip works; schema applies in development without affecting auth tables.
 
@@ -161,7 +163,7 @@ Never request credentials by committing them to a document. Prefer connected acc
 
 Preserve real Meta inference, independent meshes, object editing, product mapping, save/reload, sharing, and ownership. If those cannot be completed, report the remaining gap directly rather than marking the project complete.
 
-## Validation log for this planning deliverable
+## Historical planning validation (before implementation)
 
 Checked October 29, 2026:
 
@@ -172,3 +174,5 @@ Checked October 29, 2026:
 - No cloud resources were provisioned, no cloud migrations were applied, no inference credits were consumed, and no app deployment/build was attempted.
 
 These checks validate planning artifacts, not model access, reconstruction quality, or the running application. Remaining gates are deliberately unchecked above.
+
+The foundation work subsequently resolved DDL generation and applied the reviewed migration. Current validation is recorded in [SETUP.md](SETUP.md); the historical planning-only statements above do not describe the current deployment.

@@ -1,6 +1,6 @@
--- Proposed additions to the initial Prisma-generated migration.
--- This file is NOT applied automatically and has not been run against a database.
--- Review and append to migration.sql in Phase 1; never run it against neon_auth.
+-- Reference copy of constraints included in 20261029040000_init/migration.sql.
+-- Prisma migrations apply them; do not execute this reference file a second time.
+-- Future changes require a new migration. Never apply changes to neon_auth here.
 
 CREATE UNIQUE INDEX "GenerationRun_one_active_scene"
 ON "GenerationRun" ("sceneId")

@@ -147,3 +147,6 @@ Phase 0 needs Meta access, a reconstruction credential, and participant rules. P
 | Oct 29 | WorldGen excluded; official announcement says no developer access | Research verified |
 | Oct 29 | Hosted SAM 3D proposed through fal | Live verification required |
 | Oct 29 | Nov 2 freeze despite Nov 4 public submission date | User target preserved |
+| Oct 29 | Build the requested Vercel/auth/database foundation while live 3D spike remains pending | Implemented; no claim of reconstruction feasibility |
+| Oct 29 | Use plain CSS for foundation; keep Zustand/Tailwind/shadcn optional for editor | Implemented |
+| Oct 29 | Reuse supplied Neon branch/Auth and R2 prototype namespace initially | Implemented; environment separation remains future work |

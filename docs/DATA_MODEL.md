@@ -1,6 +1,6 @@
 # ReScene data model and contracts
 
-The [Prisma schema](../prisma/schema.prisma) is the concrete proposed application model. It has eight models, nine enums, and explicit foreign keys/indexes. No migration has been applied. The [additional SQL constraints](../prisma/constraints.sql) must be reviewed and incorporated into the initial generated migration.
+The [Prisma schema](../prisma/schema.prisma) has eight models, nine enums, and explicit foreign keys/indexes. The initial [migration](../prisma/migrations/20261029040000_init/migration.sql), including [additional SQL constraints](../prisma/constraints.sql), was applied October 29. This document also specifies behavior for later reconstruction/publication phases; see [SETUP.md](SETUP.md) for current implementation limits.
 
 ## 1. Entity relationships
 
@@ -109,7 +109,7 @@ The schema uses `{}` defaults for not-yet-initialized private JSON. Do not pass 
 | PROVIDER_RESPONSE | Private JSON/text artifact | No |
 | SCENE_MANIFEST | Immutable canonical JSON | Parsed by the app; only the safe contract is returned |
 
-Asset status is PENDING→READY or REJECTED; deletion goes DELETING→DELETED. READY means bucket/key, checksum, bytes, validation, and readyAt are recorded. Key uniqueness is enforced; temporary URLs are derived, never stored as a permanent asset reference.
+Asset status is PENDING→VALIDATING→READY or REJECTED; transient validation failure returns to PENDING. An atomic VALIDATING claim prevents competing upload completions. Deletion goes DELETING→DELETED. READY means bucket/key, checksum, bytes, validation, and readyAt are recorded. Temporary URLs are derived, never stored as permanent references.
 
 Record one parent derivation when useful (e.g. cutout from normalized photo). Multi-input provenance such as an image plus several masks stays in the run input. Ready files are never overwritten. A replacement creates a new asset ID and updates a draft reference; old publication references remain valid.
 
