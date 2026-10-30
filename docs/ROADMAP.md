@@ -145,4 +145,4 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Solid plain materials and swatch-only shadow-free Muse tiles with validation/fallback and immutable raw output.
 - [x] Relightable surfaces, shared private/public renderer, clean/photo mode and previous-background restore.
 - [x] Peach-source analysis and one wood tile verified; no object reconstruction inference used.
-- [ ] Final release checks, deployment and native desktop/mobile verification.
+- [x] 164 cases/schema/lint/types/build and CI pass. PR #24 merged at ce0aa53; production READY, API restore/validation checks and native WebGL/desktop/mobile/orbit/relighting verified.
