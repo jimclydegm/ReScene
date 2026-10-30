@@ -155,4 +155,5 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Intrinsic reference materials, foreground exclusion, visible geometry/image review and previous-background restore.
 - [x] Known-job reuse/resume, stale/cancel guards, layout reframing/undo and render-only publication contract.
 - [x] Prepare reported photo without object regeneration; native local Chrome WebGL/lighting/orbit checks and focused safeguards.
-- [ ] Final CI, merge, production deployment and bounded saved-scene/mobile verification.
+- [x] 179 cases/schema/lint/types/build and CI pass. PR #25 merged at 835efd8; production READY, reported scene updated through the deployed saved-result workflow, objects/products/camera/lights preserved.
+- [x] Native production desktop/390×844, report/method controls, snapshot privacy/allowlist and two-way restore verified; disposable QA restored and share revoked; zero runtime/browser error records.
