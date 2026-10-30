@@ -195,10 +195,15 @@ export async function markOutlineFailure(runId:string, objectId:string) {
 
 export async function finishAnalysis(runId: string) {
   const run = await loadRun(runId);
-  const objects = await getDb().sceneObject.findMany({where:{sceneId:run.sceneId}});
+  const objects = await getDb().sceneObject.findMany({where:{sceneId:run.sceneId},include:{mask:true}});
+  const sharp=(await import("sharp")).default;
+  const {containedParts}=await import("@/lib/scene/layout-review");
+  const maskInputs=await Promise.all(objects.filter(o=>o.maskAssetId&&o.mask).map(async o=>({id:o.id,parentId:typeof record(o.provenance).parentObjectId==="string"?String(record(o.provenance).parentObjectId):null,supportedById:typeof record(o.provenance).supportedByObjectId==="string"?String(record(o.provenance).supportedByObjectId):null,mask:await sharp(await readLimited(o.mask!.storageKey,4*1024*1024)).greyscale().raw().toBuffer()})));
+  const contained=containedParts(maskInputs);
   const incomplete=objects.some(o=>o.lastErrorCode);
   const empty=!objects.length;
   await getDb().$transaction(async tx => {
+    for(const [id,parentObjectId]of contained){const object=objects.find(o=>o.id===id)!;await tx.sceneObject.update({where:{id},data:{provenance:asJson({...record(object.provenance),parentObjectId,relationshipSource:"mask-containment-v1"})}});}
     await tx.scene.update({ where: { id: run.sceneId, revision: run.inputRevision }, data: { status: "REVIEW", revision: { increment: 1 } } });
     await tx.generationRun.update({ where: { id: runId }, data: { status: incomplete ? "PARTIAL" : "SUCCEEDED", currentStage: empty ? "No objects identified" : "Review object outlines", errorCode:empty ? "NO_OBJECTS" : incomplete ? "OUTLINES_NEED_REVIEW" : null, errorMessage:empty ? "Analysis found no candidates. Adjust the focus and analyze again, or add an object yourself." : null, progress: 100, completedAt: new Date() } });
   });
@@ -285,15 +290,18 @@ export async function ingestRun(runId: string, requestId: string, withAppearance
       imageBounds: object.imageBounds, support: String(record(object.provenance).support ?? "unknown"),category:object.category,supportedById:typeof record(object.provenance).supportedByObjectId==="string"?String(record(object.provenance).supportedByObjectId):undefined }); } catch { /* Layout is optional; do not discard a usable mesh. */ }
   }
   let layout: ReturnType<typeof composeRoom> | undefined;
+  let layoutReview:import("@/lib/scene/layout-review").LayoutReview|undefined;
   try {
     if (layoutInputs.length !== ids.length) throw new Error("LAYOUT_BOUNDS_MISSING");
     const environment = await sceneEnvironment(run.scene);
     layout = composeRoom(layoutInputs, { width: run.scene.normalizedAsset!.width!, height: run.scene.normalizedAsset!.height! }, environment.environment, environment.environmentSource);
     const {seatGeometry}=await import("@/lib/appearance/contact");
     for(const [i,object]of layout.objects.entries())try{seatGeometry(layoutBytes[i],object);}catch{/* Keep validated bounds if vertex refinement is unavailable. */}
+    const {reviewPreparedLayout}=await import("./layout-review");
+    layoutReview=await reviewPreparedLayout(layout,ids.map(id=>objects.find(o=>o.id===id)!),layoutBytes,{width:run.scene.normalizedAsset!.width!,height:run.scene.normalizedAsset!.height!});
     layout.composition.background=backgroundPlanSchema.safeParse(record(run.scene.settings).backgroundPlan).data;
     layout.composition.backdrop=record(run.scene.settings).preferredBackdrop === "studio" ? "studio" : "room";
-  } catch { /* Keep independent meshes usable if a provider changes its pose contract. The UI offers manual placement. */ }
+  } catch { if(layout)layout.composition.warnings.push("Reference review could not complete. Inspect this layout before publishing."); /* Preserve usable meshes without claiming a review pass. */ }
   await getDb().$transaction(async tx => {
     for (const id of allIds) {
       const object=objects.find(o=>o.id===id)!;
@@ -309,10 +317,10 @@ export async function ingestRun(runId: string, requestId: string, withAppearance
       initialTransform: composed ? asJson(composed.placement) : { placement: "manual-stage", importer: "gltf-y-up-bottom-center-v1" },
       provenance: asJson({ ...record(object.provenance), ...(generated ? {assemblyRootId:rootId,assemblyBaseAssetId:generated.sourceId,partitionVersion:"projected-parts-v1",layoutImageBounds:objects.find(o=>o.id===rootId)!.imageBounds} : {}), provider: "fal", model, requestId, maskInputIndex: index, metadata: result.metadata?.find(m => m.object_index === index), placement: composed ? "sam3d-layout-v1" : "manual-stage" })
     } }); }
-    await tx.scene.update({ where: { id: run.sceneId, revision: run.inputRevision }, data: { status: "READY", revision: { increment: 1 },settings:asJson({...record(run.scene.settings),reconstructionOptions:reconstructionOptionsSchema.parse(record(run.input).reconstruction ?? {})}),
+    await tx.scene.update({ where: { id: run.sceneId, revision: run.inputRevision }, data: { status: "READY", revision: { increment: 1 },settings:asJson({...record(run.scene.settings),layoutReview,reconstructionOptions:reconstructionOptionsSchema.parse(record(run.input).reconstruction ?? {})}),
       ...(layout ? { camera: asJson(layout.composition.camera), stage: asJson(layout.composition) } : {}) } });
     await tx.generationStep.updateMany({ where: { runId, key: "sam3d-submit" }, data: { status: "SUCCEEDED", completedAt: new Date() } });
-    await tx.generationRun.update({ where: { id: runId }, data: { status: withAppearance ? "WAITING" : partitionFailed.length ? "PARTIAL" : "SUCCEEDED", errorMessage:partitionFailed.length ? "Complete subjects are ready. Some product regions could not be separated reliably; no independent replacement geometry was invented." : null, currentStage: withAppearance ? "Enhancing source detail" : "Your 3D scene is ready", progress: withAppearance ? 90 : 100, completedAt: withAppearance ? null : new Date() } });
+    await tx.generationRun.update({ where: { id: runId }, data: { status: withAppearance ? "WAITING" : partitionFailed.length||layoutReview?.needsReview ? "PARTIAL" : "SUCCEEDED", errorMessage:partitionFailed.length ? "Complete subjects are ready. Some product regions could not be separated reliably; no independent replacement geometry was invented." : layoutReview?.needsReview ? "Reference review found remaining shape differences. Inspect flagged objects in the placement report; no automatic paid retry was submitted." : null, currentStage: withAppearance ? "Enhancing source detail" : "Your 3D scene is ready", progress: withAppearance ? 90 : 100, completedAt: withAppearance ? null : new Date() } });
   });
 }
 export async function failRun(runId: string) {
@@ -350,6 +358,7 @@ export async function workspace(sceneId: string, ownerId: string) {
   return { id: scene.id, title: scene.title, description: scene.description, status: scene.status, revision: scene.revision,
     analysisOptions:analysisOptionsSchema.safeParse(record(scene.settings).analysisOptions).data ?? analysisOptionsSchema.parse({}),
     reconstructionOptions:reconstructionOptionsSchema.safeParse(record(scene.settings).reconstructionOptions).data ?? reconstructionOptionsSchema.parse({}),
+    layoutReview:(await import("@/lib/scene/layout-review")).layoutReviewSchema.safeParse(record(scene.settings).layoutReview).data??null,
     analysisSummary:typeof record(scene.settings).analysisSummary === "string" ? String(record(scene.settings).analysisSummary) : null,
     lighting: lightingSchema.safeParse(record(scene.settings).lighting).data ?? defaultLighting(stage),
     appearance: { applied: applied.version === "photo-bake-v1", floorUrl: await textureUrl(applied.floorId), wallUrl: await textureUrl(applied.wallId), backgroundUrl: await textureUrl(record(record(scene.settings).background).assetId) },

@@ -2069,3 +2069,6 @@ svg {
 
 .build-controls label.opening-control { display: flex; align-items: center; gap: 8px; }
 .build-controls .opening-control input { width: 18px; margin: 0; }
+
+.layout-review { margin-top:12px; padding:12px; border:1px solid #c8d0bd; border-radius:10px; background:#f7f8f0; font-size:12px; }
+.layout-review p { margin:6px 0 0; color:#67745c; line-height:1.5; }
