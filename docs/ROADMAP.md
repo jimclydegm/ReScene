@@ -120,3 +120,11 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Compact starting page; consistent buttons/captions, search/categories, selection tray and visual setting/aspect controls.
 - [x] Six relational library/draft/history/adoption tables with FKs, indexes, SQL visibility checks and legacy backfills.
 - [x] Real draft/conflict/frozen-history/sample-output/adoption checks pass. PR #21 merged at ed1d70c; CI and production asset/draft/SSR checks pass, production READY. Native visual checks remain blocked by Work settings.
+
+## Image/project trash and simple scene presets
+
+- [x] Image deletion/Trash/restore with owner checks, active-reference guard and preserved history/adoptions.
+- [x] Project Delete/Trash wording backed by existing share-revoking archive/restore operation.
+- [x] Twelve simple photographic samples, 22 active products total; plants/paired shoes retired from selection.
+- [x] Eight empty environment previews and matching no-extra-products prompt controls; old template versions/media retained.
+- [ ] Complete saved-data and production verification, merge/release the bundle.

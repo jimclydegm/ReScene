@@ -1,0 +1,19 @@
+{
+  "model": "muse-image-1.0",
+  "prompt": "A perfectly aligned equal 4 column by 3 row contact sheet of twelve premium photographic ecommerce product images. All twelve tiles have a clean seamless white background. Each tile shows exactly ONE simple product fully visible with generous padding. No plants, no pairs, no multiple objects per cell, no intricate decorations, no text, no labels, no logos, no borders. Row 1: simple natural wood dining chair, simple blue upholstered accent chair, plain round wood stool, minimal round white dining table. Row 2: simple oak side table, low rectangular walnut coffee table, single brushed steel cylindrical tumbler, single plain beige ceramic handleless cup. Row 3: single pale plastic food container with its lid closed, single matte white rectangular storage box closed, single transparent glass storage jar with plain wood lid closed, single plain terracotta bowl. Realistic photographic materials, simple uncluttered silhouettes, soft studio illumination. Not drawings, not low-poly, not icons.",
+  "generatedAt": "2026-10-30T07:29:39.466Z",
+  "assets": [
+    "dining-chair",
+    "accent-chair",
+    "stool",
+    "round-table",
+    "side-table",
+    "coffee-table",
+    "steel-tumbler",
+    "ceramic-cup",
+    "food-container",
+    "storage-box",
+    "glass-jar",
+    "ceramic-bowl"
+  ]
+}

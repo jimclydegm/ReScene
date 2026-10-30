@@ -1,3 +1,4 @@
+import {contentTrashInput,manageContent} from "@/lib/services/content-trash";
 import {z} from "zod";
 import {start} from "workflow/api";
 import {api,checkOrigin,readJson,AppError} from "@/lib/http";
@@ -8,6 +9,8 @@ import {saveCreativeDraft,createCreative,creativeLibrary,creativeUpload,complete
 import {createSceneImage} from "@/workflows/creative";
 export const maxDuration=60;
 const input=z.discriminatedUnion("action",[
+ z.object({action:z.literal("DELETE_IMAGE"),itemId:z.uuid(),confirmed:z.literal(true)}).strict(),
+ z.object({action:z.literal("RESTORE_IMAGE"),itemId:z.uuid(),confirmed:z.literal(true)}).strict(),
  z.object({action:z.literal("CREATE")}).strict(),
  z.object({action:z.literal("UPLOAD"),sceneId:z.uuid(),contentType:z.enum(imageTypes),byteSize:z.number().int().positive().max(12*1024*1024)}).strict(),
  z.object({action:z.literal("COMPLETE"),sceneId:z.uuid(),assetId:z.uuid(),label:z.string().trim().min(1).max(120)}).strict(),
@@ -16,9 +19,10 @@ const input=z.discriminatedUnion("action",[
  creativeInput.extend({action:z.literal("GENERATE")}),
  z.object({action:z.literal("USE"),assetId:z.uuid(),title:z.string().trim().min(1).max(160)}).strict()
 ]);
-export const GET=(req:Request)=>api(async()=>{const user=await requireUser(),url=new URL(req.url),sceneId=z.uuid().optional().parse(url.searchParams.get("sceneId")??undefined),page=z.coerce.number().int().min(0).max(1000).parse(url.searchParams.get("page")??0);return Response.json(await creativeLibrary(user.id,sceneId,page));});
+export const GET=(req:Request)=>api(async()=>{const user=await requireUser(),url=new URL(req.url),sceneId=z.uuid().optional().parse(url.searchParams.get("sceneId")??undefined),page=z.coerce.number().int().min(0).max(1000).parse(url.searchParams.get("page")??0);return Response.json(await creativeLibrary(user.id,sceneId,page,url.searchParams.get("view")==="trash"));});
 export const POST=(req:Request)=>api(async()=>{
  checkOrigin(req);const user=await requireUser(),v=input.parse(await readJson(req));
+ if(v.action==="DELETE_IMAGE"||v.action==="RESTORE_IMAGE")return Response.json(await manageContent(user.id,contentTrashInput.parse(v)));
  if(v.action==="CREATE"){const scene=await createCreative(user.id);return Response.json({sceneId:scene.id});}
  if(v.action==="UPLOAD")return Response.json(await creativeUpload(user.id,v.sceneId,v.contentType,v.byteSize));
  if(v.action==="COMPLETE"){const asset=await completeCreativeUpload(user.id,v.sceneId,v.assetId,v.label);return Response.json({assetId:asset.id});}
