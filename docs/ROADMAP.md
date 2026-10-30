@@ -77,3 +77,12 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] One opaque textured ground/shadow plane; bounded shadow depth and no generated-mesh self-shadow acne.
 - [x] Repair reported vase/stone scene using saved assets, preserving original meshes; zero inference calls.
 - [x] PR #16 merged at d1a5077; 96 cases and CI/build pass, production READY, read-only scene/texture/privacy/release checks pass. Live GPU/desktop/mobile/flicker verification remains pending because browser access reports disabled.
+
+## Reference layout review and assembly reliability — October 30
+
+- [x] Diagnose duplicate complete-object/part reconstruction, AABB-top stacking and missing manual-object orientation metadata.
+- [x] Mask-supported shared-region inference and legacy disjoint assembly repair; preserve geometry/UVs and undo references.
+- [x] Bounded actual-mesh/reference-mask placement review, conservative upright candidates, visible quality metrics and residual warnings.
+- [x] Automatic review after reconstruction plus existing-scene review/refine action and reviewed texture baseline.
+- [x] Repair reported bedroom with saved assets and zero inference; lamp shape remains flagged.
+- [ ] Combined verification, CI/release and bounded deployed checks; native browser verification depends on access.

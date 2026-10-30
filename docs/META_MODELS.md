@@ -251,3 +251,9 @@ Muse Spark general analysis now includes observed open/plane/distant background 
 Plain RGB preflight skips background inference for high-confidence constant fields, ignoring minority cast shadows. `plainColor` is generated locally and omitted from Meta strict structured-output schemas. SAM 3D's hosted API exposes no mesh-resolution, topology or inference-step quality parameter. Supplied masks bypass text-driven detection; detection threshold is not a mesh quality control. An optional pointmap requires a correctly registered same-camera depth source, which is not integrated.
 
 One same-seed experiment refined four bright enclosed background gaps in the shoe mask. Geometry remained inaccurate; the existing model was kept. Provider-only mask refinement is experimental/off by default, leaves accepted outlines unchanged, and can also exclude those pixels from source texture transfer when enabled. It is not proof that hollow geometry is faithfully recovered. See BACKGROUND_RECONSTRUCTION.md for official links and evidence.
+
+## Assembly/reference review correction — October 30
+
+Analysis prompt v8 distinguishes already represented product regions from separate support objects, including removable components without a subject/category restriction. A supported-mask containment check can promote a region to the existing shared-root path before reconstruction. Runtime providers remain Meta Spark/SAM plus Meta SAM 3D via fal; no model is substituted.
+
+The new reviewer is bounded CPU geometry work against Meta-reviewed masks, not another paid image judge or regeneration loop. It measures actual mesh silhouette overlap after placement/contact, improves transforms when supported by that measurement, and flags unresolved shape differences. It cannot certify texture similarity, correct hidden geometry, metric depth or garment fit. No inference was submitted to repair the reported bedroom.

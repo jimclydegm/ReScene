@@ -5,7 +5,7 @@ import { analysisSchema, validateAnalysis, type ImageSize } from "./contracts";
 import { analysisSystemPrompt, analysisUserPrompt, defaultAnalysisOptions, type AnalysisOptions } from "./controls";
 import { backgroundPlanSchema } from "@/lib/scene/background";
 
-export const analysisPromptVersion = "scene-surfaces-v7";
+export const analysisPromptVersion = "scene-reference-v8";
 export async function analyzePhoto(imageUrl: string, size: ImageSize, options: AnalysisOptions = defaultAnalysisOptions) {
   const started = Date.now();
   const response = await getMetaClient().chat.completions.create({

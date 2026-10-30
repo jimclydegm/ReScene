@@ -342,3 +342,7 @@ The shared WebGL renderer now projects a foreground-free derived full-frame phot
 ## Simple surface correction — October 30
 
 Broad frame-extending background surfaces are excluded from object meshes using explicit analysis surfaceRole and a conservative legacy fallback. The same rule applies at review/reconstruction/layout/appearance/background/publication boundaries; bounded/merchant objects remain editable. The shared renderer uses one opaque plane combining surface color and shadow, optional observed wall and actual distant context only. Ground contact no longer depends on a generated floor mesh. See BACKGROUND_RECONSTRUCTION.md; no SQL migration or new inference provider.
+
+## Reference review and overlap correction — October 30
+
+A bounded CPU reference reviewer uses actual mesh silhouettes and accepted masks after initial layout/contact, before READY/texture ingestion. Existing scenes use REVIEW_PHOTO on the revision-guarded composition endpoint; MATCH_PHOTO also reviews. Private settings.layoutReview exposes owner-safe metrics/warnings, while public snapshots retain render-only state. Supported mask containment prevents duplicate complete-object/part reconstruction and can partition legacy overlapping meshes into disjoint shared regions during explicit review. Undo restores model/relationship/appearance and layout references together. See SCENE_QUALITY.md for thresholds, evidence and limits; no SQL migration or new AI provider.

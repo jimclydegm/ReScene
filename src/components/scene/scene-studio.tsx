@@ -138,7 +138,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     } catch (e) { setError(e instanceof Error ? e.message : "Could not save."); }
     finally { setBusy(false); }
   }
-  async function matchLayout(action: "MATCH_PHOTO" | "RESTORE") {
+  async function matchLayout(action: "MATCH_PHOTO" | "REVIEW_PHOTO" | "RESTORE") {
     setBusy(true); setError(""); setMessage("");
     try {
       await apiJson(`${base}/composition`, { method: "POST", body: JSON.stringify({ expectedRevision: data.revision, action }) });
@@ -228,6 +228,8 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
       </div>
       {hasReplacements && <p className="control-hint">Restore original objects in Products before matching the photo layout or changing photo textures.</p>}
       {data.composition&&<label className="scene-backdrop-control">Scene backdrop<select value={data.composition.backdrop ?? "room"} disabled={busy||running||dirty||lightDirty} onChange={e=>changeBackdrop(e.target.value as "room"|"studio"|"none")}><option value="room">Photo background · automatic</option><option value="studio">Ground only</option><option value="none">Plain background · no surfaces</option></select><small>Choose the visible surfaces. Build or refresh the photo background in Textures. Switching views uses no generation.</small></label>}
+      <button className="button button-light" disabled={busy||running||dirty||lightDirty||hasReplacements||!data.composition} onClick={()=>matchLayout("REVIEW_PHOTO")}>Review & refine placement</button>
+      {data.layoutReview&&<div className="layout-review" role="status"><strong>Reference check · {data.layoutReview.needsReview?"needs attention":"placement checked"}</strong><p>Projected mesh silhouettes compared with reviewed photo masks. This does not verify hidden geometry or exact appearance.</p>{data.layoutReview.objects.map(o=><p key={o.id}>{o.label}: {Math.round(o.after*100)}% mask overlap{o.adjusted?" · adjusted":""}{o.needsReview?" · check shape/outline":""}</p>)}</div>}
       <p className="preview-caveat">Match photo layout resets object transforms and saves them; Undo photo layout restores the previous layout. Save or reload any unsaved edits first. Hidden surfaces and measurements may differ from the photo.</p>
       {data.composition?.warnings.slice(1).map(warning => <p className="preview-caveat" key={warning}>{warning}</p>)}</div>
       <aside className="object-inspector editor-inspector" aria-label="Scene controls">

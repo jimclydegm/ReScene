@@ -11,7 +11,7 @@ import { ownedScene } from "./scenes";
 import { record } from "./composition";
 import { bucket, storagePrefix, readLimited, putObject } from "@/lib/storage/r2";
 import { inspectGlb } from "@/lib/ai/glb";
-import { composeRoom, compositionSchema, glbBounds } from "@/lib/scene/composition";
+import { composeRoom, compositionSchema, glbBounds, modelPlacementSchema } from "@/lib/scene/composition";
 import { lightingSchema } from "@/lib/scene/lighting";
 import { bakeGlb, geometry, photoCamera, visibility, cleanPatch,registerPhoto } from "@/lib/appearance/bake";
 import { refineOpenings } from "@/lib/appearance/plain";
@@ -76,7 +76,7 @@ export async function updateAppearance(sceneId: string, ownerId: string, input: 
     if(!source)throw new AppError(422,"SOURCE_MODEL","The original subject mesh is unavailable.");
     return readLimited(source.storageKey,40*1024*1024);
   }));
-  const initial = composeRoom(roots.map((o, i) => ({ id: o.id, metadata: record(o.provenance).metadata, bounds: glbBounds(inputFiles[i]), imageBounds: record(o.provenance).layoutImageBounds ?? o.imageBounds,
+  const initial = record(settings.layoutReview).version==="mask-layout-v1"?{composition:composition.data,objects:roots.map(o=>({id:o.id,position:[o.positionX,o.positionY,o.positionZ] as [number,number,number],placement:modelPlacementSchema.parse(o.initialTransform)}))}:composeRoom(roots.map((o, i) => ({ id: o.id, metadata: record(o.provenance).metadata, bounds: glbBounds(inputFiles[i]), imageBounds: record(o.provenance).layoutImageBounds ?? o.imageBounds,
     support: String(record(o.provenance).support ?? "unknown") })), photo, composition.data.environment, composition.data.environmentSource,false);
   const camera = photoCamera(initial.composition.camera);
   const triangles = objects.map((o, i) => {

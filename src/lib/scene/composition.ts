@@ -182,7 +182,7 @@ export function settleSupportContacts(objects:{id:string;position:[number,number
     visiting.add(id);
     const item=objects.find(o=>o.id===id)!,input=inputs.find(o=>o.id===id)!;
     const explicit = objects.find(o=>o.id===input.supportedById&&o.id!==id);
-    if(input.support==="tabletop"||explicit||input.support==="floor") {
+    if(input.support==="tabletop"||input.support==="floor") {
       const supports=objects.filter(o=>o.id!==id&&["table","storage","surface"].includes(inputs.find(i=>i.id===o.id)?.category??""));
       const support=explicit??(input.support==="tabletop"?supports.filter(o=>Math.abs(o.position[0]-item.position[0])<=o.placement.size[0]/2&&Math.abs(o.position[2]-item.position[2])<=o.placement.size[2]/2).sort((a,b)=>Math.abs(a.position[1]+a.placement.size[1]-item.position[1])-Math.abs(b.position[1]+b.placement.size[1]-item.position[1]))[0]:undefined);
       if(support)settle(support.id);
