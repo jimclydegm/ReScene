@@ -228,3 +228,13 @@ PR #18 merged at 3f97496. All 116 unit cases, schema/lint/types/build and PR CI 
 A saved-data QA check verifies tilt/lean save/reload and preservation by legacy heading-only edits. Original object quaternions/positions/scales/visibility/model references were restored. No inference, asset uploads or publication was used.
 
 Production rescene-q0aev3sx2-jimclydegms-projects.vercel.app is READY and aliased to rescene-eta.vercel.app. Bounded production checks pass tilt/lean workspace DTOs, degree-control/isolate/show-all/undo markup, invalid-angle/origin/anonymous rejection and unchanged scene revision, plus the reusable release smoke. Runtime error scan returned zero records. Native grouped pointer/keyboard gestures, deselection, background/focus controls, PNG colors/transparency/download and desktop/mobile layout remain unverified because browser access reports disabled. Resume only these affected checks when access returns; no new generation is needed.
+
+## Background generation recovery — October 30
+
+PR #19 / merge 02dc76d: saved evidence identified a pre-inference `stage={}` dependency failure after a round object's canonical local-up axis vetoed composition. The fixed pose replay handles all three roots with local-up Y 1.000/-.231/-.158, projected bounds error .1085 and nonnegative support heights. Unit regressions cover arbitrary-axis subjects, no-upright fallback, manual-stage backgrounds with replacements, local preparation failure, provider 400/no retry and successful charged image output followed by local processing failure. All 122 cases, lint/typecheck/build and PR CI pass.
+
+One recorded IMAGE_EDIT verification used the affected scene's saved source/masks, one Muse Image edit and no reconstruction/analysis inference. It succeeded; all object fields including product/replacement references, transforms, visibility and provenance exactly equal the pre-repair backup. The saved derived PNG is 636×866; all 405,791 unmasked pixels equal the source bytes. Manual-stage source/camera metadata is explicit. No publication, reset or source/mask edit was performed. Private backups/replay/plate evidence remain ignored under test-results/background-recovery. Accepted outlines still define foreground removal; unsegmented context can remain.
+
+Native browser inventory still reports disabled in Work settings. The image/service checks do not constitute a WebGL rendering pass.
+
+Production rescene-ad1l0cww6-jimclydegms-projects.vercel.app is READY and aliased to rescene-eta.vercel.app. Merge CI passes; bounded read-only production dashboard/editor/ownership/recovery smoke passes without inference or scene mutation. Production runtime error scan returned zero records.
