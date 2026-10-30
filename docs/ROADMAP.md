@@ -68,4 +68,4 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Zoom lock beside Show grid; retain rotation and pan in private/public viewer.
 - [x] Research hosted parameters; bounded one-job mask experiment, immutable reviewed masks and recorded derived-mask provenance.
 - [x] Keep opening refinement experimental/off by default after the comparison failed to show clear overall geometry improvement; preserve the saved mesh.
-- [ ] Combined release verification and deployment of this correction bundle.
+- [x] PR #15 merged at 9e30944; 90 cases and CI pass, production READY and bounded read-only release/controls/shoe checks pass. Live desktop/mobile Zoom lock interaction remains unverified because browser access was disabled at verification time.
