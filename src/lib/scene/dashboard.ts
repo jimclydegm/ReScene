@@ -1,5 +1,5 @@
 // Dashboard progress describes saved workflow stages, not reconstruction accuracy.
-export const SCENES_PER_PAGE = 6;
+export const SCENES_PER_PAGE = 9;
 export function dashboardPage(raw: string | string[] | undefined, total: number) {
   const pages = Math.max(1, Math.ceil(total / SCENES_PER_PAGE));
   const value = typeof raw === "string" && /^\d{1,6}$/.test(raw) ? Number(raw) : 1;
