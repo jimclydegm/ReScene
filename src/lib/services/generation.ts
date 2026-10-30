@@ -38,7 +38,7 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(839172640)`;
     const scene = await tx.scene.findFirst({ where: { id: sceneId, ownerId, archivedAt: null } });
     if (!scene) throw new AppError(404, "NOT_FOUND", "Scene not found.");
-    const options = { ...(input.repair?{repair:true}:{}), ...(input.analysis ? {analysis:input.analysis} : {}), ...(input.segmentation ? {segmentation:input.segmentation} : {}), ...(input.reconstruction ? {reconstruction:input.reconstruction} : {}), objectIds:input.objectIds ?? [] };
+    const options = { ...(input.background?{background:input.background}:{}), ...(input.repair?{repair:true}:{}), ...(input.analysis ? {analysis:input.analysis} : {}), ...(input.segmentation ? {segmentation:input.segmentation} : {}), ...(input.reconstruction ? {reconstruction:input.reconstruction} : {}), objectIds:input.objectIds ?? [] };
     const requestHash = digest(Buffer.from(JSON.stringify(options)));
     const prior = await tx.generationRun.findUnique({ where: { sceneId_idempotencyKey: { sceneId, idempotencyKey: input.idempotencyKey } } });
     if (prior) {
@@ -215,6 +215,8 @@ export async function finishAnalysis(runId: string) {
 }
 
 export async function submitReconstruction(runId: string) {
+  const pending=await loadRun(runId);
+  if(!record(pending.input).repair){const {understandSceneBackground}=await import("./background-understanding");await understandSceneBackground(runId);}
   const run = await loadRun(runId);
   const ids = (record(run.input).reconstructionObjectIds ?? record(run.input).objectIds) as string[];
   const found = await getDb().sceneObject.findMany({ where: { sceneId: run.sceneId, id: { in: ids } }, include: { mask: true } });
@@ -355,6 +357,7 @@ export async function workspace(sceneId: string, ownerId: string) {
   }
   const visibleObjects=objects.filter(o=>!isBackgroundSurface(o,{width:scene.normalizedAsset?.width??0,height:scene.normalizedAsset?.height??0}));
   const applied = record(record(scene.settings).appearance);
+  const background=record(record(scene.settings).background),materialBackground=background.version==="material-background-v2";
   async function textureUrl(id: unknown) {
     if (typeof id !== "string") return null;
     const asset = await getDb().asset.findFirst({ where: { id, sceneId, kind: "SURFACE_TEXTURE", status: "READY" } });
@@ -364,10 +367,12 @@ export async function workspace(sceneId: string, ownerId: string) {
   return { id: scene.id, title: scene.title, description: scene.description, status: scene.status, revision: scene.revision,
     analysisOptions:analysisOptionsSchema.safeParse(record(scene.settings).analysisOptions).data ?? analysisOptionsSchema.parse({}),
     reconstructionOptions:reconstructionOptionsSchema.safeParse(record(scene.settings).reconstructionOptions).data ?? reconstructionOptionsSchema.parse({}),
+    canRestoreBackground:Boolean(record(scene.settings).backgroundBackup),
+    backgroundInfo: {method:materialBackground?"materials":"photo",explanation: typeof record(record(record(scene.settings).backgroundUnderstanding).analysis).explanation==="string"?String(record(record(record(scene.settings).backgroundUnderstanding).analysis).explanation):null,lightingEffects:Array.isArray(record(record(record(scene.settings).backgroundUnderstanding).analysis).lightingEffects)?record(record(record(scene.settings).backgroundUnderstanding).analysis).lightingEffects as string[]:[],warnings:Array.isArray(background.warnings)?background.warnings as string[]:[]},
     layoutReview:(await import("@/lib/scene/layout-review")).layoutReviewSchema.safeParse(record(scene.settings).layoutReview).data??null,
     analysisSummary:typeof record(scene.settings).analysisSummary === "string" ? String(record(scene.settings).analysisSummary) : null,
     lighting: lightingSchema.safeParse(record(scene.settings).lighting).data ?? defaultLighting(stage),
-    appearance: { applied: applied.version === "photo-bake-v1", floorUrl: await textureUrl(applied.floorId), wallUrl: await textureUrl(applied.wallId), backgroundUrl: await textureUrl(record(record(scene.settings).background).assetId) },
+    appearance: { applied: applied.version === "photo-bake-v1", floorUrl: await textureUrl(materialBackground?background.floorId:applied.floorId), wallUrl: await textureUrl(materialBackground?background.wallId:applied.wallId), backgroundUrl: await textureUrl(record(record(scene.settings).background).assetId) },
     composition: compositionSchema.safeParse(scene.stage).data ?? null, canRestoreLayout: Boolean(record(scene.settings).layoutBackup),
     image: scene.normalizedAsset ? { url: await signRead(scene.normalizedAsset), width: scene.normalizedAsset.width!, height: scene.normalizedAsset.height! } : null,
     generationEnabled: process.env.GENERATION_ENABLED === "true", objects: await Promise.all(visibleObjects.map(async o => ({

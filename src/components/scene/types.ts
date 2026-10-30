@@ -11,6 +11,7 @@ export type SceneObjectView = { id: string; label: string; status: string; error
 export type SceneWorkspace = { id: string; title: string; description: string | null; status: string; revision: number; generationEnabled: boolean;
   analysisOptions:AnalysisOptions;reconstructionOptions:ReconstructionOptions;analysisSummary:string|null;
   lighting: Lighting; appearance: { applied: boolean; floorUrl: string | null; wallUrl: string | null; backgroundUrl?: string | null };
+  canRestoreBackground?:boolean;backgroundInfo?:{method:string;explanation:string|null;lightingEffects:string[];warnings:string[]};
   layoutReview?:import("@/lib/scene/layout-review").LayoutReview|null;
   composition: SceneComposition | null; canRestoreLayout: boolean;
   image: { url: string; width: number; height: number } | null; objects: SceneObjectView[];

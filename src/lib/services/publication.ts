@@ -31,7 +31,7 @@ export async function publish(sceneId:string,ownerId:string,revision:number){
  const assemblyMembers=await db.sceneObject.findMany({where:{sceneId,status:"READY",modelAssetId:{not:null}},select:{id:true,provenance:true}});
  for(const o of objects){const root=record(o.provenance).assemblyRootId;if(typeof root!=="string")continue;const members=assemblyMembers.filter(m=>record(m.provenance).assemblyRootId===root);if(members.some(m=>!objects.some(v=>v.id===m.id)))throw new AppError(422,"ASSEMBLY_VISIBILITY","Show the complete subject and all of its product regions before publishing this shared-geometry assembly.");}
 
- const composition=compositionSchema.safeParse(scene.stage).data??null,applied=record(record(scene.settings).appearance);
+ const composition=compositionSchema.safeParse(scene.stage).data??null,background=record(record(scene.settings).background),applied=background.version==="material-background-v2"?background:record(record(scene.settings).appearance);
  if(composition?.background)composition.background.description="Photo-derived background.";
  const m:Snapshot={schemaVersion:2,coordinates:{handedness:"right",upAxis:"Y",units:"approximate"},title:scene.title,description:scene.description,revision,approximateGeometry:true,composition,lighting:lightingSchema.safeParse(record(scene.settings).lighting).data??defaultLighting(composition),surfaces:{floorAssetId:typeof applied.floorId==="string"?applied.floorId:null,wallAssetId:typeof applied.wallId==="string"?applied.wallId:null,backgroundAssetId:typeof record(record(scene.settings).background).assetId==="string"?String(record(record(scene.settings).background).assetId):null},objects:[],products:[]};
  for(const o of objects){

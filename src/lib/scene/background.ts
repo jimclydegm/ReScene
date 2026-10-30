@@ -3,6 +3,10 @@ import { Matrix4, PerspectiveCamera, Plane, Ray, Vector3 } from "three";
 import type { SceneComposition } from "./composition";
 
 export const backgroundPlanSchema = z.object({
+  surfaceMode:z.literal("materials").optional(),
+  transition:z.enum(["open","curve"]).optional(),
+  junctions:z.array(z.object({x:z.number().min(0).max(1),y:z.number().min(0).max(1)}).strict()).min(2).max(3).optional(),
+  materials:z.object({ground:z.object({color:z.string().regex(/^#[0-9a-fA-F]{6}$/),roughness:z.number().min(.2).max(1),tileSize:z.number().min(.1).max(10)}).strict(),wall:z.object({color:z.string().regex(/^#[0-9a-fA-F]{6}$/),roughness:z.number().min(.2).max(1),tileSize:z.number().min(.1).max(10)}).strict()}).strict().optional(),
   kind: z.enum(["seamless", "planes", "distant"]),
   groundVisible: z.boolean(),
   plainColor:z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),

@@ -18,7 +18,7 @@ export async function analyzePhoto(imageUrl: string, size: ImageSize, options: A
       ] }
     ],
     response_format: { type: "json_schema", json_schema: {
-      name: "scene_analysis", strict: true, schema: z.toJSONSchema(analysisSchema.extend({background:backgroundPlanSchema.omit({plainColor:true}),objects: analysisSchema.shape.objects.element.extend({surfaceRole:z.enum(["background","object"]),parentCandidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/).nullable(),supportedByCandidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/).nullable()}).strict().array().max(10)}))
+      name: "scene_analysis", strict: true, schema: z.toJSONSchema(analysisSchema.extend({background:backgroundPlanSchema.omit({plainColor:true,surfaceMode:true,transition:true,junctions:true,materials:true}),objects: analysisSchema.shape.objects.element.extend({surfaceRole:z.enum(["background","object"]),parentCandidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/).nullable(),supportedByCandidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/).nullable()}).strict().array().max(10)}))
     } }
   }, { maxRetries: 0 });
   const choice = response.choices[0];

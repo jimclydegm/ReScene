@@ -6,6 +6,7 @@ const mocks=vi.hoisted(()=>({
   fill:vi.fn(),analyze:vi.fn(),read:vi.fn(),put:vi.fn(),plain:vi.fn(),composite:vi.fn()
 }));
 vi.mock("server-only",()=>({}));
+vi.mock("@/lib/services/background-understanding",()=>({understandSceneBackground:async()=>({topology:"distant"})}));
 vi.mock("@/lib/db",()=>({getDb:()=>mocks.db}));
 vi.mock("@/lib/ai/background",()=>({fillBackground:mocks.fill,analyzeBackground:mocks.analyze}));
 vi.mock("@/lib/storage/r2",()=>({readLimited:mocks.read,putObject:mocks.put,bucket:()=>"private",storagePrefix:()=>"test"}));
