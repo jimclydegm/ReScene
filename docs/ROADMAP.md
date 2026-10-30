@@ -94,4 +94,4 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Scene/transparent PNG downloads through bounded offscreen rendering, with clean exports and state restoration.
 - [x] One undo action per input gesture/text edit, combined object/product/light history, keyboard shortcuts and no-op handling.
 - [x] 116 unit cases/build pass; saved-data tilt/reload/legacy edit checks pass with QA restoration; zero inference/uploads.
-- [ ] CI/deployment and bounded production checks; native GPU/gesture/download checks depend on browser access.
+- [x] PR #18 merged at 3f97496; CI passes, production READY, bounded editor validation/SSR/privacy/release checks pass. Native GPU, grouped gestures, download results and responsive layout remain unverified while browser access is disabled.

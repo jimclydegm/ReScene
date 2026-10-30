@@ -35,7 +35,7 @@ Textures → Build/Refresh photo background is a durable IMAGE_EDIT run; new rec
 
 Zoom lock sits beside Show grid and disables zoom while retaining orbit/pan. Experimental enclosed-opening mask refinement is OFF by default: one shoe comparison recovered four mask gaps but did not clearly improve geometry. The hosted Objects API exposes no quality/resolution/topology knob; keep that limitation honest.
 
-## Latest release: reference layout review
+## Reference layout review release
 
 PR #17 merged at **a4c1cd9**. Production deployment: rescene-l6p750h9m-jimclydegms-projects.vercel.app, alias rescene-eta.vercel.app. Production is READY; bounded API/SSR/privacy/release checks pass and the error-log scan returned zero records. Full evidence is recorded in TESTING/ROADMAP.
 
@@ -47,11 +47,11 @@ The reported bedroom was repaired at revision 9 from saved assets with zero infe
 
 All 103 tests, schema/lint/types/build and PR CI pass. A saved-data review/undo and stale-revision check passed with QA settings/model/relationship/transform/camera restoration. No paid inference was used. Native GPU, desktop/mobile and shadow/Zoom lock checks remain pending browser access; do not re-run generation to verify them.
 
-## Active editor UX bundle
+## Latest release: editor UX
 
-Branch codex/editor-controls-history adds preview-only Hide background beside Zoom lock, canvas/list deselection, tilt/lean controls in degrees, focus selected, isolate complete subject/show all, and local scene/transparent PNG downloads. Offscreen exports omit editor helpers, preserve live state and cap dimensions/memory; no source-photo HTML or cloud writes/inference. Existing saved backdrop controls publishing. A bounded 50-action object/product/light timeline groups input gestures/focused text, handles no-ops and supports keyboard shortcuts. Optional pitch/roll persist through existing quaternion columns and preserve legacy clients' tilt; shared assembly edits/public transforms remain consistent.
+PR #18 merged at **3f97496** adds preview-only Hide background beside Zoom lock, canvas/list deselection, tilt/lean controls in degrees, focus selected, isolate complete subject/show all, and local scene/transparent PNG downloads. Offscreen exports omit editor helpers, preserve live state and cap dimensions/memory; no source-photo HTML or cloud writes/inference. Existing saved backdrop controls publishing. A bounded 50-action object/product/light timeline groups input gestures/focused text, handles no-ops and supports keyboard shortcuts. Optional pitch/roll persist through existing quaternion columns and preserve legacy clients' tilt; shared assembly edits/public transforms remain consistent.
 
-116 unit cases, lint/types/build pass. Saved-data tilt/lean round-trip and legacy heading-only edits pass; original QA transforms/visibility/models restored. Browser still reports disabled, so actual gestures, PNG GPU output/download and responsive appearance are unverified. Complete one PR/release and bounded production checks; no additional model calls.
+116 unit cases, lint/types/build and PR CI pass. Production rescene-q0aev3sx2-jimclydegms-projects.vercel.app is READY and aliased to rescene-eta.vercel.app. Saved-data tilt/lean round-trip and legacy heading-only edits pass; original QA transforms/visibility/models are restored. Bounded production angle DTO/control/undo markup, invalid-angle/origin/anonymous rejection and release smoke pass with unchanged scene revision; the runtime error scan returned zero records. Browser still reports disabled, so actual gestures, PNG GPU output/download and responsive appearance are unverified. No inference, cloud uploads or new publications were used.
 
 ## Fixtures and next action
 
