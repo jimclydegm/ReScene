@@ -50,7 +50,6 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
     if (userActive) throw new AppError(409, "RUN_ACTIVE", "Your generation is already running. Open it to see progress.");
     const allowed = input.kind === "ANALYZE" ? ["DRAFT"] : input.kind === "SEGMENT_OBJECT" ? ["DRAFT", "REVIEW", "FAILED"] : input.kind === "IMAGE_EDIT" ? ["READY"] : ["REVIEW"];
     if (!allowed.includes(scene.status)) throw new AppError(409, "SCENE_STATE", "This scene is not ready for that operation.");
-    if (input.kind === "IMAGE_EDIT" && !compositionSchema.safeParse(scene.stage).success) throw new AppError(422,"LAYOUT_REQUIRED","Match the photo layout before restoring the background.");
     let selectedIds=input.objectIds ?? [],rootIds=selectedIds;
     if (input.kind === "RECONSTRUCT") {
       const frame=await tx.asset.findUniqueOrThrow({where:{id:scene.normalizedAssetId}});

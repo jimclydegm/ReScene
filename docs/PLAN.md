@@ -61,3 +61,7 @@ Jim requested a reviewer after a duplicated duvet, floated pillows/bed parts, mi
 ## Editor UX bundle — October 30
 
 Jim requested background visibility beside Zoom lock, deselection, more editing controls, screenshot downloads and logical undo/redo. Implement preview-only background visibility, repeated-click/empty-space deselection, persisted tilt/lean in degrees, focus/isolate/show-all, and current-view/transparent PNG downloads. Group continuous input interactions rather than every small sample, with one bounded local timeline for objects/products and lighting. Preserve complete-assembly visibility/transform rules and older clients' tilt. PNG export is offscreen/local and uses only render assets already visible to the viewer; it must not flash the live view, expose source photos, write cloud files or invoke models. Use one release bundle, no generation sweeps or new provider/migration.
+
+## Background failure recovery — October 30
+
+Fix the dependency between optional background generation and strict object-axis leveling as one correction release. Arbitrary local mesh axes must not veto otherwise valid scene poses. Missing photo placement must not prevent a background on the manual stage or require removing catalog replacements. Preserve object/product edits, label manual-camera recovery honestly, keep revision/privacy/no-retry rules, and persist internal diagnostics for preflight/local failures. Optional `composition.layoutSource` is additive to snapshot v2; no SQL migration or model/provider change.

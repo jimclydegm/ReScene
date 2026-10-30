@@ -63,6 +63,10 @@
               "type": "string",
               "const": "sam3d-room-v1"
             },
+            "layoutSource": {
+              "type": "string",
+              "enum": ["sam3d", "manual-stage"]
+            },
             "floorY": {
               "type": "number",
               "minimum": -1000,

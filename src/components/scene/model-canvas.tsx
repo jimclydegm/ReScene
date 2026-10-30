@@ -4,7 +4,7 @@ import { OrbitControls, useGLTF, useProgress, Grid } from "@react-three/drei";
 import { Box3, Mesh, MeshStandardMaterial, PCFShadowMap, PerspectiveCamera, Vector3 } from "three";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
 import type { OrbitControls as OrbitControlsType } from "three-stdlib";
-import type { SceneComposition } from "@/lib/scene/composition";
+import { manualStageCamera, type SceneComposition } from "@/lib/scene/composition";
 import { PhotoBackground } from "./photo-background";
 import {captureScene,focusDistance} from "@/lib/editor/capture";
 import {Download,Focus} from "lucide-react";
@@ -89,9 +89,9 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
   }
   const floorY=Math.min(composition?.floorY ?? 0,...objects.filter(o=>o.visible&&!o.worldTransform).map(o=>o.positionY));
   const c = composition?.camera;
-  const cameraOptions=useMemo(()=>({position:c?.position??[5,4,7] as [number,number,number],fov:c?.fov??42,near:.01,far:Math.max(500,c?new Vector3(...c.position).distanceTo(new Vector3(...c.target))*16:500)}),[c]);
+  const cameraOptions=useMemo(()=>({position:c?.position??manualStageCamera.position,fov:c?.fov??manualStageCamera.fov,near:.01,far:Math.max(500,c?new Vector3(...c.position).distanceTo(new Vector3(...c.target))*16:500)}),[c]);
   const lightingColor = composition?.environment.lightWarmth === "warm" ? "#fff0d8" : composition?.environment.lightWarmth === "cool" ? "#e1edff" : "#ffffff";
-  const target = c?.target ?? [0, 0.5, 0] as [number, number, number];
+  const target = c?.target ?? manualStageCamera.target;
   return <div className="model-viewport" style={{ "--scene-aspect": c?.aspect ?? 1.5 } as CSSProperties}>
     <Canvas onPointerMissed={event=>{if(event.type==="click")onSelect("");}} shadows={{type:PCFShadowMap}} camera={cameraOptions} dpr={[1, 1.5]}
       fallback={<p className="canvas-loading">WebGL is unavailable in this browser. You can still browse the scene details.</p>}>

@@ -65,3 +65,9 @@ After the current release, verify only affected native controls/rendering when b
 CI cancels superseded runs, skips docs-only install/build, and Vercel ignores docs/test/tooling-only changes. Preserve .git in builds for this comparison. Use scripts/verify-release.mjs once for saved-data regression; --smoke is bounded/read-only post-deploy. Do not run every historical script.
 
 Technical context: ARCHITECTURE.md; DATA_MODEL.md + prisma/schema.prisma; META_MODELS.md; SCENE_QUALITY.md; SCENE_UNDERSTANDING.md; TEXTURE_FIDELITY.md; BACKGROUND_RECONSTRUCTION.md; TESTING.md; SETUP.md. Render contract: contracts/scene-manifest-v2.schema.json. Submission draft: release/DEMO.md. Full release history is in ROADMAP and its history reference.
+
+## Current correction: background recovery
+
+The latest failure was pre-inference: arbitrary local-up axes on irregular meshes caused full layout rejection; `stage={}` then blocked optional backgrounds. The reported scene also has a catalog replacement. The correction accepts upward leveling votes without vetoing other subjects and supports background-only generation on the existing manual stage (`layoutSource=manual-stage`) without resetting objects/products/replacements. Local/preflight failures now retain internal diagnostics; completed provider work and zero paid retries remain intact.
+
+One recorded background-only Muse Image call succeeded for the affected saved scene, with all object/product/replacement fields unchanged and 405,791 visible background pixels preserved. Remaining unsegmented context is not proof of a model failure. 122 tests/typecheck/lint/build pass. Native browser access still reports disabled. Current next action: merge/deploy this correction and perform bounded read-only production checks; do not repeat inference. Private evidence: ignored test-results/background-recovery.
