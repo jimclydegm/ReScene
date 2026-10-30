@@ -31,7 +31,7 @@ export function SceneLayoutControls({ data, locked, unsaved, blocked, onMatch, o
       {blocked ? <p className="panel-note">Restore original objects in Products first.</p> : unsaved && <p className="panel-note">Save or discard your edits first. Matching saves new transforms.</p>}
       {review && <div className={`layout-report${review.needsReview ? " attention" : ""}`} role="status">
         <strong>{review.needsReview ? "Some placements need a look" : "Placement checked"}</strong>
-        <ul>{review.objects.map(o => <li key={o.id}><span>{o.label}{o.adjusted ? " · adjusted" : ""}</span><meter min={0} max={1} low={.65} optimum={1} value={o.after}/><b className={o.needsReview ? "warn" : ""}>{Math.round(o.after * 100)}%</b></li>)}</ul>
+        <ul>{review.objects.map(o => <li key={o.id}><span>{o.label}{o.collision?" · intersection":""}{o.adjusted ? " · adjusted" : ""}</span><meter min={0} max={1} low={.65} optimum={1} value={o.after}/><b className={o.needsReview ? "warn" : ""}>{Math.round(o.after * 100)}%</b></li>)}</ul>
         <small>Mask overlap from the photo angle. Hidden geometry is not verified.</small>
       </div>}
     </div>

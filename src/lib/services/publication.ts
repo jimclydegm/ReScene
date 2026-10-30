@@ -26,6 +26,7 @@ export async function publish(sceneId:string,ownerId:string,revision:number){
  const existing=await db.scenePublication.findFirst({where:{sceneId,revision,revokedAt:null}});if(existing)return {id:existing.id,slug:existing.slug};
  const objects=(await db.sceneObject.findMany({where:{sceneId,status:"READY",visible:true,modelAssetId:{not:null}},include:{model:true,product:{include:{imageAsset:true}}},orderBy:{sortOrder:"asc"}})).filter(o=>!isBackgroundSurface(o,{width:scene.normalizedAsset?.width??0,height:scene.normalizedAsset?.height??0}));
  if(!objects.length||objects.length>10)throw new AppError(422,"NO_OBJECTS","Publish one to ten visible 3D objects.");
+ const {guardCollisions}=await import("./collision-guard");await guardCollisions(objects);
  // Part GLBs retain the shared appearance atlas. Publish assemblies only when
  // every reconstructed member is approved as visible, never a hidden body/part.
  const assemblyMembers=await db.sceneObject.findMany({where:{sceneId,status:"READY",modelAssetId:{not:null}},select:{id:true,provenance:true}});

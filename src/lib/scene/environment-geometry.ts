@@ -131,7 +131,11 @@ export function buildEnvironmentGeometry(
       Math.min(grid.sourceWidth - 1, Math.floor(p.x * grid.sourceWidth));
     return masks.some((m) => m[i] > 127);
   };
-  const floor = observation.surfaces.find((s) => s.role === "floor"),
+  const horizontal = observation.surfaces.filter(s=>s.role==="surface").find(s=>{
+    const samples:Vector3[]=[];for(let y=.01;y<1;y+=.025)for(let x=.01;x<1;x+=.025){const p={x,y},d=depthAt(grid,x,y);if(d&&insidePolygon(p,s.polygon)&&!hidden(p))samples.push(direction(p).multiplyScalar(d.depth));}
+    const fitted=fitPlane(samples,false);return fitted&&Math.abs(fitted.plane.normal.y)>.8;
+  });
+  const floor = observation.surfaces.find((s) => s.role === "floor")??horizontal,
     scales: number[] = [];
   if (floor)
     for (let y = 0.02; y < 1; y += 0.025)
@@ -181,7 +185,7 @@ export function buildEnvironmentGeometry(
             origin.clone().addScaledVector(direction(p), d.depth * scale),
           );
       }
-    if (surface.role === "floor") {
+    if (surface.id === floor?.id) {
       planes.set(surface.id, new Plane(new Vector3(0, 1, 0), -floorY));
       continue;
     }
@@ -238,6 +242,16 @@ export function buildEnvironmentGeometry(
       inlierRatio: fit.inlierRatio,
       residual: fit.residual,
     });
+  }
+  // Anchor vertical risers/fascias as well as walls to the observed support
+  // edge. A countertop is horizontal; cabinet fronts below it are vertical.
+  if(floor){const anchored=new Set<string>();
+   for(const s of observation.surfaces){const plane=planes.get(s.id);if(!plane||s.id===floor.id||Math.abs(plane.normal.y)>.25)continue;
+    const common=s.polygon.filter(p=>floor.polygon.some(q=>Math.hypot(p.x-q.x,p.y-q.y)<.015));
+    if(common.length<2)continue;const hits=common.map(p=>new Ray(origin,ray(p)).intersectPlane(new Plane(new Vector3(0,1,0),-floorY),new Vector3())).filter((p):p is Vector3=>!!p);
+    if(hits.length<2)continue;const [a,b]=hits,n=new Vector3(b.z-a.z,0,a.x-b.x);if(n.length()<.001)continue;n.normalize();const next=new Plane(n,-n.dot(a));if(next.distanceToPoint(origin)<0)next.negate();planes.set(s.id,next);anchored.add(s.id);
+   }
+   for(let i=0;i<observation.surfaces.length;i++)for(const s of observation.surfaces){if(anchored.has(s.id)||s.id===floor.id)continue;const p=planes.get(s.id);if(!p||Math.abs(p.normal.y)>.25)continue;const neighbor=observation.surfaces.find(n=>anchored.has(n.id)&&Math.abs(planes.get(n.id)!.normal.dot(p.normal))>.95&&s.polygon.filter(a=>n.polygon.some(b=>Math.hypot(a.x-b.x,a.y-b.y)<.015)).length>=2);if(neighbor){planes.set(s.id,planes.get(neighbor.id)!.clone());anchored.add(s.id);}}
   }
   // Thin structural strips inherit the adjacent architectural plane. Fitting
   // a separate depth normal to a few baseboard pixels creates cracks and tilt.

@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { Matrix4, PerspectiveCamera, Vector3 } from "three";
+import { Matrix4, PerspectiveCamera, Quaternion, Vector3 } from "three";
 
 export type PixelImage = { data: Uint8Array; width: number; height: number };
 export type Triangle = { points: [Vector3, Vector3, Vector3]; uv: [number[], number[], number[]]; image: number; object: number };
@@ -7,7 +7,7 @@ export function readGlb(bytes: Buffer) {
   const n = bytes.readUInt32LE(12);
   return { json: JSON.parse(bytes.toString("utf8", 20, 20 + n)), binary: bytes.subarray(n + 28) };
 }
-export function geometry(bytes: Buffer, root: Matrix4, object: number) {
+export function geometry(bytes: Buffer, root: Matrix4, object: number, requireAppearance=true) {
   const { json: g, binary } = readGlb(bytes);
   const read = (index: number) => {
     const a = g.accessors[index], view = g.bufferViews[a?.bufferView];
@@ -28,14 +28,14 @@ export function geometry(bytes: Buffer, root: Matrix4, object: number) {
     if (depth > 60 || triangles.length > 100_000) throw new Error("Mesh complexity limit");
     const node = g.nodes[index];
     const local = node.matrix ? new Matrix4().fromArray(node.matrix) : new Matrix4();
-    if (!node.matrix && (node.rotation || node.scale || node.translation)) throw new Error("Unsupported node transform");
+    if (!node.matrix && (node.rotation || node.scale || node.translation)){if(requireAppearance)throw new Error("Unsupported node transform");local.compose(new Vector3(...(node.translation??[0,0,0])),new Quaternion(...(node.rotation??[0,0,0,1])),new Vector3(...(node.scale??[1,1,1])));}
     const world = parent.clone().multiply(local);
     for (const p of g.meshes?.[node.mesh]?.primitives ?? []) {
       if (p.mode !== undefined && p.mode !== 4) throw new Error("Triangle mesh required");
-      const positions = read(p.attributes.POSITION), uv = read(p.attributes.TEXCOORD_0);
+      const positions = read(p.attributes.POSITION), uv = p.attributes.TEXCOORD_0===undefined&&!requireAppearance?positions.map(()=>[0,0]):read(p.attributes.TEXCOORD_0);
       const indices = p.indices === undefined ? positions.map((_, i) => [i]) : read(p.indices);
       const image = g.textures?.[g.materials?.[p.material]?.pbrMetallicRoughness?.baseColorTexture?.index]?.source;
-      if (image === undefined) throw new Error("Embedded texture required");
+      if (image === undefined&&requireAppearance) throw new Error("Embedded texture required");
       for (let i = 0; i < indices.length; i += 3) {
         const ids = [indices[i][0], indices[i + 1][0], indices[i + 2][0]];
         if (triangles.length >= 100_000) throw new Error("Mesh complexity limit");

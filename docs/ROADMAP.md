@@ -166,3 +166,11 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] 189 cases/schema/lint/types/build pass; explicit low reasoning/8192 completion budget and typed completion-limit handling after live evidence.
 - [x] PR26 merged at 0fa2f0f and PR27 at 423954d. Saved photo recovered to REVIEW with8/8 outlines and no3D jobs; production API/SSR/compact-control CSS checks pass; final production rescene-qpr6larem is READY. A later user-started reconstruction was left untouched.
 - [ ] Native after-change desktop/mobile inspection remains unavailable while browser access reports disabled; do not repeat inference to verify layout.
+
+## Countertop connectivity and collision safeguards — October 30
+
+- [x] Trace reported background rejection to 13% corner disagreement, not provider interruption.
+- [x] Horizontal support anchoring and connected vertical risers reduce saved-data corner disagreement to numerical tolerance without relaxing rejection thresholds.
+- [x] Occupied-volume layout correction, grouped support movement, manual save/publication guards and selective retry rejection.
+- [x] Reported background rebuilt using cached analysis/depth and one clean image/review; object shapes were not regenerated. Remaining texture-review notes stay visible.
+- [ ] Final checks, CI and production release. Native browser inspection remains unavailable.
