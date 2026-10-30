@@ -86,3 +86,12 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Automatic review after reconstruction plus existing-scene review/refine action and reviewed texture baseline.
 - [x] Repair reported bedroom with saved assets and zero inference; lamp shape remains flagged.
 - [x] PR #17 merged at a4c1cd9; 103 cases and CI/build pass, production READY, saved-data undo and bounded production reference/report/SSR/privacy/release checks pass. Native GPU/browser checks remain unavailable; the CPU preview is not a browser pass.
+
+## Editor controls, screenshot downloads and logical undo — October 30
+
+- [x] Preview background toggle beside Zoom lock; repeat-click and empty-space deselection.
+- [x] Tilt/lean controls with saved quaternion round-trip, focus selected, isolate complete subject and show all.
+- [x] Scene/transparent PNG downloads through bounded offscreen rendering, with clean exports and state restoration.
+- [x] One undo action per input gesture/text edit, combined object/product/light history, keyboard shortcuts and no-op handling.
+- [x] 116 unit cases/build pass; saved-data tilt/reload/legacy edit checks pass with QA restoration; zero inference/uploads.
+- [ ] CI/deployment and bounded production checks; native GPU/gesture/download checks depend on browser access.

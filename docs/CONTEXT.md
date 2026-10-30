@@ -47,6 +47,12 @@ The reported bedroom was repaired at revision 9 from saved assets with zero infe
 
 All 103 tests, schema/lint/types/build and PR CI pass. A saved-data review/undo and stale-revision check passed with QA settings/model/relationship/transform/camera restoration. No paid inference was used. Native GPU, desktop/mobile and shadow/Zoom lock checks remain pending browser access; do not re-run generation to verify them.
 
+## Active editor UX bundle
+
+Branch codex/editor-controls-history adds preview-only Hide background beside Zoom lock, canvas/list deselection, tilt/lean controls in degrees, focus selected, isolate complete subject/show all, and local scene/transparent PNG downloads. Offscreen exports omit editor helpers, preserve live state and cap dimensions/memory; no source-photo HTML or cloud writes/inference. Existing saved backdrop controls publishing. A bounded 50-action object/product/light timeline groups input gestures/focused text, handles no-ops and supports keyboard shortcuts. Optional pitch/roll persist through existing quaternion columns and preserve legacy clients' tilt; shared assembly edits/public transforms remain consistent.
+
+116 unit cases, lint/types/build pass. Saved-data tilt/lean round-trip and legacy heading-only edits pass; original QA transforms/visibility/models restored. Browser still reports disabled, so actual gestures, PNG GPU output/download and responsive appearance are unverified. Complete one PR/release and bounded production checks; no additional model calls.
+
 ## Fixtures and next action
 
 - **Do not mutate:** f2848b95-8447-41eb-9544-0d72dd605565 — Jim's real test listing.

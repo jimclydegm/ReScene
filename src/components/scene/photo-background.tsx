@@ -38,7 +38,7 @@ export function PhotoBackground({composition,url,floorY,legacyFloor=null,shadows
   const geometry=backgroundSurfaces(composition,floorY),plain=composition.background?.plainColor;
   const ground=composition.backdrop==="studio"||geometry.ground;
   const {room:r,environment:e}=composition;
-  return <group>
+  return <group userData={{sceneBackground:true}}>
     {ground&&<mesh receiveShadow={shadows&&!plain} position={[r.centerX,floorY-.012,r.centerZ]} rotation={[-Math.PI/2,0,0]}>
       <planeGeometry args={[geometry.extent*4,geometry.extent*4]}/>
       <SurfaceMaterial composition={composition} color={plain??e.floorColor} url={plain?null:url??legacyFloor} tiled={!url&&!!legacyFloor} shadows={shadows&&!plain}/>

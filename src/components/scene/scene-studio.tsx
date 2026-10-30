@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState, Component, type ReactNode, type KeyboardEvent } from "react";
+import { useCallback, useEffect, useRef, useState, Component, type ReactNode, type KeyboardEvent, type FocusEvent, type PointerEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Box, Check, LoaderCircle, Save, RotateCcw, Palette, Lightbulb, RefreshCw, Eye, ShoppingBag, Redo2 } from "lucide-react";
 import { apiJson } from "@/lib/client-api";
@@ -17,6 +17,8 @@ import { ReferencePhoto } from "./reference-photo";
 import { ObjectReview } from "./object-review";
 import type { SegmentationOptions } from "@/lib/ai/controls";
 import { UploadForm } from "@/components/upload-form";
+import {subjectVisibility} from "@/lib/editor/visibility";
+import {editHistory,recordEdit,finishEdit,undoEdit,redoEdit} from "@/lib/editor/history";
 import type { RestartTarget } from "@/lib/validation/generation";
 
 const ModelCanvas = dynamic(() => import("./model-canvas"), { ssr: false, loading: () => <div className="canvas-loading">Opening the 3D viewer…</div> });
@@ -37,25 +39,25 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
   const [panel, setPanel] = useState<"objects" | "textures" | "lighting" | "products">("objects");
   const renderedStatus = useRef(initial.status);
-  const [lights, setLights] = useState(initial.lighting);
-  const [lightDirty, setLightDirty] = useState(false);
-  const [draft, setDraft] = useState(initial.objects);
+  const [editor,setEditor]=useState(()=>editHistory({objects:initial.objects,lighting:initial.lighting}));
+  const draft=editor.present.objects,lights=editor.present.lighting;
+  const interaction=useRef<string|null>(null);
+  const interactionKind=useRef<"range"|"text"|null>(null);
   const [selected, setSelected] = useState(initial.objects[0]?.id ?? "");
   const [chosen, setChosen] = useState<string[]>(initial.objects.filter(o=>o.maskUrl).map(o=>o.id));
   const [busy, setBusy] = useState(false);
-  const [dirty, setDirty] = useState(false);
+  const dirty=JSON.stringify(draft)!==JSON.stringify(data.objects),lightDirty=JSON.stringify(lights)!==JSON.stringify(data.lighting);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
-  const [future, setFuture] = useState<SceneObjectView[][]>([]);
-  const [history, setHistory] = useState<SceneObjectView[][]>([]);
+  const history=editor.past,future=editor.future;
   const base = `/api/scenes/${data.id}`;
   const running = Boolean(data.run && ["QUEUED", "RUNNING", "WAITING"].includes(data.run.status));
   const reload = useCallback(async () => {
     const next = await apiJson<SceneWorkspace>(`${base}/workspace`);
-    setData(next); setChosen(prev=>next.status==="REVIEW"&&renderedStatus.current!=="REVIEW"?next.objects.filter(o=>o.maskUrl).map(o=>o.id):prev.filter(id=>next.objects.some(o=>o.id===id&&o.maskUrl))); setDraft(next.objects); setLights(next.lighting); setLightDirty(false); setDirty(false); setHistory([]); setFuture([]);
+    setData(next); setChosen(prev=>next.status==="REVIEW"&&renderedStatus.current!=="REVIEW"?next.objects.filter(o=>o.maskUrl).map(o=>o.id):prev.filter(id=>next.objects.some(o=>o.id===id&&o.maskUrl))); setEditor(editHistory({objects:next.objects,lighting:next.lighting}));interaction.current=null;
     if (renderedStatus.current !== next.status) { renderedStatus.current = next.status; router.refresh(); }
     const selectable = next.status === "READY" ? next.objects.filter(o => o.modelUrl) : next.objects;
-    setSelected(prev => selectable.some(o => o.id === prev) ? prev : selectable[0]?.id ?? "");
+    setSelected(prev => prev===""?"":selectable.some(o => o.id === prev) ? prev : selectable[0]?.id ?? "");
     return next;
   }, [base, router]);
   useEffect(() => {
@@ -119,21 +121,41 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     catch (e) { setError(e instanceof Error ? e.message : "Could not resume."); }
     finally { setBusy(false); }
   }
+  function endInteraction(){interaction.current=null;interactionKind.current=null;setEditor(finishEdit);}
+  function beginInteraction(event:FocusEvent<HTMLElement>|PointerEvent<HTMLElement>){
+    const target=event.target;
+    if(target instanceof HTMLInputElement&&["checkbox","radio","button"].includes(target.type))return;
+    if(target instanceof HTMLInputElement||target instanceof HTMLTextAreaElement||target instanceof HTMLSelectElement){interaction.current=crypto.randomUUID();interactionKind.current=target instanceof HTMLInputElement&&target.type==="range"?"range":"text";}
+  }
+  useEffect(()=>{
+    const finish=()=>{if(interactionKind.current!=="range")return;interaction.current=null;interactionKind.current=null;setEditor(finishEdit);};
+    const key=(event:globalThis.KeyboardEvent)=>{
+      if(busy||running)return;
+      const target=event.target;if(target instanceof HTMLElement&&(target.isContentEditable||target.closest('textarea,select,input:not([type="range"])')))return;
+      if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="z"){event.preventDefault();interaction.current=null;setEditor(event.shiftKey?redoEdit:undoEdit);}
+      else if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="y"){event.preventDefault();interaction.current=null;setEditor(redoEdit);}
+    };
+    window.addEventListener("pointerup",finish);window.addEventListener("pointercancel",finish);window.addEventListener("keydown",key);
+    return ()=>{window.removeEventListener("pointerup",finish);window.removeEventListener("pointercancel",finish);window.removeEventListener("keydown",key);};
+  },[busy,running]);
   function edit(id: string, fields: Partial<SceneObjectView>) {
-    if(running)return;
-    setFuture([]);
-    setHistory(prev => [...prev.slice(-19), draft]);
-    setDraft(prev => prev.map(o => {
+    if(running||busy)return;
+    const group=interaction.current;
+    setEditor(prev=>recordEdit(prev,{...prev.present,objects:prev.present.objects.map(o=>{
       if(o.id===id)return {...o,...fields};
-      if(o.assemblyRootId===id){const shared=Object.fromEntries(Object.entries(fields).filter(([k])=>["positionX","positionY","positionZ","yaw","scale","visible"].includes(k)));return {...o,...shared};}
+      if(o.assemblyRootId===id){const shared=Object.fromEntries(Object.entries(fields).filter(([k])=>["positionX","positionY","positionZ","yaw","pitch","roll","scale","visible"].includes(k)));return {...o,...shared};}
       return o;
-    })); setDirty(true); setMessage("");
+    })},group));setMessage("");
+  }
+  function isolate(id:string|null){
+    if(busy||running)return;endInteraction();
+    setEditor(prev=>recordEdit(prev,{...prev.present,objects:subjectVisibility(prev.present.objects,id)}));
   }
   async function save() {
     setBusy(true); setError("");
     try {
       await apiJson(`${base}/objects`, { method: "PATCH", body: JSON.stringify({ expectedRevision: data.revision,
-        ...(lightDirty ? { lighting: lights } : {}), objects: draft.filter(o => o.modelUrl).map(o => ({ id: o.id, label: o.label, positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, yaw: o.yaw, scale: o.scale, visible: o.visible, product: o.product ? { ...o.product, imageUrl: undefined } : null })) }) });
+        ...(lightDirty ? { lighting: lights } : {}), objects: draft.filter(o => o.modelUrl).map(o => ({ id: o.id, label: o.label, positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, yaw: o.yaw,pitch:o.pitch??0,roll:o.roll??0, scale: o.scale, visible: o.visible, product: o.product ? { ...o.product, imageUrl: undefined } : null })) }) });
       await reload(); setMessage("Scene saved. Your layout will be here when you return.");
     } catch (e) { setError(e instanceof Error ? e.message : "Could not save."); }
     finally { setBusy(false); }
@@ -163,7 +185,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   }
   async function reloadSaved(){setBusy(true);setError("");try{await reload();setViewerRetry(v=>v+1);discardDialog.current?.close();setMessage("Saved scene reloaded.");}catch(e){setError(e instanceof Error?e.message:"Could not reload.");}finally{setBusy(false);}}
   function requestReload(){if(dirty||lightDirty)discardDialog.current?.showModal();else void reloadSaved();}
-  function editLights(value: Lighting) { if(running)return; setLights(value); setLightDirty(true); }
+  function editLights(value: Lighting) { if(running||busy)return;const group=interaction.current;setEditor(prev=>recordEdit(prev,{...prev.present,lighting:value},group)); }
   function askRestart(target: RestartTarget) {
     setRestartTarget(target);
     restartDialog.current?.showModal();
@@ -237,16 +259,18 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
         <div className="inspector-tabs" role="tablist" aria-label="Scene control sections">{([
           ["objects", "Objects", Box], ["textures", "Textures", Palette], ["lighting", "Lighting", Lightbulb], ["products", "Products", ShoppingBag]
         ] as const).map(([value, label, Icon], index) => <button key={value} id={`inspector-tab-${value}`} role="tab" type="button" aria-selected={panel === value} aria-controls={panel === value ? `inspector-panel-${value}` : undefined} tabIndex={panel === value ? 0 : -1} onKeyDown={event => moveTab(event, index)} onClick={() => setPanel(value)}><Icon size={15}/>{label}</button>)}</div>
-        <div className="inspector-scroll" key={panel} id={`inspector-panel-${panel}`} role="tabpanel" aria-labelledby={`inspector-tab-${panel}`} tabIndex={0}>
+        <div className="inspector-scroll" onFocusCapture={beginInteraction} onBlurCapture={endInteraction} onPointerDownCapture={beginInteraction} onKeyDownCapture={event=>{if(event.target instanceof HTMLInputElement&&event.target.type==="range"&&["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End","PageUp","PageDown"].includes(event.key)&&!interaction.current){interaction.current=crypto.randomUUID();interactionKind.current="range";}}} onKeyUpCapture={event=>{if(event.target instanceof HTMLInputElement&&event.target.type==="range")endInteraction();}} key={panel} id={`inspector-panel-${panel}`} role="tabpanel" aria-labelledby={`inspector-tab-${panel}`} tabIndex={0}>
           {panel === "objects" ? <><div className="inspector-section-heading"><h3>Your objects</h3><span className="setting-badge">{draft.filter(o => o.modelUrl).length} meshes</span></div><p className="inspector-description">Select a piece to adjust its placement.</p>
-            <div className="object-selector">{draft.filter(o => o.modelUrl).map((o, index) => <button key={o.id} className={o.id === selected ? "selected" : ""} aria-pressed={o.id === selected} onClick={() => setSelected(o.id)}><span className="object-number">{String(index + 1).padStart(2, "0")}</span><span>{o.label}{!o.visible && <small>Hidden</small>}</span>{o.id === selected && <Check size={14}/>}</button>)}</div>
-            {current?.modelUrl && <fieldset className="transform-fields" disabled={busy || running}><legend className="control-group-label">Object properties</legend><button className="text-link" type="button" disabled={!dirty} onClick={()=>{const saved=data.objects.find(o=>o.id===current.id);if(saved)edit(current.id,{positionX:saved.positionX,positionY:saved.positionY,positionZ:saved.positionZ,yaw:saved.yaw,scale:saved.scale,visible:saved.visible});}}>Reset placement to saved</button><label className="object-name-field">Name<input value={current.label} maxLength={120} onChange={e => edit(current.id, { label: e.target.value })}/></label>
-              {([ ["positionX", "Left / right", -10, 10, 0.1], ["positionZ", "Forward / back", -10, 10, 0.1], ["positionY", "Height", -2, 5, 0.1], ["yaw", "Rotation", -Math.PI, Math.PI, 0.05], ["scale", "Size", 0.1, 5, 0.1] ] as const).map(([field, label, min, max, step]) => <RangeField key={field} label={label} min={min} max={max} step={step} value={current[field]} precision={2} onChange={value => edit(current.id, { [field]: value })}/>)}
+            <div className="object-selector">{draft.filter(o => o.modelUrl).map((o, index) => <button key={o.id} className={o.id === selected ? "selected" : ""} aria-pressed={o.id === selected} onClick={() => setSelected(prev=>prev===o.id?"":o.id)}><span className="object-number">{String(index + 1).padStart(2, "0")}</span><span>{o.label}{!o.visible && <small>Hidden</small>}</span>{o.id === selected && <Check size={14}/>}</button>)}</div>
+            <div className="editor-actions visibility-actions"><button className="button button-light" disabled={!current?.modelUrl||busy||running} onClick={()=>isolate(current?.id??null)}>Isolate subject</button><button className="button button-light" disabled={busy||running||!draft.some(o=>o.modelUrl&&!o.visible)} onClick={()=>isolate(null)}>Show all</button></div>
+            {!current&&<p className="control-hint">Click an object to edit it. Click it again or click empty space to deselect.</p>}
+            {current?.modelUrl && <fieldset className="transform-fields" disabled={busy || running}><legend className="control-group-label">Object properties</legend><button className="text-link" type="button" disabled={!dirty} onClick={()=>{const saved=data.objects.find(o=>o.id===current.id);if(saved)edit(current.id,{positionX:saved.positionX,positionY:saved.positionY,positionZ:saved.positionZ,yaw:saved.yaw,pitch:saved.pitch??0,roll:saved.roll??0,scale:saved.scale,visible:saved.visible});}}>Reset placement to saved</button><label className="object-name-field">Name<input value={current.label} maxLength={120} onChange={e => edit(current.id, { label: e.target.value })}/></label>
+              {([ ["positionX", "Left / right", -10, 10, 0.1], ["positionZ", "Forward / back", -10, 10, 0.1], ["positionY", "Height", -2, 5, 0.1], ["yaw", "Rotation", -Math.PI, Math.PI, 0.05], ["pitch", "Tilt forward / back", -Math.PI/2, Math.PI/2, 0.025], ["roll", "Lean left / right", -Math.PI, Math.PI, 0.025], ["scale", "Size", 0.1, 5, 0.1] ] as const).map(([field, label, min, max, step]) => {const angle=["yaw","pitch","roll"].includes(field),factor=angle?180/Math.PI:1;return <RangeField key={field} label={angle?`${label} (°)`:label} min={min*factor} max={max*factor} step={angle?1:step} value={(current[field]??0)*factor} precision={angle?0:2} onChange={value => edit(current.id, { [field]: value/factor })}/>;})}
               <label className="visibility-toggle"><span><Eye size={15}/>Show object</span><input className="switch-input" role="switch" type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/></label>
             </fieldset>}
           </> : panel === "products" ? current?.modelUrl ? <>{current.assemblyRootId ? <p className="control-hint">This product region shares geometry with its complete subject. Move the complete subject to keep the assembly together. Catalog replacements currently apply to standalone objects.</p> : <CatalogControls items={catalogItems} busy={busy||running} dirty={dirty || lightDirty} canRestore={current.canRestoreOriginal} onSeed={() => catalogAction("SEED")} onReplace={id => catalogAction("REPLACE", id)} onRestore={() => catalogAction("RESTORE")}/>}<ProductControls object={current} busy={busy||running} onChange={product => edit(current.id, { product })}/></> : <p>Select an object first.</p> : <AppearanceControls panel={panel} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={busy||running} texturesBlocked={hasReplacements} applied={data.appearance.applied} backgroundReady={Boolean(data.appearance.backgroundUrl||data.composition?.background?.plainColor)} onBackground={()=>action("IMAGE_EDIT")} generationEnabled={data.generationEnabled} onRefresh={()=>appearance("APPLY")} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
         </div>
-        <div className="inspector-footer"><div className="editor-actions"><button className="button button-light" disabled={!history.length || busy || running} onClick={() => { setFuture(prev => [...prev, draft]); setDraft(history[history.length - 1]); setHistory(history.slice(0, -1)); setDirty(true); }}><RotateCcw size={14}/>Undo</button><button className="button button-light redo-button" aria-label="Redo object edit" title="Redo object edit" disabled={!future.length || busy || running} onClick={() => { setHistory(prev => [...prev, draft]); setDraft(future[future.length - 1]); setFuture(future.slice(0, -1)); setDirty(true); }}><Redo2 size={14}/></button><button className="button button-dark" disabled={(!dirty && !lightDirty) || busy || running} onClick={save}><Save size={14}/>{busy ? "Saving…" : "Save changes"}</button></div>
+        <div className="inspector-footer"><div className="editor-actions"><button className="button button-light" disabled={!history.length || busy || running} onClick={() => {interaction.current=null;setEditor(undoEdit);}}><RotateCcw size={14}/>Undo</button><button className="button button-light redo-button" aria-label="Redo edit" title="Redo (Ctrl/⌘ Shift Z)" disabled={!future.length || busy || running} onClick={() => {interaction.current=null;setEditor(redoEdit);}}><Redo2 size={14}/></button><button className="button button-dark" disabled={(!dirty && !lightDirty) || busy || running} onClick={save}><Save size={14}/>{busy ? "Saving…" : "Save changes"}</button></div>
           <button className="inspector-reload" disabled={busy} onClick={requestReload}><RefreshCw size={12}/>Reload saved scene</button>
         </div>
       </aside></div> : <ObjectReview key={data.objects.map(o=>o.id).join(":")} data={data} busy={busy||running} running={running} chosen={chosen} setChosen={setChosen} analysis={analysisOptions} setAnalysis={setAnalysisOptions} reconstruction={reconstructionOptions} setReconstruction={setReconstructionOptions} onAnalyze={()=>data.status==="DRAFT"?void action("ANALYZE"):askRestart("ANALYSIS")} onSegment={value=>action("SEGMENT_OBJECT",value)} onMask={chooseMask} onBuild={()=>action("RECONSTRUCT")} onReview={()=>askRestart("RECONSTRUCTION")}/>}

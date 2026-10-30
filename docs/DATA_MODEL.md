@@ -223,3 +223,7 @@ Photo transfer supports up to ten meshes, original-root camera calculation, boun
 ## Background extension — October 30
 
 No SQL migration: Scene.stage.background stores validated kind/groundVisible/boundary/description; private settings.backgroundPlan retains analysis and settings.background references a derived SURFACE_TEXTURE plus original photo ID/model. GenerationRun IMAGE_EDIT and unique META background-analysis/background-fill steps use existing tables. Raw edited images are private PROVIDER_RESPONSE assets, separate from the public derived plate. Snapshot v2 adds optional surfaces.backgroundAssetId to its exact allowlist and renders the frozen composition; legacy snapshots remain readable. Background refresh CAS preserves meshes/products/transforms. Restart clears later assets and retains source analysis. See BACKGROUND_RECONSTRUCTION.md.
+
+## Optional tilt/lean controls — October 30
+
+Owner object edits accept optional pitch/roll plus existing yaw. The UI displays degrees; transport uses bounded radians and runtime composes YXZ Euler angles into SceneObject.rotationX/Y/Z/W. Missing new fields preserve existing tilt/lean for older clients. Workspace returns the decomposed controls. Published world transforms already store full quaternions, so no SQL migration or manifest version change is required. Local object/product/light undo history and screenshot/background preferences are browser-only state.
