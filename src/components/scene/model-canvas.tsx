@@ -8,7 +8,7 @@ import { manualStageCamera, type SceneComposition } from "@/lib/scene/compositio
 import {referenceFov} from "@/lib/scene/reference-framing";
 import { PhotoBackground } from "./photo-background";
 import {captureScene,focusDistance} from "@/lib/editor/capture";
-import {Download,Focus,Grid3x3,House,ImageOff,Lock,LockOpen} from "lucide-react";
+import {Download,Focus,Grid3x3,House,ImageOff,Lock,LockOpen,Maximize} from "lucide-react";
 import type { Lighting } from "@/lib/scene/lighting";
 import type { RenderObject, SceneWorkspace } from "./types";
 
@@ -79,7 +79,7 @@ function ReferenceFraming({reference}:{reference:SceneComposition["camera"]|unde
   }
  },[camera,size.width,size.height,reference]);return null;
 }
-export default function ModelCanvas({ objects, selected, onSelect, composition, lighting, appearance }: { objects: RenderObject[]; selected: string; onSelect: (id: string) => void; composition: SceneComposition | null; lighting: Lighting; appearance: SceneWorkspace["appearance"] }) {
+export default function ModelCanvas({ objects, selected, onSelect, composition, lighting, appearance, shopping = false }: { objects: RenderObject[]; selected: string; onSelect: (id: string) => void; composition: SceneComposition | null; lighting: Lighting; appearance: SceneWorkspace["appearance"]; shopping?: boolean }) {
   const readOnly = objects.some(o => Boolean(o.worldTransform));
   const controls = useRef<OrbitControlsType>(null);
   const bindControls = useCallback((value: OrbitControlsType | null) => {
@@ -93,6 +93,8 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
   const [backgroundHidden,setBackgroundHidden]=useState(false);
   const [exporting,setExporting]=useState(false),[exportError,setExportError]=useState("");
   const viewerApi=useRef<ViewerApi|null>(null),loading=useProgress(state=>state.active);
+  const viewport=useRef<HTMLDivElement>(null);
+  async function fullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else await viewport.current?.requestFullscreen();}catch{setExportError("Fullscreen is unavailable in this browser.");}}
   async function download(transparent:boolean){
     if(!viewerApi.current){setExportError("The viewer is still loading. Try again when the objects appear.");return;}
     setExporting(true);setExportError("");
@@ -105,7 +107,7 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
   const cameraOptions=useMemo(()=>({position:c?.position??manualStageCamera.position,fov:c?.fov??manualStageCamera.fov,near:.01,far:Math.max(500,c?new Vector3(...c.position).distanceTo(new Vector3(...c.target))*16:500)}),[c]);
   const lightingColor = composition?.environment.lightWarmth === "warm" ? "#fff0d8" : composition?.environment.lightWarmth === "cool" ? "#e1edff" : "#ffffff";
   const target = c?.target ?? manualStageCamera.target;
-  return <div className="model-viewport" style={{ "--scene-aspect": c?.aspect ?? 1.5 } as CSSProperties}>
+  return <div ref={viewport} className="model-viewport" style={{ "--scene-aspect": c?.aspect ?? 1.5 } as CSSProperties}>
     <Canvas onPointerMissed={event=>{if(event.type==="click")onSelect("");}} shadows={{type:PCFShadowMap}} camera={cameraOptions} dpr={[1, 1.5]}
       fallback={<p className="canvas-loading">WebGL is unavailable in this browser. You can still browse the scene details.</p>}>
       <ReferenceFraming reference={c}/>
@@ -125,14 +127,16 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
       <div className="viewer-tool-group">
         <button title={readOnly ? "Reset view" : composition ? "Back to photo view" : "Reset camera"} aria-label={readOnly ? "Reset view" : composition ? "Photo view" : "Reset camera"} onClick={() => controls.current?.reset()}><House size={15}/></button>
         {!readOnly&&<button disabled={!selected||!objects.some(o=>o.id===selected&&o.visible)||loading} title="Focus selected object" aria-label="Focus selected object" onClick={()=>viewerApi.current?.focus(selected,zoomLocked)}><Focus size={15}/></button>}
+        {shopping&&<button title="Fullscreen" aria-label="Fullscreen" onClick={fullscreen}><Maximize size={15}/></button>}
       </div>
       <div className="viewer-tool-group">
         {composition && !readOnly && <button aria-pressed={grid} title={grid ? "Hide grid" : "Show grid"} aria-label="Grid" onClick={() => setGrid(value => !value)}><Grid3x3 size={15}/></button>}
         <button aria-pressed={zoomLocked} title={zoomLocked ? "Unlock zoom" : "Lock zoom (orbit and pan still work)"} aria-label="Zoom lock" onClick={()=>setZoomLocked(v=>!v)}>{zoomLocked?<Lock size={15}/>:<LockOpen size={15}/>}</button>
         <button aria-pressed={backgroundHidden} title="Hide background (preview only)" aria-label="Hide background" onClick={()=>setBackgroundHidden(v=>!v)}><ImageOff size={15}/></button>
       </div>
-      <details className="viewer-export"><summary title="Download PNG" aria-label="Download"><Download size={15}/></summary><div className="viewer-export-options"><button disabled={loading||exporting} onClick={()=>download(false)}>{exporting?"Preparing…":"Scene PNG"}</button><button disabled={loading||exporting} onClick={()=>download(true)}>Transparent PNG</button><small>Current view, without helpers. Transparent omits background and shadows.</small></div></details>
+      <details className="viewer-export"><summary title="Download PNG" aria-label="Download"><Download size={15}/>{shopping&&<span className="viewer-download-label">PNG</span>}</summary><div className="viewer-export-options"><button disabled={loading||exporting} onClick={()=>download(false)}>{exporting?"Preparing…":"Scene PNG"}</button><button disabled={loading||exporting} onClick={()=>download(true)}>Transparent PNG</button><small>Current view, without helpers. Transparent omits background and shadows.</small></div></details>
     </div>
+    {loading&&<div className="viewer-loading-status" role="status">Loading 3D assets…</div>}
     {exportError&&<p role="alert" className="viewer-export-error">{exportError}</p>}
     <span className="viewer-help">Drag to orbit · right-drag to pan · {zoomLocked?"zoom locked":"scroll to zoom"}</span>
   </div>;

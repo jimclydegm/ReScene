@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type {ReactNode} from "react";
 import Link from "next/link";
-import { ArrowUpRight, Box, ImagePlus, Plus, Clock3, ChevronLeft, ChevronRight, LockKeyhole, Layers3, LoaderCircle, Search } from "lucide-react";
+import { ArrowUpRight, Play, Box, ImagePlus, Plus, Clock3, ChevronLeft, ChevronRight, LockKeyhole, Layers3, LoaderCircle, Search } from "lucide-react";
 import { requirePageUser } from "@/lib/auth/user";
 import { getDb } from "@/lib/db";
 import { signRead } from "@/lib/storage/r2";
@@ -42,7 +42,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       meshes: scene.objects.filter(object => object.status === "READY" && object.modelAssetId).length };
   }));
   return <><StudioHeader name={user.displayName}/><main className="studio-main shell dashboard-main">
-    <div className="dashboard-top"><div><h1>Your scenes</h1><p className="dashboard-stats" aria-label="Studio overview"><span><Layers3 size={13}/><strong>{total}</strong> {total === 1 ? "project" : "projects"}</span><span><Box size={13}/><strong>{ready}</strong> ready</span><span><LoaderCircle size={13}/><strong>{generating}</strong> generating</span><span><LockKeyhole size={12}/>Private</span></p></div><Link href="/scenes/new" className="button button-dark"><Plus size={15}/>Create a scene</Link></div>
+    <div className="dashboard-top"><div><h1>Your scenes</h1><p className="dashboard-stats" aria-label="Studio overview"><span><Layers3 size={13}/><strong>{total}</strong> {total === 1 ? "project" : "projects"}</span><span><Box size={13}/><strong>{ready}</strong> ready</span><span><LoaderCircle size={13}/><strong>{generating}</strong> generating</span><span><LockKeyhole size={12}/>Private</span></p></div><div className="dashboard-create-actions"><Link href="/demo" className="button button-light"><Play size={15}/>Demo mode</Link><Link href="/scenes/new" className="button button-dark"><Plus size={15}/>Create a scene</Link></div></div>
     <div className="dashboard-toolbar"><nav className="dashboard-views" aria-label="Project view"><Link href="/dashboard" aria-current={!archived?"page":undefined}>Active</Link><Link href="/dashboard?view=archived" aria-current={archived?"page":undefined}>Trash</Link></nav><form action="/dashboard" className="project-search">{archived&&<input type="hidden" name="view" value="archived"/>}<label className="project-search-field"><Search size={14}/><input name="q" defaultValue={q} maxLength={100} aria-label="Search projects" placeholder="Search projects…"/></label>{!archived&&<select name="filter" defaultValue={filter} aria-label="Filter projects"><option value="ALL">All statuses</option><option value="READY">Ready to edit</option><option value="GENERATING">Generating</option><option value="FAILED">Needs attention</option><option value="PUBLISHED">Published</option></select>}<button className="button button-light" type="submit">Find</button>{(q||filter!=="ALL")&&<Link className="text-link" href={archived?"/dashboard?view=archived":"/dashboard"}>Clear</Link>}</form></div>
     {filteredTotal ? <>
       <div className="project-grid">{cards.map(({ scene, url, isPoster, progress, meshes }) => <article className="project-card-frame" key={scene.id}><ProjectCardLink id={scene.id} title={scene.title} archived={archived}>

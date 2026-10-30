@@ -1896,3 +1896,7 @@ html { background: var(--paper); }
 .scene-template-grid img { object-fit: contain; background: var(--surface); }
 .scene-template-grid small { font-size: 10px; color: var(--muted); }
 .setting-format-filter select { max-width: 120px; padding: 5px 24px 5px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--ink); font: inherit; font-size: 11px; }
+
+/* Retail demo entry alongside the private studio action. */
+.dashboard-create-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.viewer-loading-status{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:8px;background:#faf9f5ee;color:#5c7153;font-size:12px;padding:12px 18px;pointer-events:none;z-index:2}
