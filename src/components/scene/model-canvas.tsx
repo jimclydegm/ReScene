@@ -7,7 +7,7 @@ import type { OrbitControls as OrbitControlsType } from "three-stdlib";
 import { manualStageCamera, type SceneComposition } from "@/lib/scene/composition";
 import { PhotoBackground } from "./photo-background";
 import {captureScene,focusDistance} from "@/lib/editor/capture";
-import {Download,Focus} from "lucide-react";
+import {Download,Focus,Grid3x3,House,ImageOff,Lock,LockOpen} from "lucide-react";
 import type { Lighting } from "@/lib/scene/lighting";
 import type { RenderObject, SceneWorkspace } from "./types";
 
@@ -107,10 +107,18 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
       <OrbitControls ref={bindControls} makeDefault target={target} minDistance={0.3} enableZoom={!zoomLocked}
         maxDistance={Math.max(40, c ? new Vector3(...c.position).distanceTo(new Vector3(...c.target)) * 2 : 40)} maxPolarAngle={backgroundHidden||composition?.backdrop === "none" ? Math.PI-.01 : Math.PI / 2 - 0.01}/>
     </Canvas>
-    <div className="viewer-toolbar"><button onClick={() => controls.current?.reset()}>{readOnly ? "Reset view" : composition ? "Photo view" : "Reset camera"}</button>
-      {composition && !readOnly && <button aria-pressed={grid} onClick={() => setGrid(value => !value)}>{grid ? "Hide grid" : "Show grid"}</button>}<label className="zoom-lock"><input type="checkbox" checked={zoomLocked} onChange={e=>setZoomLocked(e.target.checked)}/>Zoom lock</label><label className="zoom-lock" title="Preview only. Use Scene backdrop to save a background choice."><input type="checkbox" checked={backgroundHidden} onChange={e=>setBackgroundHidden(e.target.checked)}/>Hide background</label>
-      {!readOnly&&<button disabled={!selected||!objects.some(o=>o.id===selected&&o.visible)||loading} title="Center the selected object" onClick={()=>viewerApi.current?.focus(selected,zoomLocked)}><Focus size={13}/>Focus selected</button>}
-      <details className="viewer-export"><summary><Download size={13}/>Download</summary><div className="viewer-export-options"><button disabled={loading||exporting} onClick={()=>download(false)}>{exporting?"Preparing…":"Download scene PNG"}</button><button disabled={loading||exporting} onClick={()=>download(true)}>Download transparent PNG</button><small>Current view, without selection rings or grid. Transparent PNG omits the background and ground shadows.</small></div></details></div>
+    <div className="viewer-toolbar" role="toolbar" aria-label="Viewer">
+      <div className="viewer-tool-group">
+        <button title={readOnly ? "Reset view" : composition ? "Back to photo view" : "Reset camera"} aria-label={readOnly ? "Reset view" : composition ? "Photo view" : "Reset camera"} onClick={() => controls.current?.reset()}><House size={15}/></button>
+        {!readOnly&&<button disabled={!selected||!objects.some(o=>o.id===selected&&o.visible)||loading} title="Focus selected object" aria-label="Focus selected object" onClick={()=>viewerApi.current?.focus(selected,zoomLocked)}><Focus size={15}/></button>}
+      </div>
+      <div className="viewer-tool-group">
+        {composition && !readOnly && <button aria-pressed={grid} title={grid ? "Hide grid" : "Show grid"} aria-label="Grid" onClick={() => setGrid(value => !value)}><Grid3x3 size={15}/></button>}
+        <button aria-pressed={zoomLocked} title={zoomLocked ? "Unlock zoom" : "Lock zoom (orbit and pan still work)"} aria-label="Zoom lock" onClick={()=>setZoomLocked(v=>!v)}>{zoomLocked?<Lock size={15}/>:<LockOpen size={15}/>}</button>
+        <button aria-pressed={backgroundHidden} title="Hide background (preview only)" aria-label="Hide background" onClick={()=>setBackgroundHidden(v=>!v)}><ImageOff size={15}/></button>
+      </div>
+      <details className="viewer-export"><summary title="Download PNG" aria-label="Download"><Download size={15}/></summary><div className="viewer-export-options"><button disabled={loading||exporting} onClick={()=>download(false)}>{exporting?"Preparing…":"Scene PNG"}</button><button disabled={loading||exporting} onClick={()=>download(true)}>Transparent PNG</button><small>Current view, without helpers. Transparent omits background and shadows.</small></div></details>
+    </div>
     {exportError&&<p role="alert" className="viewer-export-error">{exportError}</p>}
     <span className="viewer-help">Drag to orbit · right-drag to pan · {zoomLocked?"zoom locked":"scroll to zoom"}</span>
   </div>;

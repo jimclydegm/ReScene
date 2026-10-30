@@ -66,7 +66,7 @@ export function ObjectReview(props:Props){
   }
   const box=pendingBox ?? (prompt.mode==="spatial" ? prompt.box : undefined);
   return <section className="pipeline-review" aria-label="Photo analysis and object review">
-    <div className="pipeline-heading"><div><span className="eyebrow">OBJECT REVIEW</span><h2>Find the products in your photo.</h2><p>Complete subjects stay intact. Product parts remain selectable within the reconstructed scene.</p></div><span className="setting-badge">{data.objects.filter(o=>o.maskUrl).length} of {data.objects.length} outlined</span></div>
+    <div className="pipeline-heading"><div><h2>Review the objects in your photo</h2><p>Check each outline, then build the ones you want in 3D.</p></div><span className="setting-badge">{data.objects.filter(o=>o.maskUrl).length} of {data.objects.length} outlined</span></div>
     <div className="analysis-layout">
       <div className="review-canvas-column">
         <div className="review-photo-shell"><div className="review-photo fitted-photo" style={{"--photo-aspect":image.width/image.height} as CSSProperties}>

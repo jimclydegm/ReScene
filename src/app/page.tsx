@@ -1,34 +1,44 @@
 import Link from "next/link";
-import { ArrowDown, ArrowUpRight, Camera, Layers3, MousePointer2, MoveUpRight, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Camera, Check, Layers, MousePointer2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { Logo } from "@/components/logo";
 import { DemoPreview } from "@/components/demo/demo-preview";
+
+const steps = [
+  { Icon: Camera, title: "Upload a photo", text: "A product, an outfit or a full scene. No 3D skills needed." },
+  { Icon: Layers, title: "Review the objects", text: "Meta AI finds each item. Refine outlines, then build 3D meshes." },
+  { Icon: MousePointer2, title: "Edit and publish", text: "Arrange, relight and add product links. Share a read-only scene." }
+];
 
 export default function Home() {
   return <>
     <SiteHeader/>
     <main>
-      <section className="hero shell">
-        <div className="hero-copy">
-          <div className="pill"><span className="tiny-dot"/> A NEW PERSPECTIVE ON SHOPPING</div>
-          <h1>One photo.<br/>A whole new<br/><span>dimension.</span><svg className="headline-star" width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><path d="M18 0L21.5 13L33.6 6L24 16L36 18L23 21.5L30 33.6L20 24L18 36L14.5 23L2.4 30L12 20L0 18L13 14.5L6 2.4L16 12Z" fill="currentColor"/></svg></h1>
-          <p>Give your products a space to be explored.<br className="desktop-break"/> Turn a photo into an interactive, shoppable 3D scene.</p>
-          <div className="hero-actions"><Link href="/scenes/new" className="button button-dark">Create your first scene <ArrowUpRight size={18}/></Link><Link href="#preview" className="text-link">Take a look around <ArrowDown size={15}/></Link></div>
-          <div className="hero-footnote"><Sparkles size={14}/> Built with Meta AI <span/> Made for curious shoppers.</div>
+      <section className="landing-hero shell">
+        <div className="landing-copy">
+          <span className="landing-kicker"><span className="tiny-dot"/>Photo to shoppable 3D · Built with Meta AI</span>
+          <h1>One photo.<br/>A whole new <em>dimension.</em></h1>
+          <p>Turn a product or scene photo into an interactive 3D space shoppers can explore and buy from.</p>
+          <div className="landing-actions">
+            <Link href="/scenes/new" className="button button-dark">Create a scene <ArrowRight size={15}/></Link>
+            <Link href="#how-it-works" className="button button-light">How it works</Link>
+          </div>
+          <ul className="landing-points">
+            <li><Check size={14}/>Products, outfits, rooms, food and more</li>
+            <li><Check size={14}/>Edit layout, textures and lighting</li>
+            <li><Check size={14}/>Share a read-only, shoppable link</li>
+          </ul>
         </div>
-        <div className="hero-visual"><div className="visual-note"><span className="handwritten-arrow">↙</span> Go ahead. Look around.</div><DemoPreview/><div className="visual-corner-note"><span className="tiny-dot"/> A little more than a picture.</div></div>
+        <DemoPreview/>
       </section>
-      <section className="value-strip shell" aria-label="Scene capabilities"><span><MousePointer2 size={17}/> Every object, a product.</span><span><Layers3 size={17}/> More angles. One scene.</span><span><MoveUpRight size={17}/> A space you can make your own.</span><span className="prototype-label">META HACKATHON · 2026</span></section>
-      <section className="how-section shell" id="how-it-works">
-        <div className="section-heading"><div><span className="eyebrow">FROM STILL TO SPATIAL</span><h2>Your next storefront<br/>starts with a photo.</h2></div><p>A new way to show what belongs together.<br/>Built for products, outfits, and the scenes around them.</p></div>
-        <div className="step-grid">{[
-          { number: "01", Icon: Camera, title: "Start with your photo", text: "Upload a clear photo of a scene, product arrangement, or outfit. No 3D modeling experience needed." },
-          { number: "02", Icon: Layers3, title: "Give it dimension", text: "Meta AI identifies products, lets you refine their outlines, and reconstructs editable 3D previews." },
-          { number: "03", Icon: MousePointer2, title: "Make it yours", text: "Adjust the layout, textures and lighting, add product details, and publish a shoppable scene." }
-        ].map(({ number, Icon, title, text }) => <article key={number} className="step-card"><div className="step-top"><span>{number}</span><Icon size={23} strokeWidth={1.3}/></div><h3>{title}</h3><p>{text}</p></article>)}</div>
+      <section className="landing-steps shell" id="how-it-works" aria-labelledby="how-heading">
+        <div className="landing-steps-heading"><h2 id="how-heading">How it works</h2><Link href="/scenes/new" className="text-link">Start now <ArrowUpRight size={14}/></Link></div>
+        <ol>{steps.map(({ Icon, title, text }, index) => <li key={title}>
+          <span className="landing-step-icon"><Icon size={17} strokeWidth={1.6}/></span>
+          <div><small>Step {index + 1}</small><h3>{title}</h3><p>{text}</p></div>
+        </li>)}</ol>
       </section>
-      <section className="bottom-cta shell"><span className="eyebrow">MAKE SPACE FOR SOMETHING NEW</span><h2>There’s more to the picture.</h2><Link href="/scenes/new" className="button button-dark">Start a scene <ArrowUpRight size={17}/></Link><p>AI reconstructed geometry is approximate. Product details come from the seller.</p></section>
     </main>
-    <footer className="site-footer shell"><Logo/><span>A new perspective, by ReScene.</span><a href="https://github.com/jimclydegm/ReScene" target="_blank" rel="noopener noreferrer">Built in the open <ArrowUpRight size={13}/></a></footer>
+    <footer className="site-footer shell"><Logo/><span>3D geometry is approximate. Product details come from the seller.</span><a href="https://github.com/jimclydegm/ReScene" target="_blank" rel="noopener noreferrer">GitHub <ArrowUpRight size={13}/></a></footer>
   </>;
 }

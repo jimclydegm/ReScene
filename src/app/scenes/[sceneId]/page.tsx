@@ -19,7 +19,8 @@ export default async function ScenePage({ params }: { params: Promise<{ sceneId:
   const { sceneId } = await params;
   const scene = await ownedScene(sceneId, user.id).catch(error => { if (error instanceof AppError && error.status === 404) notFound(); throw error; });
   const preview = scene.normalizedAsset ? await signRead(scene.normalizedAsset) : null;
-  return <><StudioHeader name={user.displayName}/><main className="studio-main shell scene-main"><Link href="/dashboard" className="back-link"><ArrowLeft size={15}/> Your scenes</Link><div className="page-heading"><div><span className="eyebrow">SCENE STUDIO</span><h1>{scene.title}</h1><p><LockKeyhole size={13}/> Private scene · {preview ? "Photo saved" : "Waiting for a photo"}</p></div><span className="pill"><span className="tiny-dot"/>{scene.status === "READY" ? "3D READY" : preview ? "PHOTO READY" : "DRAFT"}</span></div>
-    {!preview ? <><div className="scene-quick-actions"><ProjectDetails id={scene.id} title={scene.title} description={scene.description} revision={scene.revision} disabled={false}/></div><UploadForm key={scene.revision} scene={{ id: scene.id, title: scene.title, revision: scene.revision }}/></> : <SceneStudio initial={await workspace(sceneId, user.id)}/>}
+  if (preview) return <><StudioHeader name={user.displayName} wide/><main className="scene-main studio-wide"><SceneStudio initial={await workspace(sceneId, user.id)}/></main></>;
+  return <><StudioHeader name={user.displayName}/><main className="studio-main shell scene-main"><Link href="/dashboard" className="back-link"><ArrowLeft size={15}/> Your scenes</Link><div className="page-heading"><div><span className="eyebrow">SCENE STUDIO</span><h1>{scene.title}</h1><p><LockKeyhole size={13}/> Private scene · Waiting for a photo</p></div><span className="pill"><span className="tiny-dot"/>DRAFT</span></div>
+    <div className="scene-quick-actions"><ProjectDetails id={scene.id} title={scene.title} description={scene.description} revision={scene.revision} disabled={false}/></div><UploadForm key={scene.revision} scene={{ id: scene.id, title: scene.title, revision: scene.revision }}/>
   </main></>;
 }

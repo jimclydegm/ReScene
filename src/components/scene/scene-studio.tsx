@@ -1,8 +1,9 @@
 "use client";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState, Component, type ReactNode, type KeyboardEvent, type FocusEvent, type PointerEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Box, Check, LoaderCircle, Save, RotateCcw, Palette, Lightbulb, RefreshCw, Eye, ShoppingBag, Redo2 } from "lucide-react";
+import { ArrowLeft, Box, Check, Ellipsis, Eye, EyeOff, Layers, Lightbulb, LoaderCircle, LockKeyhole, Palette, Redo2, RotateCcw, Save, ScanEye, ShoppingBag, Undo2, X } from "lucide-react";
 import { apiJson } from "@/lib/client-api";
 import type { SceneWorkspace, SceneObjectView } from "./types";
 import { RangeField } from "@/components/ui/range-field";
@@ -15,12 +16,15 @@ import { AppearanceControls } from "./appearance-controls";
 import { defaultLighting, type Lighting } from "@/lib/scene/lighting";
 import { ReferencePhoto } from "./reference-photo";
 import { ObjectReview } from "./object-review";
+import { SceneLayoutControls } from "./scene-layout-controls";
 import type { SegmentationOptions } from "@/lib/ai/controls";
 import { UploadForm } from "@/components/upload-form";
 import {subjectVisibility} from "@/lib/editor/visibility";
 import {editHistory,recordEdit,finishEdit,undoEdit,redoEdit} from "@/lib/editor/history";
 import type { RestartTarget } from "@/lib/validation/generation";
 
+type Panel = "objects" | "scene" | "textures" | "lighting" | "products";
+const panels: [Panel, string, typeof Box][] = [["objects", "Objects", Box], ["scene", "Scene", Layers], ["textures", "Textures", Palette], ["lighting", "Light", Lightbulb], ["products", "Products", ShoppingBag]];
 const ModelCanvas = dynamic(() => import("./model-canvas"), { ssr: false, loading: () => <div className="canvas-loading">Opening the 3D viewer…</div> });
 class ViewerBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -37,7 +41,9 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const [analysisOptions,setAnalysisOptions]=useState(initial.analysisOptions);
   const [reconstructionOptions,setReconstructionOptions]=useState(initial.reconstructionOptions);
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
-  const [panel, setPanel] = useState<"objects" | "textures" | "lighting" | "products">("objects");
+  const [panel, setPanel] = useState<Panel>("objects");
+  const menu = useRef<HTMLDetailsElement>(null);
+  const openDetails = useRef<(() => void) | null>(null);
   const renderedStatus = useRef(initial.status);
   const [editor,setEditor]=useState(()=>editHistory({objects:initial.objects,lighting:initial.lighting}));
   const draft=editor.present.objects,lights=editor.present.lighting;
@@ -84,6 +90,16 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     }, 10 * 60_000);
     return () => clearInterval(timer);
   }, [dirty, lightDirty, running, reload]);
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => setMessage(""), 5000);
+    return () => clearTimeout(timer);
+  }, [message]);
+  useEffect(() => {
+    const close = (event: MouseEvent) => { if (menu.current?.open && !menu.current.contains(event.target as Node)) menu.current.open = false; };
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, []);
   useEffect(() => {
     if (panel !== "products") return;
     let canceled = false;
@@ -205,7 +221,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     finally { setBusy(false); }
   }
   function moveTab(event: KeyboardEvent<HTMLButtonElement>, index: number) {
-    const tabs = ["objects", "textures", "lighting", "products"] as const;
+    const tabs = panels.map(([value]) => value);
     const next = event.key === "ArrowRight" ? (index + 1) % tabs.length : event.key === "ArrowLeft" ? (index + tabs.length - 1) % tabs.length : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
     if (next === null) return;
     event.preventDefault(); setPanel(tabs[next]);
@@ -221,60 +237,86 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     RECONSTRUCTION: { title: "Return to object review?", detail: "This keeps your photo and object outlines, and clears all 3D models, scene layout, and saved edits. Select the objects you want and build them again.", confirm: "Clear 3D and review objects" }
   }[restartTarget];
   if (!data.image) return <UploadForm key={data.revision} scene={{ id: data.id, title: data.title, revision: data.revision }}/>;
-  return <div className="generation-studio">
-    <UnsavedNavigation dirty={dirty||lightDirty}/>
-    <div className="scene-quick-actions"><ProjectDetails id={data.id} title={data.title} description={data.description} revision={data.revision} disabled={busy||running||dirty||lightDirty} onSaved={async()=>{await reload();router.refresh();}}/>{ready&&<a href="#publish-scene" className="button button-dark">Publish & share</a>}<span>{dirty||lightDirty?"Unsaved changes":"All changes saved"}</span></div>
-    <dialog ref={discardDialog} className="restart-dialog" aria-labelledby="discard-scene-title" onCancel={e=>{if(busy)e.preventDefault();}}><h2 id="discard-scene-title">Discard unsaved changes?</h2><p>This reloads the latest saved scene, including changes from another window. Your unsaved object, product and lighting edits will be discarded.</p><div className="editor-actions"><button className="button button-light" disabled={busy} autoFocus onClick={()=>discardDialog.current?.close()}>Keep editing</button><button className="button button-dark" disabled={busy} onClick={reloadSaved}>{busy?"Reloading…":"Discard and reload"}</button></div></dialog>
-    {data.image && <div className="studio-reference-bar"><div><span className="eyebrow">SCENE STUDIO</span><p>{ready ? "Compare your scene with the original photo." : "Your photo is the reference for every step."}</p></div><ReferencePhoto image={data.image} title={data.title}/></div>}
-    <nav className="generation-steps" aria-label="Scene steps"><button className="done" disabled={busy || running} onClick={() => askRestart("PHOTO")}><Check size={14}/>1 · Photo</button>
-      <button className={data.objects.length ? "done" : ""} disabled={busy || running || !hasMasks || data.status === "REVIEW"} aria-current={!ready ? "step" : undefined} onClick={() => askRestart("RECONSTRUCTION")}>2 · Analyze & review</button>
-      <span className={ready ? "done" : ""} aria-current={ready ? "step" : undefined}>3 · Edit your scene</span></nav>
-    <div className="restart-actions"><button className="text-link" disabled={busy || running} onClick={() => askRestart("PHOTO")}>Change photo</button>
-      {(data.status !== "DRAFT") && <button className="text-link" disabled={busy || running} onClick={() => askRestart("ANALYSIS")}>Analyze again</button>}
-      {hasMasks && data.status !== "REVIEW" && <button className="text-link" disabled={busy || running} onClick={() => askRestart("RECONSTRUCTION")}>Rebuild 3D</button>}
-      {running && <small>Other steps become available when this request finishes. Progress can be refreshed safely.</small>}</div>
+  const unsaved = dirty || lightDirty, locked = busy || running;
+  const meshes = draft.filter(o => o.modelUrl);
+  const steps = [["Photo", true, false], ["Review", data.objects.length > 0, !ready], ["Edit", ready, ready]] as const;
+  function menuAction(run: () => void) { if (menu.current) menu.current.open = false; run(); }
+  function resetPlacement(id: string) {
+    const saved = data.objects.find(o => o.id === id);
+    if (saved) edit(id, { positionX: saved.positionX, positionY: saved.positionY, positionZ: saved.positionZ, yaw: saved.yaw, pitch: saved.pitch ?? 0, roll: saved.roll ?? 0, scale: saved.scale, visible: saved.visible });
+  }
+  const transformGroups = [
+    ["Position", [["positionX", "Left / right", -10, 10, 0.1], ["positionZ", "Forward / back", -10, 10, 0.1], ["positionY", "Height", -2, 5, 0.1]]],
+    ["Rotation", [["yaw", "Turn", -Math.PI, Math.PI, 0.05], ["pitch", "Tilt", -Math.PI / 2, Math.PI / 2, 0.025], ["roll", "Lean", -Math.PI, Math.PI, 0.025]]],
+    ["Size", [["scale", "Scale", 0.1, 5, 0.1]]]
+  ] as const;
+  const notices = <>
+    {error && <p role="alert" className="form-error studio-notice">{error}<button className="icon-button" aria-label="Dismiss" onClick={() => setError("")}><X size={14}/></button></p>}
+    {data.run?.errorMessage && <div className="generation-error studio-notice"><p>{data.run.errorMessage}</p>{data.run.canResume && <button className="button button-dark button-small" disabled={busy} onClick={resume}>Resume generation</button>}</div>}
+    {running && <div className="generation-progress studio-notice" role="status"><LoaderCircle className="spin" size={18}/><div><strong>{data.run?.stage}</strong><progress value={data.run?.progress} max={100}/><p>Safe to close this page. Checking progress uses no credits.</p></div><button className="button button-light button-small" disabled={busy} onClick={requestReload}>Refresh</button>{data.run?.canResume && <button className="button button-light button-small" onClick={resume} disabled={busy}>Resume</button>}</div>}
+    </>;
+  return <div className="generation-studio studio-shell">
+    <UnsavedNavigation dirty={unsaved}/>
+    <header className="studio-bar">
+      <Link href="/dashboard" className="icon-button" aria-label="Back to your scenes" title="Your scenes"><ArrowLeft size={16}/></Link>
+      <div className="studio-title"><h1>{data.title}</h1><span><LockKeyhole size={11}/>Private · {ready ? "3D ready" : "Photo ready"}</span></div>
+      <ol className="studio-steps" aria-label="Scene steps">{steps.map(([label, done, current], index) => <li key={label} className={done ? "done" : ""} aria-current={current ? "step" : undefined}><span>{done && !current ? <Check size={11}/> : index + 1}</span>{label}</li>)}</ol>
+      <div className="studio-bar-actions">
+        {ready && <span className={`save-indicator${unsaved ? " unsaved" : ""}`}><span className="tiny-dot"/>{unsaved ? "Unsaved" : "Saved"}</span>}
+        <details className="studio-menu" ref={menu}><summary className="icon-button" aria-label="Scene options" title="Scene options"><Ellipsis size={16}/></summary>
+          <div className="studio-menu-list" role="menu">
+            <button role="menuitem" disabled={locked || unsaved} onClick={() => menuAction(() => openDetails.current?.())}>Edit title & description</button>
+            {ready && <button role="menuitem" disabled={busy} onClick={() => menuAction(requestReload)}>Reload saved scene</button>}
+            <hr/>
+            <button role="menuitem" disabled={locked} onClick={() => menuAction(() => askRestart("PHOTO"))}>Change photo…</button>
+            {data.status !== "DRAFT" && <button role="menuitem" disabled={locked} onClick={() => menuAction(() => askRestart("ANALYSIS"))}>Analyze again…</button>}
+            {hasMasks && data.status !== "REVIEW" && <button role="menuitem" disabled={locked} onClick={() => menuAction(() => askRestart("RECONSTRUCTION"))}>Rebuild 3D…</button>}
+          </div>
+        </details>
+        {ready && <PublicationControls sceneId={data.id} revision={data.revision} disabled={busy || unsaved || running}/>}
+      </div>
+    </header>
+    <ProjectDetails id={data.id} title={data.title} description={data.description} revision={data.revision} disabled={locked || unsaved} trigger={false} openRef={openDetails} onSaved={async()=>{await reload();router.refresh();}}/>
+    <dialog ref={discardDialog} className="restart-dialog" aria-labelledby="discard-scene-title" onCancel={e=>{if(busy)e.preventDefault();}}><h2 id="discard-scene-title">Discard unsaved changes?</h2><p>This reloads the latest saved scene, including changes from another window. Unsaved object, product and lighting edits will be lost.</p><div className="editor-actions"><button className="button button-light" disabled={busy} autoFocus onClick={()=>discardDialog.current?.close()}>Keep editing</button><button className="button button-dark" disabled={busy} onClick={reloadSaved}>{busy?"Reloading…":"Discard and reload"}</button></div></dialog>
     <dialog ref={restartDialog} className="restart-dialog" aria-labelledby="restart-heading" aria-describedby="restart-description" onCancel={event => { if (busy) event.preventDefault(); }}>
       <h2 id="restart-heading">{restartCopy.title}</h2><p id="restart-description">{restartCopy.detail}</p>
       <p>Active share links will also be revoked. This cannot be undone. Generation already billed will not be refunded. Analyzing or building in 3D again uses API credits.{dirty && " Your unsaved edits will also be discarded."}</p>
       <div className="editor-actions"><button className="button button-light" autoFocus disabled={busy} onClick={() => restartDialog.current?.close()}>Keep current scene</button>
         <button className="button button-dark" disabled={busy} onClick={restart}>{busy ? "Clearing…" : restartCopy.confirm}</button></div>
     </dialog>
-    {error && <p role="alert" className="form-error">{error}</p>}
-    {message && <p role="status" className="save-message">{message}</p>}
-    {data.run?.errorMessage && <div className="generation-error"><p>{data.run.errorMessage}</p>{data.run.canResume && <button className="button button-dark" disabled={busy} onClick={resume}>Resume existing generation</button>}</div>}
-    {running && <div className="generation-progress" role="status"><LoaderCircle className="spin" size={20}/><div><strong>{data.run?.stage}</strong><p>You can close this page. Progress is saved. Refresh checks the existing request and uses no inference credits.</p><progress value={data.run?.progress} max={100}/></div><button className="button button-light" disabled={busy} onClick={requestReload}>Refresh progress</button>{data.run?.canResume && <button className="button button-light" onClick={resume} disabled={busy}>Resume</button>}</div>}
-    {ready ? <div className="editor-layout"><div className="editor-canvas-column"><ViewerBoundary key={`${data.revision}:${viewerRetry}`}><ModelCanvas objects={draft} selected={selected} onSelect={setSelected} composition={data.composition} lighting={lights} appearance={data.appearance}/></ViewerBoundary>
-      <div className="scene-layout-tools"><div><strong>{data.composition?.layoutSource === "manual-stage" ? "Manual stage · photo background" : data.composition ? "Photo layout · estimated scene" : "Manual stage · photo layout available"}</strong><p>{data.composition?.layoutSource === "manual-stage" ? "The background uses the stage camera and keeps your object edits. Match photo layout with original objects to estimate their placement from the reference." : data.composition ? "Relative size, orientation, depth, and camera use the saved SAM 3D estimates. Surfaces and lighting are approximate." : "Apply the saved AI poses to restore relative sizes, depth, orientation, and a matching camera. No new generation needed."}</p></div>
-        <button className="button button-light" disabled={busy || running || dirty || lightDirty || hasReplacements} onClick={() => matchLayout("MATCH_PHOTO")}>{busy ? "Working…" : "Match photo layout"}</button>
-        {data.canRestoreLayout && <button className="text-link" disabled={busy || running || dirty || lightDirty || hasReplacements} onClick={() => matchLayout("RESTORE")}>Undo photo layout</button>}
-      </div>
-      {hasReplacements && <p className="control-hint">Restore original objects in Products before matching the photo layout or changing photo textures.</p>}
-      {data.composition&&<label className="scene-backdrop-control">Scene backdrop<select value={data.composition.backdrop ?? "room"} disabled={busy||running||dirty||lightDirty} onChange={e=>changeBackdrop(e.target.value as "room"|"studio"|"none")}><option value="room">Photo background · automatic</option><option value="studio">Ground only</option><option value="none">Plain background · no surfaces</option></select><small>Choose the visible surfaces. Build or refresh the photo background in Textures. Switching views uses no generation.</small></label>}
-      <button className="button button-light" disabled={busy||running||dirty||lightDirty||hasReplacements||!data.composition||data.composition.layoutSource==="manual-stage"} onClick={()=>matchLayout("REVIEW_PHOTO")}>Review & refine placement</button>
-      {data.layoutReview&&<div className="layout-review" role="status"><strong>Reference check · {data.layoutReview.needsReview?"needs attention":"placement checked"}</strong><p>Projected mesh silhouettes compared with reviewed photo masks. This does not verify hidden geometry or exact appearance.</p>{data.layoutReview.objects.map(o=><p key={o.id}>{o.label}: {Math.round(o.after*100)}% mask overlap{o.adjusted?" · adjusted":""}{o.needsReview?" · check shape/outline":""}</p>)}</div>}
-      <p className="preview-caveat">Match photo layout resets object transforms and saves them; Undo photo layout restores the previous layout. Save or reload any unsaved edits first. Hidden surfaces and measurements may differ from the photo.</p>
-      {data.composition?.warnings.slice(1).map(warning => <p className="preview-caveat" key={warning}>{warning}</p>)}</div>
+    {!ready && <div className="studio-notices">{notices}{message && <p role="status" className="save-message studio-notice">{message}</p>}</div>}
+    {ready ? <div className="editor-layout studio-workspace"><div className="studio-stage">
+      <ViewerBoundary key={`${data.revision}:${viewerRetry}`}><ModelCanvas objects={draft} selected={selected} onSelect={setSelected} composition={data.composition} lighting={lights} appearance={data.appearance}/></ViewerBoundary>
+      <ReferencePhoto image={data.image} title={data.title}/>
+      <div className="studio-notices floating">{notices}</div>
+      {message && <p role="status" className="studio-toast"><Check size={14}/>{message}</p>}
+    </div>
       <aside className="object-inspector editor-inspector" aria-label="Scene controls">
-        <div className="inspector-header"><div><span className="eyebrow">SCENE CONTROLS</span><strong>Make it yours</strong></div><span className={`save-indicator${dirty || lightDirty ? " unsaved" : ""}`}><span className="tiny-dot"/>{dirty || lightDirty ? "Unsaved" : "Saved"}</span></div>
-        <div className="inspector-tabs" role="tablist" aria-label="Scene control sections">{([
-          ["objects", "Objects", Box], ["textures", "Textures", Palette], ["lighting", "Lighting", Lightbulb], ["products", "Products", ShoppingBag]
-        ] as const).map(([value, label, Icon], index) => <button key={value} id={`inspector-tab-${value}`} role="tab" type="button" aria-selected={panel === value} aria-controls={panel === value ? `inspector-panel-${value}` : undefined} tabIndex={panel === value ? 0 : -1} onKeyDown={event => moveTab(event, index)} onClick={() => setPanel(value)}><Icon size={15}/>{label}</button>)}</div>
-        <div className="inspector-scroll" onFocusCapture={beginInteraction} onBlurCapture={endInteraction} onPointerDownCapture={beginInteraction} onKeyDownCapture={event=>{if(event.target instanceof HTMLInputElement&&event.target.type==="range"&&["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End","PageUp","PageDown"].includes(event.key)&&!interaction.current){interaction.current=crypto.randomUUID();interactionKind.current="range";}}} onKeyUpCapture={event=>{if(event.target instanceof HTMLInputElement&&event.target.type==="range")endInteraction();}} key={panel} id={`inspector-panel-${panel}`} role="tabpanel" aria-labelledby={`inspector-tab-${panel}`} tabIndex={0}>
-          {panel === "objects" ? <><div className="inspector-section-heading"><h3>Your objects</h3><span className="setting-badge">{draft.filter(o => o.modelUrl).length} meshes</span></div><p className="inspector-description">Select a piece to adjust its placement.</p>
-            <div className="object-selector">{draft.filter(o => o.modelUrl).map((o, index) => <button key={o.id} className={o.id === selected ? "selected" : ""} aria-pressed={o.id === selected} onClick={() => setSelected(prev=>prev===o.id?"":o.id)}><span className="object-number">{String(index + 1).padStart(2, "0")}</span><span>{o.label}{!o.visible && <small>Hidden</small>}</span>{o.id === selected && <Check size={14}/>}</button>)}</div>
-            <div className="editor-actions visibility-actions"><button className="button button-light" disabled={!current?.modelUrl||busy||running} onClick={()=>isolate(current?.id??null)}>Isolate subject</button><button className="button button-light" disabled={busy||running||!draft.some(o=>o.modelUrl&&!o.visible)} onClick={()=>isolate(null)}>Show all</button></div>
-            {!current&&<p className="control-hint">Click an object to edit it. Click it again or click empty space to deselect.</p>}
-            {current?.modelUrl && <fieldset className="transform-fields" disabled={busy || running}><legend className="control-group-label">Object properties</legend><button className="text-link" type="button" disabled={!dirty} onClick={()=>{const saved=data.objects.find(o=>o.id===current.id);if(saved)edit(current.id,{positionX:saved.positionX,positionY:saved.positionY,positionZ:saved.positionZ,yaw:saved.yaw,pitch:saved.pitch??0,roll:saved.roll??0,scale:saved.scale,visible:saved.visible});}}>Reset placement to saved</button><label className="object-name-field">Name<input value={current.label} maxLength={120} onChange={e => edit(current.id, { label: e.target.value })}/></label>
-              {([ ["positionX", "Left / right", -10, 10, 0.1], ["positionZ", "Forward / back", -10, 10, 0.1], ["positionY", "Height", -2, 5, 0.1], ["yaw", "Rotation", -Math.PI, Math.PI, 0.05], ["pitch", "Tilt forward / back", -Math.PI/2, Math.PI/2, 0.025], ["roll", "Lean left / right", -Math.PI, Math.PI, 0.025], ["scale", "Size", 0.1, 5, 0.1] ] as const).map(([field, label, min, max, step]) => {const angle=["yaw","pitch","roll"].includes(field),factor=angle?180/Math.PI:1;return <RangeField key={field} label={angle?`${label} (°)`:label} min={min*factor} max={max*factor} step={angle?1:step} value={(current[field]??0)*factor} precision={angle?0:2} onChange={value => edit(current.id, { [field]: value/factor })}/>;})}
-              <label className="visibility-toggle"><span><Eye size={15}/>Show object</span><input className="switch-input" role="switch" type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/></label>
+        <div className="inspector-tabs" role="tablist" aria-label="Scene control sections">{panels.map(([value, label, Icon], index) => <button key={value} id={`inspector-tab-${value}`} role="tab" type="button" aria-selected={panel === value} aria-controls={`inspector-panel-${value}`} tabIndex={panel === value ? 0 : -1} onKeyDown={event => moveTab(event, index)} onClick={() => setPanel(value)}><Icon size={15}/>{label}</button>)}</div>
+        {panels.map(([value]) => <div className="inspector-scroll" hidden={panel !== value} key={value} id={`inspector-panel-${value}`} role="tabpanel" aria-labelledby={`inspector-tab-${value}`} tabIndex={0} onFocusCapture={beginInteraction} onBlurCapture={endInteraction} onPointerDownCapture={beginInteraction} onKeyDownCapture={event=>{if(event.target instanceof HTMLInputElement&&event.target.type==="range"&&["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Home","End","PageUp","PageDown"].includes(event.key)&&!interaction.current){interaction.current=crypto.randomUUID();interactionKind.current="range";}}} onKeyUpCapture={event=>{if(event.target instanceof HTMLInputElement&&event.target.type==="range")endInteraction();}}>
+          {value === "objects" ? <div className="panel-stack">
+            <div className="panel-block">
+              <div className="panel-heading"><h3>Objects <span className="panel-count">{meshes.length}</span></h3>
+                <div className="panel-icon-actions"><button className="icon-button" title="Isolate selected subject" aria-label="Isolate selected subject" disabled={!current?.modelUrl||locked} onClick={()=>isolate(current?.id??null)}><ScanEye size={15}/></button><button className="icon-button" title="Show all objects" aria-label="Show all objects" disabled={locked||!draft.some(o=>o.modelUrl&&!o.visible)} onClick={()=>isolate(null)}><Eye size={15}/></button></div></div>
+              <div className="object-list">{meshes.map((o, index) => <button key={o.id} className={o.id === selected ? "selected" : ""} aria-pressed={o.id === selected} onClick={() => setSelected(prev=>prev===o.id?"":o.id)}><span className="object-number">{index + 1}</span><span className="object-name">{o.label}</span>{!o.visible && <EyeOff size={13} aria-label="Hidden"/>}{o.id === selected && <Check size={14}/>}</button>)}</div>
+            </div>
+            {!current?.modelUrl ? <p className="panel-empty">Select an object in the viewer or the list to move, rotate or resize it.</p> :
+            <fieldset className="panel-block transform-fields" disabled={locked}>
+              <div className="panel-heading"><h3>Selected</h3><button className="text-link panel-link" type="button" disabled={!dirty} onClick={() => resetPlacement(current.id)}><RotateCcw size={12}/>Reset</button></div>
+              <label className="field">Name<input value={current.label} maxLength={120} onChange={e => edit(current.id, { label: e.target.value })}/></label>
+              {transformGroups.map(([group, fields]) => <div className="field-group" key={group}><span className="group-label">{group}</span>{fields.map(([field, label, min, max, step]) => {const angle=["yaw","pitch","roll"].includes(field),factor=angle?180/Math.PI:1;return <RangeField key={field} label={angle?`${label} (°)`:label} min={min*factor} max={max*factor} step={angle?1:step} value={(current[field]??0)*factor} precision={angle?0:2} onChange={value => edit(current.id, { [field]: value/factor })}/>;})}</div>)}
+              <label className="visibility-toggle"><span><Eye size={14}/>Visible</span><input className="switch-input" role="switch" type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/></label>
             </fieldset>}
-          </> : panel === "products" ? current?.modelUrl ? <>{current.assemblyRootId ? <p className="control-hint">This product region shares geometry with its complete subject. Move the complete subject to keep the assembly together. Catalog replacements currently apply to standalone objects.</p> : <CatalogControls items={catalogItems} busy={busy||running} dirty={dirty || lightDirty} canRestore={current.canRestoreOriginal} onSeed={() => catalogAction("SEED")} onReplace={id => catalogAction("REPLACE", id)} onRestore={() => catalogAction("RESTORE")}/>}<ProductControls object={current} busy={busy||running} onChange={product => edit(current.id, { product })}/></> : <p>Select an object first.</p> : <AppearanceControls panel={panel} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={busy||running} texturesBlocked={hasReplacements} applied={data.appearance.applied} backgroundReady={Boolean(data.appearance.backgroundUrl||data.composition?.background?.plainColor)} onBackground={()=>action("IMAGE_EDIT")} generationEnabled={data.generationEnabled} onRefresh={()=>appearance("APPLY")} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
+          </div>
+          : value === "scene" ? <SceneLayoutControls data={data} locked={locked} unsaved={unsaved} blocked={hasReplacements} onMatch={() => matchLayout("MATCH_PHOTO")} onReview={() => matchLayout("REVIEW_PHOTO")} onRestore={() => matchLayout("RESTORE")} onBackdrop={changeBackdrop} onBackground={() => action("IMAGE_EDIT")}/>
+          : value === "products" ? current?.modelUrl ? <div className="panel-stack">{current.assemblyRootId ? <p className="panel-note">This region shares geometry with its complete subject. Move the subject to keep them together; catalog replacement applies to standalone objects.</p> : <CatalogControls items={catalogItems} busy={locked} dirty={unsaved} canRestore={current.canRestoreOriginal} onSeed={() => catalogAction("SEED")} onReplace={id => catalogAction("REPLACE", id)} onRestore={() => catalogAction("RESTORE")}/>}<ProductControls object={current} busy={locked} onChange={product => edit(current.id, { product })}/></div> : <p className="panel-empty">Select an object to add its product card.</p>
+          : <AppearanceControls panel={value} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={locked} texturesBlocked={hasReplacements} applied={data.appearance.applied} onRefresh={()=>appearance("APPLY")} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
+        </div>)}
+        <div className="inspector-footer">
+          <button className="icon-button" title="Undo (Ctrl/⌘ Z)" aria-label="Undo edit" disabled={!history.length || locked} onClick={() => {interaction.current=null;setEditor(undoEdit);}}><Undo2 size={15}/></button>
+          <button className="icon-button" title="Redo (Ctrl/⌘ Shift Z)" aria-label="Redo edit" disabled={!future.length || locked} onClick={() => {interaction.current=null;setEditor(redoEdit);}}><Redo2 size={15}/></button>
+          <button className="button button-dark" disabled={!unsaved || locked} onClick={save}><Save size={14}/>{busy ? "Saving…" : unsaved ? "Save changes" : "Saved"}</button>
         </div>
-        <div className="inspector-footer"><div className="editor-actions"><button className="button button-light" disabled={!history.length || busy || running} onClick={() => {interaction.current=null;setEditor(undoEdit);}}><RotateCcw size={14}/>Undo</button><button className="button button-light redo-button" aria-label="Redo edit" title="Redo (Ctrl/⌘ Shift Z)" disabled={!future.length || busy || running} onClick={() => {interaction.current=null;setEditor(redoEdit);}}><Redo2 size={14}/></button><button className="button button-dark" disabled={(!dirty && !lightDirty) || busy || running} onClick={save}><Save size={14}/>{busy ? "Saving…" : "Save changes"}</button></div>
-          <button className="inspector-reload" disabled={busy} onClick={requestReload}><RefreshCw size={12}/>Reload saved scene</button>
-        </div>
-      </aside></div> : <ObjectReview key={data.objects.map(o=>o.id).join(":")} data={data} busy={busy||running} running={running} chosen={chosen} setChosen={setChosen} analysis={analysisOptions} setAnalysis={setAnalysisOptions} reconstruction={reconstructionOptions} setReconstruction={setReconstructionOptions} onAnalyze={()=>data.status==="DRAFT"?void action("ANALYZE"):askRestart("ANALYSIS")} onSegment={value=>action("SEGMENT_OBJECT",value)} onMask={chooseMask} onBuild={()=>action("RECONSTRUCT")} onReview={()=>askRestart("RECONSTRUCTION")}/>}
-
-    {ready && <PublicationControls sceneId={data.id} revision={data.revision} disabled={busy || dirty || lightDirty || running}/>}
+      </aside></div> : <ObjectReview key={data.objects.map(o=>o.id).join(":")} data={data} busy={locked} running={running} chosen={chosen} setChosen={setChosen} analysis={analysisOptions} setAnalysis={setAnalysisOptions} reconstruction={reconstructionOptions} setReconstruction={setReconstructionOptions} onAnalyze={()=>data.status==="DRAFT"?void action("ANALYZE"):askRestart("ANALYSIS")} onSegment={value=>action("SEGMENT_OBJECT",value)} onMask={chooseMask} onBuild={()=>action("RECONSTRUCT")} onReview={()=>askRestart("RECONSTRUCTION")}/>}
   </div>;
 }
