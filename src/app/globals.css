@@ -1891,3 +1891,8 @@ html { background: var(--paper); }
 .analysis-controls .analysis-focus > label { padding: 0 8px 8px; }
 .analysis-controls .analysis-focus textarea { min-height: 58px; max-height: 160px; resize: vertical; }
 .analysis-controls > fieldset > small { font-size: 10.5px; line-height: 1.4; }
+
+.scene-template-grid { max-height: 300px; overflow-y: auto; padding-right: 4px; scrollbar-width: thin; align-items: start; }
+.scene-template-grid img { object-fit: contain; background: var(--surface); }
+.scene-template-grid small { font-size: 10px; color: var(--muted); }
+.setting-format-filter select { max-width: 120px; padding: 5px 24px 5px 8px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--ink); font: inherit; font-size: 11px; }

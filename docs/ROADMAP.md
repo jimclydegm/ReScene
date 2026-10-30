@@ -174,3 +174,11 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Occupied-volume layout correction, grouped support movement, manual save/publication guards and selective retry rejection.
 - [x] Reported background rebuilt using cached analysis/depth and one clean image/review; object shapes were not regenerated. Remaining texture-review notes stay visible.
 - [x] PR28 merged at d9ab411; 193 tests/schema/lint/types/build and CI pass. Production READY; background/mesh/review DTO and SSR checks pass, deliberate collision edit rejected, zero runtime errors. Native browser inspection remains unavailable.
+
+## Expanded setting and product samples — October30
+
+- [x] Fifteen empty Muse setting photographs across four aspect ratios and fifteen simple product photographs; visually reviewed, cushion corrected once.
+- [x] Versioned previews/provenance, native-format selection, format filter and bounded scene picker; legacy assets/recipes preserved.
+- [x] Idempotent library registration script, separate SETTING rows and version4 setting path snapshots.
+- [x] 195 cases/schema/lint/types/build pass.
+- [ ] CI/release, register the new library rows and verify deployed assets/pickers.
