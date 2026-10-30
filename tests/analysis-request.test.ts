@@ -100,6 +100,10 @@ describe("Meta analysis response contract", () => {
     );
     expect(mock.create).toHaveBeenCalledTimes(1);
     expect(mock.create.mock.calls[0][1].maxRetries).toBe(0);
+    expect(mock.create.mock.calls[0][0]).toMatchObject({
+      max_completion_tokens: 8192,
+      reasoning_effort: "low",
+    });
   });
   it("stops before the provider if recording the request phase fails", async () => {
     await expect(
@@ -143,4 +147,29 @@ describe("Meta analysis response contract", () => {
       ).errorMessage,
     ).not.toContain("private.example");
   });
+});
+
+it("retains a completion-limit receipt without treating it as a connection interruption", async () => {
+  mock.create.mockResolvedValue({
+    id: "limit-receipt",
+    model: "muse-spark-1.3",
+    choices: [{ finish_reason: "length", message: { content: null } }],
+    usage: { prompt_tokens: 3000, completion_tokens: 4096 },
+  });
+  const events = { onResponse: vi.fn() };
+  let received;
+  try {
+    await analyzePhoto("photo", { width: 100, height: 100 }, undefined, events);
+  } catch (e) {
+    received = e;
+  }
+  expect(received).toBeInstanceOf(ProviderResultError);
+  expect(classifyAnalysisFailure(received, "responded")).toMatchObject({
+    status: "FAILED",
+    errorCode: "ANALYSIS_OUTPUT_LIMIT",
+  });
+  expect(events.onResponse).toHaveBeenCalledWith(
+    expect.objectContaining({ id: "limit-receipt" }),
+  );
+  expect(mock.create).toHaveBeenCalledTimes(1);
 });

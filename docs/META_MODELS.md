@@ -271,3 +271,5 @@ The default planar background workflow calls hosted `fal-ai/vggt-1b` with one so
 ## Strict analysis contract correction
 
 `scene-observations-v9` sends an explicit background observation schema (kind, groundVisible, boundary, description), never renderer geometry/material state. A local validator checks Meta's strict required/additionalProperties rules before dispatch. Request receipt/raw response persistence precedes analysis parsing. HTTP400 rejection is reported distinctly from a lost response; uncertain attempts remain protected against paid resubmission. Source: https://dev.meta.ai/docs/structured-output. The prior shared-schema regression was reproduced as HTTP400: missing geometry in the required array, rather than an inference timeout.
+
+The first corrected live schema request returned `finish_reason=length`: 4,094 of its 4,096 completion tokens were reasoning, with no answer content. Analysis now explicitly uses `reasoning_effort=low` and `max_completion_tokens=8192`; completion-limit receipts get ANALYSIS_OUTPUT_LIMIT rather than a connection warning. The next bounded saved-photo request returned eight candidates. No automatic retry loop is added.
