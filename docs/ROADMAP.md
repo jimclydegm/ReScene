@@ -95,3 +95,12 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] One undo action per input gesture/text edit, combined object/product/light history, keyboard shortcuts and no-op handling.
 - [x] 116 unit cases/build pass; saved-data tilt/reload/legacy edit checks pass with QA restoration; zero inference/uploads.
 - [x] PR #18 merged at 3f97496; CI passes, production READY, bounded editor validation/SSR/privacy/release checks pass. Native GPU, grouped gestures, download results and responsive layout remain unverified while browser access is disabled.
+
+## Background failure and manual-stage recovery — October 30
+
+- [x] Trace the failed run to scene-axis rejection before background inference, rather than a Muse API outage.
+- [x] Ignore arbitrary local axes as leveling votes while retaining poses and coordinate validity checks; explicit camera-up fallback warning.
+- [x] Allow background builds without photo placement, preserve manual edits/catalog replacements, label the camera approximation and retain internal local-failure diagnostics.
+- [x] One recorded Muse Image verification succeeded; saved object/product state preserved and 405,791 known background pixels unchanged. No model regeneration or automatic retries.
+- [x] 122 unit cases, typecheck/lint/build pass. Native browser checks remain unavailable in Work settings.
+- [ ] Merge/release this correction and run bounded deployed verification without further inference.

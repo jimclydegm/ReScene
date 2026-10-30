@@ -19,6 +19,7 @@ export const modelPlacementSchema = z.object({
 export type ModelPlacement = z.infer<typeof modelPlacementSchema>;
 export const compositionSchema = z.object({
   version: z.literal("sam3d-room-v1"),
+  layoutSource: z.enum(["sam3d", "manual-stage"]).optional(),
   floorY:z.number().finite().min(-1000).max(1000).optional(),
   backdrop:z.enum(["room","studio","none"]).optional(),
   background: backgroundPlanSchema.optional(),
@@ -29,6 +30,15 @@ export const compositionSchema = z.object({
   projectionError: z.number().nonnegative(), warnings: z.array(z.string())
 });
 export type SceneComposition = z.infer<typeof compositionSchema>;
+export const manualStageCamera = { position: [5, 4, 7] as [number, number, number], target: [0, 0.5, 0] as [number, number, number], fov: 42 };
+// Background pixels do not require reliable object poses. Keep the existing
+// manual-stage view and object edits when a legacy/partial import has no layout.
+export function manualBackgroundComposition(image: { width: number; height: number }, environment: Environment,
+  environmentSource: SceneComposition["environmentSource"], floorY: number): SceneComposition {
+  return compositionSchema.parse({ version: "sam3d-room-v1", layoutSource: "manual-stage", floorY, camera: { ...manualStageCamera, aspect: image.width / image.height },
+    room: { centerX: 0, centerZ: 0, width: 8, depth: 8, height: 4 }, environment, environmentSource, projectionError: 0,
+    warnings: ["Background uses the manual-stage camera because photo placement is unavailable. Saved object edits are preserved; framing and hidden surfaces remain estimated."] });
+}
 type Bounds = { min: [number, number, number]; max: [number, number, number] };
 export type CompositionInput = { id: string; metadata: unknown; bounds: Bounds; imageBounds: unknown; support: string;category?:string;supportedById?:string };
 const metadataSchema = z.object({
@@ -78,13 +88,15 @@ export function composeRoom(inputs: CompositionInput[], image: { width: number; 
   });
   const supports = posed.filter(o => o.support === "floor");
   const upright = supports.length ? supports : posed;
+  // Object-local Y is not a ground normal: round, lying and irregular subjects
+  // can have any canonical axis. Use only upward votes to level the shared frame,
+  // retaining every object's original pose. Without a vote, keep camera-space up.
+  const axes = upright.map(o => up.clone().applyQuaternion(o.pose.rotation));
+  const upward = axes.filter(axis => axis.dot(up) >= 0.65);
   const estimatedUp = new Vector3();
-  for (const o of upright) {
-    const axis = up.clone().applyQuaternion(o.pose.rotation);
-    if (axis.dot(up) < 0.65) throw new Error("LAYOUT_COORDINATES_UNSUPPORTED");
-    estimatedUp.add(axis);
-  }
-  estimatedUp.normalize();
+  for (const axis of upward) estimatedUp.add(axis);
+  if (upward.length) estimatedUp.normalize();
+  else estimatedUp.copy(up);
   const level = new Quaternion().setFromUnitVectors(estimatedUp, up);
   const leveled = posed.map(o => ({ ...o, points: o.points.map(p => p.clone().applyQuaternion(level)) }));
   const bounds = new Box3().setFromPoints(leveled.flatMap(o => o.points));
@@ -137,6 +149,7 @@ export function composeRoom(inputs: CompositionInput[], image: { width: number; 
       depth: roomDepth, height: Math.max(size.y * 1.65, 4) },
     environment, environmentSource, projectionError,
     warnings: ["Scene surfaces and lighting are estimated; the floor is kept below reconstructed geometry.",
+      ...(upward.length < axes.length ? [upward.length ? "Some object axes cannot establish upright. Their poses are preserved; check the estimated ground alignment." : "No reliable upright axis was found. Camera-space up is used; check ground alignment against the photo."] : []),
       ...(projectionError > 0.12 ? ["The pose and photo disagree. Check the layout against the reference and adjust it."] : [])]
   });
   if(settle)settleSupportContacts(objects,inputs,composition);

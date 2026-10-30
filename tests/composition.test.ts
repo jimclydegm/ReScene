@@ -48,12 +48,27 @@ describe("SAM 3D scene import", () => {
     const matrix = new Matrix4().compose(new Vector3(...o.position).add(new Vector3(...o.placement.offset)), new Quaternion(...o.placement.rotation), new Vector3(...o.placement.scale));
     expect(new Vector3(0, -0.5, 0).applyMatrix4(matrix).y).toBeCloseTo(0);
   });
-  it("rejects nonfinite/missing poses, behind-camera meshes, and an unsupported sideways convention", () => {
+  it("rejects nonfinite/missing poses and behind-camera meshes", () => {
     const item = input("cube", 0, 5, 1);
     expect(() => samPose({})).toThrow();
     expect(() => samPose({ ...item.metadata as object, translation: [[NaN, 0, 5]] })).toThrow();
     expect(() => composeRoom([{ ...item, metadata: { ...item.metadata as object, translation: [[0, 0, 0.1]] } }], { width: 100, height: 100 }, environment, "spark")).toThrow();
-    expect(() => composeRoom([{ ...item, metadata: { ...item.metadata as object, rotation: [[1, 0, 0, 0]] } }], { width: 100, height: 100 }, environment, "spark")).toThrow();
+  });
+  it("keeps a usable photo layout when a grounded subject has an arbitrary local axis", () => {
+    const anchor=input("anchor",-1,5,1),round=input("round",1,5,.3);
+    round.metadata={...round.metadata as object,rotation:[[1,0,0,0]]};
+    const result=composeRoom([anchor,round],{width:100,height:100},environment,"spark");
+    expect(result.objects).toHaveLength(2);
+    const pose=samPose(round.metadata);
+    expect(new Quaternion(...result.objects[1].placement.rotation).angleTo(pose.rotation)).toBeCloseTo(0);
+    expect(result.objects.every(o=>o.position[1]>=-1e-8)).toBe(true);
+    expect(result.composition.warnings.some(w=>w.includes("poses are preserved"))).toBe(true);
+  });
+  it("falls back to camera-space up when no object establishes upright without inventing a rotation",()=>{
+    const item=input("lying-subject",0,5,1);item.metadata={...item.metadata as object,rotation:[[1,0,0,0]]};
+    const result=composeRoom([item],{width:100,height:100},environment,"spark");
+    expect(new Quaternion(...result.objects[0].placement.rotation).angleTo(samPose(item.metadata).rotation)).toBeCloseTo(0);
+    expect(result.composition.warnings.some(w=>w.includes("Camera-space up"))).toBe(true);
   });
   it("reads mesh bounds through GLB node transforms and rejects cyclic hierarchies", () => {
     const doc = { scene: 0, scenes: [{ nodes: [0] }], nodes: [{ translation: [1, 2, 3], mesh: 0, children: [] as number[] }], meshes: [{ primitives: [{ attributes: { POSITION: 0 } }] }], accessors: [{ type: "VEC3", min: [-1, -1, -1], max: [1, 1, 1] }] };

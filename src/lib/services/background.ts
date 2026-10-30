@@ -9,18 +9,21 @@ import { bucket, storagePrefix, putObject, readLimited } from "@/lib/storage/r2"
 import { analyzeBackground, fillBackground } from "@/lib/ai/background";
 import { plainBackground } from "@/lib/appearance/plain";
 import { fallbackBackground, backgroundPlanSchema } from "@/lib/scene/background";
-import { compositionSchema } from "@/lib/scene/composition";
+import { compositionSchema, manualBackgroundComposition } from "@/lib/scene/composition";
 import { backgroundFootprint, compositeBackground } from "@/lib/appearance/background";
-import { record } from "./composition";
+import { record, sceneEnvironment } from "./composition";
 
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 export async function buildSceneBackground(runId: string) {
   const db = getDb(), run = await db.generationRun.findUniqueOrThrow({ where: { id: runId }, include: { scene: { include: { normalizedAsset: true } } } });
-  const scene = run.scene, composition = compositionSchema.safeParse(scene.stage);
-  if (!["RUNNING", "WAITING"].includes(run.status) || scene.status !== "READY" || scene.archivedAt || run.expiresAt < new Date() || !composition.success || !scene.normalizedAsset || scene.normalizedAssetId !== record(run.input).normalizedAssetId) throw new Error("BACKGROUND_RUN_STALE");
+  const scene = run.scene, savedComposition = compositionSchema.safeParse(scene.stage);
+  if (!["RUNNING", "WAITING"].includes(run.status) || scene.status !== "READY" || scene.archivedAt || run.expiresAt < new Date() || !scene.normalizedAsset || scene.normalizedAssetId !== record(run.input).normalizedAssetId) throw new Error("BACKGROUND_RUN_STALE");
   if (run.kind === "IMAGE_EDIT" && scene.revision !== run.inputRevision) throw new Error("BACKGROUND_REVISION_CHANGED");
   const objects = (await db.sceneObject.findMany({ where: { sceneId: scene.id, status: "READY", modelAssetId: { not: null } }, include: { mask: true } })).filter(o=>!isBackgroundSurface(o,{width:scene.normalizedAsset!.width!,height:scene.normalizedAsset!.height!}));
   if (!objects.length || objects.some(o => !o.mask || o.mask.sceneId !== scene.id || o.mask.kind !== "MASK" || o.mask.status !== "READY")) throw new Error("BACKGROUND_MASKS_REQUIRED");
+  const environment = savedComposition.success ? null : await sceneEnvironment(scene);
+  const composition = savedComposition.success ? savedComposition.data : manualBackgroundComposition(
+    { width: scene.normalizedAsset!.width!, height: scene.normalizedAsset!.height! }, environment!.environment, environment!.environmentSource, Math.min(0, ...objects.map(o => o.positionY)));
   const photo = await readLimited(scene.normalizedAsset.storageKey, 4 * 1024 * 1024);
   const raw = await sharp(photo).removeAlpha().toColourspace("srgb").raw().toBuffer({ resolveWithObject: true });
   const image = { data: raw.data, width: raw.info.width, height: raw.info.height };
@@ -38,7 +41,7 @@ export async function buildSceneBackground(runId: string) {
       const current = await tx.generationRun.findFirst({ where: { id: runId, status: { in: ["RUNNING", "WAITING"] } } });
       if (!current) throw new AppError(409, "RUN_STALE", "The background request is no longer active.");
       const saved = await tx.scene.updateMany({ where: { id: scene.id, revision: scene.revision, status: "READY", archivedAt: null }, data: {
-        stage: json({ ...composition.data, background: observed }), settings: json({ ...settings, backgroundPlan: observed, background: null }), revision: { increment: 1 }
+        stage: json({ ...composition, background: observed }), ...(!savedComposition.success ? { camera: json(composition.camera) } : {}), settings: json({ ...settings, backgroundPlan: observed, background: null }), revision: { increment: 1 }
       } });
       if (!saved.count) throw new Error("BACKGROUND_REVISION_CHANGED");
     });
@@ -77,7 +80,7 @@ export async function buildSceneBackground(runId: string) {
     const current = await tx.generationRun.findFirst({ where: { id: runId, status: { in: ["RUNNING", "WAITING"] } } });
     if (!current) throw new AppError(409, "RUN_STALE", "The background request is no longer active.");
     const changed = await tx.scene.updateMany({ where: { id: scene.id, revision: scene.revision, status: "READY", archivedAt: null }, data: {
-      stage: json({ ...composition.data, background: plan }), settings: json({ ...settings, backgroundPlan: plan, background: { version: "photo-background-v1", assetId: id, photoId: scene.normalizedAssetId, model: generated.model } }), revision: { increment: 1 }
+      stage: json({ ...composition, background: plan }), ...(!savedComposition.success ? { camera: json(composition.camera) } : {}), settings: json({ ...settings, backgroundPlan: plan, background: { version: "photo-background-v1", assetId: id, photoId: scene.normalizedAssetId, model: generated.model } }), revision: { increment: 1 }
     } });
     if (!changed.count) throw new AppError(409, "REVISION_CONFLICT", "The scene changed during background generation. Your saved background was kept.");
   });
@@ -91,10 +94,16 @@ export async function finishSceneBackground(runId: string) {
     await db.generationRun.updateMany({ where: { id: runId, status: { in: ["RUNNING", "WAITING"] } }, data: { status: run.errorMessage ? "PARTIAL" : "SUCCEEDED", progress: 100, currentStage: "Your 3D scene is ready", completedAt: new Date() } });
   } catch (error) {
     const status=typeof record(error).status==="number"?Number(record(error).status):null;
-    const pending = await db.generationStep.count({ where: { runId, status: "RUNNING" } });
+    const pending = await db.generationStep.count({ where: { runId, key: { startsWith: "background-" }, status: "RUNNING" } });
     const uncertain=Boolean(pending&&!(status&&status>=400&&status<500));
     const detail=error instanceof Error?error.message.replace(/data:[^\s"']+|https?:\/\/[^\s"']+/g,"[redacted]").slice(0,900):"Unknown background failure";
-    await db.generationStep.updateMany({ where: { runId, status: "RUNNING" }, data: { status: uncertain?"SUBMISSION_UNCERTAIN":"FAILED",errorCode:status?`META_HTTP_${status}`:error instanceof Error?error.name:"BACKGROUND_FAILED",errorMessage:detail,completedAt:new Date() } });
+    const code=error instanceof AppError?error.code:status?`META_HTTP_${status}`:error instanceof Error?error.name:"BACKGROUND_FAILED";
+    await db.generationStep.updateMany({ where: { runId, key: { startsWith: "background-" }, status: "RUNNING" }, data: { status: uncertain?"SUBMISSION_UNCERTAIN":"FAILED",errorCode:code,errorMessage:detail,completedAt:new Date() } });
+    // Preflight/compositing can fail without a pending provider request. Keep an
+    // internal diagnostic instead of losing the cause or implying a paid submit.
+    if (!pending) await db.generationStep.upsert({ where: { runId_key_attempt: { runId, key: "background-local", attempt: 1 } },
+      create: { runId, key: "background-local", attempt: 1, provider: "INTERNAL", status: "FAILED", errorCode: code, errorMessage: detail, completedAt: new Date() },
+      update: { status: "FAILED", errorCode: code, errorMessage: detail, completedAt: new Date() } });
     await db.generationRun.updateMany({ where: { id: runId, status: { in: ["RUNNING", "WAITING"] } }, data: { status: "PARTIAL", progress: 100, currentStage: "3D ready · background kept", errorCode: uncertain ? "SUBMISSION_UNCERTAIN" : "BACKGROUND_UNAVAILABLE", errorMessage: uncertain ? "Background generation was interrupted and may have been charged. It will not retry automatically. Your 3D objects and saved background are kept." : "The photo background could not be updated. Your 3D objects and saved background are kept. You can start a new background request in Textures.", completedAt: new Date() } });
   }
 }
