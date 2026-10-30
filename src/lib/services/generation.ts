@@ -1,3 +1,4 @@
+import {analysisFailureMessage,classifyAnalysisFailure,type ProviderPhase} from "@/lib/ai/provider-failure";
 import {matchMask} from "@/lib/ai/mask-match";
 import { objectAppearanceSchema } from "@/lib/scene/appearance";
 import { isBackgroundSurface } from "@/lib/scene/surface-role";
@@ -121,28 +122,43 @@ async function beginStep(runId: string, key: string, provider: "META" | "FAL", m
 }
 
 export async function analyzeRun(runId: string) {
-  const run = await loadRun(runId);
-  const image = run.scene.normalizedAsset!;
-  await getDb().generationRun.update({ where: { id: runId }, data: { currentStage: "Identifying objects and products", progress: 10 } });
+  const run = await loadRun(runId), image = run.scene.normalizedAsset!,db=getDb();
+  await db.generationRun.update({ where: { id: runId }, data: { currentStage: "Identifying objects and products", progress: 10 } });
   const step = await beginStep(runId, "spark", "META", process.env.META_ANALYSIS_MODEL ?? "muse-spark-1.3");
-  const options = analysisOptionsSchema.parse(record(run.input).analysis ?? {});
-  const result = await analyzePhoto(await metaInput(image), { width: image.width!, height: image.height! }, options);
-  const response = await artifact(run.sceneId, runId, "PROVIDER_RESPONSE", Buffer.from(JSON.stringify(result.raw)), "application/json");
-  const candidates = result.analysis.objects;
-  const candidateIds=new Map(candidates.map(o=>[o.candidateId,randomUUID()]));
-  await getDb().$transaction(async tx => {
-    await tx.generationStep.update({ where: { id: step.id }, data: { status: "SUCCEEDED", providerRequestId: result.requestId, responseAssetId: response.id,
-      inputTokens: result.usage?.prompt_tokens, outputTokens: result.usage?.completion_tokens,
-      costUsd: ((result.usage?.prompt_tokens ?? 0) * 1.25 + (result.usage?.completion_tokens ?? 0) * 4.25) / 1_000_000, completedAt: new Date() } });
-    for (const [index, object] of candidates.entries()) await tx.sceneObject.create({ data: { id:candidateIds.get(object.candidateId), sceneId: run.sceneId, originRunId: runId, sourceOrdinal: index,
-      label: object.label, category: object.category, segmentationConcept: object.segmentationConcept, imageBounds: object.bbox, sortOrder: index,
-      positionX: ((object.bbox.xMin + object.bbox.xMax) / 2 / image.width! - 0.5) * 5,
-      provenance: { model: result.model, promptVersion: result.promptVersion, analysisImageBounds:object.bbox, support: object.support, surfaceRole:object.surfaceRole??"object", parentObjectId:object.parentCandidateId ? candidateIds.get(object.parentCandidateId) : null, supportedByObjectId:object.supportedByCandidateId ? candidateIds.get(object.supportedByCandidateId) : null, placement: "approximate-stage" } } });
-    await tx.scene.update({ where: { id: run.sceneId }, data: { settings: asJson({ ...record(run.scene.settings), environment: result.analysis.environment, analysisOptions:options, sceneType:result.analysis.sceneType, analysisSummary:result.analysis.summary,
-      backgroundPlan:result.analysis.background, preferredBackdrop:"room" }) } });
-    await tx.generationRun.update({ where: { id: runId }, data: { currentStage: "Finding object outlines", progress: 25 } });
-  });
-  return (await getDb().sceneObject.findMany({ where: { sceneId: run.sceneId, originRunId: runId }, orderBy: { sourceOrdinal: "asc" } })).map(o => o.id);
+  let phase:ProviderPhase="preparing",responseId:string|undefined;
+  try{
+    await db.generationStep.update({where:{id:step.id},data:{input:{providerPhase:phase}}});
+    const options = analysisOptionsSchema.parse(record(run.input).analysis ?? {});
+    const result = await analyzePhoto(await metaInput(image), { width: image.width!, height: image.height! }, options,{
+      onRequest:async()=>{await db.generationStep.update({where:{id:step.id},data:{input:{providerPhase:"requesting"}}});phase="requesting";},
+      onResponse:async response=>{
+        phase="responded";
+        await db.generationStep.update({where:{id:step.id},data:{providerRequestId:response.id,input:{providerPhase:phase},inputTokens:response.usage?.prompt_tokens,outputTokens:response.usage?.completion_tokens}});
+        const asset=await artifact(run.sceneId,runId,"PROVIDER_RESPONSE",Buffer.from(JSON.stringify(response)),"application/json");responseId=asset.id;
+        await db.generationStep.update({where:{id:step.id},data:{responseAssetId:asset.id}});
+      }
+    });
+    const candidates = result.analysis.objects,candidateIds=new Map(candidates.map(o=>[o.candidateId,randomUUID()]));
+    await db.$transaction(async tx => {
+      const current=await tx.generationRun.findFirst({where:{id:runId,status:{in:["RUNNING","WAITING"]},expiresAt:{gt:new Date()}}});
+      if(!current)throw new Error("RUN_STALE_OR_EXPIRED");
+      const changed=await tx.scene.updateMany({where:{id:run.sceneId,revision:run.inputRevision,normalizedAssetId:image.id,archivedAt:null},data:{settings:asJson({...record(run.scene.settings),environment:result.analysis.environment,analysisOptions:options,sceneType:result.analysis.sceneType,analysisSummary:result.analysis.summary,backgroundPlan:result.analysis.background,preferredBackdrop:"room"})}});
+      if(!changed.count)throw new Error("RUN_STALE_OR_EXPIRED");
+      await tx.generationStep.update({ where: { id: step.id }, data: { status: "SUCCEEDED", providerRequestId: result.requestId, responseAssetId: responseId,
+        inputTokens: result.usage?.prompt_tokens, outputTokens: result.usage?.completion_tokens,
+        costUsd: ((result.usage?.prompt_tokens ?? 0) * 1.25 + (result.usage?.completion_tokens ?? 0) * 4.25) / 1_000_000, completedAt: new Date() } });
+      for (const [index, object] of candidates.entries()) await tx.sceneObject.create({ data: { id:candidateIds.get(object.candidateId), sceneId: run.sceneId, originRunId: runId, sourceOrdinal: index,
+        label: object.label, category: object.category, segmentationConcept: object.segmentationConcept, imageBounds: object.bbox, sortOrder: index,
+        positionX: ((object.bbox.xMin + object.bbox.xMax) / 2 / image.width! - 0.5) * 5,
+        provenance: { model: result.model, promptVersion: result.promptVersion, analysisImageBounds:object.bbox, support: object.support, surfaceRole:object.surfaceRole??"object", parentObjectId:object.parentCandidateId ? candidateIds.get(object.parentCandidateId) : null, supportedByObjectId:object.supportedByCandidateId ? candidateIds.get(object.supportedByCandidateId) : null, placement: "approximate-stage" } } });
+      await tx.generationRun.update({ where: { id: runId }, data: { currentStage: "Finding object outlines", progress: 25 } });
+    });
+    return (await db.sceneObject.findMany({ where: { sceneId: run.sceneId, originRunId: runId }, orderBy: { sourceOrdinal: "asc" } })).map(o => o.id);
+  }catch(error){
+    const failure=classifyAnalysisFailure(error,phase);
+    await db.generationStep.updateMany({where:{id:step.id,status:"RUNNING"},data:{...failure,completedAt:new Date()}});
+    throw error;
+  }
 }
 
 export async function segmentRunObject(runId: string, objectId: string) {
@@ -336,13 +352,14 @@ export async function failRun(runId: string) {
   const run = await db.generationRun.findUnique({ where: { id: runId } });
   if (!run || run.status === "SUCCEEDED" || run.status === "CANCELED") return;
   const steps = await db.generationStep.findMany({ where: { runId } });
-  const uncertain = steps.some(s => s.status === "RUNNING" && !s.providerRequestId);
+  const uncertain = steps.some(s => s.status === "SUBMISSION_UNCERTAIN"||s.status === "RUNNING"&&s.provider!=="INTERNAL"&&!s.providerRequestId&&!["preparing","responded"].includes(String(record(s.input).providerPhase)));
+  const analysisFailure=run.kind==="ANALYZE"?steps.find(s=>s.key==="spark"&&s.status==="FAILED"&&s.errorCode):undefined;
   const knownBackground=steps.some(s=>s.key==="environment-depth"&&s.providerRequestId&&s.status!=="SUCCEEDED");
   const knownJob = steps.some(s => s.key === "sam3d-submit" && s.providerRequestId && s.status !== "SUCCEEDED");
   await db.$transaction([
     db.generationStep.updateMany({ where: { runId, status: "RUNNING" }, data: { status: uncertain ? "SUBMISSION_UNCERTAIN" : "FAILED" } }),
-    db.generationRun.update({ where: { id: runId }, data: { status: "FAILED", errorCode: uncertain ? "SUBMISSION_UNCERTAIN" : knownBackground?"KNOWN_BACKGROUND_JOB_INTERRUPTED":knownJob ? "KNOWN_JOB_INTERRUPTED" : "GENERATION_FAILED",
-      errorMessage: uncertain ? "The provider response was interrupted. This attempt may have been charged; it will not be submitted again automatically." : knownBackground?"Background depth paused. Resume retrieves the saved job without another paid submission.":knownJob ? "Generation paused. Resume will retrieve the existing job without another submission." : "Generation could not finish. Your photo and completed objects are saved.", completedAt: new Date() } }),
+    db.generationRun.update({ where: { id: runId }, data: { status: "FAILED", errorCode: uncertain ? "SUBMISSION_UNCERTAIN" : knownBackground?"KNOWN_BACKGROUND_JOB_INTERRUPTED":knownJob ? "KNOWN_JOB_INTERRUPTED" : analysisFailure?.errorCode??"GENERATION_FAILED",
+      errorMessage: uncertain ? "The provider response was interrupted. This attempt may have been charged; it will not be submitted again automatically." : knownBackground?"Background depth paused. Resume retrieves the saved job without another paid submission.":knownJob ? "Generation paused. Resume will retrieve the existing job without another submission." : analysisFailure?analysisFailureMessage(analysisFailure.errorCode!):"Generation could not finish. Your photo and completed objects are saved.", completedAt: new Date() } }),
     db.scene.updateMany({ where: { id: run.sceneId, revision: run.inputRevision, ...(run.kind==="IMAGE_EDIT"||record(run.input).repair?{status:{not:"READY" as const}}:{}) }, data: { status: "FAILED", lastErrorCode: "GENERATION_FAILED" } })
   ]);
 }
