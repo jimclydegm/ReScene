@@ -104,3 +104,12 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] One recorded Muse Image verification succeeded; saved object/product state preserved and 405,791 known background pixels unchanged. No model regeneration or automatic retries.
 - [x] 122 unit cases, typecheck/lint/build pass. Native browser checks remain unavailable in Work settings.
 - [x] PR #19 merged at 02dc76d; CI passes, production READY and bounded read-only smoke passes with zero runtime error records.
+
+## Creative showroom bundle — October 30
+
+- [x] Research public Indie criteria and Meta multi-reference image API; save architecture/demo/verification plan in CREATIVE_SHOWROOM.md.
+- [x] Additive appearance/COMPOSE_IMAGE migration; validated colors and light presets across editor/history/publication.
+- [x] Private product-reference uploader, illustrative product templates, scene/aspect/prompt controls, durable generation and queued recovery.
+- [x] Generated gallery and explicit result adoption into separately owned 3D projects; two entry choices on New Scene.
+- [x] Initial 130 tests/lint/build; registered 30 steps / 3 workflows, migration applied.
+- [ ] Verify saved color/light/public snapshot and one real multi-reference composition/adoption; release and bounded production checks.

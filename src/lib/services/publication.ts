@@ -1,3 +1,4 @@
+import { objectAppearanceSchema } from "@/lib/scene/appearance";
 import { isBackgroundSurface } from "@/lib/scene/surface-role";
 import "server-only";
 import { randomBytes,randomUUID,createHash } from "node:crypto";
@@ -39,7 +40,7 @@ export async function publish(sceneId:string,ownerId:string,revision:number){
   const product=o.product;
   if(product&&product.sceneId!==sceneId)throw new AppError(422,"INVALID_PRODUCT","A product belongs to another scene.");
   const bounds=glbBounds(bytes),transform=flattenTransform(o,bounds);
-  m.objects.push({id:o.id,label:o.label,modelAssetId:o.model.id,transform,productId:product?.id??null});
+  m.objects.push({tint:objectAppearanceSchema.safeParse(o.appearance).data?.tint??null,id:o.id,label:o.label,modelAssetId:o.model.id,transform,productId:product?.id??null});
   if(m.composition){const matrix=new Matrix4().compose(new Vector3(...transform.position),new Quaternion(...transform.rotation),new Vector3(...transform.scale));const bottoms=[0,1].flatMap(x=>[0,1].flatMap(y=>[0,1].map(z=>new Vector3((x?bounds.max:bounds.min)[0],(y?bounds.max:bounds.min)[1],(z?bounds.max:bounds.min)[2]).applyMatrix4(matrix).y)));m.composition.floorY=Math.min(m.composition.floorY??0,...bottoms);}
   if(product&&!m.products.some(p=>p.id===product.id))m.products.push({id:product.id,name:product.name,description:product.description??"",brand:product.brand??"",price:product.price?.toFixed(2)??null,currency:(product.price===null?null:product.currency) as Snapshot["products"][number]["currency"],productUrl:product.productUrl??"",imageAssetId:product.imageAssetId});
  }
@@ -80,5 +81,5 @@ export async function sharedScene(slug:string){
  const urls=new Map(await Promise.all(assets.map(async a=>[a.id,await signRead(a)] as const)));
  // Check revocation again after storage/signing; never rejoin live draft products/objects.
  if(!await db.scenePublication.findFirst({where:{id:publication.id,revokedAt:null,scene:{archivedAt:null}}}))throw new AppError(404,"NOT_FOUND","This share link is unavailable.");
- return {title:m.title,description:m.description,revision:m.revision,composition:m.composition,lighting:m.lighting,appearance:{applied:Boolean(m.surfaces.floorAssetId||m.surfaces.wallAssetId||m.surfaces.backgroundAssetId),floorUrl:m.surfaces.floorAssetId?urls.get(m.surfaces.floorAssetId)!:null,wallUrl:m.surfaces.wallAssetId?urls.get(m.surfaces.wallAssetId)!:null,backgroundUrl:m.surfaces.backgroundAssetId?urls.get(m.surfaces.backgroundAssetId)!:null},objects:m.objects.map(o=>({id:o.id,label:o.label,modelUrl:urls.get(o.modelAssetId)!,transform:o.transform,product:o.productId?(()=>{const p=m.products.find(p=>p.id===o.productId)!;return {name:p.name,brand:p.brand,description:p.description,price:p.price,currency:p.currency,productUrl:p.productUrl,imageUrl:p.imageAssetId?urls.get(p.imageAssetId)!:null};})():null}))};
+ return {title:m.title,description:m.description,revision:m.revision,composition:m.composition,lighting:m.lighting,appearance:{applied:Boolean(m.surfaces.floorAssetId||m.surfaces.wallAssetId||m.surfaces.backgroundAssetId),floorUrl:m.surfaces.floorAssetId?urls.get(m.surfaces.floorAssetId)!:null,wallUrl:m.surfaces.wallAssetId?urls.get(m.surfaces.wallAssetId)!:null,backgroundUrl:m.surfaces.backgroundAssetId?urls.get(m.surfaces.backgroundAssetId)!:null},objects:m.objects.map(o=>({tint:o.tint??null,id:o.id,label:o.label,modelUrl:urls.get(o.modelAssetId)!,transform:o.transform,product:o.productId?(()=>{const p=m.products.find(p=>p.id===o.productId)!;return {name:p.name,brand:p.brand,description:p.description,price:p.price,currency:p.currency,productUrl:p.productUrl,imageUrl:p.imageAssetId?urls.get(p.imageAssetId)!:null};})():null}))};
 }

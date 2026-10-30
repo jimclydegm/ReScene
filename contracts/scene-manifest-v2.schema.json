@@ -65,7 +65,10 @@
             },
             "layoutSource": {
               "type": "string",
-              "enum": ["sam3d", "manual-stage"]
+              "enum": [
+                "sam3d",
+                "manual-stage"
+              ]
             },
             "floorY": {
               "type": "number",
@@ -322,6 +325,10 @@
         "key": {
           "type": "object",
           "properties": {
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
             "position": {
               "type": "array",
               "prefixItems": [
@@ -360,6 +367,10 @@
         "fill": {
           "type": "object",
           "properties": {
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9a-fA-F]{6}$"
+            },
             "position": {
               "type": "array",
               "prefixItems": [
@@ -470,6 +481,17 @@
             "type": "string",
             "minLength": 1,
             "maxLength": 120
+          },
+          "tint": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^#[0-9a-fA-F]{6}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "modelAssetId": {
             "type": "string",
@@ -684,7 +706,5 @@
     "objects",
     "products"
   ],
-  "additionalProperties": false,
-  "title": "ReScene frozen render snapshot v2",
-  "description": "Explicit render assets, derived photo background, complete subject assemblies and conservative floor placement; original source files and masks stay private."
+  "additionalProperties": false
 }
