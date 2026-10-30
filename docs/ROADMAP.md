@@ -85,4 +85,4 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Bounded actual-mesh/reference-mask placement review, conservative upright candidates, visible quality metrics and residual warnings.
 - [x] Automatic review after reconstruction plus existing-scene review/refine action and reviewed texture baseline.
 - [x] Repair reported bedroom with saved assets and zero inference; lamp shape remains flagged.
-- [ ] Combined verification, CI/release and bounded deployed checks; native browser verification depends on access.
+- [x] PR #17 merged at a4c1cd9; 103 cases and CI/build pass, production READY, saved-data undo and bounded production reference/report/SSR/privacy/release checks pass. Native GPU/browser checks remain unavailable; the CPU preview is not a browser pass.
