@@ -173,4 +173,4 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Horizontal support anchoring and connected vertical risers reduce saved-data corner disagreement to numerical tolerance without relaxing rejection thresholds.
 - [x] Occupied-volume layout correction, grouped support movement, manual save/publication guards and selective retry rejection.
 - [x] Reported background rebuilt using cached analysis/depth and one clean image/review; object shapes were not regenerated. Remaining texture-review notes stay visible.
-- [ ] Final checks, CI and production release. Native browser inspection remains unavailable.
+- [x] PR28 merged at d9ab411; 193 tests/schema/lint/types/build and CI pass. Production READY; background/mesh/review DTO and SSR checks pass, deliberate collision edit rejected, zero runtime errors. Native browser inspection remains unavailable.
