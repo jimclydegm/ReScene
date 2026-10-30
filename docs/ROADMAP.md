@@ -76,4 +76,4 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] General surface/object routing across analysis, review, reconstruction, layout, appearance/background and publication.
 - [x] One opaque textured ground/shadow plane; bounded shadow depth and no generated-mesh self-shadow acne.
 - [x] Repair reported vase/stone scene using saved assets, preserving original meshes; zero inference calls.
-- [ ] Complete combined CI/release and affected visual/API verification.
+- [x] PR #16 merged at d1a5077; 96 cases and CI/build pass, production READY, read-only scene/texture/privacy/release checks pass. Live GPU/desktop/mobile/flicker verification remains pending because browser access reports disabled.
