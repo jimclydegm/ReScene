@@ -181,12 +181,13 @@ export function settleSupportContacts(objects:{id:string;position:[number,number
     if(done.has(id)||visiting.has(id))return;
     visiting.add(id);
     const item=objects.find(o=>o.id===id)!,input=inputs.find(o=>o.id===id)!;
-    if(input.support==="tabletop"){
+    const explicit = objects.find(o=>o.id===input.supportedById&&o.id!==id);
+    if(input.support==="tabletop"||explicit||input.support==="floor") {
       const supports=objects.filter(o=>o.id!==id&&["table","storage","surface"].includes(inputs.find(i=>i.id===o.id)?.category??""));
-      const support=supports.find(o=>o.id===input.supportedById)??supports.filter(o=>Math.abs(o.position[0]-item.position[0])<=o.placement.size[0]/2&&Math.abs(o.position[2]-item.position[2])<=o.placement.size[2]/2).sort((a,b)=>Math.abs(a.position[1]+a.placement.size[1]-item.position[1])-Math.abs(b.position[1]+b.placement.size[1]-item.position[1]))[0];
+      const support=explicit??(input.support==="tabletop"?supports.filter(o=>Math.abs(o.position[0]-item.position[0])<=o.placement.size[0]/2&&Math.abs(o.position[2]-item.position[2])<=o.placement.size[2]/2).sort((a,b)=>Math.abs(a.position[1]+a.placement.size[1]-item.position[1])-Math.abs(b.position[1]+b.placement.size[1]-item.position[1]))[0]:undefined);
       if(support)settle(support.id);
       const peers=objects.filter(o=>inputs.find(i=>i.id===o.id)?.support==="tabletop");
-      const y=support?support.position[1]+support.placement.size[1]:Math.min(...peers.map(o=>o.position[1]));
+      const y=support?support.position[1]+support.placement.size[1]:input.support==="floor"?(composition.floorY??0):Math.min(...peers.map(o=>o.position[1]));
       const delta=y-item.position[1];
       if(Math.abs(delta)<Math.max(2,item.placement.size[1]*4)){
         // Follow the viewing ray so the contact anchor retains its source position.
@@ -194,7 +195,7 @@ export function settleSupportContacts(objects:{id:string;position:[number,number
         if(Number.isFinite(t)&&t>.2&&t<3){item.position[0]=camera[0]+(item.position[0]-camera[0])*t;item.position[2]=camera[2]+(item.position[2]-camera[2])*t;}
         item.position[1]=y;
       }
-      if(!support&&!composition.warnings.includes("A shared tabletop plane is estimated because its support mesh is unavailable."))composition.warnings.push("A shared tabletop plane is estimated because its support mesh is unavailable.");
+      if(!support&&input.support==="tabletop"&&!composition.warnings.includes("A shared tabletop plane is estimated because its support mesh is unavailable."))composition.warnings.push("A shared tabletop plane is estimated because its support mesh is unavailable.");
     }
     visiting.delete(id);done.add(id);
   }

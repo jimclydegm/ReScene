@@ -1,3 +1,4 @@
+import { isBackgroundSurface } from "@/lib/scene/surface-role";
 import "server-only";
 import { createHash, randomUUID } from "node:crypto";
 import sharp from "sharp";
@@ -18,7 +19,7 @@ export async function buildSceneBackground(runId: string) {
   const scene = run.scene, composition = compositionSchema.safeParse(scene.stage);
   if (!["RUNNING", "WAITING"].includes(run.status) || scene.status !== "READY" || scene.archivedAt || run.expiresAt < new Date() || !composition.success || !scene.normalizedAsset || scene.normalizedAssetId !== record(run.input).normalizedAssetId) throw new Error("BACKGROUND_RUN_STALE");
   if (run.kind === "IMAGE_EDIT" && scene.revision !== run.inputRevision) throw new Error("BACKGROUND_REVISION_CHANGED");
-  const objects = await db.sceneObject.findMany({ where: { sceneId: scene.id, status: "READY", modelAssetId: { not: null } }, include: { mask: true } });
+  const objects = (await db.sceneObject.findMany({ where: { sceneId: scene.id, status: "READY", modelAssetId: { not: null } }, include: { mask: true } })).filter(o=>!isBackgroundSurface(o,{width:scene.normalizedAsset!.width!,height:scene.normalizedAsset!.height!}));
   if (!objects.length || objects.some(o => !o.mask || o.mask.sceneId !== scene.id || o.mask.kind !== "MASK" || o.mask.status !== "READY")) throw new Error("BACKGROUND_MASKS_REQUIRED");
   const photo = await readLimited(scene.normalizedAsset.storageKey, 4 * 1024 * 1024);
   const raw = await sharp(photo).removeAlpha().toColourspace("srgb").raw().toBuffer({ resolveWithObject: true });

@@ -1,3 +1,4 @@
+import { isBackgroundSurface } from "@/lib/scene/surface-role";
 import "server-only";
 import { randomUUID, createHash } from "node:crypto";
 import { getDb } from "@/lib/db";
@@ -51,7 +52,8 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
     if (input.kind === "IMAGE_EDIT" && !compositionSchema.safeParse(scene.stage).success) throw new AppError(422,"LAYOUT_REQUIRED","Match the photo layout before restoring the background.");
     let selectedIds=input.objectIds ?? [],rootIds=selectedIds;
     if (input.kind === "RECONSTRUCT") {
-      const available=await tx.sceneObject.findMany({where:{sceneId,mask:{status:"READY",sceneId,kind:"MASK"},modelAssetId:null}});
+      const frame=await tx.asset.findUniqueOrThrow({where:{id:scene.normalizedAssetId}});
+      const available=(await tx.sceneObject.findMany({where:{sceneId,mask:{status:"READY",sceneId,kind:"MASK"},modelAssetId:null}})).filter(o=>!isBackgroundSurface(o,{width:frame.width!,height:frame.height!}));
       if(!selectedIds.length)selectedIds=available.map(o=>o.id);
       const all=await tx.sceneObject.findMany({where:{sceneId}});
       selectedIds=[...new Set(selectedIds.flatMap(id=>{const o=all.find(o=>o.id===id);const parent=record(o?.provenance).parentObjectId;return typeof parent === "string" ? [parent,id]:[id];}))];
@@ -131,7 +133,7 @@ export async function analyzeRun(runId: string) {
     for (const [index, object] of candidates.entries()) await tx.sceneObject.create({ data: { id:candidateIds.get(object.candidateId), sceneId: run.sceneId, originRunId: runId, sourceOrdinal: index,
       label: object.label, category: object.category, segmentationConcept: object.segmentationConcept, imageBounds: object.bbox, sortOrder: index,
       positionX: ((object.bbox.xMin + object.bbox.xMax) / 2 / image.width! - 0.5) * 5,
-      provenance: { model: result.model, promptVersion: result.promptVersion, support: object.support, parentObjectId:object.parentCandidateId ? candidateIds.get(object.parentCandidateId) : null, supportedByObjectId:object.supportedByCandidateId ? candidateIds.get(object.supportedByCandidateId) : null, placement: "approximate-stage" } } });
+      provenance: { model: result.model, promptVersion: result.promptVersion, support: object.support, surfaceRole:object.surfaceRole??"object", parentObjectId:object.parentCandidateId ? candidateIds.get(object.parentCandidateId) : null, supportedByObjectId:object.supportedByCandidateId ? candidateIds.get(object.supportedByCandidateId) : null, placement: "approximate-stage" } } });
     await tx.scene.update({ where: { id: run.sceneId }, data: { settings: asJson({ ...record(run.scene.settings), environment: result.analysis.environment, analysisOptions:options, sceneType:result.analysis.sceneType, analysisSummary:result.analysis.summary,
       backgroundPlan:result.analysis.background, preferredBackdrop:"room" }) } });
     await tx.generationRun.update({ where: { id: runId }, data: { currentStage: "Finding object outlines", progress: 25 } });
@@ -337,6 +339,7 @@ export async function workspace(sceneId: string, ownerId: string) {
     await failRun(run.id);
     return workspace(sceneId, ownerId);
   }
+  const visibleObjects=objects.filter(o=>!isBackgroundSurface(o,{width:scene.normalizedAsset?.width??0,height:scene.normalizedAsset?.height??0}));
   const applied = record(record(scene.settings).appearance);
   async function textureUrl(id: unknown) {
     if (typeof id !== "string") return null;
@@ -352,7 +355,7 @@ export async function workspace(sceneId: string, ownerId: string) {
     appearance: { applied: applied.version === "photo-bake-v1", floorUrl: await textureUrl(applied.floorId), wallUrl: await textureUrl(applied.wallId), backgroundUrl: await textureUrl(record(record(scene.settings).background).assetId) },
     composition: compositionSchema.safeParse(scene.stage).data ?? null, canRestoreLayout: Boolean(record(scene.settings).layoutBackup),
     image: scene.normalizedAsset ? { url: await signRead(scene.normalizedAsset), width: scene.normalizedAsset.width!, height: scene.normalizedAsset.height! } : null,
-    generationEnabled: process.env.GENERATION_ENABLED === "true", objects: await Promise.all(objects.map(async o => ({
+    generationEnabled: process.env.GENERATION_ENABLED === "true", objects: await Promise.all(visibleObjects.map(async o => ({
       id: o.id, label: o.label, status: o.status, errorCode: o.lastErrorCode, canRestoreOriginal: Boolean(record(o.provenance).replacementBackup),
       parentObjectId:typeof record(o.provenance).parentObjectId === "string" ? String(record(o.provenance).parentObjectId) : null, assemblyRootId:typeof record(o.provenance).assemblyRootId === "string" ? String(record(o.provenance).assemblyRootId) : null,
       concept:o.segmentationConcept ?? o.label, confidence:o.confidence, bounds:pixelBoxSchema.safeParse(o.imageBounds).data ?? null,

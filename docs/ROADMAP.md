@@ -69,3 +69,11 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Research hosted parameters; bounded one-job mask experiment, immutable reviewed masks and recorded derived-mask provenance.
 - [x] Keep opening refinement experimental/off by default after the comparison failed to show clear overall geometry improvement; preserve the saved mesh.
 - [x] PR #15 merged at 9e30944; 90 cases and CI pass, production READY and bounded read-only release/controls/shoe checks pass. Live desktop/mobile Zoom lock interaction remains unverified because browser access was disabled at verification time.
+
+## Simple textured surfaces and shadow stability — October 30
+
+- [x] Diagnose broad floor incorrectly reconstructed as thick object geometry plus duplicated shadow layers.
+- [x] General surface/object routing across analysis, review, reconstruction, layout, appearance/background and publication.
+- [x] One opaque textured ground/shadow plane; bounded shadow depth and no generated-mesh self-shadow acne.
+- [x] Repair reported vase/stone scene using saved assets, preserving original meshes; zero inference calls.
+- [ ] Complete combined CI/release and affected visual/API verification.

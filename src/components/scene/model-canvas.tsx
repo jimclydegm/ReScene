@@ -1,7 +1,7 @@
 "use client";
 import { Canvas, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, useGLTF, Grid } from "@react-three/drei";
-import { Box3, Mesh, MeshStandardMaterial, Vector3 } from "three";
+import { Box3, Mesh, MeshStandardMaterial, PCFShadowMap, Vector3 } from "three";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type { OrbitControls as OrbitControlsType } from "three-stdlib";
 import type { SceneComposition } from "@/lib/scene/composition";
@@ -15,7 +15,7 @@ function Model({ object, selected, select }: { object: RenderObject; selected: b
     const cloned = gltf.scene.clone(true);
     const ownedMaterials: MeshStandardMaterial[] = [];
     cloned.traverse(node => { if (node instanceof Mesh) {
-      node.castShadow = true; node.receiveShadow = true;
+      node.castShadow = true; node.receiveShadow = false;
       const materials = Array.isArray(node.material) ? node.material : [node.material];
       const copies = materials.map(material => {
         const index = gltf.parser.associations.get(material)?.materials;
@@ -64,14 +64,14 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
   const lightingColor = composition?.environment.lightWarmth === "warm" ? "#fff0d8" : composition?.environment.lightWarmth === "cool" ? "#e1edff" : "#ffffff";
   const target = c?.target ?? [0, 0.5, 0] as [number, number, number];
   return <div className="model-viewport" style={{ "--scene-aspect": c?.aspect ?? 1.5 } as CSSProperties}>
-    <Canvas shadows camera={{ position: c?.position ?? [5, 4, 7], fov: c?.fov ?? 42, near: 0.01, far: Math.max(500,c?new Vector3(...c.position).distanceTo(new Vector3(...c.target))*16:500) }} dpr={[1, 1.5]}
+    <Canvas shadows={{type:PCFShadowMap}} camera={{ position: c?.position ?? [5, 4, 7], fov: c?.fov ?? 42, near: 0.01, far: Math.max(500,c?new Vector3(...c.position).distanceTo(new Vector3(...c.target))*16:500) }} dpr={[1, 1.5]}
       fallback={<p className="canvas-loading">WebGL is unavailable in this browser. You can still browse the scene details.</p>}>
       <color attach="background" args={[composition?.background?.plainColor ?? composition?.environment.wallColor ?? "#edece5"]}/>
       <hemisphereLight args={["#fffaf0", composition?.environment.floorColor ?? "#b1a38d", lighting.ambient]}/>
       <directionalLight position={lighting.key.position} intensity={lighting.key.intensity} color={lightingColor} castShadow
-        shadow-mapSize={[2048, 2048]} shadow-camera-left={-12} shadow-camera-right={12} shadow-camera-top={12} shadow-camera-bottom={-12} shadow-normalBias={0.03}/>
+        shadow-mapSize={[2048, 2048]} shadow-camera-left={-12} shadow-camera-right={12} shadow-camera-top={12} shadow-camera-bottom={-12} shadow-camera-near={0.1} shadow-camera-far={100} shadow-bias={-0.0003} shadow-normalBias={0.02}/>
       <directionalLight position={lighting.fill.position} intensity={lighting.fill.intensity}/>
-      <Suspense fallback={null}>{composition && <PhotoBackground composition={composition} url={appearance.backgroundUrl ?? null} legacyFloor={appearance.floorUrl} floorY={floorY}/>}</Suspense>
+      <Suspense fallback={null}>{composition && <PhotoBackground composition={composition} url={appearance.backgroundUrl ?? null} legacyFloor={appearance.floorUrl} floorY={floorY} shadows={lighting.key.intensity>0}/>}</Suspense>
       <Suspense fallback={null}>{objects.filter(o => o.modelUrl).map(o => <Model key={o.id} object={o} selected={selected === o.id} select={() => onSelect(o.id)}/>)}</Suspense>
       {(!composition || grid) && <Grid position={[0, floorY + 0.005, 0]} args={[30, 30]} cellSize={0.5} sectionSize={2} fadeDistance={20} cellColor="#c5c6ba" sectionColor="#a8b1a1"/>}
       <OrbitControls ref={bindControls} makeDefault target={target} minDistance={0.3} enableZoom={!zoomLocked}
