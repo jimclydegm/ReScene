@@ -1,3 +1,4 @@
+import {record} from "@/lib/services/composition";
 import {createSceneImage} from "@/workflows/creative";
 import { start } from "workflow/api";
 import { api, AppError, checkOrigin } from "@/lib/http";
@@ -26,15 +27,16 @@ export const POST = (request: Request, context: { params: Promise<{ sceneId: str
       await tx.$executeRaw`SELECT pg_advisory_xact_lock(839172640)`;
       const current = await tx.scene.findFirst({ where: { id: sceneId, ownerId: user.id, revision: run.inputRevision, archivedAt: null } });
       if (!current) throw new AppError(409, "REVISION_CONFLICT", "This scene has changed.");
+      if(await tx.generationRun.count({where:{scene:{ownerId:user.id},status:{in:["QUEUED","RUNNING","WAITING","CANCEL_REQUESTED"]}}}))throw new AppError(409,"RUN_ACTIVE","Wait for the active generation to finish before resuming.");
       const claimed = await tx.generationRun.updateMany({ where: { id: runId, status: "FAILED", errorCode: "KNOWN_JOB_INTERRUPTED" }, data: {
         status: "WAITING", expiresAt: new Date(Date.now() + 15 * 60_000), errorCode: null, errorMessage: null, currentStage: "Retrieving existing 3D job" } });
       if (!claimed.count) throw new AppError(409, "RUN_ACTIVE", "Generation already resumed or was restarted.");
-      await tx.scene.update({ where: { id: sceneId }, data: { status: "RECONSTRUCTING" } });
+      await tx.scene.update({ where: { id: sceneId }, data: { status: record(run.input).repair?"READY":"RECONSTRUCTING" } });
     });
     try { await start(resumeReconstruction, [runId, step.providerRequestId!]); }
     catch {
       await getDb().generationRun.update({ where: { id: runId }, data: { status: "FAILED", errorCode: "KNOWN_JOB_INTERRUPTED", errorMessage: "Resume could not be dispatched. Try Resume again." } });
-      await getDb().scene.updateMany({ where: { id: sceneId, revision: run.inputRevision, status: "RECONSTRUCTING" }, data: { status: "FAILED" } });
+      await getDb().scene.updateMany({ where: { id: sceneId, revision: run.inputRevision, status: "RECONSTRUCTING" }, data: { status: record(run.input).repair?"READY":"FAILED" } });
       throw new AppError(503, "DISPATCH_FAILED", "Resume could not start. Try again.");
     }
   } else throw new AppError(409, "CANNOT_RESUME", "This run cannot be resumed automatically.");

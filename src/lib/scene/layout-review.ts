@@ -1,3 +1,4 @@
+import {supportSampler} from "@/lib/appearance/contact";
 import { Matrix4, Quaternion, Vector3 } from "three";
 import { z } from "zod";
 import { geometry, photoCamera, visibility } from "@/lib/appearance/bake";
@@ -6,7 +7,7 @@ import type { ModelPlacement, SceneComposition } from "./composition";
 export const layoutReviewSchema=z.object({version:z.literal("mask-layout-v1"),objects:z.array(z.object({id:z.string(),label:z.string(),before:z.number(),after:z.number(),adjusted:z.boolean(),orientationAdjusted:z.boolean().default(false),needsReview:z.boolean()})),needsReview:z.boolean()});
 export type LayoutReview=z.infer<typeof layoutReviewSchema>;
 type Placement={id:string;position:[number,number,number];placement:ModelPlacement};
-type Input={id:string;label:string;bytes:Buffer;mask:Uint8Array;support:string;parentId?:string|null};
+type Input={id:string;label:string;bytes:Buffer;mask:Uint8Array;support:string;supportedById?:string|null;parentId?:string|null};
 
 function maskBounds(mask:Uint8Array,width:number,height:number){
  let x0=width,y0=height,x1=0,y1=0,area=0;
@@ -31,13 +32,22 @@ function principal(points:Vector3[]){
 
 // Compare actual projected geometry with reviewed source pixels. Bounded search
 // adjusts layout only; no regeneration, image restyling or guessed product identity.
-export function reviewLayout(objects:Placement[],inputs:Input[],composition:SceneComposition,size:{width:number;height:number}):LayoutReview{
+export function reviewLayout(objects:Placement[],inputs:Input[],composition:SceneComposition,size:{width:number;height:number},options?:{onlyIds?:Set<string>;evaluateOnly?:boolean}):LayoutReview{
  const {width,height}=size;if(width*height>2_560_000||inputs.length>10||inputs.some(o=>o.mask.length!==width*height))throw new Error("REVIEW_FRAME");
  const camera=photoCamera(composition.camera),view=camera.matrixWorldInverse;
  const report:LayoutReview={version:"mask-layout-v1",objects:[],needsReview:false};
- for(const object of objects){
-  const input=inputs.find(i=>i.id===object.id);if(!input||input.parentId)continue;
-  const base=structuredClone(object),target=maskBounds(input.mask,width,height);
+ const ordered:Placement[]=[],visited=new Set<string>();
+ function visit(object:Placement){if(visited.has(object.id))return;visited.add(object.id);const support=objects.find(o=>o.id===inputs.find(i=>i.id===object.id)?.supportedById);if(support)visit(support);ordered.push(object);}
+ objects.forEach(visit);
+ for(const object of ordered){
+  const input=inputs.find(i=>i.id===object.id);if(!input||input.parentId||options?.onlyIds&&!options.onlyIds.has(object.id))continue;
+  const original=structuredClone(object),base=structuredClone(object),target=maskBounds(input.mask,width,height);
+  const support=objects.find(o=>o.id===input.supportedById),supportInput=inputs.find(i=>i.id===support?.id);
+  const surface=support&&supportInput?supportSampler(supportInput.bytes,support):null;
+  const contact=(o:Placement)=>{
+   if(input.support==="floor"||input.support==="tabletop"&&!support)o.position[1]=composition.floorY??0;
+   else if(input.support==="tabletop"&&support&&supportInput){for(const axis of [0,2] as const){const half=Math.max(0,(support.placement.size[axis]-o.placement.size[axis])/2);o.position[axis]=Math.max(support.position[axis]-half,Math.min(support.position[axis]+half,o.position[axis]));}const y=surface!(o.position[0],o.position[2]);o.position[1]=y??support.position[1]+support.placement.size[1];}
+  };
   const matrix=(o:Placement)=>new Matrix4().makeTranslation(...o.position).multiply(new Matrix4().makeTranslation(...o.placement.offset)).multiply(new Matrix4().compose(new Vector3(),new Quaternion(...o.placement.rotation),new Vector3(...o.placement.scale)));
   const triangles=geometry(input.bytes,new Matrix4(),0),all=triangles.flatMap(t=>t.points),step=Math.max(1,Math.ceil(all.length/1600)),sample=all.filter((_,i)=>i%step===0);
   const edges=(o:Placement)=>{
@@ -45,14 +55,14 @@ export function reviewLayout(objects:Placement[],inputs:Input[],composition:Scen
    for(const point of sample){const p=point.clone().applyMatrix4(m);if(p.clone().applyMatrix4(view).z>=-.02)return null;const q=p.project(camera),x=(q.x+1)/2,y=(1-q.y)/2;box[0]=Math.min(box[0],x);box[1]=Math.min(box[1],y);box[2]=Math.max(box[2],x);box[3]=Math.max(box[3],y);}
    return box;
   };
-  const loss=(o:Placement)=>{const b=edges(o);return !b?Infinity:b.reduce((s,v,i)=>s+(v-target[i])**2,0);};
+  const loss=(o:Placement)=>{contact(o);const b=edges(o);return !b?Infinity:b.reduce((s,v,i)=>s+(v-target[i])**2,0);};
   const iou=(o:Placement)=>{
    const w=192,h=Math.max(32,Math.round(w*height/width)),m=matrix(o),projected=triangles.map(t=>({...t,points:t.points.map(p=>p.clone().applyMatrix4(m)) as typeof t.points}));
    const raster=visibility(projected,camera,w,h).owners;let intersection=0,union=0;
    for(let y=0;y<h;y++)for(let x=0;x<w;x++){const a=raster[y*w+x]>=0,b=input.mask[Math.min(height-1,Math.floor((y+.5)*height/h))*width+Math.min(width-1,Math.floor((x+.5)*width/w))]>127;intersection+=Number(a&&b);union+=Number(a||b);}
    return intersection/Math.max(1,union);
   };
-  const before=iou(base);let best=structuredClone(base),bestIoU=before;
+  const before=iou(original);if(options?.evaluateOnly){report.objects.push({id:object.id,label:input.label,before,after:before,adjusted:false,orientationAdjusted:false,needsReview:before<.65});report.needsReview ||= before<.65;continue;}contact(base);let best=structuredClone(base),bestIoU=iou(base);
   const candidates=[structuredClone(base)];
   // A slender, near-vertical reference may justify a gravity-aligned candidate.
   // It is accepted only by mask overlap, never by a lamp/person category rule.
@@ -64,7 +74,7 @@ export function reviewLayout(objects:Placement[],inputs:Input[],composition:Scen
   }
   for(const candidate of candidates){
    let current=structuredClone(candidate),score=loss(current);const distance=Math.max(1,new Vector3(...current.position).distanceTo(camera.position));
-   const grounded=input.support==="floor";if(grounded)current.position[1]=composition.floorY??0;score=loss(current);
+   const grounded=input.support==="floor"||input.support==="tabletop";score=loss(current);
    for(const fraction of [.15,.07,.025,.009])for(let pass=0;pass<3;pass++)for(const axis of grounded?[0,2,3]:[0,1,3])for(const sign of [-1,1]){
     const next=structuredClone(current),delta=distance*fraction*sign;
     if(axis===3){const factor=1+fraction*sign;next.placement.scale=next.placement.scale.map(v=>v*factor) as [number,number,number];next.placement.offset=next.placement.offset.map(v=>v*factor) as [number,number,number];next.placement.size=next.placement.size.map(v=>v*factor) as [number,number,number];}
@@ -75,9 +85,10 @@ export function reviewLayout(objects:Placement[],inputs:Input[],composition:Scen
    const overlap=iou(current),uprightPreferred=candidate!==candidates[0]&&overlap>before+.025&&overlap>=bestIoU-.05;if(overlap>bestIoU||uprightPreferred){best=current;bestIoU=overlap;}
   }
   const candidateIoU=bestIoU,improved=candidateIoU>before+.025;
-  if(improved){object.position=best.position;object.placement=best.placement;}
-  const after=improved?candidateIoU:before,needsReview=after<.65;
-  report.objects.push({id:object.id,label:input.label,before,after,adjusted:improved,orientationAdjusted:improved&&best.placement.rotation.some((v,i)=>Math.abs(v-base.placement.rotation[i])>.001),needsReview});report.needsReview ||= needsReview;
+  const contactAdjusted=best.position.some((v,i)=>Math.abs(v-original.position[i])>1e-6);
+  if(improved||contactAdjusted){object.position=best.position;object.placement=best.placement;}
+  const after=improved||contactAdjusted?candidateIoU:before,needsReview=after<.65;
+  report.objects.push({id:object.id,label:input.label,before,after,adjusted:improved||contactAdjusted,orientationAdjusted:improved&&best.placement.rotation.some((v,i)=>Math.abs(v-base.placement.rotation[i])>.001),needsReview});report.needsReview ||= needsReview;
  }
  return report;
 }

@@ -125,6 +125,11 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     } catch (e) { await reload().catch(()=>{}); setError(e instanceof Error ? e.message : "Generation could not start."); }
     finally { setBusy(false); }
   }
+  async function retryObjects(ids:string[],seed:number){
+    setBusy(true);setError("");setMessage("");
+    try{await apiJson(`${base}/runs`,{method:"POST",body:JSON.stringify({kind:"RECONSTRUCT",repair:true,confirmed:true,objectIds:ids,reconstruction:{...reconstructionOptions,seed,refineOpenings:false},expectedRevision:data.revision,idempotencyKey:crypto.randomUUID()})});await reload();setMessage("Selective paid retry started. Your current scene stays available.");}
+    finally{setBusy(false);}
+  }
   async function chooseMask(objectId:string,mask:string|string[]){
     setBusy(true);setError("");setMessage("");
     try{await apiJson(`${base}/masks`,{method:"PATCH",body:JSON.stringify({expectedRevision:data.revision,objectId,...(Array.isArray(mask)?{maskAssetIds:mask}:{maskAssetId:mask})})});await reload();setChosen(prev=>[...new Set([...prev,objectId])]);setMessage("Outline selected and saved. No inference used.");}
@@ -308,7 +313,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
               <div className="panel-block"><label className="field-label">Object color<input aria-label="Object color" type="color" value={current.tint??"#ffffff"} onChange={e=>edit(current.id,{tint:e.target.value})}/></label><button className="text-link" onClick={()=>edit(current.id,{tint:null})}>Restore original color</button><p className="panel-note">Color tints the existing texture and preserves surface detail. Dark textures may limit bright colors.</p></div><label className="visibility-toggle"><span><Eye size={14}/>Visible</span><input className="switch-input" role="switch" type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/></label>
             </fieldset>}
           </div>
-          : value === "scene" ? <SceneLayoutControls data={data} locked={locked} unsaved={unsaved} blocked={hasReplacements} onMatch={() => matchLayout("MATCH_PHOTO")} onReview={() => matchLayout("REVIEW_PHOTO")} onRestore={() => matchLayout("RESTORE")} onBackdrop={changeBackdrop} onBackground={() => action("IMAGE_EDIT")}/>
+          : value === "scene" ? <SceneLayoutControls onRetry={retryObjects} onMask={chooseMask} data={data} locked={locked} unsaved={unsaved} blocked={hasReplacements} onMatch={() => matchLayout("MATCH_PHOTO")} onReview={() => matchLayout("REVIEW_PHOTO")} onRestore={() => matchLayout("RESTORE")} onBackdrop={changeBackdrop} onBackground={() => action("IMAGE_EDIT")}/>
           : value === "products" ? current?.modelUrl ? <div className="panel-stack">{current.assemblyRootId ? <p className="panel-note">This region shares geometry with its complete subject. Move the subject to keep them together; catalog replacement applies to standalone objects.</p> : <CatalogControls items={catalogItems} busy={locked} dirty={unsaved} canRestore={current.canRestoreOriginal} onSeed={() => catalogAction("SEED")} onReplace={id => catalogAction("REPLACE", id)} onRestore={() => catalogAction("RESTORE")}/>}<ProductControls object={current} busy={locked} onChange={product => edit(current.id, { product })}/></div> : <p className="panel-empty">Select an object to add its product card.</p>
           : <AppearanceControls panel={value} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={locked} texturesBlocked={hasReplacements} applied={data.appearance.applied} onRefresh={()=>appearance("APPLY")} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
         </div>)}

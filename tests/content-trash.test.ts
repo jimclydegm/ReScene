@@ -1,5 +1,5 @@
 import {beforeEach,describe,it,expect,vi} from "vitest";
-const m=vi.hoisted(()=>({db:{$transaction:vi.fn(),$executeRaw:vi.fn(),contentItem:{findFirst:vi.fn(),updateMany:vi.fn()},generationReference:{count:vi.fn()},compositionDraft:{updateMany:vi.fn()}}}));
+const m=vi.hoisted(()=>({db:{$transaction:vi.fn(),$executeRaw:vi.fn(),contentItem:{findFirst:vi.fn(),updateMany:vi.fn()},contentGeneration:{count:vi.fn()},generationReference:{count:vi.fn()},compositionDraft:{updateMany:vi.fn()}}}));
 vi.mock("server-only",()=>({}));vi.mock("@/lib/db",()=>({getDb:()=>m.db}));
 import {manageContent,contentTrashInput} from "../src/lib/services/content-trash";
 import {projectActionSchema} from "../src/lib/services/project-management";
@@ -7,10 +7,11 @@ import {creativeInput,sceneTemplates,creativePrompt} from "../src/lib/ai/creativ
 import {simpleProducts,sampleImagePath} from "../src/lib/ai/sample-products";
 import {randomUUID} from "node:crypto";
 describe("Reversible image deletion",()=>{
- beforeEach(()=>{vi.resetAllMocks();m.db.$transaction.mockImplementation(async f=>f(m.db));m.db.contentItem.findFirst.mockResolvedValue({id:"item",archivedAt:null});m.db.generationReference.count.mockResolvedValue(0);m.db.contentItem.updateMany.mockResolvedValue({count:1});});
+ beforeEach(()=>{vi.resetAllMocks();m.db.$transaction.mockImplementation(async f=>f(m.db));m.db.contentItem.findFirst.mockResolvedValue({id:"item",archivedAt:null});m.db.generationReference.count.mockResolvedValue(0);m.db.contentGeneration.count.mockResolvedValue(0);m.db.contentItem.updateMany.mockResolvedValue({count:1});});
  it("hides an owned image without deleting assets or history and invalidates affected drafts",async()=>{await manageContent("owner",{action:"DELETE_IMAGE",itemId:randomUUID(),confirmed:true});expect(m.db.contentItem.findFirst.mock.calls[0][0].where.ownerId).toBe("owner");expect(m.db.contentItem.findFirst.mock.calls[0][0].where.kind.in).not.toContain("SAMPLE");expect(m.db.contentItem.updateMany.mock.calls[0][0].data.archivedAt).toBeInstanceOf(Date);expect(m.db.compositionDraft.updateMany).toHaveBeenCalled();});
  it("restores a deleted image",async()=>{m.db.contentItem.findFirst.mockResolvedValue({id:"item",archivedAt:new Date()});await manageContent("owner",{action:"RESTORE_IMAGE",itemId:randomUUID(),confirmed:true});expect(m.db.contentItem.updateMany.mock.calls[0][0].data.archivedAt).toBeNull();});
  it("denies unavailable/sample/cross-owner images and protects running generation references",async()=>{m.db.contentItem.findFirst.mockResolvedValue(null);await expect(manageContent("owner",{action:"DELETE_IMAGE",itemId:randomUUID(),confirmed:true})).rejects.toMatchObject({code:"NOT_FOUND"});m.db.contentItem.findFirst.mockResolvedValue({id:"item",archivedAt:null});m.db.generationReference.count.mockResolvedValue(1);await expect(manageContent("owner",{action:"DELETE_IMAGE",itemId:randomUUID(),confirmed:true})).rejects.toMatchObject({code:"IMAGE_BUSY"});expect(m.db.contentItem.updateMany).not.toHaveBeenCalled();});
+ it("protects the saved image being used by an active refinement",async()=>{m.db.contentGeneration.count.mockResolvedValue(1);await expect(manageContent("owner",{action:"DELETE_IMAGE",itemId:randomUUID(),confirmed:true})).rejects.toMatchObject({code:"IMAGE_BUSY"});expect(m.db.contentItem.updateMany).not.toHaveBeenCalled();});
  it("requires confirmation and accepts the reversible project delete action",()=>{expect(contentTrashInput.safeParse({action:"DELETE_IMAGE",itemId:randomUUID(),confirmed:false}).success).toBe(false);expect(projectActionSchema.safeParse({action:"DELETE",expectedRevision:2,confirmed:true}).success).toBe(true);});
 });
 describe("Minimal samples and empty settings",()=>{
