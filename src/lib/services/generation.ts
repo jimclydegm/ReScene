@@ -216,7 +216,7 @@ export async function finishAnalysis(runId: string) {
 
 export async function submitReconstruction(runId: string) {
   const pending=await loadRun(runId);
-  if(!record(pending.input).repair){const {understandSceneBackground}=await import("./background-understanding");await understandSceneBackground(runId);}
+  if(!record(pending.input).repair){const {planSceneEnvironment}=await import("./background-environment");await planSceneEnvironment(runId);}
   const run = await loadRun(runId);
   const ids = (record(run.input).reconstructionObjectIds ?? record(run.input).objectIds) as string[];
   const found = await getDb().sceneObject.findMany({ where: { sceneId: run.sceneId, id: { in: ids } }, include: { mask: true } });
@@ -337,11 +337,12 @@ export async function failRun(runId: string) {
   if (!run || run.status === "SUCCEEDED" || run.status === "CANCELED") return;
   const steps = await db.generationStep.findMany({ where: { runId } });
   const uncertain = steps.some(s => s.status === "RUNNING" && !s.providerRequestId);
+  const knownBackground=steps.some(s=>s.key==="environment-depth"&&s.providerRequestId&&s.status!=="SUCCEEDED");
   const knownJob = steps.some(s => s.key === "sam3d-submit" && s.providerRequestId && s.status !== "SUCCEEDED");
   await db.$transaction([
     db.generationStep.updateMany({ where: { runId, status: "RUNNING" }, data: { status: uncertain ? "SUBMISSION_UNCERTAIN" : "FAILED" } }),
-    db.generationRun.update({ where: { id: runId }, data: { status: "FAILED", errorCode: uncertain ? "SUBMISSION_UNCERTAIN" : knownJob ? "KNOWN_JOB_INTERRUPTED" : "GENERATION_FAILED",
-      errorMessage: uncertain ? "The provider response was interrupted. This attempt may have been charged; it will not be submitted again automatically." : knownJob ? "Generation paused. Resume will retrieve the existing job without another submission." : "Generation could not finish. Your photo and completed objects are saved.", completedAt: new Date() } }),
+    db.generationRun.update({ where: { id: runId }, data: { status: "FAILED", errorCode: uncertain ? "SUBMISSION_UNCERTAIN" : knownBackground?"KNOWN_BACKGROUND_JOB_INTERRUPTED":knownJob ? "KNOWN_JOB_INTERRUPTED" : "GENERATION_FAILED",
+      errorMessage: uncertain ? "The provider response was interrupted. This attempt may have been charged; it will not be submitted again automatically." : knownBackground?"Background depth paused. Resume retrieves the saved job without another paid submission.":knownJob ? "Generation paused. Resume will retrieve the existing job without another submission." : "Generation could not finish. Your photo and completed objects are saved.", completedAt: new Date() } }),
     db.scene.updateMany({ where: { id: run.sceneId, revision: run.inputRevision, ...(run.kind==="IMAGE_EDIT"||record(run.input).repair?{status:{not:"READY" as const}}:{}) }, data: { status: "FAILED", lastErrorCode: "GENERATION_FAILED" } })
   ]);
 }
@@ -368,7 +369,7 @@ export async function workspace(sceneId: string, ownerId: string) {
     analysisOptions:analysisOptionsSchema.safeParse(record(scene.settings).analysisOptions).data ?? analysisOptionsSchema.parse({}),
     reconstructionOptions:reconstructionOptionsSchema.safeParse(record(scene.settings).reconstructionOptions).data ?? reconstructionOptionsSchema.parse({}),
     canRestoreBackground:Boolean(record(scene.settings).backgroundBackup),
-    backgroundInfo: {method:materialBackground?"materials":"photo",explanation: typeof record(record(record(scene.settings).backgroundUnderstanding).analysis).explanation==="string"?String(record(record(record(scene.settings).backgroundUnderstanding).analysis).explanation):null,lightingEffects:Array.isArray(record(record(record(scene.settings).backgroundUnderstanding).analysis).lightingEffects)?record(record(record(scene.settings).backgroundUnderstanding).analysis).lightingEffects as string[]:[],warnings:Array.isArray(background.warnings)?background.warnings as string[]:[]},
+    backgroundInfo: {method:background.version==="reference-environment-v1"?"reference":materialBackground?"materials":"photo",report:background.version==="reference-environment-v1"?{coverage:Number(record(background.report).coverage??0),walls:Number(record(background.report).walls??0),expectedWalls:Number(record(background.report).expectedWalls??0),openings:Number(record(background.report).openings??0)}:null,explanation: typeof record(record(record(scene.settings).environmentObservation).analysis).explanation==="string"?String(record(record(record(scene.settings).environmentObservation).analysis).explanation):typeof record(record(record(scene.settings).backgroundUnderstanding).analysis).explanation==="string"?String(record(record(record(scene.settings).backgroundUnderstanding).analysis).explanation):null,lightingEffects:(Array.isArray(record(record(record(scene.settings).environmentObservation).analysis).lightingEffects)?record(record(record(scene.settings).environmentObservation).analysis).lightingEffects:Array.isArray(record(record(record(scene.settings).backgroundUnderstanding).analysis).lightingEffects)?record(record(record(scene.settings).backgroundUnderstanding).analysis).lightingEffects:[]) as string[],warnings:Array.isArray(background.warnings)?background.warnings as string[]:[]},
     layoutReview:(await import("@/lib/scene/layout-review")).layoutReviewSchema.safeParse(record(scene.settings).layoutReview).data??null,
     analysisSummary:typeof record(scene.settings).analysisSummary === "string" ? String(record(scene.settings).analysisSummary) : null,
     lighting: lightingSchema.safeParse(record(scene.settings).lighting).data ?? defaultLighting(stage),
@@ -389,7 +390,7 @@ export async function workspace(sceneId: string, ownerId: string) {
       placement: modelPlacementSchema.safeParse(o.initialTransform).data ?? null,
       positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, ...rotationControls(o), scale: o.scaleX, visible: o.visible
     }))), run: run ? { id: run.id, kind: run.kind, status: run.status, stage: run.currentStage, progress: run.progress,
-      errorCode: run.errorCode, errorMessage: run.errorMessage, canResume: run.status === "QUEUED" || (run.status === "FAILED" && run.errorCode === "KNOWN_JOB_INTERRUPTED") } : null };
+      errorCode: run.errorCode, errorMessage: run.errorMessage, canResume: run.status === "QUEUED" || (run.status === "FAILED" && ["KNOWN_JOB_INTERRUPTED","KNOWN_BACKGROUND_JOB_INTERRUPTED"].includes(run.errorCode??"")) } : null };
 }
 export async function selectMask(sceneId:string,ownerId:string,input:z.infer<typeof maskSelectionSchema>) {
   const scene=await ownedScene(sceneId,ownerId);

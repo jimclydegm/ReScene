@@ -11,7 +11,7 @@ export type RestartTarget = z.infer<typeof restartInputSchema>["target"];
 export const runInputSchema = z.object({
   kind: z.enum(["ANALYZE", "SEGMENT_OBJECT", "RECONSTRUCT", "IMAGE_EDIT"]), expectedRevision: z.number().int().nonnegative(),
   idempotencyKey: z.uuid(), objectIds: z.array(z.uuid()).min(1).max(10).optional(),
-  background:z.object({mode:z.enum(["materials","photo"])}).strict().optional(),repair:z.boolean().optional(),confirmed:z.literal(true).optional(),
+  background:z.object({mode:z.enum(["reference","materials","photo"])}).strict().optional(),repair:z.boolean().optional(),confirmed:z.literal(true).optional(),
   analysis: analysisOptionsSchema.optional(), segmentation: segmentationOptionsSchema.optional(), reconstruction: reconstructionOptionsSchema.optional()
 }).strict().superRefine((input, ctx) => {
   if (input.kind === "RECONSTRUCT" && (input.objectIds && new Set(input.objectIds).size !== input.objectIds.length)) {

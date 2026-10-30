@@ -67,7 +67,7 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
     }
     await getDb().$transaction(async tx => {
       const result = await tx.scene.updateMany({ where: { id: sceneId, ownerId, revision: input.expectedRevision, status: "READY", archivedAt: null }, data: {
-        camera: asJson(backup.data.camera), stage: asJson(backup.data.stage), settings: asJson({ ...record(scene.settings), layoutBackup: null, ...(backup.data.appearance!==undefined?{appearance:backup.data.appearance}:{}), ...(backup.data.layoutReview!==undefined?{layoutReview:backup.data.layoutReview}:{}) }), revision: { increment: 1 }
+        camera: asJson(backup.data.camera), stage: asJson(backup.data.stage), settings: asJson({ ...record(scene.settings), ...(backup.data.background!==undefined?{background:backup.data.background}:{}),...(backup.data.backgroundPlan!==undefined?{backgroundPlan:backup.data.backgroundPlan}:{}),layoutBackup: null, ...(backup.data.appearance!==undefined?{appearance:backup.data.appearance}:{}), ...(backup.data.layoutReview!==undefined?{layoutReview:backup.data.layoutReview}:{}) }), revision: { increment: 1 }
       } });
       if (result.count !== 1) throw new AppError(409, "REVISION_CONFLICT", "The scene changed. Reload before restoring.");
       for (const object of backup.data.objects) {
@@ -113,15 +113,18 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
     result.composition.backdrop=compositionSchema.safeParse(scene.stage).data?.backdrop ?? (record(scene.settings).preferredBackdrop === "studio" ? "studio" : "room");
     const {backgroundPlanSchema}=await import("@/lib/scene/background");
     result.composition.background=backgroundPlanSchema.safeParse(record(scene.settings).backgroundPlan).data;
+    if(result.composition.background?.surfaceMode==="reference"&&input.action==="MATCH_PHOTO"){
+      const {reframeSceneEnvironment}=await import("./background-environment");const rebuilt=await reframeSceneEnvironment(scene,result.composition);result.composition.background.geometry=rebuilt.geometry;
+    }
   } catch {
     throw new AppError(422, "LAYOUT_UNAVAILABLE", "The saved reconstruction has no reliable room layout. Your current layout is unchanged.");
   }
-  const backup = { camera: scene.camera, stage: scene.stage, appearance:record(scene.settings).appearance??null,layoutReview:record(scene.settings).layoutReview??null,objects: previousObjects.map(o => ({ id: o.id, modelAssetId:o.modelAssetId,provenance:o.provenance,initialTransform: o.initialTransform,
+  const backup = { camera: scene.camera, stage: scene.stage, background:record(scene.settings).background??null,backgroundPlan:record(scene.settings).backgroundPlan??null,appearance:record(scene.settings).appearance??null,layoutReview:record(scene.settings).layoutReview??null,objects: previousObjects.map(o => ({ id: o.id, modelAssetId:o.modelAssetId,provenance:o.provenance,initialTransform: o.initialTransform,
     positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, rotationX: o.rotationX, rotationY: o.rotationY, rotationZ: o.rotationZ, rotationW: o.rotationW,
     scaleX: o.scaleX, scaleY: o.scaleY, scaleZ: o.scaleZ })) };
   await getDb().$transaction(async tx => {
     const changed = await tx.scene.updateMany({ where: { id: sceneId, ownerId, revision: input.expectedRevision, status: "READY", archivedAt: null }, data: {
-      camera: asJson(result.composition.camera), stage: asJson(result.composition), settings: asJson({ ...record(scene.settings), layoutBackup: backup, layoutReview, appearance:prepared.appearance }), revision: { increment: 1 }
+      camera: asJson(result.composition.camera), stage: asJson(result.composition), settings: asJson({ ...record(scene.settings), layoutBackup: backup, layoutReview,backgroundPlan:result.composition.background??null,appearance:prepared.appearance }), revision: { increment: 1 }
     } });
     if (changed.count !== 1) throw new AppError(409, "REVISION_CONFLICT", "The scene changed. Reload before matching the photo.");
     for(const [id,change]of prepared.changes)await tx.sceneObject.update({where:{id,sceneId},data:{modelAssetId:change.modelAssetId,provenance:asJson(change.provenance)}});
@@ -132,7 +135,7 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
     } });
   });
 }
-const backupSchema = z.object({ appearance:z.unknown().optional(),layoutReview:z.unknown().optional(),camera: z.unknown(), stage: z.unknown(), objects: z.array(z.object({
+const backupSchema = z.object({ background:z.unknown().optional(),backgroundPlan:z.unknown().optional(),appearance:z.unknown().optional(),layoutReview:z.unknown().optional(),camera: z.unknown(), stage: z.unknown(), objects: z.array(z.object({
   id: z.uuid(),modelAssetId:z.uuid().nullable().optional(),provenance:z.unknown().optional(),initialTransform: z.unknown(), positionX: z.number().finite(), positionY: z.number().finite(), positionZ: z.number().finite(),
   rotationX: z.number().finite(), rotationY: z.number().finite(), rotationZ: z.number().finite(), rotationW: z.number().finite(),
   scaleX: z.number().positive(), scaleY: z.number().positive(), scaleZ: z.number().positive()

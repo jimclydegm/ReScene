@@ -22,7 +22,7 @@ export async function restartScene(sceneId: string, ownerId: string, input: z.in
     const revision = scene.revision + 1;
     const previousSettings = record(scene.settings);
     const settings = input.target === "RECONSTRUCTION"
-      ? { ...Object.fromEntries(["environment","backgroundUnderstanding","backgroundPlan","analysisOptions","analysisSummary","sceneType","preferredBackdrop","reconstructionOptions"].filter(k=>k in previousSettings).map(k=>[k,previousSettings[k]])), resetRevision: revision }
+      ? { ...Object.fromEntries(["environment","environmentObservation","backgroundUnderstanding","backgroundPlan","analysisOptions","analysisSummary","sceneType","preferredBackdrop","reconstructionOptions"].filter(k=>k in previousSettings).map(k=>[k,previousSettings[k]])), resetRevision: revision }
       : { resetRevision: revision };
     const updated = await tx.scene.updateMany({ where: { id: sceneId, ownerId, revision: input.expectedRevision, archivedAt: null }, data: {
       status: input.target === "RECONSTRUCTION" ? "REVIEW" : "DRAFT", revision,

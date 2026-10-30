@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import sharp from "sharp";
 
 const mocks=vi.hoisted(()=>({
-  db:{generationRun:{findUniqueOrThrow:vi.fn(),findFirst:vi.fn(),updateMany:vi.fn(),update:vi.fn()},generationStep:{count:vi.fn(),updateMany:vi.fn(),upsert:vi.fn(),create:vi.fn(),update:vi.fn()},sceneObject:{findMany:vi.fn()},scene:{updateMany:vi.fn()},asset:{create:vi.fn()},$transaction:vi.fn()},
+  db:{generationRun:{findUniqueOrThrow:vi.fn(),findFirst:vi.fn(),updateMany:vi.fn(),update:vi.fn()},generationStep:{count:vi.fn(),updateMany:vi.fn(),upsert:vi.fn(),findFirst:vi.fn(),create:vi.fn(),update:vi.fn()},sceneObject:{findMany:vi.fn()},scene:{updateMany:vi.fn()},asset:{create:vi.fn()},$transaction:vi.fn()},
   fill:vi.fn(),analyze:vi.fn(),read:vi.fn(),put:vi.fn(),plain:vi.fn(),composite:vi.fn()
 }));
 vi.mock("server-only",()=>({}));
@@ -16,7 +16,7 @@ import { finishSceneBackground } from "../src/lib/services/background";
 
 const plan={kind:"seamless",groundVisible:true,boundary:null,description:"Continuous background"};
 const stage={version:"sam3d-room-v1",camera:{position:[0,4,8],target:[0,1,0],fov:50,aspect:1},room:{centerX:0,centerZ:0,width:8,depth:8,height:4},environment:{floorColor:"#aaaaaa",wallColor:"#dddddd",floorMaterial:"plain",lightDirection:"diffuse",lightWarmth:"neutral",sideWall:"none"},environmentSource:"spark",projectionError:0,warnings:[]};
-const run=(layout:unknown)=>({id:"run",kind:"RECONSTRUCT",status:"WAITING",inputRevision:1,input:{normalizedAssetId:"photo"},expiresAt:new Date(Date.now()+60_000),scene:{id:"scene",revision:2,status:"READY",archivedAt:null,stage:layout,normalizedAssetId:"photo",normalizedAsset:{storageKey:"photo",width:64,height:64},settings:{backgroundPlan:plan,environment:stage.environment}}});
+const run=(layout:unknown)=>({id:"run",kind:"RECONSTRUCT",status:"WAITING",inputRevision:1,input:{normalizedAssetId:"photo",background:{mode:"photo"}},expiresAt:new Date(Date.now()+60_000),scene:{id:"scene",revision:2,status:"READY",archivedAt:null,stage:layout,normalizedAssetId:"photo",normalizedAsset:{storageKey:"photo",width:64,height:64},settings:{backgroundPlan:plan,environment:stage.environment}}});
 
 describe("Background failure preservation and diagnosis",()=>{
   beforeEach(async()=>{
@@ -50,7 +50,7 @@ describe("Background failure preservation and diagnosis",()=>{
     mocks.fill.mockRejectedValue(Object.assign(new Error("Unsupported image request"),{status:400}));
     await finishSceneBackground("run");
     expect(mocks.fill).toHaveBeenCalledTimes(1);expect(mocks.put).not.toHaveBeenCalled();expect(mocks.db.scene.updateMany).not.toHaveBeenCalled();
-    expect(mocks.db.generationStep.updateMany).toHaveBeenCalledWith(expect.objectContaining({where:expect.objectContaining({key:{startsWith:"background-"}}),data:expect.objectContaining({status:"FAILED",errorCode:"META_HTTP_400"})}));
+    expect(mocks.db.generationStep.updateMany).toHaveBeenCalledWith(expect.objectContaining({where:expect.objectContaining({OR:expect.arrayContaining([{key:{startsWith:"background-"}}])}),data:expect.objectContaining({status:"FAILED",errorCode:"META_HTTP_400"})}));
     expect(mocks.db.generationStep.upsert).not.toHaveBeenCalled();
   });
   it("keeps completed image inference completed when local processing fails, without resubmission",async()=>{

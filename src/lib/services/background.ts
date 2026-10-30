@@ -15,6 +15,12 @@ import { record, sceneEnvironment } from "./composition";
 
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 export async function buildSceneBackground(runId: string) {
+  const initial=await getDb().generationRun.findUniqueOrThrow({where:{id:runId}}),mode=record(record(initial.input).background).mode;
+  if(mode!=="materials"&&mode!=="photo"){
+    const {planSceneEnvironment,buildReferenceEnvironment}=await import("./background-environment");
+    const plan=await planSceneEnvironment(runId);
+    if(plan.topology==="room"||plan.topology==="open"&&plan.surfaces.some(s=>s.finish==="textured")){await buildReferenceEnvironment(runId);return;}
+  }
   const {understandSceneBackground}=await import("./background-understanding");
   const understanding=await understandSceneBackground(runId);
   const pending=await getDb().generationRun.findUniqueOrThrow({where:{id:runId}});
@@ -40,7 +46,7 @@ export async function buildSceneBackground(runId: string) {
   }));
   const settings = record(scene.settings);
   let plan = backgroundPlanSchema.safeParse(settings.backgroundPlan).data;
-  if(plan){const {surfaceMode:_,transition:__,materials:___,junctions:____,...photoPlan}=plan;void _;void __;void ___;void ____;plan=photoPlan;}
+  if(plan){const {surfaceMode:_,transition:__,materials:___,junctions:____,geometry:_____,...photoPlan}=plan;void _;void __;void ___;void ____;void _____;plan=photoPlan;}
   const plain = plainBackground(image, masks);
   if (plain) {
     const observed = { ...(plan ?? fallbackBackground), kind: "seamless" as const, boundary: null, plainColor: plain.color };
@@ -100,17 +106,24 @@ export async function finishSceneBackground(runId: string) {
     const run = await db.generationRun.findUniqueOrThrow({ where: { id: runId } });
     await db.generationRun.updateMany({ where: { id: runId, status: { in: ["RUNNING", "WAITING"] } }, data: { status: run.errorMessage ? "PARTIAL" : "SUCCEEDED", progress: 100, currentStage: "Your 3D scene is ready", completedAt: new Date() } });
   } catch (error) {
+    await backgroundFailure(runId,error);
+  }
+}
+
+export async function backgroundFailure(runId:string,error:unknown){
+ const db=getDb();
     const status=typeof record(error).status==="number"?Number(record(error).status):null;
-    const pending = await db.generationStep.count({ where: { runId, key: { startsWith: "background-" }, status: "RUNNING" } });
+    const pending = await db.generationStep.count({ where: { runId, OR:[{key:{startsWith:"background-"}},{key:{startsWith:"environment-"}}], status: "RUNNING" } });
     const uncertain=Boolean(pending&&!(status&&status>=400&&status<500));
+    const known=await db.generationStep.findFirst({where:{runId,key:"environment-depth",providerRequestId:{not:null},status:{in:["RUNNING","WAITING"]}}});
+
     const detail=error instanceof Error?error.message.replace(/data:[^\s"']+|https?:\/\/[^\s"']+/g,"[redacted]").slice(0,900):"Unknown background failure";
     const code=error instanceof AppError?error.code:status?`META_HTTP_${status}`:error instanceof Error?error.name:"BACKGROUND_FAILED";
-    await db.generationStep.updateMany({ where: { runId, key: { startsWith: "background-" }, status: "RUNNING" }, data: { status: uncertain?"SUBMISSION_UNCERTAIN":"FAILED",errorCode:code,errorMessage:detail,completedAt:new Date() } });
+    await db.generationStep.updateMany({ where: { runId, OR:[{key:{startsWith:"background-"}},{key:{startsWith:"environment-"}}], status: "RUNNING" }, data: { status: uncertain?"SUBMISSION_UNCERTAIN":"FAILED",errorCode:code,errorMessage:detail,completedAt:new Date() } });
     // Preflight/compositing can fail without a pending provider request. Keep an
     // internal diagnostic instead of losing the cause or implying a paid submit.
     if (!pending) await db.generationStep.upsert({ where: { runId_key_attempt: { runId, key: "background-local", attempt: 1 } },
       create: { runId, key: "background-local", attempt: 1, provider: "INTERNAL", status: "FAILED", errorCode: code, errorMessage: detail, completedAt: new Date() },
       update: { status: "FAILED", errorCode: code, errorMessage: detail, completedAt: new Date() } });
-    await db.generationRun.updateMany({ where: { id: runId, status: { in: ["RUNNING", "WAITING"] } }, data: { status: "PARTIAL", progress: 100, currentStage: "3D ready · background kept", errorCode: uncertain ? "SUBMISSION_UNCERTAIN" : "BACKGROUND_UNAVAILABLE", errorMessage: uncertain ? "Background generation was interrupted and may have been charged. It will not retry automatically. Your 3D objects and saved background are kept." : "The photo background could not be updated. Your 3D objects and saved background are kept. You can start a new background request in Textures.", completedAt: new Date() } });
-  }
+    await db.generationRun.updateMany({ where: { id: runId, status: { in: ["RUNNING", "WAITING"] } }, data: { status: known?"FAILED":"PARTIAL", progress: 100, currentStage: known?"Background depth paused":"3D ready · background kept", errorCode: known?"KNOWN_BACKGROUND_JOB_INTERRUPTED":uncertain ? "SUBMISSION_UNCERTAIN" : "BACKGROUND_UNAVAILABLE", errorMessage: known?"Background depth paused. Resume retrieves the saved Meta job without another paid submission. Your objects and background are kept.":uncertain ? "Background generation was interrupted and may have been charged. It will not retry automatically. Your 3D objects and saved background are kept." : "The photo background could not be updated. Your 3D objects and saved background are kept. You can start a new background request in Textures.", completedAt: new Date() } });
 }

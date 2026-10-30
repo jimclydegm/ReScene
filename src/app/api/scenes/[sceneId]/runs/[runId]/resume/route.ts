@@ -5,7 +5,7 @@ import { api, AppError, checkOrigin } from "@/lib/http";
 import { requireUser } from "@/lib/auth/user";
 import { ownedScene } from "@/lib/services/scenes";
 import { getDb } from "@/lib/db";
-import { generateScene, resumeReconstruction } from "@/workflows/generate";
+import { generateScene, resumeReconstruction, resumeBackground } from "@/workflows/generate";
 import { uuidSchema } from "@/lib/validation/scenes";
 export const POST = (request: Request, context: { params: Promise<{ sceneId: string; runId: string }> }) => api(async () => {
   checkOrigin(request);
@@ -15,10 +15,20 @@ export const POST = (request: Request, context: { params: Promise<{ sceneId: str
   const scene = await ownedScene(sceneId, user.id);
   const run = await getDb().generationRun.findFirst({ where: { id: runId, sceneId }, include: { steps: true } });
   if (!run) throw new AppError(404, "NOT_FOUND", "Generation not found.");
-  if (scene.revision !== run.inputRevision) throw new AppError(409, "REVISION_CONFLICT", "This scene has changed.");
+  const backgroundJob=run.errorCode==="KNOWN_BACKGROUND_JOB_INTERRUPTED"?run.steps.find(s=>s.key==="environment-depth"&&s.providerRequestId):null;
+  const revision=backgroundJob?Number(record(backgroundJob.input).sceneRevision??run.inputRevision):run.inputRevision;
+  if (scene.revision !== revision) throw new AppError(409, "REVISION_CONFLICT", "This scene has changed.");
   if (run.status === "QUEUED") {
     if(run.kind === "COMPOSE_IMAGE") await start(createSceneImage,[run.id]);
     else await start(generateScene, [run.id, run.kind]);
+  } else if(run.status==="FAILED"&&backgroundJob){
+    const db=getDb();await db.$transaction(async tx=>{
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(839172640)`;
+      if(!await tx.scene.findFirst({where:{id:sceneId,ownerId:user.id,revision,status:"READY",archivedAt:null,normalizedAssetId:String(record(run.input).normalizedAssetId)}}))throw new AppError(409,"REVISION_CONFLICT","This scene has changed.");
+      if(await tx.generationRun.count({where:{scene:{ownerId:user.id},status:{in:["QUEUED","RUNNING","WAITING","CANCEL_REQUESTED"]}}}))throw new AppError(409,"RUN_ACTIVE","Wait for the active generation to finish.");
+      const changed=await tx.generationRun.updateMany({where:{id:runId,status:"FAILED",errorCode:"KNOWN_BACKGROUND_JOB_INTERRUPTED"},data:{status:"WAITING",expiresAt:new Date(Date.now()+15*60_000),errorCode:null,errorMessage:null,currentStage:"Retrieving existing background depth"}});if(!changed.count)throw new AppError(409,"RUN_ACTIVE","Generation already resumed.");
+    });
+    try{await start(resumeBackground,[runId]);}catch{await db.generationRun.update({where:{id:runId},data:{status:"FAILED",errorCode:"KNOWN_BACKGROUND_JOB_INTERRUPTED",errorMessage:"Resume could not start. Try Resume again."}});throw new AppError(503,"DISPATCH_FAILED","Resume could not start. Try again.");}
   } else if (run.status === "FAILED" && run.errorCode === "KNOWN_JOB_INTERRUPTED") {
     const step = run.steps.find(s => s.key === "sam3d-submit" && s.providerRequestId);
     if (!step) throw new AppError(409, "NO_SAVED_JOB", "No saved provider job is available.");
