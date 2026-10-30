@@ -136,4 +136,4 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Spatial mask matching and contact-constrained layout with real support heights.
 - [x] Independent-object retry with confirmation/seed, same-camera fit, previous-mesh retention and known-job resume.
 - [x] Saved-example mask recovery, box reconstruction and jar contact checked; poorer chair/lid retry meshes retained privately, previous models kept.
-- [ ] Final checks, merge, production API/SSR verification and release notes.
+- [x] 150 cases/schema/lint/types/build, CI and production control/API validation pass. PR #23 merged at f9cf672; production READY. Native visual interaction verification remains access-dependent.
