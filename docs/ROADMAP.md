@@ -182,3 +182,15 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Idempotent library registration script, separate SETTING rows and version4 setting path snapshots.
 - [x] 195 cases/schema/lint/types/build pass.
 - [x] PR29 merged at2a10a49; production READY, all30 asset hashes and library registry metadata verified. Production library/SSR shows37 products and23 settings with format filter; zero runtime errors. Native UI interaction remains unverified while browser access is unavailable.
+
+## Retail demo store — October 30
+
+- [x] Curate eight existing meshes and derived sample photos/backgrounds into a frozen demo release without changing original projects.
+- [x] Add dashboard Demo mode entry, three-workflow hub and realistic shared shopping layout.
+- [x] Product inspection/photo comparison/colors/specifications/sample reviews and local review preview.
+- [x] Room arrangement/visibility/colors/lights/grouped history/A-B saves and comparison/screenshot controls.
+- [x] Styled-scene selection/hiding/isolation/product cards/Shop this look and shared cart/mock checkout.
+- [x] Validate cart/storage/footprints/allowlist/geometry preservation; schema/lint/build and bounded HTTP/model-hash checks.
+- [ ] Merge the combined release and verify its automatic production deployment.
+
+Details: DEMO_STORE.md. Jim explicitly chose to continue without browser verification; native WebGL/mobile/download interaction checks remain unverified.
