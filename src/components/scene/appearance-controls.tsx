@@ -1,4 +1,5 @@
 "use client";
+import {lightingPresets} from "@/lib/scene/lighting";
 import { RotateCcw, Sparkles, Check, RefreshCw } from "lucide-react";
 import type { Lighting } from "@/lib/scene/lighting";
 import { RangeField } from "@/components/ui/range-field";
@@ -21,7 +22,7 @@ export function AppearanceControls({ panel, lighting, setLighting, dirty, object
       <p>Visible surfaces use aligned photo detail; hidden surfaces keep their AI texture. Small text is limited by photo resolution. Textures save immediately, can be restored, and include the photo&apos;s lighting, so softer scene lights keep more detail.</p>
     </details>
   </section>;
-  return <section className="panel-stack" aria-label="Scene lighting">
+  return <section className="panel-stack" aria-label="Scene lighting"><div className="panel-block"><h3>Lighting mood</h3><div className="preset-row">{Object.entries(lightingPresets).map(([name,value])=><button className="button button-light" key={name} disabled={busy} onClick={()=>setLighting(structuredClone(value))}>{name}</button>)}</div><p className="panel-note">Presets adjust the 3D lights. Photographed background lighting is baked into the image.</p></div>
     {(["key", "fill"] as const).map(name => <fieldset className="panel-block light-group" key={name} disabled={busy} aria-label={name === "key" ? "Main light" : "Fill light"}>
       <div className="panel-heading"><h3><span className={`light-dot ${name}`}/>{name === "key" ? "Main light" : "Fill light"}</h3></div>
       <RangeField label="Intensity" min={0} max={8} step={0.1} value={lighting[name].intensity} onChange={value => setLighting({ ...lighting, [name]: { ...lighting[name], intensity: value } })}/>

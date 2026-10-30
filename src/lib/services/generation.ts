@@ -1,3 +1,4 @@
+import { objectAppearanceSchema } from "@/lib/scene/appearance";
 import { isBackgroundSurface } from "@/lib/scene/surface-role";
 import "server-only";
 import {rotationControls,rotationAfterEdit} from "@/lib/editor/rotation";
@@ -365,7 +366,7 @@ export async function workspace(sceneId: string, ownerId: string) {
     composition: compositionSchema.safeParse(scene.stage).data ?? null, canRestoreLayout: Boolean(record(scene.settings).layoutBackup),
     image: scene.normalizedAsset ? { url: await signRead(scene.normalizedAsset), width: scene.normalizedAsset.width!, height: scene.normalizedAsset.height! } : null,
     generationEnabled: process.env.GENERATION_ENABLED === "true", objects: await Promise.all(visibleObjects.map(async o => ({
-      id: o.id, label: o.label, status: o.status, errorCode: o.lastErrorCode, canRestoreOriginal: Boolean(record(o.provenance).replacementBackup),
+      tint: objectAppearanceSchema.safeParse(o.appearance).data?.tint ?? null, id: o.id, label: o.label, status: o.status, errorCode: o.lastErrorCode, canRestoreOriginal: Boolean(record(o.provenance).replacementBackup),
       parentObjectId:typeof record(o.provenance).parentObjectId === "string" ? String(record(o.provenance).parentObjectId) : null, assemblyRootId:typeof record(o.provenance).assemblyRootId === "string" ? String(record(o.provenance).assemblyRootId) : null,
       concept:o.segmentationConcept ?? o.label, confidence:o.confidence, bounds:pixelBoxSchema.safeParse(o.imageBounds).data ?? null,
       segmentation:segmentationOptionsSchema.safeParse(record(o.provenance).segmentationOptions).data ?? null,
@@ -452,7 +453,7 @@ export async function saveObjects(sceneId: string, ownerId: string, input: z.inf
       }
       const rotation=rotationAfterEdit(original,edit);
       const changed = await tx.sceneObject.updateMany({ where: { id: edit.id, sceneId, status: "READY" }, data: {
-        productId, label: edit.label, positionX: edit.positionX, positionY: edit.positionY, positionZ: edit.positionZ,
+        ...(edit.tint !== undefined ? {appearance: asJson({tint:edit.tint})} : {}), productId, label: edit.label, positionX: edit.positionX, positionY: edit.positionY, positionZ: edit.positionZ,
         rotationX: rotation.x, rotationY: rotation.y, rotationZ: rotation.z, rotationW: rotation.w,
         scaleX: edit.scale, scaleY: edit.scale, scaleZ: edit.scale, visible: edit.visible
       } });

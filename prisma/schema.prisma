@@ -66,6 +66,7 @@ enum RunKind {
   RECONSTRUCT
   RECONSTRUCT_OBJECT
   IMAGE_EDIT
+  COMPOSE_IMAGE
 }
 
 enum RunStatus {
@@ -218,6 +219,7 @@ model SceneObject {
   category            String         @db.VarChar(80)
   status              ObjectStatus   @default(DETECTED)
   representation      Representation @default(PROXY)
+  appearance          Json           @default("{}")
   segmentationConcept String?        @db.VarChar(160)
   confidence          Float?
   imageBounds         Json?

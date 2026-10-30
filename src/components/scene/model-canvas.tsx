@@ -25,8 +25,9 @@ function Model({ object, selected, select }: { object: RenderObject; selected: b
         // SAM exports omit metallicFactor; glTF defaults it to 1, blackening fabric/wood
         // without a reflection map. Treat unspecified generated materials as dielectric.
         // Preserve explicit metallic factors/maps and never mutate the shared loader cache.
-        if (!(material instanceof MeshStandardMaterial) || pbr?.metallicFactor !== undefined || material.metalnessMap) return material;
-        const copy = material.clone(); copy.metalness = 0; ownedMaterials.push(copy); return copy;
+        if (!(material instanceof MeshStandardMaterial)) return material;
+        if (!object.tint && (pbr?.metallicFactor !== undefined || material.metalnessMap)) return material;
+        const copy = material.clone(); if(pbr?.metallicFactor === undefined && !material.metalnessMap) copy.metalness = 0; if(object.tint) copy.color.set(object.tint); ownedMaterials.push(copy); return copy;
       });
       node.material = Array.isArray(node.material) ? copies : copies[0];
     } });
@@ -36,7 +37,7 @@ function Model({ object, selected, select }: { object: RenderObject; selected: b
     const center = box.getCenter(new Vector3());
     const factor = 1.5 / Math.max(size.x, size.y, size.z, 0.001);
     return { cloned, factor, ownedMaterials, offset: [-center.x * factor, -box.min.y * factor, -center.z * factor] as [number, number, number] };
-  }, [gltf.scene, gltf.parser]);
+  }, [gltf.scene, gltf.parser, object.tint]);
   useEffect(() => () => { model.ownedMaterials.forEach(material => material.dispose()); }, [model]);
   if (!object.visible) return null;
   const base = object.placement;
@@ -97,9 +98,9 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
       fallback={<p className="canvas-loading">WebGL is unavailable in this browser. You can still browse the scene details.</p>}>
       <color attach="background" args={[backgroundHidden?"#f4f3ee":composition?.background?.plainColor ?? composition?.environment.wallColor ?? "#edece5"]}/>
       <hemisphereLight args={["#fffaf0", composition?.environment.floorColor ?? "#b1a38d", lighting.ambient]}/>
-      <directionalLight position={lighting.key.position} intensity={lighting.key.intensity} color={lightingColor} castShadow
+      <directionalLight position={lighting.key.position} intensity={lighting.key.intensity} color={lighting.key.color ?? lightingColor} castShadow
         shadow-mapSize={[2048, 2048]} shadow-camera-left={-12} shadow-camera-right={12} shadow-camera-top={12} shadow-camera-bottom={-12} shadow-camera-near={0.1} shadow-camera-far={100} shadow-bias={-0.0003} shadow-normalBias={0.02}/>
-      <directionalLight position={lighting.fill.position} intensity={lighting.fill.intensity}/>
+      <directionalLight position={lighting.fill.position} intensity={lighting.fill.intensity} color={lighting.fill.color ?? "#ffffff"}/>
       <Suspense fallback={null}>{composition && !backgroundHidden && <PhotoBackground composition={composition} url={appearance.backgroundUrl ?? null} legacyFloor={appearance.floorUrl} floorY={floorY} shadows={lighting.key.intensity>0}/>}</Suspense>
       <Suspense fallback={null}>{objects.filter(o => o.modelUrl).map(o => <Model key={o.id} object={o} selected={selected === o.id} select={() => onSelect(selected===o.id?"":o.id)}/>)}</Suspense>
       {(!composition || grid) && <Grid userData={{editorHelper:true}} position={[0, floorY + 0.005, 0]} args={[30, 30]} cellSize={0.5} sectionSize={2} fadeDistance={20} cellColor="#c5c6ba" sectionColor="#a8b1a1"/>}

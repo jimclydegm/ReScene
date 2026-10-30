@@ -171,7 +171,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     setBusy(true); setError("");
     try {
       await apiJson(`${base}/objects`, { method: "PATCH", body: JSON.stringify({ expectedRevision: data.revision,
-        ...(lightDirty ? { lighting: lights } : {}), objects: draft.filter(o => o.modelUrl).map(o => ({ id: o.id, label: o.label, positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, yaw: o.yaw,pitch:o.pitch??0,roll:o.roll??0, scale: o.scale, visible: o.visible, product: o.product ? { ...o.product, imageUrl: undefined } : null })) }) });
+        ...(lightDirty ? { lighting: lights } : {}), objects: draft.filter(o => o.modelUrl).map(o => ({ id: o.id, label: o.label, positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, yaw: o.yaw,pitch:o.pitch??0,roll:o.roll??0, scale: o.scale, visible: o.visible, tint:o.tint??null, product: o.product ? { ...o.product, imageUrl: undefined } : null })) }) });
       await reload(); setMessage("Scene saved. Your layout will be here when you return.");
     } catch (e) { setError(e instanceof Error ? e.message : "Could not save."); }
     finally { setBusy(false); }
@@ -305,7 +305,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
               <div className="panel-heading"><h3>Selected</h3><button className="text-link panel-link" type="button" disabled={!dirty} onClick={() => resetPlacement(current.id)}><RotateCcw size={12}/>Reset</button></div>
               <label className="field">Name<input value={current.label} maxLength={120} onChange={e => edit(current.id, { label: e.target.value })}/></label>
               {transformGroups.map(([group, fields]) => <div className="field-group" key={group}><span className="group-label">{group}</span>{fields.map(([field, label, min, max, step]) => {const angle=["yaw","pitch","roll"].includes(field),factor=angle?180/Math.PI:1;return <RangeField key={field} label={angle?`${label} (°)`:label} min={min*factor} max={max*factor} step={angle?1:step} value={(current[field]??0)*factor} precision={angle?0:2} onChange={value => edit(current.id, { [field]: value/factor })}/>;})}</div>)}
-              <label className="visibility-toggle"><span><Eye size={14}/>Visible</span><input className="switch-input" role="switch" type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/></label>
+              <div className="panel-block"><label className="field-label">Object color<input aria-label="Object color" type="color" value={current.tint??"#ffffff"} onChange={e=>edit(current.id,{tint:e.target.value})}/></label><button className="text-link" onClick={()=>edit(current.id,{tint:null})}>Restore original color</button><p className="panel-note">Color tints the existing texture and preserves surface detail. Dark textures may limit bright colors.</p></div><label className="visibility-toggle"><span><Eye size={14}/>Visible</span><input className="switch-input" role="switch" type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/></label>
             </fieldset>}
           </div>
           : value === "scene" ? <SceneLayoutControls data={data} locked={locked} unsaved={unsaved} blocked={hasReplacements} onMatch={() => matchLayout("MATCH_PHOTO")} onReview={() => matchLayout("REVIEW_PHOTO")} onRestore={() => matchLayout("RESTORE")} onBackdrop={changeBackdrop} onBackground={() => action("IMAGE_EDIT")}/>

@@ -1,3 +1,4 @@
+import {createSceneImage} from "@/workflows/creative";
 import { start } from "workflow/api";
 import { api, AppError, checkOrigin } from "@/lib/http";
 import { requireUser } from "@/lib/auth/user";
@@ -15,7 +16,8 @@ export const POST = (request: Request, context: { params: Promise<{ sceneId: str
   if (!run) throw new AppError(404, "NOT_FOUND", "Generation not found.");
   if (scene.revision !== run.inputRevision) throw new AppError(409, "REVISION_CONFLICT", "This scene has changed.");
   if (run.status === "QUEUED") {
-    await start(generateScene, [run.id, run.kind]);
+    if(run.kind === "COMPOSE_IMAGE") await start(createSceneImage,[run.id]);
+    else await start(generateScene, [run.id, run.kind]);
   } else if (run.status === "FAILED" && run.errorCode === "KNOWN_JOB_INTERRUPTED") {
     const step = run.steps.find(s => s.key === "sam3d-submit" && s.providerRequestId);
     if (!step) throw new AppError(409, "NO_SAVED_JOB", "No saved provider job is available.");

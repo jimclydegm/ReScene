@@ -227,3 +227,7 @@ No SQL migration: Scene.stage.background stores validated kind/groundVisible/bou
 ## Optional tilt/lean controls — October 30
 
 Owner object edits accept optional pitch/roll plus existing yaw. The UI displays degrees; transport uses bounded radians and runtime composes YXZ Euler angles into SceneObject.rotationX/Y/Z/W. Missing new fields preserve existing tilt/lean for older clients. Workspace returns the decomposed controls. Published world transforms already store full quaternions, so no SQL migration or manifest version change is required. Local object/product/light undo history and screenshot/background preferences are browser-only state.
+
+## Creative showroom extension — October 30
+
+Migration 20261030060000_creative_showroom adds SceneObject.appearance JSON default {} (strict optional nullable hex tint) and RunKind.COMPOSE_IMAGE. Lighting key/fill gain optional hex colors; snapshot v2 gains optional object tint. Existing clients may omit all new fields without clearing saved appearance. Creative DRAFT scenes use settings.creative=true; references and generated outputs use existing owned immutable Asset rows. GenerationRun.input validates reference IDs/template/aspect/prompt/revision/idempotency key; generation steps keep private provider provenance. Accepted results are copied into a new scene's own source/normalized assets. No cross-scene asset pointer is attached to a reconstruction or publication. See CREATIVE_SHOWROOM.md.

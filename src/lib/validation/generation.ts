@@ -1,3 +1,4 @@
+import { tintSchema } from "@/lib/scene/appearance";
 import { lightingSchema } from "@/lib/scene/lighting";
 import { productSchema } from "./products";
 import { z } from "zod";
@@ -25,6 +26,6 @@ export const objectEditsSchema = z.object({ expectedRevision: z.number().int().n
   objects: z.array(z.object({ id: z.uuid(), label: z.string().trim().min(1).max(120),
     positionX: z.number().finite().min(-20).max(20), positionY: z.number().finite().min(-5).max(20), positionZ: z.number().finite().min(-20).max(20),
     pitch:z.number().finite().min(-Math.PI/2).max(Math.PI/2).optional(),roll:z.number().finite().min(-Math.PI).max(Math.PI).optional(),
-    yaw: z.number().finite().min(-Math.PI * 4).max(Math.PI * 4), scale: z.number().finite().min(0.1).max(5), visible: z.boolean(), product: productSchema.nullable().optional()
+    yaw: z.number().finite().min(-Math.PI * 4).max(Math.PI * 4), scale: z.number().finite().min(0.1).max(5), visible: z.boolean(), tint: tintSchema.optional(), product: productSchema.nullable().optional()
   }).strict()).min(1).max(10)
 }).strict().refine(input => new Set(input.objects.map(o => o.id)).size === input.objects.length, "Duplicate object IDs.");
