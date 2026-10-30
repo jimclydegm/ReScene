@@ -3,6 +3,7 @@ import { withWorkflow } from "workflow/next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  outputFileTracingIncludes: { "/*": ["./public/samples/**/*.webp"] },
   async headers() {
     return [{
       source: "/(.*)",

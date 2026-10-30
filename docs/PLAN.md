@@ -65,3 +65,7 @@ Jim requested background visibility beside Zoom lock, deselection, more editing 
 ## Background failure recovery — October 30
 
 Fix the dependency between optional background generation and strict object-axis leveling as one correction release. Arbitrary local mesh axes must not veto otherwise valid scene poses. Missing photo placement must not prevent a background on the manual stage or require removing catalog replacements. Preserve object/product edits, label manual-camera recovery honestly, keep revision/privacy/no-retry rules, and persist internal diagnostics for preflight/local failures. Optional `composition.layoutSource` is additive to snapshot v2; no SQL migration or model/provider change.
+
+## Creation/library correction
+
+Replace the oversized creation landing with an upload/generated-library switch and a compact image-studio entry. Rebuild product selection around photographic cards, search/category controls and a selected tray; scene choices use generated visual previews. Generate samples once with Meta, version static assets, label synthetic photos honestly and retain prompts. Replace JSON-only creative lineage with ContentItem, CompositionDraft, CompositionReference, ContentGeneration, GenerationReference and ContentAdoption. Preserve owner checks, independent draft revisions, frozen generation inputs, legacy backfills and immutable media. Save drafts explicitly and on generation; references/settings/results/adoptions remain queryable. No new provider or 3D inference is needed for this correction.
