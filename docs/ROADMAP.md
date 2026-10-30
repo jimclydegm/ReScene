@@ -146,3 +146,13 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Relightable surfaces, shared private/public renderer, clean/photo mode and previous-background restore.
 - [x] Peach-source analysis and one wood tile verified; no object reconstruction inference used.
 - [x] 164 cases/schema/lint/types/build and CI pass. PR #24 merged at ce0aa53; production READY, API restore/validation checks and native WebGL/desktop/mobile/orbit/relighting verified.
+
+## Reference environment reconstruction — October 30
+
+- [x] Diagnose the one-wall contract and research studio projection/material/plane-fitting workflows.
+- [x] Dedicated source-scoped Spark surface graph, visible walls/ceiling/trim/openings and cached Meta VGGT depth.
+- [x] Shared-frame connected planes, floor contacts, opening holes, one continuous ground, cropped-wall and texture continuation.
+- [x] Intrinsic reference materials, foreground exclusion, visible geometry/image review and previous-background restore.
+- [x] Known-job reuse/resume, stale/cancel guards, layout reframing/undo and render-only publication contract.
+- [x] Prepare reported photo without object regeneration; native local Chrome WebGL/lighting/orbit checks and focused safeguards.
+- [ ] Final CI, merge, production deployment and bounded saved-scene/mobile verification.

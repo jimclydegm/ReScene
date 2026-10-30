@@ -116,7 +116,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     } catch(e) { setError(e instanceof Error ? e.message : "Could not update the object."); }
     finally { setBusy(false); }
   }
-  async function action(kind: "ANALYZE" | "RECONSTRUCT" | "SEGMENT_OBJECT" | "IMAGE_EDIT", segmentation?:SegmentationOptions,backgroundMode?:"materials"|"photo") {
+  async function action(kind: "ANALYZE" | "RECONSTRUCT" | "SEGMENT_OBJECT" | "IMAGE_EDIT", segmentation?:SegmentationOptions,backgroundMode?:"reference"|"materials"|"photo") {
     setBusy(true); setError(""); setMessage("");
     try {
       await apiJson(`${base}/runs`, { method: "POST", body: JSON.stringify({ kind, expectedRevision: data.revision,
@@ -315,7 +315,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
           </div>
           : value === "scene" ? <SceneLayoutControls onRetry={retryObjects} onMask={chooseMask} data={data} locked={locked} unsaved={unsaved} blocked={hasReplacements} onMatch={() => matchLayout("MATCH_PHOTO")} onReview={() => matchLayout("REVIEW_PHOTO")} onRestore={() => matchLayout("RESTORE")} onBackdrop={changeBackdrop} onRestoreBackground={()=>matchLayout("RESTORE_BACKGROUND")} onBackground={mode => action("IMAGE_EDIT",undefined,mode)}/>
           : value === "products" ? current?.modelUrl ? <div className="panel-stack">{current.assemblyRootId ? <p className="panel-note">This region shares geometry with its complete subject. Move the subject to keep them together; catalog replacement applies to standalone objects.</p> : <CatalogControls items={catalogItems} busy={locked} dirty={unsaved} canRestore={current.canRestoreOriginal} onSeed={() => catalogAction("SEED")} onReplace={id => catalogAction("REPLACE", id)} onRestore={() => catalogAction("RESTORE")}/>}<ProductControls object={current} busy={locked} onChange={product => edit(current.id, { product })}/></div> : <p className="panel-empty">Select an object to add its product card.</p>
-          : <AppearanceControls panel={value} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={locked} texturesBlocked={hasReplacements} relightableBackground={data.composition?.background?.surfaceMode==="materials"} applied={data.appearance.applied} onRefresh={()=>appearance("APPLY")} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
+          : <AppearanceControls panel={value} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={locked} texturesBlocked={hasReplacements} relightableBackground={Boolean(data.composition?.background?.surfaceMode)} applied={data.appearance.applied} onRefresh={()=>appearance("APPLY")} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
         </div>)}
         <div className="inspector-footer">
           <button className="icon-button" title="Undo (Ctrl/⌘ Z)" aria-label="Undo edit" disabled={!history.length || locked} onClick={() => {interaction.current=null;setEditor(undoEdit);}}><Undo2 size={15}/></button>

@@ -5,6 +5,7 @@ import { Box3, Mesh, MeshStandardMaterial, PCFShadowMap, PerspectiveCamera, Vect
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
 import type { OrbitControls as OrbitControlsType } from "three-stdlib";
 import { manualStageCamera, type SceneComposition } from "@/lib/scene/composition";
+import {referenceFov} from "@/lib/scene/reference-framing";
 import { PhotoBackground } from "./photo-background";
 import {captureScene,focusDistance} from "@/lib/editor/capture";
 import {Download,Focus,Grid3x3,House,ImageOff,Lock,LockOpen} from "lucide-react";
@@ -67,6 +68,17 @@ function ViewerCommands({apiRef,controlsRef}:{apiRef:RefObject<ViewerApi|null>;c
  },[apiRef,controlsRef,gl,scene,camera]);
  return null;
 }
+function ReferenceFraming({reference}:{reference:SceneComposition["camera"]|undefined}){
+ const {camera,size}=useThree();
+ useEffect(()=>{
+  if(reference&&camera instanceof PerspectiveCamera){
+   // R3F owns an imperative Three camera; resizing must update its projection.
+   // eslint-disable-next-line react-hooks/immutability
+   camera.fov=referenceFov(reference.fov,reference.aspect,size.width/Math.max(1,size.height));
+   camera.updateProjectionMatrix();
+  }
+ },[camera,size.width,size.height,reference]);return null;
+}
 export default function ModelCanvas({ objects, selected, onSelect, composition, lighting, appearance }: { objects: RenderObject[]; selected: string; onSelect: (id: string) => void; composition: SceneComposition | null; lighting: Lighting; appearance: SceneWorkspace["appearance"] }) {
   const readOnly = objects.some(o => Boolean(o.worldTransform));
   const controls = useRef<OrbitControlsType>(null);
@@ -96,6 +108,7 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
   return <div className="model-viewport" style={{ "--scene-aspect": c?.aspect ?? 1.5 } as CSSProperties}>
     <Canvas onPointerMissed={event=>{if(event.type==="click")onSelect("");}} shadows={{type:PCFShadowMap}} camera={cameraOptions} dpr={[1, 1.5]}
       fallback={<p className="canvas-loading">WebGL is unavailable in this browser. You can still browse the scene details.</p>}>
+      <ReferenceFraming reference={c}/>
       <color attach="background" args={[backgroundHidden?"#f4f3ee":composition?.background?.plainColor ?? composition?.environment.wallColor ?? "#edece5"]}/>
       <hemisphereLight args={["#fffaf0", composition?.environment.floorColor ?? "#b1a38d", lighting.ambient]}/>
       <directionalLight position={lighting.key.position} intensity={lighting.key.intensity} color={lighting.key.color ?? lightingColor} castShadow

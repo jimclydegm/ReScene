@@ -31,7 +31,7 @@ export async function publish(sceneId:string,ownerId:string,revision:number){
  const assemblyMembers=await db.sceneObject.findMany({where:{sceneId,status:"READY",modelAssetId:{not:null}},select:{id:true,provenance:true}});
  for(const o of objects){const root=record(o.provenance).assemblyRootId;if(typeof root!=="string")continue;const members=assemblyMembers.filter(m=>record(m.provenance).assemblyRootId===root);if(members.some(m=>!objects.some(v=>v.id===m.id)))throw new AppError(422,"ASSEMBLY_VISIBILITY","Show the complete subject and all of its product regions before publishing this shared-geometry assembly.");}
 
- const composition=compositionSchema.safeParse(scene.stage).data??null,background=record(record(scene.settings).background),applied=background.version==="material-background-v2"?background:record(record(scene.settings).appearance);
+ const composition=compositionSchema.safeParse(scene.stage).data??null,background=record(record(scene.settings).background),applied=["material-background-v2","reference-environment-v1"].includes(String(background.version))?background:record(record(scene.settings).appearance);
  if(composition?.background)composition.background.description="Photo-derived background.";
  const m:Snapshot={schemaVersion:2,coordinates:{handedness:"right",upAxis:"Y",units:"approximate"},title:scene.title,description:scene.description,revision,approximateGeometry:true,composition,lighting:lightingSchema.safeParse(record(scene.settings).lighting).data??defaultLighting(composition),surfaces:{floorAssetId:typeof applied.floorId==="string"?applied.floorId:null,wallAssetId:typeof applied.wallId==="string"?applied.wallId:null,backgroundAssetId:typeof record(record(scene.settings).background).assetId==="string"?String(record(record(scene.settings).background).assetId):null},objects:[],products:[]};
  for(const o of objects){
@@ -48,6 +48,7 @@ export async function publish(sceneId:string,ownerId:string,revision:number){
  const assets=await db.asset.findMany({where:{id:{in:ids},sceneId,status:"READY"}});
  validateAssets(manifest,assets);
  const id=randomUUID(),slug=randomBytes(24).toString("base64url"),key=`${storagePrefix()}/scenes/${sceneId}/publications/${id}.json`,bytes=Buffer.from(JSON.stringify(manifest));
+ if(bytes.length>256*1024)throw new AppError(422,"SNAPSHOT_TOO_LARGE","This environment is too detailed to publish.");
  await putObject(key,bytes,"application/json");
  return db.$transaction(async tx=>{
   // Locks the same row as every draft save; no model/storage operations inside this transaction.
@@ -72,7 +73,7 @@ export async function sharedScene(slug:string){
  if(!/^[A-Za-z0-9_-]{32}$/.test(slug))throw new AppError(404,"NOT_FOUND","Shared scene not found.");
  const db=getDb(),publication=await db.scenePublication.findFirst({where:{slug,revokedAt:null,scene:{archivedAt:null}},include:{manifest:true}});
  if(!publication||publication.manifest.kind!=="SCENE_MANIFEST"||publication.manifest.status!=="READY"||publication.manifest.sceneId!==publication.sceneId)throw new AppError(404,"NOT_FOUND","This share link is unavailable.");
- const bytes=await readLimited(publication.manifest.storageKey,128*1024);
+ const bytes=await readLimited(publication.manifest.storageKey,256*1024);
  if(createHash("sha256").update(bytes).digest("hex")!==publication.manifest.sha256)throw new AppError(404,"NOT_FOUND","Snapshot unavailable.");
  const m=snapshotSchema.parse(JSON.parse(bytes.toString()));const ids=snapshotAssets(m);
  const allowed=z.array(z.uuid()).parse(publication.assetIds).sort();

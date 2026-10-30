@@ -31,6 +31,6 @@ export function ThemeMenu() {
   return <details className="theme-menu" ref={menu}>
     <summary className="icon-button" aria-label="Appearance" title="Appearance"><Icon size={16}/></summary>
     <div className="theme-options" role="menu" aria-label="Appearance">{options.map(([value, label, OptionIcon]) =>
-      <button key={value} role="menuitemradio" aria-checked={theme === value} onClick={() => { apply(value); if (menu.current) menu.current.open = false; }}><OptionIcon size={15}/>{label}{theme === value && <Check size={14}/>}</button>)}</div>
+      <button key={value} role="menuitemradio" aria-checked={theme === value} onClick={() => { apply(value); if (menu.current) menu.current.open = false; }}><OptionIcon size={15}/><span>{label}</span><span className="theme-check">{theme === value && <Check size={14}/>}</span></button>)}</div>
   </details>;
 }
