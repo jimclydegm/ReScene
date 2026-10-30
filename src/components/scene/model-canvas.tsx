@@ -58,6 +58,7 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
     if (value) { value.update(); value.saveState(); }
   }, []);
   const [grid, setGrid] = useState(false);
+  const [zoomLocked,setZoomLocked]=useState(false);
   const floorY=Math.min(composition?.floorY ?? 0,...objects.filter(o=>o.visible&&!o.worldTransform).map(o=>o.positionY));
   const c = composition?.camera;
   const lightingColor = composition?.environment.lightWarmth === "warm" ? "#fff0d8" : composition?.environment.lightWarmth === "cool" ? "#e1edff" : "#ffffff";
@@ -65,7 +66,7 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
   return <div className="model-viewport" style={{ "--scene-aspect": c?.aspect ?? 1.5 } as CSSProperties}>
     <Canvas shadows camera={{ position: c?.position ?? [5, 4, 7], fov: c?.fov ?? 42, near: 0.01, far: Math.max(500,c?new Vector3(...c.position).distanceTo(new Vector3(...c.target))*16:500) }} dpr={[1, 1.5]}
       fallback={<p className="canvas-loading">WebGL is unavailable in this browser. You can still browse the scene details.</p>}>
-      <color attach="background" args={[composition?.environment.wallColor ?? "#edece5"]}/>
+      <color attach="background" args={[composition?.background?.plainColor ?? composition?.environment.wallColor ?? "#edece5"]}/>
       <hemisphereLight args={["#fffaf0", composition?.environment.floorColor ?? "#b1a38d", lighting.ambient]}/>
       <directionalLight position={lighting.key.position} intensity={lighting.key.intensity} color={lightingColor} castShadow
         shadow-mapSize={[2048, 2048]} shadow-camera-left={-12} shadow-camera-right={12} shadow-camera-top={12} shadow-camera-bottom={-12} shadow-normalBias={0.03}/>
@@ -73,11 +74,11 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
       <Suspense fallback={null}>{composition && <PhotoBackground composition={composition} url={appearance.backgroundUrl ?? null} legacyFloor={appearance.floorUrl} floorY={floorY}/>}</Suspense>
       <Suspense fallback={null}>{objects.filter(o => o.modelUrl).map(o => <Model key={o.id} object={o} selected={selected === o.id} select={() => onSelect(o.id)}/>)}</Suspense>
       {(!composition || grid) && <Grid position={[0, floorY + 0.005, 0]} args={[30, 30]} cellSize={0.5} sectionSize={2} fadeDistance={20} cellColor="#c5c6ba" sectionColor="#a8b1a1"/>}
-      <OrbitControls ref={bindControls} makeDefault target={target} minDistance={0.3}
+      <OrbitControls ref={bindControls} makeDefault target={target} minDistance={0.3} enableZoom={!zoomLocked}
         maxDistance={Math.max(40, c ? new Vector3(...c.position).distanceTo(new Vector3(...c.target)) * 2 : 40)} maxPolarAngle={composition?.backdrop === "none" ? Math.PI-.01 : Math.PI / 2 - 0.01}/>
     </Canvas>
     <div className="viewer-toolbar"><button onClick={() => controls.current?.reset()}>{readOnly ? "Reset view" : composition ? "Photo view" : "Reset camera"}</button>
-      {composition && !readOnly && <button aria-pressed={grid} onClick={() => setGrid(value => !value)}>{grid ? "Hide grid" : "Show grid"}</button>}</div>
-    <span className="viewer-help">Drag to orbit · right-drag to pan · scroll to zoom</span>
+      {composition && !readOnly && <button aria-pressed={grid} onClick={() => setGrid(value => !value)}>{grid ? "Hide grid" : "Show grid"}</button>}<label className="zoom-lock"><input type="checkbox" checked={zoomLocked} onChange={e=>setZoomLocked(e.target.checked)}/>Zoom lock</label></div>
+    <span className="viewer-help">Drag to orbit · right-drag to pan · {zoomLocked?"zoom locked":"scroll to zoom"}</span>
   </div>;
 }

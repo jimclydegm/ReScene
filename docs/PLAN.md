@@ -43,3 +43,9 @@ Body and Align were tested on the saved person. Both are useful anatomy/coordina
 ## Photo-matched backgrounds — October 30
 
 Replace the inferred room box with observed background structure and a photo-projected derived plate. General Spark analysis distinguishes open surfaces, actual wall/support seams and distant context. SAM masks plus one Muse Image edit remove reconstructed foreground; app-side compositing preserves known source pixels, blends boundaries and extends reliable smooth gradients. No side walls/baseboards or category-specific defaults. New reconstruction includes one optional background step; existing scenes have an independent durable refresh. Failures preserve READY geometry and never automatically resubmit. Extend frozen render allowlists for the derived background while keeping original/raw assets private. See BACKGROUND_RECONSTRUCTION.md for architecture, evidence and one-image limits.
+
+## Plain backgrounds and hollow-object investigation — October 30
+
+Add a conservative pixel-based plain-field preflight before background inference, persisting optional validated plainColor in the existing composition JSON/snapshot contract. Render it without baked shadows. Add viewer-local Zoom lock alongside Show grid, retaining orbit/pan. No new service, SQL migration or model provider.
+
+Investigate actual hosted SAM 3D controls and one comparison using provider-only mask opening refinement. Preserve accepted masks and old meshes. The trial did not clearly improve overall geometry, so refinement is an explicit experimental opt-in rather than a new automatic default. Reuse it during source-detail transfer only when enabled. Preserve seed/export, full photo frame, private provenance, original restore and no automatic paid retries. Accurate hollow topology remains an unresolved model limit, not a completed capability.

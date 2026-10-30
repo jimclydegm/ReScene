@@ -7,7 +7,7 @@ export const analysisOptionsSchema = z.object({
   maxObjects: z.number().int().min(1).max(10).default(10),
   instructions: z.string().trim().max(600).default("")
 }).strict();
-export const reconstructionOptionsSchema = z.object({ seed: z.number().int().min(0).max(2147483647).default(42) }).strict();
+export const reconstructionOptionsSchema = z.object({ refineOpenings: z.boolean().default(false), seed: z.number().int().min(0).max(2147483647).default(42) }).strict();
 export const pixelBoxSchema = z.object({
   xMin: z.number().int().nonnegative(), yMin: z.number().int().nonnegative(),
   xMax: z.number().int().positive(), yMax: z.number().int().positive()

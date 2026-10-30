@@ -245,3 +245,9 @@ Photo transfer supports up to ten meshes, original-root camera calculation, boun
 ## Implemented background model use — October 30
 
 Muse Spark general analysis now includes observed open/plane/distant background structure. Legacy scenes use a small background-only structured call (4096 output allowance, low reasoning effort). Muse Image muse-image-1.0 performs one reference edit per explicit background refresh or optional post-reconstruction background step, through Meta JSON /images/edits with two input images and search/shell tools off. The API rejects mask parameters, so ReScene enforces its SAM removal footprint and preserves unmasked source pixels itself. Raw results stay private; only the composited derivative can publish. Both clients and workflow steps disable automatic paid retries. See official https://dev.meta.ai/docs/image-generation and BACKGROUND_RECONSTRUCTION.md.
+
+## Plain-background / hollow topology investigation — October 30
+
+Plain RGB preflight skips background inference for high-confidence constant fields, ignoring minority cast shadows. `plainColor` is generated locally and omitted from Meta strict structured-output schemas. SAM 3D's hosted API exposes no mesh-resolution, topology or inference-step quality parameter. Supplied masks bypass text-driven detection; detection threshold is not a mesh quality control. An optional pointmap requires a correctly registered same-camera depth source, which is not integrated.
+
+One same-seed experiment refined four bright enclosed background gaps in the shoe mask. Geometry remained inaccurate; the existing model was kept. Provider-only mask refinement is experimental/off by default, leaves accepted outlines unchanged, and can also exclude those pixels from source texture transfer when enabled. It is not proof that hollow geometry is faithfully recovered. See BACKGROUND_RECONSTRUCTION.md for official links and evidence.

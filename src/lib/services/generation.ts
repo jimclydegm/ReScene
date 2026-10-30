@@ -209,8 +209,24 @@ export async function submitReconstruction(runId: string) {
   const objects = ids.map(id => found.find(o => o.id === id)!);
   if (objects.some(o => !o?.mask || o.mask.status !== "READY")) throw new Error("MASK_UNAVAILABLE");
   const options=reconstructionOptionsSchema.parse(record(run.input).reconstruction ?? {});
-  const input = { image_url: await providerInput(run.scene.normalizedAsset!), mask_urls: await Promise.all(objects.map(o => providerInput(o.mask!))), export_textured_glb: true, seed: options.seed };
+  // Derive provider-only masks; reviewed masks remain immutable/restorable.
+  const sharp=(await import("sharp")).default;
+  const {refineOpenings}=await import("@/lib/appearance/plain");
+  const raw=await sharp(await readLimited(run.scene.normalizedAsset!.storageKey,4*1024*1024)).removeAlpha().toColourspace("srgb").raw().toBuffer({resolveWithObject:true});
+  const image={data:raw.data,width:raw.info.width,height:raw.info.height};
+  const providerMasks=[];
+  const refinements=[];
+  for(const o of objects){
+    const mask=await sharp(await readLimited(o.mask!.storageKey,4*1024*1024)).greyscale().raw().toBuffer({resolveWithObject:true});
+    if(mask.info.width!==image.width||mask.info.height!==image.height)throw new Error("MASK_SIZE");
+    const refined=options.refineOpenings ? refineOpenings(image,mask.data) : {pixels:mask.data,removed:0,openings:0};
+    refinements.push({objectId:o.id,originalMaskId:o.mask!.id,removedPixels:refined.removed,openings:refined.openings});
+    if(refined.removed){const bytes=await sharp(refined.pixels,{raw:{width:image.width,height:image.height,channels:1}}).png().toBuffer();providerMasks.push(await artifact(run.sceneId,runId,"MASK",bytes,"image/png",{width:image.width,height:image.height}));}
+    else providerMasks.push(o.mask!);
+  }
+  const input = { image_url: await providerInput(run.scene.normalizedAsset!), mask_urls: await Promise.all(providerMasks.map(o => providerInput(o))), export_textured_glb: true, seed: options.seed };
   const step = await beginStep(runId, "sam3d-submit", "FAL", process.env.SAM3D_MODEL ?? "fal-ai/sam-3/3d-objects");
+  await getDb().generationStep.update({where:{id:step.id},data:{input:asJson({maskRefinement:"enclosed-openings-v1",enabled:options.refineOpenings,providerMaskIds:providerMasks.map(m=>m.id),refinements})}});
   await getDb().generationRun.update({ where: { id: runId }, data: { currentStage: "Reconstructing 3D objects", progress: 15 } });
   const { client, model } = getSam3dClient();
   const request = await client.queue.submit(model, { input, abortSignal: AbortSignal.timeout(60_000) });

@@ -6,7 +6,8 @@ import { getDb } from "@/lib/db";
 import { AppError } from "@/lib/http";
 import { bucket, storagePrefix, putObject, readLimited } from "@/lib/storage/r2";
 import { analyzeBackground, fillBackground } from "@/lib/ai/background";
-import { backgroundPlanSchema } from "@/lib/scene/background";
+import { plainBackground } from "@/lib/appearance/plain";
+import { fallbackBackground, backgroundPlanSchema } from "@/lib/scene/background";
 import { compositionSchema } from "@/lib/scene/composition";
 import { backgroundFootprint, compositeBackground } from "@/lib/appearance/background";
 import { record } from "./composition";
@@ -27,9 +28,24 @@ export async function buildSceneBackground(runId: string) {
     if (mask.info.width !== image.width || mask.info.height !== image.height) throw new Error("BACKGROUND_MASK_SIZE");
     return mask.data;
   }));
-  const footprint = await backgroundFootprint(image, masks);
   const settings = record(scene.settings);
   let plan = backgroundPlanSchema.safeParse(settings.backgroundPlan).data;
+  const plain = plainBackground(image, masks);
+  if (plain) {
+    const observed = { ...(plan ?? fallbackBackground), kind: "seamless" as const, boundary: null, plainColor: plain.color };
+    await db.$transaction(async tx => {
+      const current = await tx.generationRun.findFirst({ where: { id: runId, status: { in: ["RUNNING", "WAITING"] } } });
+      if (!current) throw new AppError(409, "RUN_STALE", "The background request is no longer active.");
+      const saved = await tx.scene.updateMany({ where: { id: scene.id, revision: scene.revision, status: "READY", archivedAt: null }, data: {
+        stage: json({ ...composition.data, background: observed }), settings: json({ ...settings, backgroundPlan: observed, background: null }), revision: { increment: 1 }
+      } });
+      if (!saved.count) throw new Error("BACKGROUND_REVISION_CHANGED");
+    });
+    return;
+  }
+  // A previous classification is not evidence for the current mask set.
+  if (plan?.plainColor) plan = backgroundPlanSchema.omit({ plainColor: true }).parse(Object.fromEntries(Object.entries(plan).filter(([key]) => key !== "plainColor")));
+  const footprint = await backgroundFootprint(image, masks);
   async function step(key: string, modelId: string) {
     // An existing attempt is never submitted again, even after a workflow crash.
     return db.generationStep.create({ data: { runId, key, attempt: 1, provider: "META", modelId, status: "RUNNING", startedAt: new Date() } });

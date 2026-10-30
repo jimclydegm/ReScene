@@ -5,6 +5,7 @@ import type { SceneComposition } from "./composition";
 export const backgroundPlanSchema = z.object({
   kind: z.enum(["seamless", "planes", "distant"]),
   groundVisible: z.boolean(),
+  plainColor:z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   // Normalized source-image Y at the left/right edges. Null means no observed seam.
   boundary: z.object({leftY:z.number().min(0).max(1),rightY:z.number().min(0).max(1)}).strict().nullable(),
   description: z.string().min(1).max(500)
