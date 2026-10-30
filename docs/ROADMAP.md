@@ -157,3 +157,11 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Prepare reported photo without object regeneration; native local Chrome WebGL/lighting/orbit checks and focused safeguards.
 - [x] 179 cases/schema/lint/types/build and CI pass. PR #25 merged at 835efd8; production READY, reported scene updated through the deployed saved-result workflow, objects/products/camera/lights preserved.
 - [x] Native production desktop/390×844, report/method controls, snapshot privacy/allowlist and two-way restore verified; disposable QA restored and share revoked; zero runtime/browser error records.
+
+## Analysis request recovery and compact controls — October 30
+
+- [x] Reproduce reported failure as strict-schema HTTP400 caused by leaked renderer geometry.
+- [x] Observation-only output contract, local strict validation, persistent response receipts and correct rejection/uncertainty diagnostics.
+- [x] Compact discovery controls, optional focus disclosure and correct empty/failure messaging.
+- [x] 188 cases/schema/lint/types/build pass.
+- [ ] Merge/release, recover the reported saved photo and verify production controls. Browser access currently disabled; visual verification pending access.

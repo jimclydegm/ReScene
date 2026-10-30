@@ -1879,3 +1879,15 @@ html { background: var(--paper); }
 .review-badge.passed { background: rgb(47 106 70 / .9); }
 .review-badge.attention { background: rgb(154 106 31 / .9); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* Compact analysis form; optional instructions do not push item review away. */
+.analysis-controls > summary { margin-bottom: 0; }
+.analysis-controls[open] > summary { margin-bottom: 10px; }
+.analysis-controls > fieldset { gap: 8px; }
+.analysis-controls .analysis-focus { border: 1px solid var(--line); border-radius: 7px; background: var(--surface); }
+.analysis-controls .analysis-focus > summary { margin: 0; padding: 6px 9px; gap: 5px; font-size: 12px; font-weight: 500; }
+.analysis-controls .analysis-focus > summary::after { font-size: 15px; content: "+"; }
+.analysis-controls .analysis-focus[open] > summary::after { content: "−"; }
+.analysis-controls .analysis-focus > label { padding: 0 8px 8px; }
+.analysis-controls .analysis-focus textarea { min-height: 58px; max-height: 160px; resize: vertical; }
+.analysis-controls > fieldset > small { font-size: 10.5px; line-height: 1.4; }

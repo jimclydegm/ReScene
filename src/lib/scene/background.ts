@@ -3,18 +3,21 @@ import {environmentGeometrySchema} from "./environment-plan";
 import { Matrix4, PerspectiveCamera, Plane, Ray, Vector3 } from "three";
 import type { SceneComposition } from "./composition";
 
-export const backgroundPlanSchema = z.object({
+// Model observations have a separate allowlist. Adding renderer state must
+// never change the structured-output schema sent to an inference provider.
+export const backgroundObservationSchema = z.object({
+  kind: z.enum(["seamless", "planes", "distant"]),
+  groundVisible: z.boolean(),
+  boundary: z.object({leftY:z.number().min(0).max(1),rightY:z.number().min(0).max(1)}).strict().nullable(),
+  description: z.string().min(1).max(500)
+}).strict();
+export const backgroundPlanSchema = backgroundObservationSchema.extend({
   surfaceMode:z.enum(["materials","reference"]).optional(),
   geometry:environmentGeometrySchema.optional(),
   transition:z.enum(["open","curve"]).optional(),
   junctions:z.array(z.object({x:z.number().min(0).max(1),y:z.number().min(0).max(1)}).strict()).min(2).max(3).optional(),
   materials:z.object({ground:z.object({color:z.string().regex(/^#[0-9a-fA-F]{6}$/),roughness:z.number().min(.2).max(1),tileSize:z.number().min(.1).max(10)}).strict(),wall:z.object({color:z.string().regex(/^#[0-9a-fA-F]{6}$/),roughness:z.number().min(.2).max(1),tileSize:z.number().min(.1).max(10)}).strict()}).strict().optional(),
-  kind: z.enum(["seamless", "planes", "distant"]),
-  groundVisible: z.boolean(),
   plainColor:z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  // Normalized source-image Y at the left/right edges. Null means no observed seam.
-  boundary: z.object({leftY:z.number().min(0).max(1),rightY:z.number().min(0).max(1)}).strict().nullable(),
-  description: z.string().min(1).max(500)
 }).strict();
 export type BackgroundPlan = z.infer<typeof backgroundPlanSchema>;
 export const fallbackBackground: BackgroundPlan = { kind: "seamless", groundVisible: true, boundary: null,

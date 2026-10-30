@@ -267,3 +267,7 @@ The [fal Objects schema](https://fal.ai/models/fal-ai/sam-3/3d-objects/api) stil
 ## Meta VGGT environment depth
 
 The default planar background workflow calls hosted `fal-ai/vggt-1b` with one source photo and raw prediction export. It decodes depth/confidence/intrinsics, removes the 518-square/14-pixel loader padding and fits geometry in the saved SAM scene camera/frame; it does not load VGGT's point cloud as a room model. Completed and unfinished same-photo jobs are reused. No new key is needed beyond existing FAL_KEY, and polling never resubmits. Muse Spark plans every visible surface/opening and reviews the empty atlas; Muse Image makes one clean intrinsic background fill. Remaining review notes stay visible. Exact parameters, source links, storage/privacy and checkpoint-label limitation: REFERENCE_ENVIRONMENTS.md.
+
+## Strict analysis contract correction
+
+`scene-observations-v9` sends an explicit background observation schema (kind, groundVisible, boundary, description), never renderer geometry/material state. A local validator checks Meta's strict required/additionalProperties rules before dispatch. Request receipt/raw response persistence precedes analysis parsing. HTTP400 rejection is reported distinctly from a lost response; uncertain attempts remain protected against paid resubmission. Source: https://dev.meta.ai/docs/structured-output. The prior shared-schema regression was reproduced as HTTP400: missing geometry in the required array, rather than an inference timeout.

@@ -86,6 +86,49 @@
             "background": {
               "type": "object",
               "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "seamless",
+                    "planes",
+                    "distant"
+                  ]
+                },
+                "groundVisible": {
+                  "type": "boolean"
+                },
+                "boundary": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "leftY": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "rightY": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        }
+                      },
+                      "required": [
+                        "leftY",
+                        "rightY"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "description": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                },
                 "surfaceMode": {
                   "type": "string",
                   "enum": [
@@ -360,52 +403,9 @@
                   ],
                   "additionalProperties": false
                 },
-                "kind": {
-                  "type": "string",
-                  "enum": [
-                    "seamless",
-                    "planes",
-                    "distant"
-                  ]
-                },
-                "groundVisible": {
-                  "type": "boolean"
-                },
                 "plainColor": {
                   "type": "string",
                   "pattern": "^#[0-9a-fA-F]{6}$"
-                },
-                "boundary": {
-                  "anyOf": [
-                    {
-                      "type": "object",
-                      "properties": {
-                        "leftY": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 1
-                        },
-                        "rightY": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 1
-                        }
-                      },
-                      "required": [
-                        "leftY",
-                        "rightY"
-                      ],
-                      "additionalProperties": false
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                },
-                "description": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 500
                 }
               },
               "required": [

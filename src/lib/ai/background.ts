@@ -1,18 +1,19 @@
 import "server-only";
 import { z } from "zod";
 import { getMetaClient, metaModels } from "./meta";
-import { backgroundPlanSchema, type BackgroundPlan } from "@/lib/scene/background";
+import { backgroundObservationSchema, type BackgroundPlan } from "@/lib/scene/background";
+import { strictResponseFormat } from "./structured-output";
 
 import { backgroundInstructions } from "./background-instructions";
 
 export async function analyzeBackground(image: string) {
   const response = await getMetaClient().chat.completions.create({ model: metaModels.analysis(), max_completion_tokens: 4096, reasoning_effort:"low",
     messages: [{ role: "system", content: backgroundInstructions }, { role: "user", content: [{ type: "text", text: "Analyze this background for a photo-matched 3D scene. Return only observed structure." }, { type: "image_url", image_url: { url: image } }] }],
-    response_format: { type: "json_schema", json_schema: { name: "scene_background", strict: true, schema: z.toJSONSchema(backgroundPlanSchema.omit({plainColor:true,geometry:true})) } }
+    response_format: strictResponseFormat("scene_background", backgroundObservationSchema)
   }, { maxRetries: 0 });
   const choice = response.choices[0];
   if (choice?.finish_reason !== "stop" || !choice.message.content || choice.message.refusal) throw new Error(`BACKGROUND_ANALYSIS_${choice?.finish_reason??"INCOMPLETE"}`);
-  return { plan: backgroundPlanSchema.parse(JSON.parse(choice.message.content)), requestId: response.id, usage: response.usage };
+  return { plan: backgroundObservationSchema.parse(JSON.parse(choice.message.content)), requestId: response.id, usage: response.usage };
 }
 
 export async function fillBackground(photo: Buffer, guide: Buffer, plan: BackgroundPlan, size:{width:number;height:number}) {
