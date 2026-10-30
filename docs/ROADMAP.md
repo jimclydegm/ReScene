@@ -54,7 +54,7 @@ The clothing correction has 61 passing unit cases, passed CI/build and saved-dat
 - [x] General open/plane/distant observations; remove inferred room boxes, side walls and baseboards.
 - [x] One durable Muse clean-plate edit, bounded mask compositing/blending and smooth-gradient preservation; independent existing-scene refresh.
 - [x] Shared private/public rendering, immutable background allowlists, existing-source privacy and READY failure preservation.
-- [ ] Combined verification, one PR/production release and bounded desktop/mobile checks.
+- [x] PR #14 merged at 2a927ed; 83 tests and CI pass, production READY, bounded deployed desktop/mobile and read-only API checks pass.
 
 ## External completion gates
 

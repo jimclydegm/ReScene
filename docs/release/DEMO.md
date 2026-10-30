@@ -29,7 +29,7 @@ Use a short recording suitable for the participant portal's actual limit. The ti
 - Meta SAM 3D Objects: fal-ai/sam-3/3d-objects hosted on fal, independent meshes and inferred textures.
 - ReScene: source-photo UV transfer, estimated room planes, lighting UI, editing/product mapping and immutable snapshots.
 - Demo catalog: three original procedural GLBs and SVG thumbnails, CC0 1.0. See CATALOG.md.
-- No WorldGen API, Muse Image editing, voice, garment fit or exact unseen reconstruction is claimed. Do not list unused Meta models or Muse Code as integrations.
+- Muse Image background editing is implemented and tested. No WorldGen API, voice, garment fit or exact unseen reconstruction is claimed. Body/Align remain experiments, not runtime defaults. Do not list unused Meta models or Muse Code as integrations.
 
 ## Links and fields
 

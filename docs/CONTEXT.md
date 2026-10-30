@@ -1,70 +1,59 @@
 # ReScene — current handoff
 
-Updated October 30, 2026 (Asia/Manila). Read this, then only task-relevant technical files. Historical milestones are in docs/history; they are not the active work queue.
+Updated October 30, 2026 (Asia/Manila). Read this and ROADMAP first, then task-relevant technical files. Historical milestones are not the active work queue.
 
 ## Objective and working style
 
-Finish a usable photo-to-shoppable-3D hackathon app quickly. Jim clarified that any scene/product, including clothing and footwear, is in scope; furniture/home decor is an example, never an input restriction. Jim confirmed **Indie developer** track and a November 2 build freeze. He explicitly requested **bulk implementation**, fewer repeated tests/deployments, and no stopping for “next phase” after every subfeature. Follow the single release bundle in ROADMAP.md and consolidated PLAN.md. One branch/PR, one combined verification pass, one production release; repeat only checks affected by a failure/change.
+Finish the photo-to-shoppable-3D hackathon app before November 2, 2026. Jim is in the **Indie developer** track. Any uploaded scene/product is in scope, including people, animals, clothing, food and electronics; furniture is only a demo example. Jim requested **bulk implementation**, fewer repeated tests/deployments and no stopping after micro-phases. Use one branch/PR and combined verification/release. Repeat only checks affected by a failure/change; prefer saved assets over fresh inference.
 
 ## Stack and access
 
-- Next.js 16.4.3 / React 19.3.1 / TypeScript, R3F/Three/Drei, plain CSS; Vercel Node22/iad1. Read installed Next docs before code changes.
-- Neon Postgres / Prisma7.10.1; Neon Managed Better Auth owns neon_auth. Runtime uses pooled Neon adapter. Local/preview/production share prototype data/storage; Git branches do not isolate it.
-- Private Cloudflare R2, immutable assets, owner/snapshot-scoped signed GETs. Public bucket URL disabled. Jim explicitly keeps **automatic staging deletion/cleanup disabled**.
-- Secrets stay in ignored .env.local and Vercel. Never print/commit credentials, source photos, signed links, provider IDs or raw artifacts. Vercel MCP OAuth stays pending; authenticated CLI works. Use current pinned CLI (65.8.0), not the outdated global CLI.
+- Next.js 16.4.3 / React 19.3.1 / TypeScript, R3F/Three/Drei, plain CSS. Vercel Node 22/iad1. Read installed Next docs before code changes.
+- Neon Postgres / Prisma 7.10.1; Neon Managed Better Auth owns neon_auth. Pooled runtime adapter. Local/preview/production share prototype database/storage; branches do not isolate data.
+- Private Cloudflare R2, immutable assets and owner/snapshot-scoped signed GETs. Public bucket URL disabled. **Automatic staging deletion remains disabled** at Jim's request.
+- Secrets remain in ignored .env.local and Vercel. Never print/commit credentials, source photos, signed links, provider IDs or raw artifacts. Vercel MCP OAuth stays pending; authenticated CLI works. Use pinned CLI 65.8.0 rather than the outdated global CLI.
+- Chrome browser access works. Actual Google consent and contest portal/submission are unverified; recording remains deferred. No blanket browser-disabled claim.
 
-## Implemented core
+## Implemented application
 
-- Private upload/normalization, Meta analysis, reviewed subject/product masks, bounded scene GLBs, durable generation, save/reload/restart/error recovery.
-- Meta runtime: muse-spark-1.3 + sam-3.1 directly via Meta Model API; Meta SAM 3D Objects through fal-ai/sam-3/3d-objects. Do not substitute another model provider. WorldGen has no verified developer API; SAM segmentation and SAM 3D reconstruction are distinct.
-- Composed room/camera preserves approximate SAM size/pose/depth. initialTransform holds imported quaternion/scale/offset; draft XYZ/yaw/uniform scale is outside it. Photo-bake-v1 copies visible, depth/mask-gated source pixels into new embedded GLB textures; originals remain restorable. Clean repeated photo patches supply floor/wall. Hidden geometry/materials and room extensions are approximate, not a scan.
-- Editor: Objects/Textures/Lighting/Products tabs, numeric controls, undo/redo, expandable private reference, main/fill XYZ/intensity and ambient controls, merchant name/brand/description/price/link and private mask-cutout thumbnails.
-- Original CC0 demo catalog: chair/cabinet/table, explicitly illustrative, no fabricated price/link. Same-scene replacements atomically clone the card and fit a bottom-center baseline. replacementBackup restores original mesh/card/baseline while retaining current placement. Photo matching/textures require original geometry; lighting stays editable.
-- Publication v2: confirmed unlisted frozen snapshot, private immutable JSON/hash and exact render-only allowlist. Flatten draft × imported transforms; public renderer must not normalize twice. Anonymous /s/[slug] + /api/shared/[slug] never join live draft products or expose full photos/masks/raw/provenance. Up to ten active revocable links. Revoke/archive/restart stop new access; signed links can last 15 minutes and downloads cannot be recalled.
+Private upload/normalization → Meta analysis → reviewed masks → textured meshes → layout/appearance/lights → merchant products/replacements → unlisted frozen shopper snapshot. Dashboard supports search/status filters, pagination, project details, archive/restore and active share indicators. Restarting an earlier step confirms invalidation of later results. Saved-state/conflict/recovery/navigation protection are implemented.
 
-## Current release bundle
+Runtime models: Muse Spark 1.3 and SAM 3.1 directly via Meta Model API; Meta SAM 3D Objects via fal. Muse Image 1.0 now fills clean background plates via Meta. SAM 3.1 is segmentation, SAM 3D Objects is reconstruction. WorldGen has no verified developer API. Body and Align each completed one clothing experiment, returning untextured GLBs without UVs; they remain private diagnostics, **not runtime defaults**. Align requires a Body mesh; it is not a general object-placement solver.
 
-Project name/description editing, searchable/status-filtered dashboard and active share indicators; reversible archive/restore that retains assets and revokes old shares; publish shortcut, discard/reload conflict recovery, unsaved navigation/sign-out protection and viewer retry reset. Archive/metadata mutations serialize with generation starts. No migration or inference is needed.
+General analysis detects complete roots, attached product regions and independent support relationships automatically, within an internal ten-entry safety bound. The user is not asked how many items to find. Roots reconstruct once; disjoint triangle regions preserve body/context and shared geometry/UVs. All reconstructed assembly members must be visible to publish their shared atlas. Object transforms apply draft × imported pose once; grouped moves/hiding preserve the assembly. Bottom-envelope/vertex checks keep floor/support surfaces below geometry. Support settling remains an estimate when a support mesh is absent.
 
-Delivery: CI checks PR changes once (no duplicate feature-push job), cancels superseded runs, and uses npm run check. Docs-only CI skips reinstall/build. Vercel ignoreCommand compares against the prior successful deployment and skips docs/test/tooling-only deployments; .vercelignore must retain .git in the build workspace for this comparison; app/config/schema changes and unknown comparisons always build. scripts/verify-release.mjs is the single reusable saved-data regression; --smoke is bounded/read-only for post-deploy. Historical smoke runners remain available only for a specific regression, not a default sweep.
+Source detail supports ten mesh regions, bounded per-root registration and up-to-2K visible source-pixel baking; originals remain restorable and refresh starts from them. Unseen texture/geometry and garment fit are not verified. Editor tabs expose objects, textures, main/fill XYZ/intensity, ambient light and merchant-entered product fields. Demo catalog assets are original CC0 examples without fabricated prices/links. Replacements preserve a restorable original baseline/card; photo matching requires original geometry.
 
-## Evidence and fixtures
-
-PRs #1–#9 implement the core. PR #9 (be841d8) and production passed 47 tests plus publication/access/isolation checks. A fresh deployed upload → Meta analysis → two real meshes → merchant edit → replacement → publish → anonymous cards/GLBs/CORS → revoke passed. Analysis took 19.824s and reconstruction/ingestion 82.298s server-run time, excluding user review. Actual total charges are unknown; reserved amounts are estimates. See TESTING.md, not repeated inference, for evidence.
-
-- Jim's selected source example: 1cc4e890-1ca8-4435-ac00-722dccefb995.
-- **Reuse disposable saved-data QA:** 6800b8a2-7c39-4a52-8fde-790eb03ab46c. Preserve/restore its metadata; revoke temporary test shares.
-- **Do not mutate** the earlier appearance example f2848b95-8447-41eb-9544-0d72dd605565: Jim has saved a real test listing there.
-- Fresh release run: 20d22f55-9857-49eb-96f1-435826585347; private saved backup, test shares revoked. Checkpoints/reports remain ignored under test-results.
-
-Jim removed the cumulative generation cap; do not reintroduce GENERATION_BUDGET_USD. Still avoid paid inference in routine development: reuse saved assets unless a specific generation bug requires a new call. Keep idempotency, provider job IDs, one active user job and **zero automatic paid retries**. Meta and fal bills are separate.
-
-PR #10 merged at 648010b and production is READY. All 52 tests and the single PR CI run pass. The one saved-data regression passes, restores original metadata and revokes its temporary share; bounded read-only production smoke passes. No fresh inference, QA scenes or photo/model uploads. App functionality in this release bundle is complete; remaining access/human gates are below.
-
-## Remaining access/human gates
-
-Browser access became available October 30 through Chrome. Desktop scene inspection is now possible; record exactly which controls/breakpoints were verified. Final recording/Google consent are not automatically verified. Actual Google consent is unverified. Indie demo/submission draft is in release/DEMO.md; private portal fields/video limit and final contest submission remain pending. Continue app work independently and report these concrete limits without restarting micro-phases.
-
-Technical references: ARCHITECTURE.md, DATA_MODEL.md + prisma/schema.prisma, META_MODELS.md, TEXTURE_FIDELITY.md, CATALOG.md, TESTING.md, SETUP.md. Runtime publication contract: contracts/scene-manifest-v2.schema.json; v1 is historical proposed architecture.
-
-## Current correction: complete subjects, parts and ground
-
-Jim reported missing anatomy, a floor above shoes, and unnecessary count controls. PR #12 merged at f58d4eb; checkout is main. scene-assemblies-v4 automatically detects complete roots plus linked product parts (ten-entry internal safety bound); legacy maxObjects input no longer truncates discovery and the UI count control is removed. Full subjects are reconstructed once; projected triangle partitioning creates selectable product regions while preserving the body/context, shared UV/materials, pose and camera. Every triangle has one owner. Unsupported/uncertain partitions retain the whole subject with an explicit partial result, not independently invented overlapping garments. Group moves/hide affect linked pieces; standalone catalog replacements are blocked for them.
-
-SAM raster decoding now resamples a bounded low-resolution mask into its source-coordinate box. Shoes resolve/union within their detected region without extra inference. Floor estimation uses the minimum geometry height rather than garment medians; editor planes and new public snapshots stay below visible geometry. Shared-atlas assemblies must be completely visible to publish; source/masks/provenance remain private. No migration or new provider integration. SAM 3D Body/Align were researched; they are not runtime dependencies. See SCENE_UNDERSTANDING.md for evidence, exact scope and limitations.
-
-The existing clothing scene 2b495855-65dc-4ca3-ad93-1460e53eb5fe is READY with the complete person plus three linked product regions, all at a common baseline and floorY=0. One automatic Spark call found the four linked entries with no count/focus instructions. One full-person Objects job completed in 26 seconds; existing outputs were reused for adoption. 5,218 triangles were conserved once (2,867 body/context, 1,281 shirt, 838 shorts, 232 shoes). A private upgrade backup retains earlier objects/stage; merchant associations were preserved and no public snapshot was created. Offline static rendering shows the complete figure; do not call it browser verification.
-
-65 unit cases, schema/lint/build/type checks pass. The reusable saved-data regression passed and restored the QA fixture. Actual complete-subject edit/save/restore and partial-assembly publication rejection pass; source transforms/visibility were restored and no share/inference created by those checks. Production is READY at rescene-qh4lsrwsp-jimclydegms-projects.vercel.app (dpl_3x5X3wAa2TcLRgDaAFEYek1g2hyW), aliased to rescene-eta.vercel.app. CI and bounded production controls/auth/recovery smoke checks pass. No additional inference was used by post-deploy checks; keep the external browser gate separate from numerical/API evidence.
-
-## Current quality correction
-
-PR #13 merged at a6c8b76; checkout is main. scene-relations-v5 balances general categories and distinguishes attached parts from supported independent objects. Support links are validated/persisted; tabletop contacts use support height or a shared plane when its mesh is missing, then actual vertex-bottom refinement. Photo transfer now supports ten meshes/shared regions, bounded per-root registration and up-to-2K source-pixel baking. Refresh rebakes from original meshes; new workflows attempt it once after geometry ingestion without inference. See SCENE_QUALITY.md for limits and model roles.
-
-Desk example c9035519-8cf4-45cd-88c2-36d32571eff1 is repaired with source detail on all six mesh regions and independent object bottoms verified at Y=0. Existing assets/masks were reused; no new desk reconstruction. One v5 Spark analysis independently found four objects supported by a desk. Body and Align each ran once on the saved clothing photo; both GLBs have no textures/UVs and were retained as private diagnostics, not swapped into the appearance scene. Chrome browser access now works; desktop WebGL shows improved lettering/contact. Local checks and production release are tracked in ROADMAP/TESTING; do not carry forward the old blanket browser-disabled claim.
-
-All 72 tests, PR/main CI and the production build pass. Production is READY at rescene-j8773q53d-jimclydegms-projects.vercel.app (dpl_9Kd1b2S4w8ZET2BkuamK6QDUpbD2), aliased to rescene-eta.vercel.app. Bounded deployed API/SSR/auth/origin checks pass. Chrome verified the actual desk WebGL and new refresh control at 1531×872; at 390×844 the canvas, texture tabs/refresh and reference expand/close fit without page overflow. Temporary viewport overrides were reset. Saved-data, restore/reapply and browser checks used no inference. This bundle is complete; use existing evidence and saved assets for follow-up work instead of repeating a paid pipeline.
+Publication v2 freezes render-only JSON plus an exact same-scene READY asset allowlist. Anonymous viewer data never joins live draft products or exposes original photos, masks, raw model responses, storage keys or private provenance. The photo-derived background is an approved render asset; the publish confirmation includes its visible context/estimated fill. Unsegmented context can remain, so review before publication. Revoke/archive/restart stop new access; issued signed links can last 15 minutes and downloads cannot be recalled.
 
 ## Current background correction
 
-Work is on codex/photo-background. See BACKGROUND_RECONSTRUCTION.md. The renderer no longer invents finite room corners/baseboards; observed structure and a derived full-frame background carry source texture/gradients. Spark v6 analysis plus optional Muse Image clean-plate generation are wired into reconstruction and independent IMAGE_EDIT refresh, with private provider artifacts and snapshot allowlist support. The reported desk now has a derived background while meshes/cards/transforms/visibility remain unchanged. One image edit completed; two earlier Spark-only incomplete trials prompted output-budget correction. Local checks/browser are in progress; do not call this deployed until release verification is recorded.
+PR #14 merged at **2a927ed**; checkout is main. Production is READY at rescene-6vf7ifpr8-jimclydegms-projects.vercel.app (dpl_HP38cA8UB1As2gB3k8huxCqZZsem), aliased to rescene-eta.vercel.app. Read BACKGROUND_RECONSTRUCTION.md for findings, implementation and limits.
+
+The hardcoded room box, side walls and baseboards are removed. `scene-background-v6` observes seamless/open surfaces, actual wall/support seams and distant context independently of subject category. A broad support plane and distant photo shell avoid finite edges. A wall requires an observed reachable seam. The source camera projects a foreground-free derived full-frame texture; legacy floor patches remain a fallback. `room` means automatic photo background, `studio` ground only and `none` hides surfaces.
+
+New reconstruction attempts one optional background step after object-detail transfer. Saved scenes use Textures → Build/Refresh photo background as a durable IMAGE_EDIT run. Legacy scenes receive background-only Spark analysis without replacing objects/masks. SAM mask union plus a bounded halo defines removal. Muse receives original and magenta guide; the API does not support edit masks, so the app enforces compositing. Harmonic color blending and confidence-based smooth-gradient completion reduce seams; textured regions retain Muse fill. Background lighting stays photographed. Original object texture restore leaves the independent background intact.
+
+Optional failures preserve READY geometry/previous background and never automatically resubmit. Step uniqueness, idempotency, user active-run lock and revision checks remain. Raw Muse images are private PROVIDER_RESPONSE assets; only the final derived SURFACE_TEXTURE enters a snapshot. No migration/new provider/dependency. This remains a photo-projected approximation: large rotations, nonplanar/hidden backgrounds, reflections and residual shadows can differ from the reference.
+
+The desk example below now has six source-detailed mesh regions, independent bottoms at Y=0 and a derived photo background. Its meshes/products/transforms/visibility were preserved. Three legacy background analyses were initiated: two incomplete 900-token trials submitted no image edit; a corrected 4096-token call and one Muse edit completed. Later blending reused that output without inference. Production Chrome framing and background controls passed on desktop and mobile.
+
+## Evidence and reusable fixtures
+
+- **Do not mutate:** f2848b95-8447-41eb-9544-0d72dd605565 — Jim's real test listing.
+- **Disposable saved-data QA:** 6800b8a2-7c39-4a52-8fde-790eb03ab46c. Restore metadata/settings and revoke temporary shares.
+- Jim's earlier reference: 1cc4e890-1ca8-4435-ac00-722dccefb995.
+- Clothing: 2b495855-65dc-4ca3-ad93-1460e53eb5fe, complete person plus linked product regions. Prior state is backed up privately.
+- Desk: c9035519-8cf4-45cd-88c2-36d32571eff1, private/unpublished. Upgrade backups/diagnostics are ignored under test-results.
+
+PR #14 and main CI pass **83 cases**, schema/lint/types and build. The one reusable saved-data regression passed with restoration/revocation. Background-specific checks pass HTTP replay without resubmission, owner/origin/phase/stale rejection, mesh/card/transform preservation, cross-scene background rejection, anonymous derived asset delivery, frozen background independence and revocation; QA settings were restored. All 1,010,330 known desk background pixels outside the footprint are unchanged. Local Chrome WebGL/orbit/object-hide/reload passed. Production Chrome verified actual WebGL and the background refresh control at 1531×872; mobile canvas/control layout at 390×844 fits without page overflow. Temporary viewport overrides were reset. Bounded production release and controls API/SSR/auth/origin smoke checks pass without mutation/inference. No new scene or inference was used by saved-data/API checks.
+
+Jim removed the cumulative generation cap; never reintroduce GENERATION_BUDGET_USD. Meta/fal bills are separate. Reserved costs are estimates, not invoice totals. Reuse artifacts unless a specific generation bug needs a new call. **Zero automatic paid retries.** No routine fresh pipeline sweeps.
+
+CI checks PRs once, cancels superseded runs and skips docs-only install/build. Vercel ignores docs/test/tooling-only changes against the prior successful deployment; retain .git in the build workspace for this comparison. Use scripts/verify-release.mjs once for saved-data regression; --smoke is bounded/read-only post-deploy. Do not run every historical smoke script.
+
+## Next action and references
+
+The PR #14 background bundle is deployed and complete. Reuse the saved evidence/assets for follow-up work; do not repeat paid generation to reconfirm unchanged behavior. Recording/portal limits and final contest submission remain human gates, separate from implemented app functionality. Do not infer another micro-phase without a concrete user request.
+
+Technical context: ARCHITECTURE.md; DATA_MODEL.md + prisma/schema.prisma; META_MODELS.md; BACKGROUND_RECONSTRUCTION.md; SCENE_QUALITY.md; SCENE_UNDERSTANDING.md; TEXTURE_FIDELITY.md; TESTING.md; SETUP.md. Current publication contract is contracts/scene-manifest-v2.schema.json. Submission draft: release/DEMO.md.
