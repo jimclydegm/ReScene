@@ -10,7 +10,7 @@ export type SceneObjectView = { id: string; label: string; status: string; error
   yaw: number; scale: number; visible: boolean; placement: ModelPlacement | null };
 export type SceneWorkspace = { id: string; title: string; description: string | null; status: string; revision: number; generationEnabled: boolean;
   analysisOptions:AnalysisOptions;reconstructionOptions:ReconstructionOptions;analysisSummary:string|null;
-  lighting: Lighting; appearance: { applied: boolean; floorUrl: string | null; wallUrl: string | null };
+  lighting: Lighting; appearance: { applied: boolean; floorUrl: string | null; wallUrl: string | null; backgroundUrl?: string | null };
   composition: SceneComposition | null; canRestoreLayout: boolean;
   image: { url: string; width: number; height: number } | null; objects: SceneObjectView[];
   run: { id: string; kind: string; status: string; stage: string | null; progress: number;

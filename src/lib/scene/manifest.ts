@@ -9,7 +9,7 @@ export const worldTransformSchema=z.object({position:vec,rotation:z.tuple([z.num
 export const snapshotSchema=z.object({
  schemaVersion:z.literal(2),coordinates:z.object({handedness:z.literal("right"),upAxis:z.literal("Y"),units:z.literal("approximate")}).strict(),title:z.string().min(1).max(160),description:z.string().max(2000).nullable(),revision:z.number().int().nonnegative(),approximateGeometry:z.literal(true),
  composition:compositionSchema.nullable(),lighting:lightingSchema,
- surfaces:z.object({floorAssetId:z.uuid().nullable(),wallAssetId:z.uuid().nullable()}).strict(),
+ surfaces:z.object({floorAssetId:z.uuid().nullable(),wallAssetId:z.uuid().nullable(),backgroundAssetId:z.uuid().nullable().optional()}).strict(),
  objects:z.array(z.object({id:z.uuid(),label:z.string().min(1).max(120),modelAssetId:z.uuid(),transform:worldTransformSchema,productId:z.uuid().nullable()}).strict()).min(1).max(10),
  products:z.array(productSchema.extend({id:z.uuid(),imageAssetId:z.uuid().nullable(),currency:productSchema.shape.currency.nullable()}).strict().refine(p=>(p.price===null)===(p.currency===null),"Price and currency must be paired")).max(10)
 }).strict().superRefine((m,ctx)=>{
@@ -20,7 +20,7 @@ export const snapshotSchema=z.object({
 });
 export type Snapshot=z.infer<typeof snapshotSchema>;
 export type WorldTransform=z.infer<typeof worldTransformSchema>;
-export function snapshotAssets(m:Snapshot){return [...new Set([...m.objects.map(o=>o.modelAssetId),...m.products.flatMap(p=>p.imageAssetId?[p.imageAssetId]:[]),...[m.surfaces.floorAssetId,m.surfaces.wallAssetId].filter((v):v is string=>!!v)])].sort();}
+export function snapshotAssets(m:Snapshot){return [...new Set([...m.objects.map(o=>o.modelAssetId),...m.products.flatMap(p=>p.imageAssetId?[p.imageAssetId]:[]),...[m.surfaces.floorAssetId,m.surfaces.wallAssetId,m.surfaces.backgroundAssetId].filter((v):v is string=>!!v)])].sort();}
 export function flattenTransform(o:{positionX:number;positionY:number;positionZ:number;rotationX:number;rotationY:number;rotationZ:number;rotationW:number;scaleX:number;scaleY:number;scaleZ:number;initialTransform:unknown},bounds:{min:[number,number,number];max:[number,number,number]}):WorldTransform{
  const parsed=modelPlacementSchema.safeParse(o.initialTransform);
  const f=1.5/Math.max(...bounds.max.map((v,i)=>v-bounds.min[i]),.001);

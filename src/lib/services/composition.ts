@@ -85,6 +85,8 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
     for(const [i,object]of result.objects.entries())try{seatGeometry(meshBytes[i],object);}catch{/* Keep conservative bounds if mesh refinement is unsupported. */}
     const {compositionSchema}=await import("@/lib/scene/composition");
     result.composition.backdrop=compositionSchema.safeParse(scene.stage).data?.backdrop ?? (record(scene.settings).preferredBackdrop === "studio" ? "studio" : "room");
+    const {backgroundPlanSchema}=await import("@/lib/scene/background");
+    result.composition.background=backgroundPlanSchema.safeParse(record(scene.settings).backgroundPlan).data;
   } catch {
     throw new AppError(422, "LAYOUT_UNAVAILABLE", "The saved reconstruction has no reliable room layout. Your current layout is unchanged.");
   }

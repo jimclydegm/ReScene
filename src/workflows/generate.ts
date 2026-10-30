@@ -52,6 +52,12 @@ async function improveAppearance(runId:string){
   await improveGeneratedAppearance(runId);
 }
 improveAppearance.maxRetries=0;
+async function improveBackground(runId:string){
+  "use step";
+  const {finishSceneBackground}=await import("@/lib/services/background");
+  await finishSceneBackground(runId);
+}
+improveBackground.maxRetries=0;
 async function failure(runId: string) {
   "use step";
   const { failRun } = await import("@/lib/services/generation");
@@ -65,13 +71,15 @@ export async function generateScene(runId: string, kind: string) {
       const objects = await analyze(runId);
       for (const id of objects) await segment(runId, id);
       await completeAnalysis(runId);
+    } else if(kind === "IMAGE_EDIT"){
+      await improveBackground(runId);
     } else if(kind === "SEGMENT_OBJECT"){
       await segment(runId,await requestedObject(runId));
       await completeAnalysis(runId);
     } else {
       const requestId = await submit(runId);
       for (let attempt = 0; attempt < 70; attempt++) {
-        if (await poll(runId, requestId)) { await ingest(runId, requestId); await improveAppearance(runId); return; }
+        if (await poll(runId, requestId)) { await ingest(runId, requestId); await improveAppearance(runId); await improveBackground(runId); return; }
         await sleep("10s");
       }
       throw new Error("Generation deadline exceeded");
@@ -83,7 +91,7 @@ export async function resumeReconstruction(runId: string, requestId: string) {
   "use workflow";
   try {
     for (let attempt = 0; attempt < 70; attempt++) {
-      if (await poll(runId, requestId)) { await ingest(runId, requestId); await improveAppearance(runId); return; }
+      if (await poll(runId, requestId)) { await ingest(runId, requestId); await improveAppearance(runId); await improveBackground(runId); return; }
       await sleep("10s");
     }
     throw new Error("Generation deadline exceeded");
