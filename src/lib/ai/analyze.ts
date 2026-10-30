@@ -3,8 +3,9 @@ import { z } from "zod";
 import { getMetaClient, metaModels } from "./meta";
 import { analysisSchema, validateAnalysis, type ImageSize } from "./contracts";
 import { analysisSystemPrompt, analysisUserPrompt, defaultAnalysisOptions, type AnalysisOptions } from "./controls";
+import { backgroundPlanSchema } from "@/lib/scene/background";
 
-export const analysisPromptVersion = "scene-relations-v5";
+export const analysisPromptVersion = "scene-background-v6";
 export async function analyzePhoto(imageUrl: string, size: ImageSize, options: AnalysisOptions = defaultAnalysisOptions) {
   const started = Date.now();
   const response = await getMetaClient().chat.completions.create({
@@ -17,7 +18,7 @@ export async function analyzePhoto(imageUrl: string, size: ImageSize, options: A
       ] }
     ],
     response_format: { type: "json_schema", json_schema: {
-      name: "scene_analysis", strict: true, schema: z.toJSONSchema(analysisSchema.extend({objects: analysisSchema.shape.objects.element.extend({parentCandidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/).nullable(),supportedByCandidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/).nullable()}).strict().array().max(10)}))
+      name: "scene_analysis", strict: true, schema: z.toJSONSchema(analysisSchema.extend({background:backgroundPlanSchema,objects: analysisSchema.shape.objects.element.extend({parentCandidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/).nullable(),supportedByCandidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/).nullable()}).strict().array().max(10)}))
     } }
   }, { maxRetries: 0 });
   const choice = response.choices[0];

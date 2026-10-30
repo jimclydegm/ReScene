@@ -8,7 +8,7 @@ export const restartInputSchema = z.object({
 }).strict();
 export type RestartTarget = z.infer<typeof restartInputSchema>["target"];
 export const runInputSchema = z.object({
-  kind: z.enum(["ANALYZE", "SEGMENT_OBJECT", "RECONSTRUCT"]), expectedRevision: z.number().int().nonnegative(),
+  kind: z.enum(["ANALYZE", "SEGMENT_OBJECT", "RECONSTRUCT", "IMAGE_EDIT"]), expectedRevision: z.number().int().nonnegative(),
   idempotencyKey: z.uuid(), objectIds: z.array(z.uuid()).min(1).max(10).optional(),
   analysis: analysisOptionsSchema.optional(), segmentation: segmentationOptionsSchema.optional(), reconstruction: reconstructionOptionsSchema.optional()
 }).strict().superRefine((input, ctx) => {

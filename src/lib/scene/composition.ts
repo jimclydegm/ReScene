@@ -1,5 +1,6 @@
 import { Box3, Matrix4, Quaternion, Vector3 } from "three";
 import { z } from "zod";
+import { backgroundPlanSchema } from "./background";
 
 const vector = z.tuple([z.number().finite(), z.number().finite(), z.number().finite()]);
 const quaternion = z.tuple([z.number().finite(), z.number().finite(), z.number().finite(), z.number().finite()]);
@@ -20,6 +21,7 @@ export const compositionSchema = z.object({
   version: z.literal("sam3d-room-v1"),
   floorY:z.number().finite().min(-1000).max(1000).optional(),
   backdrop:z.enum(["room","studio","none"]).optional(),
+  background: backgroundPlanSchema.optional(),
   camera: z.object({ position: vector, target: vector, fov: z.number().min(20).max(85), aspect: z.number().positive() }),
   room: z.object({ centerX: z.number().finite(), centerZ: z.number().finite(), width: z.number().positive(),
     depth: z.number().positive(), height: z.number().positive() }),

@@ -49,6 +49,13 @@ The clothing correction has 61 passing unit cases, passed CI/build and saved-dat
 - [x] Repair saved desk output, verify contact/source restore, static/browser appearance and focused tests.
 - [x] PR #13 merged at a6c8b76; 72 cases and CI pass, production READY, bounded deployed API checks and Chrome desktop/mobile controls pass.
 
+## Photo-matched background correction — October 30
+
+- [x] General open/plane/distant observations; remove inferred room boxes, side walls and baseboards.
+- [x] One durable Muse clean-plate edit, bounded mask compositing/blending and smooth-gradient preservation; independent existing-scene refresh.
+- [x] Shared private/public rendering, immutable background allowlists, existing-source privacy and READY failure preservation.
+- [ ] Combined verification, one PR/production release and bounded desktop/mobile checks.
+
 ## External completion gates
 
 Browser access is now available through Chrome; record desktop/mobile checks per release. Recording remains deferred. Participant video limits/private portal fields and actual submission need the authenticated portal and final user review. Keep these separate from implemented app functionality. Continue independent work; do not label these gates as passed.

@@ -20,6 +20,7 @@ import { record, sceneEnvironment } from "./composition";
 import { runInputSchema, objectEditsSchema, maskSelectionSchema } from "@/lib/validation/generation";
 import type { z } from "zod";
 import type { Prisma, AssetKind } from "@/generated/prisma/client";
+import { backgroundPlanSchema } from "@/lib/scene/background";
 
 const asJson = (value: unknown) => JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
 const active = ["QUEUED", "RUNNING", "WAITING"] as const;
@@ -45,8 +46,9 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
     if (!scene.normalizedAssetId) throw new AppError(400, "PHOTO_REQUIRED", "Upload a photo first.");
     const userActive = await tx.generationRun.count({ where: { scene: { ownerId }, status: { in: [...active] } } });
     if (userActive) throw new AppError(409, "RUN_ACTIVE", "Your generation is already running. Open it to see progress.");
-    const allowed = input.kind === "ANALYZE" ? ["DRAFT"] : input.kind === "SEGMENT_OBJECT" ? ["DRAFT", "REVIEW", "FAILED"] : ["REVIEW"];
+    const allowed = input.kind === "ANALYZE" ? ["DRAFT"] : input.kind === "SEGMENT_OBJECT" ? ["DRAFT", "REVIEW", "FAILED"] : input.kind === "IMAGE_EDIT" ? ["READY"] : ["REVIEW"];
     if (!allowed.includes(scene.status)) throw new AppError(409, "SCENE_STATE", "This scene is not ready for that operation.");
+    if (input.kind === "IMAGE_EDIT" && !compositionSchema.safeParse(scene.stage).success) throw new AppError(422,"LAYOUT_REQUIRED","Match the photo layout before restoring the background.");
     let selectedIds=input.objectIds ?? [],rootIds=selectedIds;
     if (input.kind === "RECONSTRUCT") {
       const available=await tx.sceneObject.findMany({where:{sceneId,mask:{status:"READY",sceneId,kind:"MASK"},modelAssetId:null}});
@@ -65,7 +67,7 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
       if (input.segmentation!.objectId && !await tx.sceneObject.findFirst({where:{sceneId,id:input.segmentation!.objectId}})) throw new AppError(404,"NOT_FOUND","Object not found.");
       if (!input.segmentation!.objectId && await tx.sceneObject.count({where:{sceneId}}) >= 10) throw new AppError(409,"OBJECT_LIMIT","This scene already has ten candidates. Reanalyze to start a new object list.");
     }
-    const reserved = input.kind === "ANALYZE" ? 1.42 : input.kind === "SEGMENT_OBJECT" ? 0.0025 : 1;
+    const reserved = input.kind === "ANALYZE" ? 1.42 : input.kind === "SEGMENT_OBJECT" ? 0.0025 : input.kind === "IMAGE_EDIT" ? .02 : 1;
     // Historical estimates remain auditable; Jim removed the app's cumulative spending cap.
     const run = await tx.generationRun.create({ data: { sceneId, kind: input.kind, idempotencyKey: input.idempotencyKey,
       inputRevision: scene.revision, input: asJson({ ...options, ...(input.kind==="RECONSTRUCT" ? {objectIds:selectedIds,reconstructionObjectIds:rootIds} : {}), requestHash, normalizedAssetId: scene.normalizedAssetId }), reservedCostUsd: reserved,
@@ -79,7 +81,7 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
       }
       await tx.generationRun.update({where:{id:run.id},data:{input:asJson({...record(run.input),segmentObjectId:objectId})}});
     }
-    await tx.scene.update({ where: { id: sceneId }, data: { status: input.kind === "RECONSTRUCT" ? "RECONSTRUCTING" : "ANALYZING", lastErrorCode: null } });
+    await tx.scene.update({ where: { id: sceneId }, data: { status: input.kind === "IMAGE_EDIT" ? "READY" : input.kind === "RECONSTRUCT" ? "RECONSTRUCTING" : "ANALYZING", lastErrorCode: null } });
     return run;
   }, { timeout: 20_000 });
 }
@@ -131,7 +133,7 @@ export async function analyzeRun(runId: string) {
       positionX: ((object.bbox.xMin + object.bbox.xMax) / 2 / image.width! - 0.5) * 5,
       provenance: { model: result.model, promptVersion: result.promptVersion, support: object.support, parentObjectId:object.parentCandidateId ? candidateIds.get(object.parentCandidateId) : null, supportedByObjectId:object.supportedByCandidateId ? candidateIds.get(object.supportedByCandidateId) : null, placement: "approximate-stage" } } });
     await tx.scene.update({ where: { id: run.sceneId }, data: { settings: asJson({ ...record(run.scene.settings), environment: result.analysis.environment, analysisOptions:options, sceneType:result.analysis.sceneType, analysisSummary:result.analysis.summary,
-      preferredBackdrop: options.focus === "clothing" || options.focus === "products" || candidates.length > 0 && candidates.every(o=>["clothing","footwear","accessory","person","electronics","other"].includes(o.category)) ? "studio" : "room" }) } });
+      backgroundPlan:result.analysis.background, preferredBackdrop:"room" }) } });
     await tx.generationRun.update({ where: { id: runId }, data: { currentStage: "Finding object outlines", progress: 25 } });
   });
   return (await getDb().sceneObject.findMany({ where: { sceneId: run.sceneId, originRunId: runId }, orderBy: { sourceOrdinal: "asc" } })).map(o => o.id);
@@ -271,6 +273,7 @@ export async function ingestRun(runId: string, requestId: string, withAppearance
     layout = composeRoom(layoutInputs, { width: run.scene.normalizedAsset!.width!, height: run.scene.normalizedAsset!.height! }, environment.environment, environment.environmentSource);
     const {seatGeometry}=await import("@/lib/appearance/contact");
     for(const [i,object]of layout.objects.entries())try{seatGeometry(layoutBytes[i],object);}catch{/* Keep validated bounds if vertex refinement is unavailable. */}
+    layout.composition.background=backgroundPlanSchema.safeParse(record(run.scene.settings).backgroundPlan).data;
     layout.composition.backdrop=record(run.scene.settings).preferredBackdrop === "studio" ? "studio" : "room";
   } catch { /* Keep independent meshes usable if a provider changes its pose contract. The UI offers manual placement. */ }
   await getDb().$transaction(async tx => {
@@ -305,7 +308,7 @@ export async function failRun(runId: string) {
     db.generationStep.updateMany({ where: { runId, status: "RUNNING" }, data: { status: uncertain ? "SUBMISSION_UNCERTAIN" : "FAILED" } }),
     db.generationRun.update({ where: { id: runId }, data: { status: "FAILED", errorCode: uncertain ? "SUBMISSION_UNCERTAIN" : knownJob ? "KNOWN_JOB_INTERRUPTED" : "GENERATION_FAILED",
       errorMessage: uncertain ? "The provider response was interrupted. This attempt may have been charged; it will not be submitted again automatically." : knownJob ? "Generation paused. Resume will retrieve the existing job without another submission." : "Generation could not finish. Your photo and completed objects are saved.", completedAt: new Date() } }),
-    db.scene.updateMany({ where: { id: run.sceneId, revision: run.inputRevision }, data: { status: "FAILED", lastErrorCode: "GENERATION_FAILED" } })
+    db.scene.updateMany({ where: { id: run.sceneId, revision: run.inputRevision, ...(run.kind==="IMAGE_EDIT"?{status:{not:"READY" as const}}:{}) }, data: { status: "FAILED", lastErrorCode: "GENERATION_FAILED" } })
   ]);
 }
 export async function workspace(sceneId: string, ownerId: string) {
@@ -330,7 +333,7 @@ export async function workspace(sceneId: string, ownerId: string) {
     reconstructionOptions:reconstructionOptionsSchema.safeParse(record(scene.settings).reconstructionOptions).data ?? reconstructionOptionsSchema.parse({}),
     analysisSummary:typeof record(scene.settings).analysisSummary === "string" ? String(record(scene.settings).analysisSummary) : null,
     lighting: lightingSchema.safeParse(record(scene.settings).lighting).data ?? defaultLighting(stage),
-    appearance: { applied: applied.version === "photo-bake-v1", floorUrl: await textureUrl(applied.floorId), wallUrl: await textureUrl(applied.wallId) },
+    appearance: { applied: applied.version === "photo-bake-v1", floorUrl: await textureUrl(applied.floorId), wallUrl: await textureUrl(applied.wallId), backgroundUrl: await textureUrl(record(record(scene.settings).background).assetId) },
     composition: compositionSchema.safeParse(scene.stage).data ?? null, canRestoreLayout: Boolean(record(scene.settings).layoutBackup),
     image: scene.normalizedAsset ? { url: await signRead(scene.normalizedAsset), width: scene.normalizedAsset.width!, height: scene.normalizedAsset.height! } : null,
     generationEnabled: process.env.GENERATION_ENABLED === "true", objects: await Promise.all(objects.map(async o => ({
@@ -434,5 +437,5 @@ export async function improveGeneratedAppearance(runId:string){
   try{
     if(run.scene.status==="READY"&&run.scene.revision===run.inputRevision+1&&!run.scene.archivedAt){const {updateAppearance}=await import("./appearance");await updateAppearance(run.sceneId,run.scene.ownerId,{action:"APPLY",expectedRevision:run.scene.revision});}
   }catch{/* Optional source transfer must not discard successful reconstruction or retry inference. */}
-  finally{await getDb().generationRun.updateMany({where:{id:runId,status:"WAITING",currentStage:"Enhancing source detail"},data:{status:run.errorMessage?"PARTIAL":"SUCCEEDED",currentStage:"Your 3D scene is ready",progress:100,completedAt:new Date()}});}
+  finally{await getDb().generationRun.updateMany({where:{id:runId,status:"WAITING",currentStage:"Enhancing source detail"},data:{currentStage:"Preparing photo background",progress:92}});}
 }

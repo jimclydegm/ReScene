@@ -1,10 +1,12 @@
 import { z } from "zod";
 import { environmentSchema } from "@/lib/scene/composition";
+import { backgroundPlanSchema } from "@/lib/scene/background";
 
 export const analysisSchema = z.object({
   sceneType: z.string().min(1).max(80),
   summary: z.string().min(1).max(600),
   environment: environmentSchema,
+  background: backgroundPlanSchema.optional(),
   objects: z.array(z.object({
     candidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/),
     label: z.string().min(1).max(80),
