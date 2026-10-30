@@ -258,3 +258,15 @@ Migrations add six relational tables, owner/sample visibility checks, ordered-re
 130 unit cases, lint/types/build pass. Native browser inventory reports disabled in Work settings; no desktop/mobile visual pass is claimed for the redesign.
 
 PR #21 merged at ed1d70c; production rescene-klx2xq0pt-jimclydegms-projects.vercel.app READY. Production HTTP checks verify all twelve photographic assets, New Scene/Creator controls, project title/prompt/template/aspect/ordered-reference persistence and stale-draft rejection without inference. Final deployment error scan returned zero records. All 16 product/scene images are traced into server functions for sample-based generation.
+
+## Trash and simple samples — October 30
+
+136 cases and lint/type/build pass. Saved-data integration verifies owner-scoped image delete/Trash/restore, cross-owner denial, preserved generation reference counts, project Delete/Restore, 22 active sample choices and absence of retired plant/paired-shoe samples. A shared advisory lock serializes deletion with generation reservations; active GenerationReference rows block image deletion. No generation or asset bytes are deleted. Project deletion retains archive/restore behavior and share revocation.
+
+Two Meta image requests generated twelve additional minimal product photographs and eight empty environment previews. Contact sheets were visually inspected: new products are single items with simple silhouettes; settings contain no products, props, plants or furniture. Files and prompts are versioned under public/samples/v2; v1 media and past generation records remain. New generation/draft templateVersion=2 identifies the changed setting instructions. No reconstruction inference was submitted.
+
+Browser inventory again reports disabled in Work settings. API/component markup checks are not native interaction or GPU verification. Private evidence is ignored under test-results/library-delete.
+
+PR #22 merged at 1b69385; production rescene-bv2dag33g-jimclydegms-projects.vercel.app is READY and aliased to rescene-eta.vercel.app. Production checks verify rejection without confirmation, private generated-image delete/Trash/restore, project Delete/Restore, 22 active samples, all eight setting assets and creator controls. QA image and project were restored; no inference ran during API verification. Merge CI passes.
+
+The bounded final production error-log scan returned zero records.

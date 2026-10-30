@@ -127,4 +127,4 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Project Delete/Trash wording backed by existing share-revoking archive/restore operation.
 - [x] Twelve simple photographic samples, 22 active products total; plants/paired shoes retired from selection.
 - [x] Eight empty environment previews and matching no-extra-products prompt controls; old template versions/media retained.
-- [ ] Complete saved-data and production verification, merge/release the bundle.
+- [x] Saved-data and production confirmation/delete/Trash/restore, sample/setting asset and SSR checks pass. PR #22 merged at 1b69385; CI and production READY. Native visual checks remain blocked by Work settings.
