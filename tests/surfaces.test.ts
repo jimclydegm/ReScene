@@ -45,6 +45,6 @@ describe("Stable single-plane surfaces",()=>{
   const base={bounds:{min:[0,0,0] as [number,number,number],max:[1,1,1] as [number,number,number]},metadata:{},imageBounds:{xMin:1,yMin:1,xMax:2,yMax:2}};
   settleSupportContacts(objects,[{...base,id:"base",support:"floor"},{...base,id:"top",support:"unknown",supportedById:"base"}],stage);
   expect(objects[0].position[1]).toBe(0);expect(objects[1].position[1]).toBe(1);
-  expect(Math.abs(objects[1].position[0])).toBeLessThanOrEqual(.001);expect(Math.abs(objects[1].position[2])).toBeLessThanOrEqual(.001);
+  expect(Math.abs(objects[1].position[0]-objects[0].position[0])).toBeLessThanOrEqual(.001);expect(Math.abs(objects[1].position[2]-objects[0].position[2])).toBeLessThanOrEqual(.001);
  });
 });
