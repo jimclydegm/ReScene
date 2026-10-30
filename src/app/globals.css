@@ -2062,3 +2062,10 @@ svg {
 }
 /* Keep portrait 3D canvases within the viewport while preserving the photo aspect. */
 .model-viewport { width:min(100%,calc(min(68vh,720px) * var(--scene-aspect,1.5))); margin-inline:auto; }
+
+.viewer-toolbar { flex-wrap: wrap; max-width: calc(100% - 20px); justify-content: flex-end; }
+.zoom-lock { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; background: #fffdf5ed; border: 1px solid #d5d9cd; border-radius: 8px; font-size: 11px; box-shadow: 0 2px 7px #283e2020; cursor: pointer; }
+.zoom-lock input { accent-color: #42785c; width: 14px; height: 14px; margin: 0; }
+
+.build-controls label.opening-control { display: flex; align-items: center; gap: 8px; }
+.build-controls .opening-control input { width: 18px; margin: 0; }

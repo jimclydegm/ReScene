@@ -28,7 +28,7 @@ Publication v2 freezes render-only JSON plus an exact same-scene READY asset all
 
 ## Current background correction
 
-PR #14 merged at **2a927ed**; checkout is main. Production is READY at rescene-6vf7ifpr8-jimclydegms-projects.vercel.app (dpl_HP38cA8UB1As2gB3k8huxCqZZsem), aliased to rescene-eta.vercel.app. Read BACKGROUND_RECONSTRUCTION.md for findings, implementation and limits.
+PR #14 merged at **2a927ed**; this is the last released baseline. Production is READY at rescene-6vf7ifpr8-jimclydegms-projects.vercel.app (dpl_HP38cA8UB1As2gB3k8huxCqZZsem), aliased to rescene-eta.vercel.app. Read BACKGROUND_RECONSTRUCTION.md for findings, implementation and limits.
 
 The hardcoded room box, side walls and baseboards are removed. `scene-background-v6` observes seamless/open surfaces, actual wall/support seams and distant context independently of subject category. A broad support plane and distant photo shell avoid finite edges. A wall requires an observed reachable seam. The source camera projects a foreground-free derived full-frame texture; legacy floor patches remain a fallback. `room` means automatic photo background, `studio` ground only and `none` hides surfaces.
 
@@ -52,8 +52,14 @@ Jim removed the cumulative generation cap; never reintroduce GENERATION_BUDGET_U
 
 CI checks PRs once, cancels superseded runs and skips docs-only install/build. Vercel ignores docs/test/tooling-only changes against the prior successful deployment; retain .git in the build workspace for this comparison. Use scripts/verify-release.mjs once for saved-data regression; --smoke is bounded/read-only post-deploy. Do not run every historical smoke script.
 
+## Active correction: plain backgrounds and mesh evidence
+
+Branch codex/plain-background-mesh-quality adds conservative constant-field detection before background inference, validated plainColor in shared render snapshots, and Zoom lock beside Show grid. Plain fields ignore minority cast shadows; gradients/textures keep the photo path. The shoe db8ee6d5-fc99-42f3-8b71-5d0b1f772157 was refreshed to solid white at revision 8 with zero provider steps; original model/mask references remain unchanged. Its prior state and comparison artifacts are private under ignored test-results/shoe.
+
+The hosted SAM 3D API has no quality/resolution/topology knob. One seed-42 comparison with four recovered mask openings (6,996 pixels) still distorted the sole; do not replace the saved mesh or claim improved topology. Provider-only opening refinement is experimental and OFF by default; the owner can opt in before reconstruction. Reviewed masks remain immutable, step provenance records derived inputs, and enabled source-detail transfer excludes the same candidate gaps. No further paid retries. Read BACKGROUND_RECONSTRUCTION.md for details. All 90 unit cases, lint/types and baseline production build pass; final CI/deployment/browser checks are pending. Local port 3000 belongs to another project; temporary 3001 browser assets fail existing CORS, and R2 rejects changing it, so browser proof must use production. No CORS change was made. Leave the user's original shoe tab's unsaved edits untouched.
+
 ## Next action and references
 
-The PR #14 background bundle is deployed and complete. Reuse the saved evidence/assets for follow-up work; do not repeat paid generation to reconfirm unchanged behavior. Recording/portal limits and final contest submission remain human gates, separate from implemented app functionality. Do not infer another micro-phase without a concrete user request.
+Complete this correction bundle in one PR/release, then verify production Zoom lock and solid background on desktop/mobile. Reuse saved assets; do not submit more inference. Recording/portal limits and final contest submission remain human gates, separate from implemented app functionality. Do not infer another micro-phase without a concrete user request.
 
 Technical context: ARCHITECTURE.md; DATA_MODEL.md + prisma/schema.prisma; META_MODELS.md; BACKGROUND_RECONSTRUCTION.md; SCENE_QUALITY.md; SCENE_UNDERSTANDING.md; TEXTURE_FIDELITY.md; TESTING.md; SETUP.md. Current publication contract is contracts/scene-manifest-v2.schema.json. Submission draft: release/DEMO.md.

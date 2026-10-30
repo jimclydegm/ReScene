@@ -13,6 +13,8 @@ import { inspectGlb } from "@/lib/ai/glb";
 import { composeRoom, compositionSchema, glbBounds } from "@/lib/scene/composition";
 import { lightingSchema } from "@/lib/scene/lighting";
 import { bakeGlb, geometry, photoCamera, visibility, cleanPatch,registerPhoto } from "@/lib/appearance/bake";
+import { refineOpenings } from "@/lib/appearance/plain";
+import { reconstructionOptionsSchema } from "@/lib/ai/controls";
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 export const appearanceInput = z.discriminatedUnion("action", [
   z.object({ action: z.literal("APPLY"), expectedRevision: z.number().int().nonnegative() }).strict(),
@@ -63,7 +65,7 @@ export async function updateAppearance(sceneId: string, ownerId: string, input: 
   const masks = await Promise.all(objects.map(async o => {
     const m = await sharp(await readLimited(o.mask!.storageKey, 4 * 1024 * 1024)).greyscale().raw().toBuffer({ resolveWithObject: true });
     if (m.info.width !== photo.width || m.info.height !== photo.height) throw new AppError(422, "MASK_SIZE", "The mask does not match the photo.");
-    return m.data;
+    return reconstructionOptionsSchema.parse(record(settings.reconstructionOptions)).refineOpenings ? refineOpenings(photo,m.data).pixels : m.data;
   }));
   const roots=objects.filter(o=>!record(o.provenance).parentObjectId);
   const inputFiles=await Promise.all(roots.map(async o=>{

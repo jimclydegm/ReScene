@@ -61,3 +61,11 @@ The clothing correction has 61 passing unit cases, passed CI/build and saved-dat
 Browser access is now available through Chrome; record desktop/mobile checks per release. Recording remains deferred. Participant video limits/private portal fields and actual submission need the authenticated portal and final user review. Keep these separate from implemented app functionality. Continue independent work; do not label these gates as passed.
 
 Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCHITECTURE.md, DATA_MODEL.md, META_MODELS.md. Current state: CONTEXT.md.
+
+## Plain backgrounds, zoom control and mesh-quality investigation — October 30
+
+- [x] Plain-field background detection without baked cast shadows or unnecessary image inference.
+- [x] Zoom lock beside Show grid; retain rotation and pan in private/public viewer.
+- [x] Research hosted parameters; bounded one-job mask experiment, immutable reviewed masks and recorded derived-mask provenance.
+- [x] Keep opening refinement experimental/off by default after the comparison failed to show clear overall geometry improvement; preserve the saved mesh.
+- [ ] Combined release verification and deployment of this correction bundle.

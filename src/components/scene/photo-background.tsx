@@ -40,6 +40,8 @@ function LegacyTexture({url}:{url:string}){
 }
 
 export function PhotoBackground({composition,url,floorY,legacyFloor=null}:{composition:SceneComposition;url:string|null;floorY:number;legacyFloor?:string|null}){
+  const plain=composition.background?.plainColor;
+  if(plain)return composition.backdrop==="none"?null:<mesh position={[composition.room.centerX,floorY-.012,composition.room.centerZ]} rotation={[-Math.PI/2,0,0]}><planeGeometry args={[2000,2000]}/><meshBasicMaterial color={plain} side={DoubleSide} toneMapped={false}/></mesh>;
   const geometry=backgroundSurfaces(composition,floorY);
   if(composition.backdrop==="none")return null;
   const {room:r,environment:e}=composition;
