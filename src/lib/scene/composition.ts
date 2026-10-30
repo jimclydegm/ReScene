@@ -194,6 +194,11 @@ export function settleSupportContacts(objects:{id:string;position:[number,number
         const camera=composition.camera.position,t=(y-camera[1])/(item.position[1]-camera[1]);
         if(Number.isFinite(t)&&t>.2&&t<3){item.position[0]=camera[0]+(item.position[0]-camera[0])*t;item.position[2]=camera[2]+(item.position[2]-camera[2])*t;}
         item.position[1]=y;
+        if(explicit)for(const axis of [0,2] as const){
+          // A depth estimate must not leave a stacked item beyond its support.
+          const half=Math.max(0,(explicit.placement.size[axis]-item.placement.size[axis])/2);
+          item.position[axis]=Math.max(explicit.position[axis]-half,Math.min(explicit.position[axis]+half,item.position[axis]));
+        }
       }
       if(!support&&input.support==="tabletop"&&!composition.warnings.includes("A shared tabletop plane is estimated because its support mesh is unavailable."))composition.warnings.push("A shared tabletop plane is estimated because its support mesh is unavailable.");
     }

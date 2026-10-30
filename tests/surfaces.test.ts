@@ -41,9 +41,10 @@ describe("Stable single-plane surfaces",()=>{
  });
  it("seats floor objects on the plane and keeps explicit stacked supports above it",()=>{
   const stage:SceneComposition={version:"sam3d-room-v1",floorY:0,camera:{position:[0,5,8],target:[0,0,0],fov:45,aspect:1},room:{centerX:0,centerZ:0,width:8,depth:8,height:4},environment,environmentSource:"spark",projectionError:0,warnings:[]};
-  const objects=[{id:"base",position:[0,.3,0] as [number,number,number],placement:placement(1)},{id:"top",position:[0,1.6,0] as [number,number,number],placement:placement(.5)}];
+  const objects=[{id:"base",position:[0,.3,0] as [number,number,number],placement:placement(1)},{id:"top",position:[2,1.6,4] as [number,number,number],placement:placement(.5)}];
   const base={bounds:{min:[0,0,0] as [number,number,number],max:[1,1,1] as [number,number,number]},metadata:{},imageBounds:{xMin:1,yMin:1,xMax:2,yMax:2}};
   settleSupportContacts(objects,[{...base,id:"base",support:"floor"},{...base,id:"top",support:"unknown",supportedById:"base"}],stage);
   expect(objects[0].position[1]).toBe(0);expect(objects[1].position[1]).toBe(1);
+  expect(Math.abs(objects[1].position[0])).toBeLessThanOrEqual(.001);expect(Math.abs(objects[1].position[2])).toBeLessThanOrEqual(.001);
  });
 });
