@@ -238,3 +238,13 @@ One recorded IMAGE_EDIT verification used the affected scene's saved source/mask
 Native browser inventory still reports disabled in Work settings. The image/service checks do not constitute a WebGL rendering pass.
 
 Production rescene-ad1l0cww6-jimclydegms-projects.vercel.app is READY and aliased to rescene-eta.vercel.app. Merge CI passes; bounded read-only production dashboard/editor/ownership/recovery smoke passes without inference or scene mutation. Production runtime error scan returned zero records.
+
+## Creative showroom release — October 30
+
+130 unit cases, lint/type/schema/build pass. Workflow manifest registers 30 steps / 3 workflows. Additive migration applied. Saved QA tints and Night lighting persisted/reloaded and appeared in a frozen public snapshot; original appearance/settings restored and temporary publication revoked.
+
+One real production COMPOSE_IMAGE workflow used two illustrative product references, completed Muse Image inference, saved a private gallery result and adopted it into a new scene with valid source/normalized photos. Repeated submission returned the same run. Another account received 404 for the private workspace. No reconstruction inference was submitted. The preview auth request returned 403 before inference; authentication protections were retained and production used for verification.
+
+Upload integration caught missing checksum/readyAt metadata on completed staging assets; correction 0c5adf4 supplies complete READY metadata. Native browser access is disabled in Work settings, so no WebGL/mobile appearance claim is made. Evidence and private QA IDs remain under ignored test-results/creative-showroom.
+
+Corrected production rescene-4j1a6tcfi-jimclydegms-projects.vercel.app is READY. Direct private upload/normalization/library and New Scene/Creator/editor control SSR checks pass with no extra inference; final deployment error scan returned zero records.
