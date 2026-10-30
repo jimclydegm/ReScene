@@ -1,0 +1,11 @@
+{
+  "model": "muse-image-1.0",
+  "prompt": "A precise equal 2 by 2 contact sheet of four premium photographic scene template previews. No gutters, borders, labels, typography, text or logos. Top left: empty seamless warm off-white photography studio with a round low pedestal. Top right: sunlit contemporary living area with natural oak flooring and neutral plaster wall, very minimal furniture. Bottom left: warm garden terrace with pale stone ledge, green plants and soft sunlight. Bottom right: editorial still life set with sculptural geometric plinths, peach backdrop and elegant diagonal shadows. These are photographic environments for product placement. Each quadrant must have clear negative space for added products. Straight edges exactly at image halfway points.",
+  "generatedAt": "2026-10-30T07:00:02.675Z",
+  "assets": [
+    "studio",
+    "lifestyle",
+    "outdoor",
+    "editorial"
+  ]
+}

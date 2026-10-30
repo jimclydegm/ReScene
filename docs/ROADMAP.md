@@ -113,3 +113,10 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Generated gallery and explicit result adoption into separately owned 3D projects; two entry choices on New Scene.
 - [x] Initial 130 tests/lint/build; registered 30 steps / 3 workflows, migration applied.
 - [x] Saved color/light/public snapshot verified and QA restored. One real production two-reference composition/adoption and duplicate-dispatch/ownership checks pass. PR #20 merged; production upload correction deployed. Native browser verification remains blocked.
+
+## Creation UI and relational library correction
+
+- [x] Generate 12 photographic sample products and four scene previews with Meta; version assets and preserve prompts.
+- [x] Compact starting page; consistent buttons/captions, search/categories, selection tray and visual setting/aspect controls.
+- [x] Six relational library/draft/history/adoption tables with FKs, indexes, SQL visibility checks and legacy backfills.
+- [ ] Verify draft persistence/conflicts, immutable history and real sample-based output/adoption; deploy one combined correction.

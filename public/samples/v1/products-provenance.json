@@ -1,0 +1,19 @@
+{
+  "model": "muse-image-1.0",
+  "prompt": "Create a precisely aligned 4-column by 3-row contact sheet of twelve separate premium photorealistic ecommerce product photographs, each on its own light gray seamless studio background. Equal rectangular tiles, absolutely no gutters, no borders, no labels, no text, no logos. Show each entire product centered with generous 18 percent padding so nothing is cropped. Row 1 left to right: oak dining table, upholstered sage armchair, oak three-drawer chest, black floor lamp. Row 2: ivory ceramic vase, pair of white sneakers, walnut cabinet, plain blue T-shirt worn by a full torso headless shop mannequin. Row 3: black digital alarm clock, silver wrist watch with brown leather strap, cream fabric sofa, small potted green plant. Real photographic material detail, realistic wood grain and cloth weave, natural product proportions, soft studio light. Each cell contains only its one named product. This is product photography, never icons, drawings, low-poly renders or vector art.",
+  "generatedAt": "2026-10-30T06:59:50.231Z",
+  "assets": [
+    "table",
+    "chair",
+    "drawers",
+    "lamp",
+    "vase",
+    "shoes",
+    "cabinet",
+    "mannequin-shirt",
+    "alarm-clock",
+    "watch",
+    "sofa",
+    "plant"
+  ]
+}
