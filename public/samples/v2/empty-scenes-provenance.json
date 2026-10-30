@@ -1,0 +1,15 @@
+{
+  "model": "muse-image-1.0",
+  "prompt": "Precisely aligned equal 4 column by 2 row contact sheet of eight EMPTY photographic environments to use as product scene backdrops. Absolutely NO products, NO furniture, NO plants, NO props, NO plinths, NO containers, NO decorative objects, NO appliances, NO people, NO typography. Only empty architectural surfaces or natural ground. Row 1: seamless warm-white photography studio floor and backdrop; empty sunlit room with oak floor and plain plaster wall; empty stone terrace with sky; empty peach colored seamless editorial backdrop with diagonal sunlight. Row 2: empty pale stone kitchen countertop surface and blank tile backsplash, no cabinets or appliances; empty white gallery with pale floor and white walls; empty concrete floor and gray concrete wall; empty sand beach with calm ocean horizon. Photorealistic light and material textures, clear generous empty space. Each quadrant exactly one empty setting, no borders or gutters.",
+  "generatedAt": "2026-10-30T07:29:53.393Z",
+  "assets": [
+    "studio",
+    "lifestyle",
+    "outdoor",
+    "editorial",
+    "kitchen",
+    "gallery",
+    "concrete",
+    "beach"
+  ]
+}

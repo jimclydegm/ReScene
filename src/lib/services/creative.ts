@@ -10,7 +10,7 @@ import {getMetaClient} from "@/lib/ai/meta";
 import {creativeInput,creativeDraftInput,creativePrompt,aspects} from "@/lib/ai/creative-contract";
 import {readFile} from "node:fs/promises";
 import {join} from "node:path";
-import {sampleProducts} from "@/lib/ai/sample-products";
+import {sampleImagePath} from "@/lib/ai/sample-products";
 import type {Prisma} from "@/generated/prisma/client";
 const json=(v:unknown)=>JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 const active=["QUEUED","RUNNING","WAITING"] as const;
@@ -22,22 +22,22 @@ async function saveImage(sceneId:string,bytes:Buffer,kind:"PRODUCT_IMAGE"|"SOURC
  return getDb().asset.create({data:{id,sceneId,kind,status:"READY",bucket:bucket(),storageKey:key,mimeType:"image/webp",byteSize:out.data.length,width:out.info.width,height:out.info.height,sha256:createHash("sha256").update(out.data).digest("hex"),readyAt:new Date(),provenance}});
 }
 const visibility=(ownerId:string)=>({archivedAt:null,OR:[{ownerId,asset:{status:"READY" as const,scene:{ownerId,archivedAt:null}}},{ownerId:null,kind:"SAMPLE"}]});
-export async function creativeLibrary(ownerId:string,sceneId?:string,page=0){
+export async function creativeLibrary(ownerId:string,sceneId?:string,page=0,trash=false){
  const db=getDb();if(sceneId)await workspace(sceneId,ownerId);
  const [images,references,runs,draft]=await Promise.all([
- db.contentItem.findMany({where:{...visibility(ownerId),kind:"GENERATED"},include:{asset:true},orderBy:{createdAt:"desc"},skip:page*12,take:13}),
- db.contentItem.findMany({where:{...visibility(ownerId),kind:{in:["REFERENCE","SAMPLE"]}},include:{asset:true},orderBy:[{kind:"desc"},{createdAt:"desc"}],take:60}),
+ db.contentItem.findMany({where:{...visibility(ownerId),kind:"GENERATED",...(trash?{archivedAt:{not:null}}:{})},include:{asset:true},orderBy:{createdAt:"desc"},skip:page*12,take:13}),
+ db.contentItem.findMany({where:{...visibility(ownerId),kind:{in:trash?["REFERENCE"]:["REFERENCE","SAMPLE"]},...(trash?{archivedAt:{not:null}}:{})},include:{asset:true},orderBy:[{kind:"desc"},{createdAt:"desc"}],take:60}),
  sceneId?db.generationRun.findMany({where:{sceneId,kind:"COMPOSE_IMAGE"},orderBy:{createdAt:"desc"},take:8}):[],
- sceneId?db.compositionDraft.findUnique({where:{sceneId},include:{references:{orderBy:{position:"asc"}}}}):null]);
+ sceneId?db.compositionDraft.findUnique({where:{sceneId},include:{references:{include:{item:true},orderBy:{position:"asc"}}}}):null]);
  const view=async(a:typeof references[number])=>({id:a.id,sceneId:a.asset?.sceneId??"",url:a.asset?await signRead(a.asset):a.publicPath!,label:a.title,category:a.category,sample:a.kind==="SAMPLE"});
- return {images:await Promise.all(images.slice(0,12).map(view)),hasMore:images.length>12,references:await Promise.all(references.filter(r=>record(r.provenance).source!=="creative-template"&&record(r.provenance).generator!=="original-procedural-v1").map(view)),draft:draft?{revision:draft.revision,referenceIds:draft.references.map(r=>r.contentItemId),prompt:draft.prompt,template:draft.templateKey,aspect:draft.aspectRatio,projectTitle:draft.projectTitle}:null,runs:runs.map(r=>({id:r.id,status:r.status,error:r.errorMessage,progress:r.progress,input:creativeInput.safeParse(r.input).data??null})),revision:sceneId?(await workspace(sceneId,ownerId)).revision:0};
+ return {images:await Promise.all(images.slice(0,12).map(view)),hasMore:images.length>12,references:await Promise.all(references.filter(r=>record(r.provenance).source!=="creative-template"&&record(r.provenance).generator!=="original-procedural-v1").map(view)),draft:draft?{revision:draft.revision,referenceIds:draft.references.filter(r=>!r.item.archivedAt).map(r=>r.contentItemId),prompt:draft.prompt,template:draft.templateKey,aspect:draft.aspectRatio,projectTitle:draft.projectTitle}:null,runs:runs.map(r=>({id:r.id,status:r.status,error:r.errorMessage,progress:r.progress,input:creativeInput.safeParse(r.input).data??null})),revision:sceneId?(await workspace(sceneId,ownerId)).revision:0};
 }
 async function persistDraft(tx:Prisma.TransactionClient,ownerId:string,input:ReturnType<typeof creativeDraftInput.parse>){
  const refs=await tx.contentItem.count({where:{...visibility(ownerId),id:{in:input.referenceIds}}});
  if(refs!==input.referenceIds.length)throw new AppError(404,"REFERENCE_UNAVAILABLE","Choose available library references.");
  const old=await tx.compositionDraft.findUnique({where:{sceneId:input.sceneId}});
  if(input.draftRevision!==undefined&&(old?.revision??0)!==input.draftRevision)throw new AppError(409,"DRAFT_CONFLICT","This draft changed in another tab. Reload to continue.");
- const d=await tx.compositionDraft.upsert({where:{sceneId:input.sceneId},create:{sceneId:input.sceneId,prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,projectTitle:input.projectTitle??"My product scene",revision:1},update:{prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,projectTitle:input.projectTitle??old?.projectTitle,revision:{increment:1}}});
+ const d=await tx.compositionDraft.upsert({where:{sceneId:input.sceneId},create:{sceneId:input.sceneId,prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,projectTitle:input.projectTitle??"My product scene",templateVersion:2,revision:1},update:{prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,projectTitle:input.projectTitle??old?.projectTitle,templateVersion:2,revision:{increment:1}}});
  await tx.compositionReference.deleteMany({where:{draftId:d.id}});
  if(input.referenceIds.length)await tx.compositionReference.createMany({data:input.referenceIds.map((contentItemId,position)=>({draftId:d.id,contentItemId,position}))});
  return d;
@@ -72,7 +72,7 @@ export async function reserveCreative(ownerId:string,raw:unknown){
  if(await tx.generationRun.count({where:{scene:{ownerId},status:{in:[...active]}}}))throw new AppError(409,"RUN_ACTIVE","Wait for your existing generation to finish.");
  const draft=await persistDraft(tx,ownerId,input);
  const run=await tx.generationRun.create({data:{sceneId:scene.id,kind:"COMPOSE_IMAGE",idempotencyKey:input.idempotencyKey,inputRevision:scene.revision,input:json(input),expiresAt:new Date(Date.now()+15*60000),reservedCostUsd:.01,currentStage:"Waiting for Muse Image"}});
- await tx.contentGeneration.create({data:{draftId:draft.id,runId:run.id,prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,modelId:process.env.META_IMAGE_MODEL??"muse-image-1.0",references:{create:input.referenceIds.map((contentItemId,position)=>({contentItemId,position}))}}});return run;
+ await tx.contentGeneration.create({data:{draftId:draft.id,runId:run.id,prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,templateVersion:2,modelId:process.env.META_IMAGE_MODEL??"muse-image-1.0",references:{create:input.referenceIds.map((contentItemId,position)=>({contentItemId,position}))}}});return run;
  });
 }
 export async function composeCreative(runId:string){
@@ -81,7 +81,7 @@ export async function composeCreative(runId:string){
  const r=await db.generationRun.findUniqueOrThrow({where:{id:runId},include:{scene:true}}),input=creativeInput.parse(r.input);
  if(r.kind!=="COMPOSE_IMAGE"||r.status!=="RUNNING"||r.scene.archivedAt||r.expiresAt<new Date()||r.scene.revision!==r.inputRevision)throw new Error("CREATIVE_RUN_STALE");
  const refs=await db.contentItem.findMany({where:{...visibility(r.scene.ownerId),id:{in:input.referenceIds}},include:{asset:true}});if(refs.length!==input.referenceIds.length)throw new Error("REFERENCE_UNAVAILABLE");
- const images=await Promise.all(input.referenceIds.map(async id=>{const item=refs.find(a=>a.id===id)!;let bytes:Buffer;if(item.asset)bytes=await readLimited(item.asset.storageKey,4*1024*1024);else{const key=item.sampleKey?.split(":")[0];if(!sampleProducts.some(p=>p[0]===key))throw new Error("SAMPLE_INVALID");bytes=await readFile(join(process.cwd(),"public","samples","v1",`${key}.webp`));}return {image_url:`data:image/webp;base64,${bytes.toString("base64")}`};}));
+ const images=await Promise.all(input.referenceIds.map(async id=>{const item=refs.find(a=>a.id===id)!;let bytes:Buffer;if(item.asset)bytes=await readLimited(item.asset.storageKey,4*1024*1024);else{const key=item.sampleKey?.split(":")[0],path=sampleImagePath(key??"");if(!path)throw new Error("SAMPLE_INVALID");bytes=await readFile(join(process.cwd(),"public",path.slice(1)));}return {image_url:`data:image/webp;base64,${bytes.toString("base64")}`};}));
  await db.generationStep.create({data:{runId,key:"creative-image",attempt:1,provider:"META",modelId:"muse-image-1.0",status:"RUNNING",startedAt:new Date()}});
  await db.generationRun.update({where:{id:runId},data:{progress:30,currentStage:"Composing your products with Muse Image"}});submitted=true;
  const result=await getMetaClient().post<{data?:{b64_json?:string}[]}>("/images/edits",{maxRetries:0,timeout:180000,body:{model:process.env.META_IMAGE_MODEL??"muse-image-1.0",n:1,images,prompt:creativePrompt(input),size:aspects[input.aspect],response_format:"b64_json",output_format:"png",reasoning_strength:"low",tool_enablement:{enable_image_search:false,enable_web_search:false,enable_shell:false}}});

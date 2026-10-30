@@ -4,7 +4,7 @@ import { getDb } from "@/lib/db";
 import { AppError } from "@/lib/http";
 import { record } from "./composition";
 import type { Prisma, SceneStatus } from "@/generated/prisma/client";
-export const projectActionSchema=z.object({action:z.enum(["ARCHIVE","RESTORE"]),expectedRevision:z.number().int().nonnegative(),confirmed:z.literal(true)}).strict();
+export const projectActionSchema=z.object({action:z.enum(["ARCHIVE","DELETE","RESTORE"]),expectedRevision:z.number().int().nonnegative(),confirmed:z.literal(true)}).strict();
 export async function manageProject(sceneId:string,ownerId:string,input:z.infer<typeof projectActionSchema>){
  if(!z.uuid().safeParse(sceneId).success)throw new AppError(404,"NOT_FOUND","Project not found.");
  const db=getDb();return db.$transaction(async tx=>{
@@ -12,9 +12,9 @@ export async function manageProject(sceneId:string,ownerId:string,input:z.infer<
   const scene=await tx.scene.findFirst({where:{id:sceneId,ownerId}});if(!scene)throw new AppError(404,"NOT_FOUND","Project not found.");
   if(scene.revision!==input.expectedRevision)throw new AppError(409,"REVISION_CONFLICT","The project changed. Reload before continuing.");
   const settings=record(scene.settings),archive=record(settings.archive);
-  if(input.action==="ARCHIVE"){
+  if(input.action!=="RESTORE"){
    if(scene.archivedAt)throw new AppError(409,"ALREADY_ARCHIVED","This project is already archived.");
-   if(["ANALYZING","RECONSTRUCTING"].includes(scene.status)||await tx.generationRun.count({where:{sceneId,status:{in:["QUEUED","RUNNING","WAITING","CANCEL_REQUESTED"]}}}))throw new AppError(409,"SCENE_BUSY","Wait for generation to finish before archiving.");
+   if(["ANALYZING","RECONSTRUCTING"].includes(scene.status)||await tx.generationRun.count({where:{sceneId,status:{in:["QUEUED","RUNNING","WAITING","CANCEL_REQUESTED"]}}}))throw new AppError(409,"SCENE_BUSY","Wait for generation to finish before moving the project to Trash.");
    const changed=await tx.scene.updateMany({where:{id:sceneId,ownerId,revision:input.expectedRevision,archivedAt:null},data:{archivedAt:new Date(),status:"ARCHIVED",revision:{increment:1},settings:JSON.parse(JSON.stringify({...settings,archive:{previousStatus:scene.status}})) as Prisma.InputJsonValue}});
    if(!changed.count)throw new AppError(409,"REVISION_CONFLICT","The project changed. Reload before continuing.");
    await tx.scenePublication.updateMany({where:{sceneId,revokedAt:null},data:{revokedAt:new Date()}});
