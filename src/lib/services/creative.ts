@@ -41,7 +41,7 @@ export async function completeCreativeUpload(ownerId:string,sceneId:string,id:st
  if(!a)throw new AppError(404,"UPLOAD_UNAVAILABLE","Upload expired or already accepted.");
  if(!(await db.asset.updateMany({where:{id,status:"PENDING"},data:{status:"VALIDATING"}})).count)throw new AppError(409,"UPLOAD_BUSY","Upload is being processed.");
  try{const bytes=await readLimited(a.storageKey,12*1024*1024),meta=await sharp(bytes,{limitInputPixels:24_000_000}).metadata();if(!["png","jpeg","webp"].includes(meta.format??"")||(meta.pages??1)>1)throw new AppError(400,"INVALID_IMAGE","Choose a still JPEG, PNG or WebP.");
- const result=await saveImage(sceneId,bytes,"PRODUCT_IMAGE",{source:"creative-reference",label});await db.asset.update({where:{id},data:{status:"READY"}});return result;
+ const result=await saveImage(sceneId,bytes,"PRODUCT_IMAGE",{source:"creative-reference",label});await db.asset.update({where:{id},data:{status:"READY",byteSize:bytes.length,sha256:createHash("sha256").update(bytes).digest("hex"),readyAt:new Date(),uploadExpiresAt:null}});return result;
  }catch(e){await db.asset.update({where:{id},data:{status:"REJECTED"}});throw e;}
 }
 export async function creativeTemplates(ownerId:string,sceneId:string){
