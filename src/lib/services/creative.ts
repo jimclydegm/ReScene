@@ -11,7 +11,7 @@ import {getMetaClient} from "@/lib/ai/meta";
 import {creativeInput,creativeDraftInput,creativePrompt,aspects} from "@/lib/ai/creative-contract";
 import {readFile} from "node:fs/promises";
 import {join} from "node:path";
-import {sampleImagePath} from "@/lib/ai/sample-products";
+import {sampleImagePath,settingImagePath} from "@/lib/ai/sample-products";
 import type {Prisma} from "@/generated/prisma/client";
 const json=(v:unknown)=>JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 const active=["QUEUED","RUNNING","WAITING"] as const;
@@ -38,7 +38,7 @@ async function persistDraft(tx:Prisma.TransactionClient,ownerId:string,input:Ret
  if(refs!==input.referenceIds.length)throw new AppError(404,"REFERENCE_UNAVAILABLE","Choose available library references.");
  const old=await tx.compositionDraft.findUnique({where:{sceneId:input.sceneId}});
  if(input.draftRevision!==undefined&&(old?.revision??0)!==input.draftRevision)throw new AppError(409,"DRAFT_CONFLICT","This draft changed in another tab. Reload to continue.");
- const d=await tx.compositionDraft.upsert({where:{sceneId:input.sceneId},create:{sceneId:input.sceneId,prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,projectTitle:input.projectTitle??"My product scene",templateVersion:3,revision:1},update:{prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,projectTitle:input.projectTitle??old?.projectTitle,templateVersion:3,revision:{increment:1}}});
+ const d=await tx.compositionDraft.upsert({where:{sceneId:input.sceneId},create:{sceneId:input.sceneId,prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,projectTitle:input.projectTitle??"My product scene",templateVersion:4,revision:1},update:{prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,projectTitle:input.projectTitle??old?.projectTitle,templateVersion:4,revision:{increment:1}}});
  await tx.compositionReference.deleteMany({where:{draftId:d.id}});
  if(input.referenceIds.length)await tx.compositionReference.createMany({data:input.referenceIds.map((contentItemId,position)=>({draftId:d.id,contentItemId,position}))});
  return d;
@@ -74,7 +74,7 @@ export async function reserveCreative(ownerId:string,raw:unknown){
  if(input.refinementSourceId&&!await tx.contentItem.findFirst({where:{id:input.refinementSourceId,ownerId,kind:"GENERATED",archivedAt:null,asset:{status:"READY",scene:{ownerId,archivedAt:null}}}}))throw new AppError(404,"IMAGE_UNAVAILABLE","The correction source is unavailable.");
  const draft=await persistDraft(tx,ownerId,input);
  const run=await tx.generationRun.create({data:{sceneId:scene.id,kind:"COMPOSE_IMAGE",idempotencyKey:input.idempotencyKey,inputRevision:scene.revision,input:json(input),expiresAt:new Date(Date.now()+15*60000),reservedCostUsd:.01,currentStage:"Waiting for Muse Image"}});
- await tx.contentGeneration.create({data:{draftId:draft.id,runId:run.id,refinementSourceId:input.refinementSourceId,prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,templateVersion:3,modelId:process.env.META_IMAGE_MODEL??"muse-image-1.0",references:{create:input.referenceIds.map((contentItemId,position)=>({contentItemId,position}))}}});return run;
+ await tx.contentGeneration.create({data:{draftId:draft.id,runId:run.id,refinementSourceId:input.refinementSourceId,prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,templateVersion:4,modelId:process.env.META_IMAGE_MODEL??"muse-image-1.0",references:{create:input.referenceIds.map((contentItemId,position)=>({contentItemId,position}))}}});return run;
  });
 }
 export async function composeCreative(runId:string){
@@ -85,12 +85,12 @@ export async function composeCreative(runId:string){
  const refs=await db.contentItem.findMany({where:{...visibility(r.scene.ownerId),id:{in:input.referenceIds}},include:{asset:true}});if(refs.length!==input.referenceIds.length)throw new Error("REFERENCE_UNAVAILABLE");
  const products=await Promise.all(input.referenceIds.map(async id=>{const item=refs.find(a=>a.id===id)!;let bytes:Buffer;if(item.asset)bytes=await readLimited(item.asset.storageKey,4*1024*1024);else{const key=item.sampleKey?.split(":")[0],path=sampleImagePath(key??"");if(!path)throw new Error("SAMPLE_INVALID");bytes=await readFile(join(process.cwd(),"public",path.slice(1)));}return {image_url:`data:image/webp;base64,${bytes.toString("base64")}`};}));
  const labels=input.referenceIds.map(id=>refs.find(a=>a.id===id)!.title);
- const setting=await readFile(join(process.cwd(),"public","samples","v2",`${input.template}.webp`));
+ const setting=await readFile(join(process.cwd(),"public",settingImagePath(input.template).slice(1)));
  const images=[{image_url:`data:image/webp;base64,${setting.toString("base64")}`},...products];
  let correction:string|undefined;
  if(input.refinementSourceId){const previous=await db.contentItem.findFirst({where:{id:input.refinementSourceId,ownerId:r.scene.ownerId,kind:"GENERATED",archivedAt:null},include:{asset:true}});if(!previous?.asset)throw new Error("CORRECTION_UNAVAILABLE");const review=creativeReviewSchema.safeParse(record(previous.provenance).qualityReview);correction=review.success?(reviewIssues(review.data).join(" ")||"Check inventory, framing, relative scale, support and setting consistency; refine only visible problems."):"Check and correct inventory, framing, scale, support and setting consistency.";images.push({image_url:`data:image/webp;base64,${(await readLimited(previous.asset.storageKey,4*1024*1024)).toString("base64")}`});}
  const prompt=creativePrompt(input,labels,correction);
- await db.contentGeneration.update({where:{runId},data:{requestSnapshot:json({version:"composition-v3",prompt,reasoningStrength:"high",settingPath:`/samples/v2/${input.template}.webp`,referenceIds:input.referenceIds,labels,refinementSourceId:input.refinementSourceId??null})}});
+ await db.contentGeneration.update({where:{runId},data:{requestSnapshot:json({version:"composition-v4",prompt,reasoningStrength:"high",settingPath:settingImagePath(input.template),referenceIds:input.referenceIds,labels,refinementSourceId:input.refinementSourceId??null})}});
  await db.generationStep.create({data:{runId,key:"creative-image",attempt:1,provider:"META",modelId:"muse-image-1.0",status:"RUNNING",startedAt:new Date()}});
  await db.generationRun.update({where:{id:runId},data:{progress:30,currentStage:"Composing your products with Muse Image"}});submitted=true;
  const result=await getMetaClient().post<{data?:{b64_json?:string}[]}>("/images/edits",{maxRetries:0,timeout:180000,body:{model:process.env.META_IMAGE_MODEL??"muse-image-1.0",n:1,images,prompt,size:aspects[input.aspect],response_format:"b64_json",output_format:"png",reasoning_strength:"high",tool_enablement:{enable_image_search:false,enable_web_search:false,enable_shell:false}}});
