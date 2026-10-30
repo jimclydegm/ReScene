@@ -443,6 +443,10 @@ export async function selectMask(sceneId:string,ownerId:string,input:z.infer<typ
 export async function saveObjects(sceneId: string, ownerId: string, input: z.infer<typeof objectEditsSchema>) {
   const scene = await ownedScene(sceneId, ownerId);
   const thumbnails = new Map<string, string>();
+  const colliders=await getDb().sceneObject.findMany({where:{sceneId,status:"READY",modelAssetId:{not:null}},include:{model:true}});
+  const proposed=colliders.map(o=>{const e=input.objects.find(e=>e.id===o.id);if(!e)return o;const q=rotationAfterEdit(o,e);return {...o,positionX:e.positionX,positionY:e.positionY,positionZ:e.positionZ,rotationX:q.x,rotationY:q.y,rotationZ:q.z,rotationW:q.w,scaleX:e.scale,scaleY:e.scale,scaleZ:e.scale,visible:e.visible};});
+  if(proposed.some((o,i)=>o!==colliders[i])){const {guardCollisions}=await import("./collision-guard");await guardCollisions(colliders,proposed);}
+
   // Only new product cards need a cutout. Validate every object before any storage work.
   const originals = await getDb().sceneObject.findMany({ where: { sceneId, status: "READY", id: { in: input.objects.map(o => o.id) } } });
   if (originals.length !== input.objects.length) throw new AppError(400, "INVALID_OBJECT", "The selected object is unavailable.");

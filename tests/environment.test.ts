@@ -306,3 +306,5 @@ it("accepts openings clipped by an observed wall boundary", () => {
   expect(withinPolygon(p(0.5, 0), polygon)).toBe(true);
   expect(withinPolygon(p(1.1, 0.5), polygon)).toBe(false);
 });
+
+it('anchors a horizontal support surface without requiring the floor label',()=>{const plan=room();plan.surfaces.find(s=>s.role==='floor')!.role='surface' as never;const result=buildEnvironmentGeometry(plan,stage(),grid(plan));expect(result.report.projectionError).toBeLessThan(.005);expect(result.report.warnings.some(w=>w.includes('No reliable ground'))).toBe(false);});

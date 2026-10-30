@@ -37,7 +37,7 @@ export async function ingestRepair(runId:string,result:Result){
   const input={id,label:object.label,bytes,mask:await sharp(await readLimited(object.mask.storageKey,4*1024*1024)).greyscale().raw().toBuffer(),support:String(record(object.provenance).support??"unknown"),supportedById:typeof record(object.provenance).supportedByObjectId==="string"?String(record(object.provenance).supportedByObjectId):null};
   const i=inputs.findIndex(o=>o.id===id);if(i>=0)inputs[i]=input;else inputs.push(input);
  }
- const review=reviewLayout(placements,inputs,stage,size,{onlyIds:new Set(ids)}),accepted=new Set(review.objects.filter(o=>o.after>=.2&&(!baseline.objects.some(b=>b.id===o.id)||o.after>(baseline.objects.find(b=>b.id===o.id)!.after+.025))).map(o=>o.id));
+ const review=reviewLayout(placements,inputs,stage,size,{onlyIds:new Set(ids)}),accepted=new Set(review.objects.filter(o=>!o.collision&&o.after>=.2&&(!baseline.objects.some(b=>b.id===o.id)||o.after>(baseline.objects.find(b=>b.id===o.id)!.after+.025))).map(o=>o.id));
  const appearance=record(record(scene.settings).appearance);
  const appearanceModels=Array.isArray(appearance.models)?appearance.models.filter(m=>!accepted.has(String(record(m).objectId))):null;
  const prior=layoutReviewSchema.safeParse(record(scene.settings).layoutReview).data;

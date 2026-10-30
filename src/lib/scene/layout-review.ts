@@ -1,10 +1,11 @@
+import {collisionPairs,separateLayout} from "./collisions";
 import {supportSampler} from "@/lib/appearance/contact";
 import { Matrix4, Quaternion, Vector3 } from "three";
 import { z } from "zod";
 import { geometry, photoCamera, visibility } from "@/lib/appearance/bake";
 import type { ModelPlacement, SceneComposition } from "./composition";
 
-export const layoutReviewSchema=z.object({version:z.literal("mask-layout-v1"),objects:z.array(z.object({id:z.string(),label:z.string(),before:z.number(),after:z.number(),adjusted:z.boolean(),orientationAdjusted:z.boolean().default(false),needsReview:z.boolean()})),needsReview:z.boolean()});
+export const layoutReviewSchema=z.object({version:z.literal("mask-layout-v1"),objects:z.array(z.object({id:z.string(),label:z.string(),before:z.number(),after:z.number(),adjusted:z.boolean(),orientationAdjusted:z.boolean().default(false),collision:z.boolean().optional(),needsReview:z.boolean()})),needsReview:z.boolean()});
 export type LayoutReview=z.infer<typeof layoutReviewSchema>;
 type Placement={id:string;position:[number,number,number];placement:ModelPlacement};
 type Input={id:string;label:string;bytes:Buffer;mask:Uint8Array;support:string;supportedById?:string|null;parentId?:string|null};
@@ -89,6 +90,16 @@ export function reviewLayout(objects:Placement[],inputs:Input[],composition:Scen
   if(improved||contactAdjusted){object.position=best.position;object.placement=best.placement;}
   const after=improved||contactAdjusted?candidateIoU:before,needsReview=after<.65;
   report.objects.push({id:object.id,label:input.label,before,after,adjusted:improved||contactAdjusted,orientationAdjusted:improved&&best.placement.rotation.some((v,i)=>Math.abs(v-base.placement.rotation[i])>.001),needsReview});report.needsReview ||= needsReview;
+ }
+ if(!options?.evaluateOnly&&options?.onlyIds){
+  const meshes=objects.flatMap(o=>{const input=inputs.find(i=>i.id===o.id);if(!input)return[];const p=o.placement,m=new Matrix4().makeTranslation(...o.position).multiply(new Matrix4().makeTranslation(...p.offset)).multiply(new Matrix4().compose(new Vector3(),new Quaternion(...p.rotation),new Vector3(...p.scale)));return[{id:o.id,parentId:input.parentId,points:geometry(input.bytes,m,0,false).map(t=>t.points)}];});
+  const pairs=collisionPairs(meshes);for(const entry of report.objects)if(pairs.some(p=>p.a===entry.id||p.b===entry.id)){entry.collision=true;entry.needsReview=true;report.needsReview=true;}
+ }
+ if(!options?.evaluateOnly&&!options?.onlyIds){
+  const collision=separateLayout(objects,inputs);
+  if(collision.adjusted.length){const evaluated=reviewLayout(objects,inputs,composition,size,{evaluateOnly:true});for(const entry of report.objects){const after=evaluated.objects.find(o=>o.id===entry.id);if(after){entry.after=after.after;entry.needsReview=after.needsReview;entry.adjusted ||= collision.adjusted.includes(entry.id);}}}
+  if(collision.initial)composition.warnings.push(`Collision review: ${collision.adjusted.length} objects adjusted; ${collision.remaining.length} intersections remain. Thin or open geometry still needs visual inspection.`);
+  report.needsReview ||= collision.remaining.length>0||report.objects.some(o=>o.needsReview);
  }
  return report;
 }
