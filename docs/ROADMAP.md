@@ -181,4 +181,4 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Versioned previews/provenance, native-format selection, format filter and bounded scene picker; legacy assets/recipes preserved.
 - [x] Idempotent library registration script, separate SETTING rows and version4 setting path snapshots.
 - [x] 195 cases/schema/lint/types/build pass.
-- [ ] CI/release, register the new library rows and verify deployed assets/pickers.
+- [x] PR29 merged at2a10a49; production READY, all30 asset hashes and library registry metadata verified. Production library/SSR shows37 products and23 settings with format filter; zero runtime errors. Native UI interaction remains unverified while browser access is unavailable.
