@@ -1,5 +1,6 @@
 import { isBackgroundSurface } from "@/lib/scene/surface-role";
 import "server-only";
+import {rotationControls,rotationAfterEdit} from "@/lib/editor/rotation";
 import { randomUUID, createHash } from "node:crypto";
 import { getDb } from "@/lib/db";
 import { AppError } from "@/lib/http";
@@ -376,7 +377,7 @@ export async function workspace(sceneId: string, ownerId: string) {
       product: o.product && o.product.sceneId === sceneId ? { name: o.product.name, description: o.product.description ?? "", brand: o.product.brand ?? "", price: o.product.price?.toString() ?? null, currency: productSchema.shape.currency.parse(o.product.currency ?? "USD"), productUrl: o.product.productUrl ?? "", imageUrl: o.product.imageAsset?.status === "READY" && o.product.imageAsset.sceneId === sceneId ? await signRead(o.product.imageAsset) : null } : null,
       maskUrl: o.mask ? await signRead(o.mask) : null, modelUrl: o.model ? await signRead(o.model) : null,
       placement: modelPlacementSchema.safeParse(o.initialTransform).data ?? null,
-      positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, yaw: Math.atan2(2 * o.rotationW * o.rotationY, 1 - 2 * o.rotationY * o.rotationY), scale: o.scaleX, visible: o.visible
+      positionX: o.positionX, positionY: o.positionY, positionZ: o.positionZ, ...rotationControls(o), scale: o.scaleX, visible: o.visible
     }))), run: run ? { id: run.id, kind: run.kind, status: run.status, stage: run.currentStage, progress: run.progress,
       errorCode: run.errorCode, errorMessage: run.errorMessage, canResume: run.status === "QUEUED" || (run.status === "FAILED" && run.errorCode === "KNOWN_JOB_INTERRUPTED") } : null };
 }
@@ -421,7 +422,8 @@ export async function saveObjects(sceneId: string, ownerId: string, input: z.inf
   for(const edit of input.objects){
     const original=originals.find(o=>o.id===edit.id)!;
     if(record(original.provenance).assemblyRootId!==original.id)continue;
-    const transformed=edit.positionX!==original.positionX||edit.positionY!==original.positionY||edit.positionZ!==original.positionZ||edit.scale!==original.scaleX||edit.visible!==original.visible||Math.abs(edit.yaw-Math.atan2(2*original.rotationW*original.rotationY,1-2*original.rotationY*original.rotationY))>1e-6;
+    const nextRotation=rotationAfterEdit(original,edit);
+    const transformed=edit.positionX!==original.positionX||edit.positionY!==original.positionY||edit.positionZ!==original.positionZ||edit.scale!==original.scaleX||edit.visible!==original.visible||1-Math.abs(nextRotation.x*original.rotationX+nextRotation.y*original.rotationY+nextRotation.z*original.rotationZ+nextRotation.w*original.rotationW)>1e-8;
     if(transformed){const members=await getDb().sceneObject.findMany({where:{sceneId,provenance:{path:["assemblyRootId"],equals:original.id}},select:{id:true}});if(members.some(m=>!input.objects.some(o=>o.id===m.id)))throw new AppError(409,"ASSEMBLY_EDIT_REQUIRED","Include every product region when moving its complete subject.");}
   }
   for (const edit of input.objects) {
@@ -449,9 +451,10 @@ export async function saveObjects(sceneId: string, ownerId: string, input: z.inf
           productId = product.id;
         }
       }
+      const rotation=rotationAfterEdit(original,edit);
       const changed = await tx.sceneObject.updateMany({ where: { id: edit.id, sceneId, status: "READY" }, data: {
         productId, label: edit.label, positionX: edit.positionX, positionY: edit.positionY, positionZ: edit.positionZ,
-        rotationX: 0, rotationY: Math.sin(edit.yaw / 2), rotationZ: 0, rotationW: Math.cos(edit.yaw / 2),
+        rotationX: rotation.x, rotationY: rotation.y, rotationZ: rotation.z, rotationW: rotation.w,
         scaleX: edit.scale, scaleY: edit.scale, scaleZ: edit.scale, visible: edit.visible
       } });
       if (changed.count !== 1) throw new AppError(400, "INVALID_OBJECT", "The selected object is unavailable.");

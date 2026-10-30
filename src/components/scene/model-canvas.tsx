@@ -1,11 +1,13 @@
 "use client";
-import { Canvas, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, useGLTF, Grid } from "@react-three/drei";
-import { Box3, Mesh, MeshStandardMaterial, PCFShadowMap, Vector3 } from "three";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
+import { OrbitControls, useGLTF, useProgress, Grid } from "@react-three/drei";
+import { Box3, Mesh, MeshStandardMaterial, PCFShadowMap, PerspectiveCamera, Vector3 } from "three";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
 import type { OrbitControls as OrbitControlsType } from "three-stdlib";
 import type { SceneComposition } from "@/lib/scene/composition";
 import { PhotoBackground } from "./photo-background";
+import {captureScene,focusDistance} from "@/lib/editor/capture";
+import {Download,Focus} from "lucide-react";
 import type { Lighting } from "@/lib/scene/lighting";
 import type { RenderObject, SceneWorkspace } from "./types";
 
@@ -40,13 +42,29 @@ function Model({ object, selected, select }: { object: RenderObject; selected: b
   const base = object.placement;
   const world = object.worldTransform;
   const radius = base ? Math.max(base.size[0], base.size[2]) * 0.58 : 0.85;
-  return <group position={world?.position ?? [object.positionX, object.positionY, object.positionZ]} rotation={world ? undefined : [0, object.yaw, 0]} quaternion={world?.rotation} scale={world?.scale ?? object.scale}
+  return <group name={`object-${object.id}`} position={world?.position ?? [object.positionX, object.positionY, object.positionZ]} rotation={world ? undefined : [object.pitch??0, object.yaw, object.roll??0,"YXZ"]} quaternion={world?.rotation} scale={world?.scale ?? object.scale}
     onClick={(e: ThreeEvent<MouseEvent>) => { e.stopPropagation(); select(); }}>
     <group position={world ? [0,0,0] : base?.offset ?? model.offset}>
       <primitive object={model.cloned} quaternion={world ? [0,0,0,1] : base?.rotation ?? [0, 0, 0, 1]} scale={world ? 1 : base?.scale ?? model.factor}/>
     </group>
-    {selected && !world && <mesh position={[0, 0.018, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[radius, radius + 0.025, 64]}/><meshBasicMaterial color="#42785c" depthWrite={false}/></mesh>}
+    {selected && !world && <mesh userData={{editorHelper:true}} position={[0, 0.018, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[radius, radius + 0.025, 64]}/><meshBasicMaterial color="#42785c" depthWrite={false}/></mesh>}
   </group>;
+}
+type ViewerApi={capture:(transparent:boolean)=>Promise<Blob>;focus:(id:string,locked:boolean)=>void};
+function ViewerCommands({apiRef,controlsRef}:{apiRef:RefObject<ViewerApi|null>;controlsRef:RefObject<OrbitControlsType|null>}){
+ const {gl,scene,camera}=useThree();
+ useEffect(()=>{
+  if(!(camera instanceof PerspectiveCamera))return;
+  apiRef.current={capture:transparent=>captureScene(gl,scene,camera,transparent),focus:(id,locked)=>{
+   const group=scene.getObjectByName(`object-${id}`),control=controlsRef.current;if(!group||!control)return;
+   const box=new Box3().setFromObject(group.children[0]??group);if(box.isEmpty())return;
+   const target=box.getCenter(new Vector3()),direction=camera.position.clone().sub(control.target);
+   const distance=locked?direction.length():Math.min(control.maxDistance,Math.max(control.minDistance,focusDistance(box,camera)));
+   camera.position.copy(target).add(direction.normalize().multiplyScalar(distance));control.target.copy(target);control.update();
+  }};
+  return ()=>{apiRef.current=null;};
+ },[apiRef,controlsRef,gl,scene,camera]);
+ return null;
 }
 export default function ModelCanvas({ objects, selected, onSelect, composition, lighting, appearance }: { objects: RenderObject[]; selected: string; onSelect: (id: string) => void; composition: SceneComposition | null; lighting: Lighting; appearance: SceneWorkspace["appearance"] }) {
   const readOnly = objects.some(o => Boolean(o.worldTransform));
@@ -59,26 +77,41 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
   }, []);
   const [grid, setGrid] = useState(false);
   const [zoomLocked,setZoomLocked]=useState(false);
+  const [backgroundHidden,setBackgroundHidden]=useState(false);
+  const [exporting,setExporting]=useState(false),[exportError,setExportError]=useState("");
+  const viewerApi=useRef<ViewerApi|null>(null),loading=useProgress(state=>state.active);
+  async function download(transparent:boolean){
+    if(!viewerApi.current){setExportError("The viewer is still loading. Try again when the objects appear.");return;}
+    setExporting(true);setExportError("");
+    try{const blob=await viewerApi.current.capture(transparent),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`rescene-${transparent?"transparent":"scene"}.png`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+    catch{setExportError("Could not download the screenshot. Reload the viewer and try again.");}
+    finally{setExporting(false);}
+  }
   const floorY=Math.min(composition?.floorY ?? 0,...objects.filter(o=>o.visible&&!o.worldTransform).map(o=>o.positionY));
   const c = composition?.camera;
+  const cameraOptions=useMemo(()=>({position:c?.position??[5,4,7] as [number,number,number],fov:c?.fov??42,near:.01,far:Math.max(500,c?new Vector3(...c.position).distanceTo(new Vector3(...c.target))*16:500)}),[c]);
   const lightingColor = composition?.environment.lightWarmth === "warm" ? "#fff0d8" : composition?.environment.lightWarmth === "cool" ? "#e1edff" : "#ffffff";
   const target = c?.target ?? [0, 0.5, 0] as [number, number, number];
   return <div className="model-viewport" style={{ "--scene-aspect": c?.aspect ?? 1.5 } as CSSProperties}>
-    <Canvas shadows={{type:PCFShadowMap}} camera={{ position: c?.position ?? [5, 4, 7], fov: c?.fov ?? 42, near: 0.01, far: Math.max(500,c?new Vector3(...c.position).distanceTo(new Vector3(...c.target))*16:500) }} dpr={[1, 1.5]}
+    <Canvas onPointerMissed={event=>{if(event.type==="click")onSelect("");}} shadows={{type:PCFShadowMap}} camera={cameraOptions} dpr={[1, 1.5]}
       fallback={<p className="canvas-loading">WebGL is unavailable in this browser. You can still browse the scene details.</p>}>
-      <color attach="background" args={[composition?.background?.plainColor ?? composition?.environment.wallColor ?? "#edece5"]}/>
+      <color attach="background" args={[backgroundHidden?"#f4f3ee":composition?.background?.plainColor ?? composition?.environment.wallColor ?? "#edece5"]}/>
       <hemisphereLight args={["#fffaf0", composition?.environment.floorColor ?? "#b1a38d", lighting.ambient]}/>
       <directionalLight position={lighting.key.position} intensity={lighting.key.intensity} color={lightingColor} castShadow
         shadow-mapSize={[2048, 2048]} shadow-camera-left={-12} shadow-camera-right={12} shadow-camera-top={12} shadow-camera-bottom={-12} shadow-camera-near={0.1} shadow-camera-far={100} shadow-bias={-0.0003} shadow-normalBias={0.02}/>
       <directionalLight position={lighting.fill.position} intensity={lighting.fill.intensity}/>
-      <Suspense fallback={null}>{composition && <PhotoBackground composition={composition} url={appearance.backgroundUrl ?? null} legacyFloor={appearance.floorUrl} floorY={floorY} shadows={lighting.key.intensity>0}/>}</Suspense>
-      <Suspense fallback={null}>{objects.filter(o => o.modelUrl).map(o => <Model key={o.id} object={o} selected={selected === o.id} select={() => onSelect(o.id)}/>)}</Suspense>
-      {(!composition || grid) && <Grid position={[0, floorY + 0.005, 0]} args={[30, 30]} cellSize={0.5} sectionSize={2} fadeDistance={20} cellColor="#c5c6ba" sectionColor="#a8b1a1"/>}
+      <Suspense fallback={null}>{composition && !backgroundHidden && <PhotoBackground composition={composition} url={appearance.backgroundUrl ?? null} legacyFloor={appearance.floorUrl} floorY={floorY} shadows={lighting.key.intensity>0}/>}</Suspense>
+      <Suspense fallback={null}>{objects.filter(o => o.modelUrl).map(o => <Model key={o.id} object={o} selected={selected === o.id} select={() => onSelect(selected===o.id?"":o.id)}/>)}</Suspense>
+      {(!composition || grid) && <Grid userData={{editorHelper:true}} position={[0, floorY + 0.005, 0]} args={[30, 30]} cellSize={0.5} sectionSize={2} fadeDistance={20} cellColor="#c5c6ba" sectionColor="#a8b1a1"/>}
+      <ViewerCommands apiRef={viewerApi} controlsRef={controls}/>
       <OrbitControls ref={bindControls} makeDefault target={target} minDistance={0.3} enableZoom={!zoomLocked}
-        maxDistance={Math.max(40, c ? new Vector3(...c.position).distanceTo(new Vector3(...c.target)) * 2 : 40)} maxPolarAngle={composition?.backdrop === "none" ? Math.PI-.01 : Math.PI / 2 - 0.01}/>
+        maxDistance={Math.max(40, c ? new Vector3(...c.position).distanceTo(new Vector3(...c.target)) * 2 : 40)} maxPolarAngle={backgroundHidden||composition?.backdrop === "none" ? Math.PI-.01 : Math.PI / 2 - 0.01}/>
     </Canvas>
     <div className="viewer-toolbar"><button onClick={() => controls.current?.reset()}>{readOnly ? "Reset view" : composition ? "Photo view" : "Reset camera"}</button>
-      {composition && !readOnly && <button aria-pressed={grid} onClick={() => setGrid(value => !value)}>{grid ? "Hide grid" : "Show grid"}</button>}<label className="zoom-lock"><input type="checkbox" checked={zoomLocked} onChange={e=>setZoomLocked(e.target.checked)}/>Zoom lock</label></div>
+      {composition && !readOnly && <button aria-pressed={grid} onClick={() => setGrid(value => !value)}>{grid ? "Hide grid" : "Show grid"}</button>}<label className="zoom-lock"><input type="checkbox" checked={zoomLocked} onChange={e=>setZoomLocked(e.target.checked)}/>Zoom lock</label><label className="zoom-lock" title="Preview only. Use Scene backdrop to save a background choice."><input type="checkbox" checked={backgroundHidden} onChange={e=>setBackgroundHidden(e.target.checked)}/>Hide background</label>
+      {!readOnly&&<button disabled={!selected||!objects.some(o=>o.id===selected&&o.visible)||loading} title="Center the selected object" onClick={()=>viewerApi.current?.focus(selected,zoomLocked)}><Focus size={13}/>Focus selected</button>}
+      <details className="viewer-export"><summary><Download size={13}/>Download</summary><div className="viewer-export-options"><button disabled={loading||exporting} onClick={()=>download(false)}>{exporting?"Preparing…":"Download scene PNG"}</button><button disabled={loading||exporting} onClick={()=>download(true)}>Download transparent PNG</button><small>Current view, without selection rings or grid. Transparent PNG omits the background and ground shadows.</small></div></details></div>
+    {exportError&&<p role="alert" className="viewer-export-error">{exportError}</p>}
     <span className="viewer-help">Drag to orbit · right-drag to pan · {zoomLocked?"zoom locked":"scroll to zoom"}</span>
   </div>;
 }
