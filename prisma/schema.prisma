@@ -365,6 +365,7 @@ model ContentItem {
  draftReferences CompositionReference[]
  generationReferences GenerationReference[]
  outputs ContentGeneration[]
+ refinements ContentGeneration[] @relation("GenerationRefinement")
  adoptions ContentAdoption[]
  @@index([ownerId,archivedAt,createdAt])
  @@unique([ownerId,assetId])
@@ -394,6 +395,10 @@ model CompositionReference {
  @@index([contentItemId])
 }
 model ContentGeneration {
+ refinementSourceId String? @db.Uuid
+ refinementSource ContentItem? @relation("GenerationRefinement",fields:[refinementSourceId],references:[id],onDelete:Restrict)
+ requestSnapshot Json @default("{}")
+ qualityReview Json?
  id String @id @default(uuid()) @db.Uuid
  draftId String @db.Uuid
  runId String @unique @db.Uuid
@@ -408,6 +413,7 @@ model ContentGeneration {
  run GenerationRun @relation(fields:[runId],references:[id],onDelete:Restrict)
  output ContentItem? @relation(fields:[outputItemId],references:[id],onDelete:Restrict)
  references GenerationReference[]
+ @@index([refinementSourceId])
 }
 model GenerationReference {
  generationId String @db.Uuid

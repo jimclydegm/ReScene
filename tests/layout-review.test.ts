@@ -28,6 +28,12 @@ describe("Reference-based layout review",()=>{
   const report=reviewLayout([object],[{id:"item",label:"Diagonal subject",bytes,mask:mask(.45),support:"unknown"}],stage(),frame);
   expect(report.objects[0].orientationAdjusted).toBe(false);
  });
+ it("keeps supported subjects on the actual support after silhouette fitting, even if source fit prefers floating",()=>{
+  const support={id:"base",position:[0,0,0] as [number,number,number],placement:placement()},item={id:"item",position:[0,3,0] as [number,number,number],placement:placement()};
+  const report=reviewLayout([item,support],[{id:"base",label:"Support",bytes,mask:mask(),support:"floor"},{id:"item",label:"Supported object",bytes,mask:mask(),support:"tabletop",supportedById:"base"}],stage(),frame,{onlyIds:new Set(["item"])});
+  expect(item.position[1]).toBeCloseTo(1.8);expect(support.position).toEqual([0,0,0]);expect(report.objects).toHaveLength(1);
+ });
+ it("evaluates a retry baseline without changing saved placements",()=>{const o={id:"item",position:[1,0,0] as [number,number,number],placement:placement()},before=structuredClone(o);const r=reviewLayout([o],[{id:"item",label:"Subject",bytes,mask:mask(),support:"floor"}],stage(),frame,{evaluateOnly:true});expect(o).toEqual(before);expect(r.objects[0].after).toBe(r.objects[0].before);});
  it("rejects empty/mismatched masks before optimization",()=>{
   const object={id:"item",position:[0,0,0] as [number,number,number],placement:placement()},input={id:"item",label:"Subject",bytes,support:"floor"};
   expect(()=>reviewLayout([object],[{...input,mask:new Uint8Array(1)}],stage(),frame)).toThrow("REVIEW_FRAME");expect(()=>reviewLayout([object],[{...input,mask:new Uint8Array(128*128)}],stage(),frame)).toThrow("REVIEW_MASK_EMPTY");

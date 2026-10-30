@@ -1,4 +1,5 @@
 "use client";
+import {ReconstructionRetry} from "./reconstruction-retry";
 import { Crosshair, ImageIcon, Undo2, WandSparkles } from "lucide-react";
 import type { SceneWorkspace } from "./types";
 
@@ -6,8 +7,9 @@ type Backdrop = "room" | "studio" | "none";
 const backdrops: [Backdrop, string][] = [["room", "Photo"], ["studio", "Ground"], ["none", "Plain"]];
 
 /** Scene-level layout, backdrop and background actions, grouped in one inspector tab. */
-export function SceneLayoutControls({ data, locked, unsaved, blocked, onMatch, onReview, onRestore, onBackdrop, onBackground }: {
+export function SceneLayoutControls({ data, locked, unsaved, blocked, onMatch, onReview, onRestore, onBackdrop, onBackground,onRetry,onMask }: {
   data: SceneWorkspace; locked: boolean; unsaved: boolean; blocked: boolean;
+  onRetry:(ids:string[],seed:number)=>Promise<void>;onMask:(id:string,mask:string)=>Promise<void>;
   onMatch: () => void; onReview: () => void; onRestore: () => void; onBackdrop: (value: Backdrop) => void; onBackground: () => void;
 }) {
   const composition = data.composition;
@@ -31,6 +33,7 @@ export function SceneLayoutControls({ data, locked, unsaved, blocked, onMatch, o
         <small>Mask overlap from the photo angle. Hidden geometry is not verified.</small>
       </div>}
     </div>
+    <ReconstructionRetry data={data} disabled={layoutDisabled} onRetry={onRetry} onMask={onMask}/>
     {composition && <div className="panel-block">
       <div className="panel-heading"><h3>Backdrop</h3></div>
       <div className="segmented" role="radiogroup" aria-label="Scene backdrop">{backdrops.map(([value, label]) =>

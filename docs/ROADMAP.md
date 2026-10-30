@@ -128,3 +128,12 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Twelve simple photographic samples, 22 active products total; plants/paired shoes retired from selection.
 - [x] Eight empty environment previews and matching no-extra-products prompt controls; old template versions/media retained.
 - [x] Saved-data and production confirmation/delete/Trash/restore, sample/setting asset and SSR checks pass. PR #22 merged at 1b69385; CI and production READY. Native visual checks remain blocked by Work settings.
+
+## Composition quality and selective paid recovery
+
+- [x] Actual setting references, numbered inventory/framing/relative-scale constraints and high Muse reasoning.
+- [x] Private structured image checks, visible warnings and explicit paid image correction with frozen request/refinement lineage.
+- [x] Spatial mask matching and contact-constrained layout with real support heights.
+- [x] Independent-object retry with confirmation/seed, same-camera fit, previous-mesh retention and known-job resume.
+- [x] Saved-example mask recovery, box reconstruction and jar contact checked; poorer chair/lid retry meshes retained privately, previous models kept.
+- [ ] Final checks, merge, production API/SSR verification and release notes.

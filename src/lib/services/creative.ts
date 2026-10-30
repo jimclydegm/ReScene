@@ -1,3 +1,4 @@
+import {reviewCreative,creativeReviewSchema,reviewIssues} from "@/lib/ai/creative-review";
 import "server-only";
 import {randomUUID,createHash} from "node:crypto";
 import sharp from "sharp";
@@ -25,11 +26,11 @@ const visibility=(ownerId:string)=>({archivedAt:null,OR:[{ownerId,asset:{status:
 export async function creativeLibrary(ownerId:string,sceneId?:string,page=0,trash=false){
  const db=getDb();if(sceneId)await workspace(sceneId,ownerId);
  const [images,references,runs,draft]=await Promise.all([
- db.contentItem.findMany({where:{...visibility(ownerId),kind:"GENERATED",...(trash?{archivedAt:{not:null}}:{})},include:{asset:true},orderBy:{createdAt:"desc"},skip:page*12,take:13}),
+ db.contentItem.findMany({where:{...visibility(ownerId),kind:"GENERATED",...(trash?{archivedAt:{not:null}}:{})},include:{asset:true,outputs:{include:{run:{select:{input:true}}},take:1}},orderBy:{createdAt:"desc"},skip:page*12,take:13}),
  db.contentItem.findMany({where:{...visibility(ownerId),kind:{in:trash?["REFERENCE"]:["REFERENCE","SAMPLE"]},...(trash?{archivedAt:{not:null}}:{})},include:{asset:true},orderBy:[{kind:"desc"},{createdAt:"desc"}],take:60}),
  sceneId?db.generationRun.findMany({where:{sceneId,kind:"COMPOSE_IMAGE"},orderBy:{createdAt:"desc"},take:8}):[],
  sceneId?db.compositionDraft.findUnique({where:{sceneId},include:{references:{include:{item:true},orderBy:{position:"asc"}}}}):null]);
- const view=async(a:typeof references[number])=>({id:a.id,sceneId:a.asset?.sceneId??"",url:a.asset?await signRead(a.asset):a.publicPath!,label:a.title,category:a.category,sample:a.kind==="SAMPLE"});
+ const view=async(a:typeof references[number] & {outputs?:{run:{input:unknown}}[]})=>({id:a.id,sceneId:a.asset?.sceneId??"",url:a.asset?await signRead(a.asset):a.publicPath!,label:a.title,category:a.category,sample:a.kind==="SAMPLE",recipe:creativeInput.safeParse(a.outputs?.[0]?.run.input).data??null,review:creativeReviewSchema.safeParse(record(a.provenance).qualityReview).success?{issues:reviewIssues(creativeReviewSchema.parse(record(a.provenance).qualityReview)),checked:true}:record(a.provenance).reviewUnavailable?{issues:["Automatic image review was unavailable. Check inventory, scale and framing before use."],checked:false}:null});
  return {images:await Promise.all(images.slice(0,12).map(view)),hasMore:images.length>12,references:await Promise.all(references.filter(r=>record(r.provenance).source!=="creative-template"&&record(r.provenance).generator!=="original-procedural-v1").map(view)),draft:draft?{revision:draft.revision,referenceIds:draft.references.filter(r=>!r.item.archivedAt).map(r=>r.contentItemId),prompt:draft.prompt,template:draft.templateKey,aspect:draft.aspectRatio,projectTitle:draft.projectTitle}:null,runs:runs.map(r=>({id:r.id,status:r.status,error:r.errorMessage,progress:r.progress,input:creativeInput.safeParse(r.input).data??null})),revision:sceneId?(await workspace(sceneId,ownerId)).revision:0};
 }
 async function persistDraft(tx:Prisma.TransactionClient,ownerId:string,input:ReturnType<typeof creativeDraftInput.parse>){
@@ -37,7 +38,7 @@ async function persistDraft(tx:Prisma.TransactionClient,ownerId:string,input:Ret
  if(refs!==input.referenceIds.length)throw new AppError(404,"REFERENCE_UNAVAILABLE","Choose available library references.");
  const old=await tx.compositionDraft.findUnique({where:{sceneId:input.sceneId}});
  if(input.draftRevision!==undefined&&(old?.revision??0)!==input.draftRevision)throw new AppError(409,"DRAFT_CONFLICT","This draft changed in another tab. Reload to continue.");
- const d=await tx.compositionDraft.upsert({where:{sceneId:input.sceneId},create:{sceneId:input.sceneId,prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,projectTitle:input.projectTitle??"My product scene",templateVersion:2,revision:1},update:{prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,projectTitle:input.projectTitle??old?.projectTitle,templateVersion:2,revision:{increment:1}}});
+ const d=await tx.compositionDraft.upsert({where:{sceneId:input.sceneId},create:{sceneId:input.sceneId,prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,projectTitle:input.projectTitle??"My product scene",templateVersion:3,revision:1},update:{prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,projectTitle:input.projectTitle??old?.projectTitle,templateVersion:3,revision:{increment:1}}});
  await tx.compositionReference.deleteMany({where:{draftId:d.id}});
  if(input.referenceIds.length)await tx.compositionReference.createMany({data:input.referenceIds.map((contentItemId,position)=>({draftId:d.id,contentItemId,position}))});
  return d;
@@ -70,9 +71,10 @@ export async function reserveCreative(ownerId:string,raw:unknown){
  if(prior){if(prior.kind!=="COMPOSE_IMAGE"||JSON.stringify(creativeInput.parse(prior.input))!==JSON.stringify(input))throw new AppError(409,"IDEMPOTENCY_CONFLICT","This request key has different settings.");return prior;}
  const scene=await tx.scene.findFirst({where:{id:input.sceneId,ownerId,archivedAt:null,revision:input.expectedRevision,status:"DRAFT"}});if(!scene)throw new AppError(409,"REVISION_CONFLICT","Reload this workspace.");
  if(await tx.generationRun.count({where:{scene:{ownerId},status:{in:[...active]}}}))throw new AppError(409,"RUN_ACTIVE","Wait for your existing generation to finish.");
+ if(input.refinementSourceId&&!await tx.contentItem.findFirst({where:{id:input.refinementSourceId,ownerId,kind:"GENERATED",archivedAt:null,asset:{status:"READY",scene:{ownerId,archivedAt:null}}}}))throw new AppError(404,"IMAGE_UNAVAILABLE","The correction source is unavailable.");
  const draft=await persistDraft(tx,ownerId,input);
  const run=await tx.generationRun.create({data:{sceneId:scene.id,kind:"COMPOSE_IMAGE",idempotencyKey:input.idempotencyKey,inputRevision:scene.revision,input:json(input),expiresAt:new Date(Date.now()+15*60000),reservedCostUsd:.01,currentStage:"Waiting for Muse Image"}});
- await tx.contentGeneration.create({data:{draftId:draft.id,runId:run.id,prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,templateVersion:2,modelId:process.env.META_IMAGE_MODEL??"muse-image-1.0",references:{create:input.referenceIds.map((contentItemId,position)=>({contentItemId,position}))}}});return run;
+ await tx.contentGeneration.create({data:{draftId:draft.id,runId:run.id,refinementSourceId:input.refinementSourceId,prompt:input.prompt,templateKey:input.template,aspectRatio:input.aspect,templateVersion:3,modelId:process.env.META_IMAGE_MODEL??"muse-image-1.0",references:{create:input.referenceIds.map((contentItemId,position)=>({contentItemId,position}))}}});return run;
  });
 }
 export async function composeCreative(runId:string){
@@ -81,22 +83,39 @@ export async function composeCreative(runId:string){
  const r=await db.generationRun.findUniqueOrThrow({where:{id:runId},include:{scene:true}}),input=creativeInput.parse(r.input);
  if(r.kind!=="COMPOSE_IMAGE"||r.status!=="RUNNING"||r.scene.archivedAt||r.expiresAt<new Date()||r.scene.revision!==r.inputRevision)throw new Error("CREATIVE_RUN_STALE");
  const refs=await db.contentItem.findMany({where:{...visibility(r.scene.ownerId),id:{in:input.referenceIds}},include:{asset:true}});if(refs.length!==input.referenceIds.length)throw new Error("REFERENCE_UNAVAILABLE");
- const images=await Promise.all(input.referenceIds.map(async id=>{const item=refs.find(a=>a.id===id)!;let bytes:Buffer;if(item.asset)bytes=await readLimited(item.asset.storageKey,4*1024*1024);else{const key=item.sampleKey?.split(":")[0],path=sampleImagePath(key??"");if(!path)throw new Error("SAMPLE_INVALID");bytes=await readFile(join(process.cwd(),"public",path.slice(1)));}return {image_url:`data:image/webp;base64,${bytes.toString("base64")}`};}));
+ const products=await Promise.all(input.referenceIds.map(async id=>{const item=refs.find(a=>a.id===id)!;let bytes:Buffer;if(item.asset)bytes=await readLimited(item.asset.storageKey,4*1024*1024);else{const key=item.sampleKey?.split(":")[0],path=sampleImagePath(key??"");if(!path)throw new Error("SAMPLE_INVALID");bytes=await readFile(join(process.cwd(),"public",path.slice(1)));}return {image_url:`data:image/webp;base64,${bytes.toString("base64")}`};}));
+ const labels=input.referenceIds.map(id=>refs.find(a=>a.id===id)!.title);
+ const setting=await readFile(join(process.cwd(),"public","samples","v2",`${input.template}.webp`));
+ const images=[{image_url:`data:image/webp;base64,${setting.toString("base64")}`},...products];
+ let correction:string|undefined;
+ if(input.refinementSourceId){const previous=await db.contentItem.findFirst({where:{id:input.refinementSourceId,ownerId:r.scene.ownerId,kind:"GENERATED",archivedAt:null},include:{asset:true}});if(!previous?.asset)throw new Error("CORRECTION_UNAVAILABLE");const review=creativeReviewSchema.safeParse(record(previous.provenance).qualityReview);correction=review.success?(reviewIssues(review.data).join(" ")||"Check inventory, framing, relative scale, support and setting consistency; refine only visible problems."):"Check and correct inventory, framing, scale, support and setting consistency.";images.push({image_url:`data:image/webp;base64,${(await readLimited(previous.asset.storageKey,4*1024*1024)).toString("base64")}`});}
+ const prompt=creativePrompt(input,labels,correction);
+ await db.contentGeneration.update({where:{runId},data:{requestSnapshot:json({version:"composition-v3",prompt,reasoningStrength:"high",settingPath:`/samples/v2/${input.template}.webp`,referenceIds:input.referenceIds,labels,refinementSourceId:input.refinementSourceId??null})}});
  await db.generationStep.create({data:{runId,key:"creative-image",attempt:1,provider:"META",modelId:"muse-image-1.0",status:"RUNNING",startedAt:new Date()}});
  await db.generationRun.update({where:{id:runId},data:{progress:30,currentStage:"Composing your products with Muse Image"}});submitted=true;
- const result=await getMetaClient().post<{data?:{b64_json?:string}[]}>("/images/edits",{maxRetries:0,timeout:180000,body:{model:process.env.META_IMAGE_MODEL??"muse-image-1.0",n:1,images,prompt:creativePrompt(input),size:aspects[input.aspect],response_format:"b64_json",output_format:"png",reasoning_strength:"low",tool_enablement:{enable_image_search:false,enable_web_search:false,enable_shell:false}}});
+ const result=await getMetaClient().post<{data?:{b64_json?:string}[]}>("/images/edits",{maxRetries:0,timeout:180000,body:{model:process.env.META_IMAGE_MODEL??"muse-image-1.0",n:1,images,prompt,size:aspects[input.aspect],response_format:"b64_json",output_format:"png",reasoning_strength:"high",tool_enablement:{enable_image_search:false,enable_web_search:false,enable_shell:false}}});
  const b64=result.data?.[0]?.b64_json;if(!b64||b64.length>32*1024*1024)throw new Error("CREATIVE_IMAGE_INVALID");
  const asset=await saveImage(r.sceneId,Buffer.from(b64,"base64"),"SOURCE_IMAGE",{source:"muse-scene-composition",label:input.prompt.slice(0,80)||input.template,runId,model:"muse-image-1.0"});
  const item=await db.contentItem.create({data:{id:asset.id,ownerId:r.scene.ownerId,assetId:asset.id,title:input.projectTitle??(input.prompt.slice(0,80)||"Scene concept"),category:input.template,kind:"GENERATED",provenance:{model:"muse-image-1.0"}}});
  await db.contentGeneration.update({where:{runId},data:{outputItemId:item.id}});
  await db.generationStep.update({where:{runId_key_attempt:{runId,key:"creative-image",attempt:1}},data:{status:"SUCCEEDED",responseAssetId:asset.id,imageCount:1,completedAt:new Date()}});
- await db.generationRun.updateMany({where:{id:runId,status:"RUNNING",scene:{revision:r.inputRevision,archivedAt:null}},data:{status:"SUCCEEDED",progress:100,currentStage:"Image ready · choose Use in 3D",completedAt:new Date()}});
+ // Keep the completed image before optional review. Review failure cannot lose it or resubmit inference.
+ await db.generationRun.update({where:{id:runId},data:{progress:85,currentStage:"Checking product count, scale and framing"}});
+ let issues:string[]=[],reviewUnavailable=false;
+ try{
+  await db.generationStep.create({data:{runId,key:"creative-review",attempt:1,provider:"META",modelId:process.env.META_ANALYSIS_MODEL??"muse-spark-1.3",status:"RUNNING",startedAt:new Date()}});
+  const checked=await reviewCreative(images.slice(0,products.length+1),`data:image/webp;base64,${(await readLimited(asset.storageKey,4*1024*1024)).toString("base64")}`,labels);issues=reviewIssues(checked.review);
+  await db.contentGeneration.update({where:{runId},data:{qualityReview:json(checked.review)}});
+  await db.contentItem.update({where:{id:item.id},data:{provenance:json({model:"muse-image-1.0",qualityReview:checked.review})}});
+  await db.generationStep.updateMany({where:{runId,key:"creative-review"},data:{status:"SUCCEEDED",output:json(checked.review),inputTokens:checked.usage?.prompt_tokens,outputTokens:checked.usage?.completion_tokens,completedAt:new Date()}});
+ }catch(error){reviewUnavailable=true;await db.contentItem.update({where:{id:item.id},data:{provenance:{model:"muse-image-1.0",reviewUnavailable:true}}});await db.generationStep.updateMany({where:{runId,key:"creative-review"},data:{status:"FAILED",errorCode:"REVIEW_UNAVAILABLE",errorMessage:(error instanceof Error?error.message.replace(/data:[^\s"']+|https?:\/\/[^\s"']+/g,"[redacted]").slice(0,900):"Review failed"),completedAt:new Date()}});}
+ await db.generationRun.updateMany({where:{id:runId,status:"RUNNING",scene:{revision:r.inputRevision,archivedAt:null}},data:{status:issues.length||reviewUnavailable?"PARTIAL":"SUCCEEDED",progress:100,currentStage:issues.length?"Image ready · review flagged details":"Image ready · choose Use in 3D",errorMessage:issues.length?"Image review flagged details. Use Fix image issues to create a paid correction; this image is kept.":reviewUnavailable?"Image saved. Automatic review was unavailable; inspect it before reconstruction.":null,completedAt:new Date()}});
  }catch(e){const http=typeof record(e).status==="number"?Number(record(e).status):0;const uncertain=submitted&&(!http||http>=500);
  await db.generationStep.updateMany({where:{runId,status:"RUNNING"},data:{status:uncertain?"SUBMISSION_UNCERTAIN":"FAILED",errorCode:http?`META_HTTP_${http}`:"CREATIVE_FAILED",completedAt:new Date()}});
  await db.generationRun.updateMany({where:{id:runId,status:"RUNNING"},data:{status:"FAILED",errorCode:uncertain?"SUBMISSION_UNCERTAIN":"CREATIVE_FAILED",errorMessage:uncertain?"The request was interrupted and may have been charged. It will not retry automatically. Saved images remain available.":"The image could not be created. Your references and saved images are kept. Start a new variation when ready.",completedAt:new Date()}});}
 }
 export async function adoptCreative(ownerId:string,id:string,title:string){
- const db=getDb(),a=await db.asset.findFirst({where:{id,kind:"SOURCE_IMAGE",status:"READY",scene:{ownerId,archivedAt:null},provenance:{path:["source"],equals:"muse-scene-composition"}}});if(!a)throw new AppError(404,"IMAGE_UNAVAILABLE","Image unavailable.");
+ const db=getDb();if(!await db.contentItem.findFirst({where:{id,ownerId,kind:"GENERATED",archivedAt:null}}))throw new AppError(404,"IMAGE_UNAVAILABLE","Restore this image before using it.");const a=await db.asset.findFirst({where:{id,kind:"SOURCE_IMAGE",status:"READY",scene:{ownerId,archivedAt:null},provenance:{path:["source"],equals:"muse-scene-composition"}}});if(!a)throw new AppError(404,"IMAGE_UNAVAILABLE","Image unavailable.");
  if(await db.scene.count({where:{ownerId,archivedAt:null}})>=50)throw new AppError(429,"SCENE_LIMIT","Archive an old project first.");
  const s=await db.scene.create({data:{ownerId,title,settings:{source:"creative-result",approximateProductLikeness:true}}});
  const bytes=await readLimited(a.storageKey,4*1024*1024),source=await saveImage(s.id,bytes,"SOURCE_IMAGE",{source:"accepted-creative-image"}),normalized=await saveImage(s.id,bytes,"NORMALIZED_IMAGE",{source:"image-normalization",exifRemoved:true});

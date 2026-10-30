@@ -10,7 +10,7 @@ export async function manageContent(ownerId:string,input:z.infer<typeof contentT
   if(!item)throw new AppError(404,"NOT_FOUND","Image not found.");
   const deleting=input.action==="DELETE_IMAGE";
   if(deleting===Boolean(item.archivedAt))throw new AppError(409,"IMAGE_STATE",deleting?"Image is already in Trash.":"Image is already active.");
-  if(await tx.generationReference.count({where:{contentItemId:item.id,generation:{run:{status:{in:["QUEUED","RUNNING","WAITING","CANCEL_REQUESTED"]}}}}}))throw new AppError(409,"IMAGE_BUSY","Wait for generation using this image to finish.");
+  if(await tx.contentGeneration.count({where:{refinementSourceId:item.id,run:{status:{in:["QUEUED","RUNNING","WAITING","CANCEL_REQUESTED"]}}}})||await tx.generationReference.count({where:{contentItemId:item.id,generation:{run:{status:{in:["QUEUED","RUNNING","WAITING","CANCEL_REQUESTED"]}}}}}))throw new AppError(409,"IMAGE_BUSY","Wait for generation using this image to finish.");
   const changed=await tx.contentItem.updateMany({where:{id:item.id,ownerId,archivedAt:item.archivedAt},data:{archivedAt:deleting?new Date():null}});
   if(changed.count!==1)throw new AppError(409,"IMAGE_STATE","Image changed. Refresh the library.");
   await tx.compositionDraft.updateMany({where:{references:{some:{contentItemId:item.id}}},data:{revision:{increment:1}}});
