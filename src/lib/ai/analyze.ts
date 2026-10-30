@@ -49,7 +49,8 @@ export async function analyzePhoto(
     client = getMetaClient();
   const request = {
     model: metaModels.analysis(),
-    max_completion_tokens: 4096,
+    max_completion_tokens: 8192,
+    reasoning_effort: "low" as const,
     messages: [
       { role: "system" as const, content: analysisSystemPrompt },
       {
@@ -73,6 +74,11 @@ export async function analyzePhoto(
   // is distinct from losing the connection before any response was received.
   await events.onResponse?.(response);
   const choice = response.choices[0];
+  if (choice?.finish_reason === "length")
+    throw new ProviderResultError(
+      "Analysis reached the completion limit before returning a complete result",
+      "ANALYSIS_OUTPUT_LIMIT",
+    );
   if (
     choice?.finish_reason !== "stop" ||
     !choice.message.content ||

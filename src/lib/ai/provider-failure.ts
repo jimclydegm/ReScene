@@ -1,6 +1,11 @@
 export type ProviderPhase = "preparing" | "requesting" | "responded";
 export class ProviderResultError extends Error {
-  constructor(message: string) {
+  constructor(
+    message: string,
+    public code:
+      | "ANALYSIS_RESULT_INVALID"
+      | "ANALYSIS_OUTPUT_LIMIT" = "ANALYSIS_RESULT_INVALID",
+  ) {
     super(message);
     this.name = "ProviderResultError";
   }
@@ -21,7 +26,9 @@ export function classifyAnalysisFailure(error: unknown, phase: ProviderPhase) {
   else if (phase === "responded")
     errorCode =
       value.name === "ProviderResultError"
-        ? "ANALYSIS_RESULT_INVALID"
+        ? value.code === "ANALYSIS_OUTPUT_LIMIT"
+          ? "ANALYSIS_OUTPUT_LIMIT"
+          : "ANALYSIS_RESULT_INVALID"
         : "ANALYSIS_PROCESSING_FAILED";
   else if (http >= 400 && http <= 599 && http !== 408)
     errorCode = `META_HTTP_${http}`;
@@ -43,6 +50,8 @@ export function classifyAnalysisFailure(error: unknown, phase: ProviderPhase) {
   };
 }
 export function analysisFailureMessage(code: string) {
+  if (code === "ANALYSIS_OUTPUT_LIMIT")
+    return "Meta reached the analysis response limit before finishing. Your photo is saved. No automatic retry was submitted.";
   if (code === "META_HTTP_400" || code === "ANALYSIS_SCHEMA_INVALID")
     return "The analysis request was rejected because its format was invalid. Your photo is saved. Please try analysis again.";
   if (code === "META_HTTP_401" || code === "META_HTTP_403")

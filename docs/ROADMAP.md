@@ -163,5 +163,5 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Reproduce reported failure as strict-schema HTTP400 caused by leaked renderer geometry.
 - [x] Observation-only output contract, local strict validation, persistent response receipts and correct rejection/uncertainty diagnostics.
 - [x] Compact discovery controls, optional focus disclosure and correct empty/failure messaging.
-- [x] 188 cases/schema/lint/types/build pass.
+- [x] 189 cases/schema/lint/types/build pass; explicit low reasoning/8192 completion budget and typed completion-limit handling after live evidence.
 - [ ] Merge/release, recover the reported saved photo and verify production controls. Browser access currently disabled; visual verification pending access.
