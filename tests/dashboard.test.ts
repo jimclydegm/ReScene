@@ -3,9 +3,9 @@ import { dashboardPage, dashboardProgress } from "../src/lib/scene/dashboard";
 
 describe("dashboard paging", () => {
   it("bounds URL input and keeps empty libraries on page one", () => {
-    for (const input of [undefined, "garbage", "-1", "0", "1.5", "9999999", ["2", "3"]]) expect(dashboardPage(input, 13)).toEqual({ page: 1, pages: 3, skip: 0 });
-    expect(dashboardPage("2", 13)).toEqual({ page: 2, pages: 3, skip: 6 });
-    expect(dashboardPage("999", 13)).toEqual({ page: 3, pages: 3, skip: 12 });
+    for (const input of [undefined, "garbage", "-1", "0", "1.5", "9999999", ["2", "3"]]) expect(dashboardPage(input, 19)).toEqual({ page: 1, pages: 3, skip: 0 });
+    expect(dashboardPage("2", 19)).toEqual({ page: 2, pages: 3, skip: 9 });
+    expect(dashboardPage("999", 19)).toEqual({ page: 3, pages: 3, skip: 18 });
     expect(dashboardPage("2", 0)).toEqual({ page: 1, pages: 1, skip: 0 });
   });
 });

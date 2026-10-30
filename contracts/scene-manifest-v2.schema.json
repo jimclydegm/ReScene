@@ -86,6 +86,102 @@
             "background": {
               "type": "object",
               "properties": {
+                "surfaceMode": {
+                  "type": "string",
+                  "const": "materials"
+                },
+                "transition": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "curve"
+                  ]
+                },
+                "junctions": {
+                  "minItems": 2,
+                  "maxItems": 3,
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "y": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      }
+                    },
+                    "required": [
+                      "x",
+                      "y"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "materials": {
+                  "type": "object",
+                  "properties": {
+                    "ground": {
+                      "type": "object",
+                      "properties": {
+                        "color": {
+                          "type": "string",
+                          "pattern": "^#[0-9a-fA-F]{6}$"
+                        },
+                        "roughness": {
+                          "type": "number",
+                          "minimum": 0.2,
+                          "maximum": 1
+                        },
+                        "tileSize": {
+                          "type": "number",
+                          "minimum": 0.1,
+                          "maximum": 10
+                        }
+                      },
+                      "required": [
+                        "color",
+                        "roughness",
+                        "tileSize"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "wall": {
+                      "type": "object",
+                      "properties": {
+                        "color": {
+                          "type": "string",
+                          "pattern": "^#[0-9a-fA-F]{6}$"
+                        },
+                        "roughness": {
+                          "type": "number",
+                          "minimum": 0.2,
+                          "maximum": 1
+                        },
+                        "tileSize": {
+                          "type": "number",
+                          "minimum": 0.1,
+                          "maximum": 10
+                        }
+                      },
+                      "required": [
+                        "color",
+                        "roughness",
+                        "tileSize"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ground",
+                    "wall"
+                  ],
+                  "additionalProperties": false
+                },
                 "kind": {
                   "type": "string",
                   "enum": [

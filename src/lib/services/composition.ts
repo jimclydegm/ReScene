@@ -12,7 +12,7 @@ import { inspectGlb } from "@/lib/ai/glb";
 import { composeRoom, environmentSchema, glbBounds, modelPlacementSchema, type CompositionInput, type Environment } from "@/lib/scene/composition";
 
 const asJson = (value: unknown) => JSON.parse(JSON.stringify(value)) as Prisma.InputJsonValue;
-export const compositionInputSchema = z.object({ expectedRevision: z.number().int().nonnegative(), action: z.enum(["MATCH_PHOTO", "REVIEW_PHOTO", "RESTORE", "BACKGROUND"]),backdrop:z.enum(["room","studio","none"]).optional() }).strict().refine(v=>v.action!=="BACKGROUND"||v.backdrop!==undefined,"Choose a backdrop.");
+export const compositionInputSchema = z.object({ expectedRevision: z.number().int().nonnegative(), action: z.enum(["MATCH_PHOTO", "REVIEW_PHOTO", "RESTORE", "BACKGROUND", "RESTORE_BACKGROUND"]),backdrop:z.enum(["room","studio","none"]).optional() }).strict().refine(v=>v.action!=="BACKGROUND"||v.backdrop!==undefined,"Choose a backdrop.");
 export function record(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : {};
 }
@@ -43,6 +43,13 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
   if(!scene.normalizedAsset)throw new AppError(422,"PHOTO_REQUIRED","The reference photo is unavailable.");
   if (scene.status !== "READY") throw new AppError(409, "SCENE_STATE", "Build your 3D objects first.");
   if (scene.revision !== input.expectedRevision) throw new AppError(409, "REVISION_CONFLICT", "The scene changed. Reload before matching the photo.");
+  if(input.action==="RESTORE_BACKGROUND"){
+    const backup=record(record(scene.settings).backgroundBackup);if(!("background" in backup))throw new AppError(409,"NO_BACKGROUND_BACKUP","No previous background is available.");
+    const stage=(await import("@/lib/scene/composition")).compositionSchema.parse(scene.stage);
+    const old=(await import("@/lib/scene/background")).backgroundPlanSchema.safeParse(backup.backgroundPlan);
+    const changed=await getDb().scene.updateMany({where:{id:sceneId,ownerId,revision:input.expectedRevision,status:"READY",archivedAt:null},data:{stage:asJson({...stage,background:old.success?old.data:undefined}),settings:asJson({...record(scene.settings),background:backup.background,backgroundPlan:old.success?old.data:null,backgroundBackup:{background:record(scene.settings).background??null,backgroundPlan:stage.background??null}}),revision:{increment:1}}});
+    if(!changed.count)throw new AppError(409,"REVISION_CONFLICT","The scene changed. Reload before restoring.");return;
+  }
   if(input.action==="BACKGROUND"){
     const {compositionSchema}=await import("@/lib/scene/composition");
     const composition=compositionSchema.safeParse(scene.stage);

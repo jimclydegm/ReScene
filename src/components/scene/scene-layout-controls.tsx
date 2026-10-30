@@ -1,5 +1,6 @@
 "use client";
 import {ReconstructionRetry} from "./reconstruction-retry";
+import {useState} from "react";
 import { Crosshair, ImageIcon, Undo2, WandSparkles } from "lucide-react";
 import type { SceneWorkspace } from "./types";
 
@@ -7,15 +8,16 @@ type Backdrop = "room" | "studio" | "none";
 const backdrops: [Backdrop, string][] = [["room", "Photo"], ["studio", "Ground"], ["none", "Plain"]];
 
 /** Scene-level layout, backdrop and background actions, grouped in one inspector tab. */
-export function SceneLayoutControls({ data, locked, unsaved, blocked, onMatch, onReview, onRestore, onBackdrop, onBackground,onRetry,onMask }: {
+export function SceneLayoutControls({ data, locked, unsaved, blocked, onMatch, onReview, onRestore, onBackdrop, onBackground,onRestoreBackground,onRetry,onMask }: {
   data: SceneWorkspace; locked: boolean; unsaved: boolean; blocked: boolean;
   onRetry:(ids:string[],seed:number)=>Promise<void>;onMask:(id:string,mask:string)=>Promise<void>;
-  onMatch: () => void; onReview: () => void; onRestore: () => void; onBackdrop: (value: Backdrop) => void; onBackground: () => void;
+  onMatch: () => void; onReview: () => void; onRestore: () => void; onBackdrop: (value: Backdrop) => void; onBackground:(mode:"materials"|"photo")=>void;onRestoreBackground:()=>void;
 }) {
+  const [backgroundMode,setBackgroundMode]=useState<"materials"|"photo">("materials");
   const composition = data.composition;
   const manual = composition?.layoutSource === "manual-stage";
   const layoutDisabled = locked || unsaved || blocked;
-  const backgroundReady = Boolean(data.appearance.backgroundUrl || composition?.background?.plainColor);
+  const backgroundReady = Boolean(data.appearance.backgroundUrl || composition?.background?.plainColor || composition?.background?.surfaceMode==="materials");
   const review = data.layoutReview;
   return <section className="panel-stack" aria-label="Scene layout">
     <div className="panel-block">
@@ -41,9 +43,12 @@ export function SceneLayoutControls({ data, locked, unsaved, blocked, onMatch, o
       <p className="panel-hint">Photo shows estimated surfaces, Ground keeps only the floor, Plain removes both. Saves instantly.</p>
     </div>}
     <div className="panel-block">
-      <div className="panel-heading"><h3>Photo background</h3><span className={`setting-badge${backgroundReady ? " active" : ""}`}>{backgroundReady ? "Ready" : "Not built"}</span></div>
-      <p className="panel-hint">One Meta image edit fills the area behind your objects. Areas outside the photo are estimated.</p>
-      <button className="button button-light button-full" disabled={locked || unsaved || !data.generationEnabled} onClick={onBackground}><ImageIcon size={14}/>{backgroundReady ? "Refresh background" : "Build background"}</button>
+      <div className="panel-heading"><h3>Background surfaces</h3><span className={`setting-badge${backgroundReady ? " active" : ""}`}>{backgroundReady ? "Ready" : "Not built"}</span></div>
+      <div className="segmented" role="group" aria-label="Background construction"><button aria-pressed={backgroundMode==="materials"} disabled={locked} onClick={()=>setBackgroundMode("materials")}>Clean materials</button><button aria-pressed={backgroundMode==="photo"} disabled={locked} onClick={()=>setBackgroundMode("photo")}>Photo plate</button></div>
+      <p className="panel-hint">{backgroundMode==="materials"?"Analyze structure first. Plain surfaces stay plain; textured surfaces get AI material tiles without photographed shadows. Lights create new shading. Distant scenery uses a photo plate.":"Preserve photographed scenery and lighting. Image projection remains approximate when you rotate."} Up to two paid material images plus review; plain surfaces need analysis only.</p>
+      {data.backgroundInfo?.explanation&&<details className="panel-details"><summary>Background interpretation</summary><p>{data.backgroundInfo.explanation}</p>{data.backgroundInfo.lightingEffects.length>0&&<p>Lighting kept out of materials: {data.backgroundInfo.lightingEffects.join("; ")}</p>}{data.backgroundInfo.warnings.map(w=><p key={w}>{w}</p>)}</details>}
+      <button className="button button-light button-full" disabled={locked || unsaved || !data.generationEnabled} onClick={()=>onBackground(backgroundMode)}><ImageIcon size={14}/>{backgroundReady ? "Rebuild background" : "Build background"}</button>
+      {data.canRestoreBackground&&<button className="text-link panel-link" disabled={locked||unsaved} onClick={onRestoreBackground}><Undo2 size={13}/>Restore previous background</button>}
     </div>
     {composition && composition.warnings.length > 1 && <details className="panel-details"><summary>Scene notes ({composition.warnings.length - 1})</summary>{composition.warnings.slice(1).map(warning => <p key={warning}>{warning}</p>)}</details>}
   </section>;

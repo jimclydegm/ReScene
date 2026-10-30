@@ -15,6 +15,12 @@ import { record, sceneEnvironment } from "./composition";
 
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 export async function buildSceneBackground(runId: string) {
+  const {understandSceneBackground}=await import("./background-understanding");
+  const understanding=await understandSceneBackground(runId);
+  const pending=await getDb().generationRun.findUniqueOrThrow({where:{id:runId}});
+  if(record(record(pending.input).background).mode!=="photo"&&understanding.topology!=="distant"){
+    const {buildMaterialBackground}=await import("./background-materials");await buildMaterialBackground(runId,understanding);return;
+  }
   const db = getDb(), run = await db.generationRun.findUniqueOrThrow({ where: { id: runId }, include: { scene: { include: { normalizedAsset: true } } } });
   const scene = run.scene, savedComposition = compositionSchema.safeParse(scene.stage);
   if (!["RUNNING", "WAITING"].includes(run.status) || scene.status !== "READY" || scene.archivedAt || run.expiresAt < new Date() || !scene.normalizedAsset || scene.normalizedAssetId !== record(run.input).normalizedAssetId) throw new Error("BACKGROUND_RUN_STALE");
@@ -34,6 +40,7 @@ export async function buildSceneBackground(runId: string) {
   }));
   const settings = record(scene.settings);
   let plan = backgroundPlanSchema.safeParse(settings.backgroundPlan).data;
+  if(plan){const {surfaceMode:_,transition:__,materials:___,junctions:____,...photoPlan}=plan;void _;void __;void ___;void ____;plan=photoPlan;}
   const plain = plainBackground(image, masks);
   if (plain) {
     const observed = { ...(plan ?? fallbackBackground), kind: "seamless" as const, boundary: null, plainColor: plain.color };
@@ -80,7 +87,7 @@ export async function buildSceneBackground(runId: string) {
     const current = await tx.generationRun.findFirst({ where: { id: runId, status: { in: ["RUNNING", "WAITING"] } } });
     if (!current) throw new AppError(409, "RUN_STALE", "The background request is no longer active.");
     const changed = await tx.scene.updateMany({ where: { id: scene.id, revision: scene.revision, status: "READY", archivedAt: null }, data: {
-      stage: json({ ...composition, background: plan }), ...(!savedComposition.success ? { camera: json(composition.camera) } : {}), settings: json({ ...settings, backgroundPlan: plan, background: { version: "photo-background-v1", assetId: id, photoId: scene.normalizedAssetId, model: generated.model } }), revision: { increment: 1 }
+      stage: json({ ...composition, background: plan }), ...(!savedComposition.success ? { camera: json(composition.camera) } : {}), settings: json({ ...settings, backgroundPlan: plan, backgroundBackup:{background:settings.background??null,backgroundPlan:composition.background??null},background: { version: "photo-background-v1", assetId: id, photoId: scene.normalizedAssetId, model: generated.model } }), revision: { increment: 1 }
     } });
     if (!changed.count) throw new AppError(409, "REVISION_CONFLICT", "The scene changed during background generation. Your saved background was kept.");
   });

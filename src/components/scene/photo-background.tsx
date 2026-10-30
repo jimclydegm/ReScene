@@ -1,4 +1,5 @@
 "use client";
+import {MaterialBackground} from "./material-background";
 import { useMemo, useEffect } from "react";
 import { useTexture } from "@react-three/drei";
 import { ClampToEdgeWrapping, MirroredRepeatWrapping, SRGBColorSpace } from "three";
@@ -33,8 +34,9 @@ function TexturedSurface({composition,color,url,tiled,shadows}:{composition:Scen
   return <primitive object={owned.material} attach="material"/>;
 }
 
-export function PhotoBackground({composition,url,floorY,legacyFloor=null,shadows=true}:{composition:SceneComposition;url:string|null;floorY:number;legacyFloor?:string|null;shadows?:boolean}){
+export function PhotoBackground({composition,url,floorY,legacyFloor=null,wallUrl=null,shadows=true}:{composition:SceneComposition;url:string|null;floorY:number;legacyFloor?:string|null;wallUrl?:string|null;shadows?:boolean}){
   if(composition.backdrop==="none")return null;
+  if(composition.background?.surfaceMode==="materials")return <MaterialBackground composition={composition} floorY={floorY} floorUrl={legacyFloor} wallUrl={wallUrl} shadows={shadows}/>;
   const geometry=backgroundSurfaces(composition,floorY),plain=composition.background?.plainColor;
   const ground=composition.backdrop==="studio"||geometry.ground;
   const {room:r,environment:e}=composition;

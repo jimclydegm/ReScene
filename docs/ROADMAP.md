@@ -137,3 +137,12 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Independent-object retry with confirmation/seed, same-camera fit, previous-mesh retention and known-job resume.
 - [x] Saved-example mask recovery, box reconstruction and jar contact checked; poorer chair/lid retry meshes retained privately, previous models kept.
 - [x] 150 cases/schema/lint/types/build, CI and production control/API validation pass. PR #23 merged at f9cf672; production READY. Native visual interaction verification remains access-dependent.
+
+## Structure-first background materials
+
+- [x] Source-scoped surface/topology/light analysis before reconstruction and background construction.
+- [x] Confident architectural seam/corner geometry, continuous studio sweep, conservative uncertain-edge handling.
+- [x] Solid plain materials and swatch-only shadow-free Muse tiles with validation/fallback and immutable raw output.
+- [x] Relightable surfaces, shared private/public renderer, clean/photo mode and previous-background restore.
+- [x] Peach-source analysis and one wood tile verified; no object reconstruction inference used.
+- [ ] Final release checks, deployment and native desktop/mobile verification.
