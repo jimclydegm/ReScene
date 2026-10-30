@@ -248,3 +248,13 @@ One real production COMPOSE_IMAGE workflow used two illustrative product referen
 Upload integration caught missing checksum/readyAt metadata on completed staging assets; correction 0c5adf4 supplies complete READY metadata. Native browser access is disabled in Work settings, so no WebGL/mobile appearance claim is made. Evidence and private QA IDs remain under ignored test-results/creative-showroom.
 
 Corrected production rescene-4j1a6tcfi-jimclydegms-projects.vercel.app is READY. Direct private upload/normalization/library and New Scene/Creator/editor control SSR checks pass with no extra inference; final deployment error scan returned zero records.
+
+## Library and creation redesign — October 30
+
+Meta Muse Image generated one 4×3 product contact sheet and one 2×2 environment sheet. Sixteen WebP assets were inspected and committed at public/samples/v1; model/prompt metadata is stored beside them. These are synthetic photographic samples, not licensed branded inventory. Twelve sample rows are linked to versioned paths; private source media stays in R2.
+
+Migrations add six relational tables, owner/sample visibility checks, ordered-reference uniqueness/indexes and restrictive lineage FKs. Legacy references, generated results, generation inputs and latest drafts are backfilled. New draft save/reload, stale-save rejection and repeated reservation checks pass. One real sample-based image request produced a linked ContentItem and ContentGeneration output; acceptance created ContentAdoption. Changing/reordering the draft afterwards left the earlier generation's prompt and ordered references unchanged. No reconstruction inference was submitted. Evidence is ignored under test-results/library-refresh.
+
+130 unit cases, lint/types/build pass. Native browser inventory reports disabled in Work settings; no desktop/mobile visual pass is claimed for the redesign.
+
+PR #21 merged at ed1d70c; production rescene-klx2xq0pt-jimclydegms-projects.vercel.app READY. Production HTTP checks verify all twelve photographic assets, New Scene/Creator controls, project title/prompt/template/aspect/ordered-reference persistence and stale-draft rejection without inference. Final deployment error scan returned zero records. All 16 product/scene images are traced into server functions for sample-based generation.

@@ -119,4 +119,4 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Generate 12 photographic sample products and four scene previews with Meta; version assets and preserve prompts.
 - [x] Compact starting page; consistent buttons/captions, search/categories, selection tray and visual setting/aspect controls.
 - [x] Six relational library/draft/history/adoption tables with FKs, indexes, SQL visibility checks and legacy backfills.
-- [ ] Verify draft persistence/conflicts, immutable history and real sample-based output/adoption; deploy one combined correction.
+- [x] Real draft/conflict/frozen-history/sample-output/adoption checks pass. PR #21 merged at ed1d70c; CI and production asset/draft/SSR checks pass, production READY. Native visual checks remain blocked by Work settings.
