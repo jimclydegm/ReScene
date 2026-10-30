@@ -1,3 +1,4 @@
+import { isBackgroundSurface } from "@/lib/scene/surface-role";
 import { z } from "zod";
 import { environmentSchema } from "@/lib/scene/composition";
 import { backgroundPlanSchema } from "@/lib/scene/background";
@@ -16,6 +17,7 @@ export const analysisSchema = z.object({
       xMin: z.number().int().nonnegative(), yMin: z.number().int().nonnegative(),
       xMax: z.number().int().positive(), yMax: z.number().int().positive()
     }).strict(),
+    surfaceRole: z.enum(["background", "object"]).optional(),
     support: z.enum(["floor", "tabletop", "wall", "unknown"]),
     notes: z.string().max(300),
       parentCandidateId: z.string().regex(/^candidate-(?:[1-9]|10)$/).nullable().optional(),
@@ -48,7 +50,11 @@ export function validateAnalysis(value: unknown, size: ImageSize): PhotoAnalysis
     const visited=new Set([object.candidateId]);let support=object.supportedByCandidateId;
     while(support){if(visited.has(support))throw new Error("Cyclic support relationship");visited.add(support);const target=result.objects.find(o=>o.candidateId===support);if(!target||target.parentCandidateId)throw new Error("Missing or partial support subject");support=target.supportedByCandidateId;}
   }
-  return result;
+  const surfaces = new Set(result.objects.filter(o => isBackgroundSurface({ category: o.category, imageBounds: o.bbox, provenance: { surfaceRole: o.surfaceRole } }, size)).map(o => o.candidateId));
+  return { ...result, objects: result.objects.filter(o => !surfaces.has(o.candidateId)).map(o => ({ ...o,
+    parentCandidateId: o.parentCandidateId && surfaces.has(o.parentCandidateId) ? null : o.parentCandidateId,
+    supportedByCandidateId: o.supportedByCandidateId && surfaces.has(o.supportedByCandidateId) ? null : o.supportedByCandidateId
+  })) };
 }
 
 // SAM's raster covers its half-open bounding box, not the entire source frame.

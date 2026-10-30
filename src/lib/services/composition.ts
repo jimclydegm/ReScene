@@ -1,3 +1,4 @@
+import { isBackgroundSurface } from "@/lib/scene/surface-role";
 import "server-only";
 import sharp from "sharp";
 import { z } from "zod";
@@ -47,7 +48,7 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
     if(!saved.count)throw new AppError(409,"REVISION_CONFLICT","The scene changed. Reload before saving.");
     return;
   }
-  const objects = await getDb().sceneObject.findMany({ where: { sceneId, status: "READY", modelAssetId: { not: null } }, include: { model: true }, orderBy: { sortOrder: "asc" } });
+  const objects = (await getDb().sceneObject.findMany({ where: { sceneId, status: "READY", modelAssetId: { not: null } }, include: { model: true }, orderBy: { sortOrder: "asc" } })).filter(o=>!isBackgroundSurface(o,{width:scene.normalizedAsset?.width??0,height:scene.normalizedAsset?.height??0}));
   if ((await getDb().sceneObject.findMany({ where: { sceneId }, select: { provenance: true } })).some(o => record(o.provenance).replacementBackup)) throw new AppError(409, "REPLACEMENTS_ACTIVE", "Restore original objects before matching the photo layout.");
   if (input.action === "RESTORE") {
     const backup = backupSchema.safeParse(record(scene.settings).layoutBackup);

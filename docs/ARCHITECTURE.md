@@ -338,3 +338,7 @@ Photo transfer supports up to ten meshes, original-root camera calculation, boun
 ## Photo background rendering — October 30
 
 The shared WebGL renderer now projects a foreground-free derived full-frame photo onto broad support/distant layers, adding a back plane only for a verified reachable seam. Finite room boxes, side walls and baseboards are removed. Spark v6 background observations feed one optional durable Muse Image edit after reconstruction; existing scenes use IMAGE_EDIT. Masked compositing and harmonic/robust-gradient correction preserve observed pixels and avoid a global generated restyle. Read BACKGROUND_RECONSTRUCTION.md for data flow, failure/approximation limits and privacy.
+
+## Simple surface correction — October 30
+
+Broad frame-extending background surfaces are excluded from object meshes using explicit analysis surfaceRole and a conservative legacy fallback. The same rule applies at review/reconstruction/layout/appearance/background/publication boundaries; bounded/merchant objects remain editable. The shared renderer uses one opaque plane combining surface color and shadow, optional observed wall and actual distant context only. Ground contact no longer depends on a generated floor mesh. See BACKGROUND_RECONSTRUCTION.md; no SQL migration or new inference provider.

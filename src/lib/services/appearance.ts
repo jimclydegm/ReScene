@@ -1,3 +1,4 @@
+import { isBackgroundSurface } from "@/lib/scene/surface-role";
 import "server-only";
 import { randomUUID, createHash } from "node:crypto";
 import sharp from "sharp";
@@ -53,7 +54,7 @@ export async function updateAppearance(sceneId: string, ownerId: string, input: 
 
   const composition = compositionSchema.safeParse(scene.stage);
   if (!composition.success || !scene.normalizedAsset) throw new AppError(422, "LAYOUT_REQUIRED", "Use Match photo layout before transferring textures.");
-  const objects = await db.sceneObject.findMany({ where: { sceneId, status: "READY", modelAssetId: { not: null } }, include: { model: true, mask: true }, orderBy: { sortOrder: "asc" } });
+  const objects = (await db.sceneObject.findMany({ where: { sceneId, status: "READY", modelAssetId: { not: null } }, include: { model: true, mask: true }, orderBy: { sortOrder: "asc" } })).filter(o=>!isBackgroundSurface(o,{width:scene.normalizedAsset!.width!,height:scene.normalizedAsset!.height!}));
   if (!objects.length || objects.length > 10 || objects.some(o => !o.model || !o.mask || o.model.status !== "READY" || o.mask.status !== "READY" || o.model.sceneId !== sceneId || o.mask.sceneId !== sceneId)) throw new AppError(422, "TEXTURE_INPUTS", "Photo transfer requires saved meshes and their reviewed masks.");
   const originalIds=objects.map(o=>backup.success ? backup.data.models.find(m=>m.objectId===o.id)?.originalId ?? o.modelAssetId! : o.modelAssetId!);
   const originals=await Promise.all(originalIds.map(id=>db.asset.findFirst({where:{id,sceneId,kind:"MODEL_GLB",status:"READY"}})));
