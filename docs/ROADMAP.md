@@ -211,4 +211,4 @@ Details: DEMO_STORE.md. Jim explicitly chose to continue without browser verific
 - [x] Existing persisted ThemeMenu, semantic light/dark palettes and larger high-contrast primary text.
 - [x] Saved camera/aspect framing instead of the wide arranger camera; twelve additional public sample-photo previews.
 - [x]210 tests (including contrast/frame-fitting/preview inventory), schema/lint/types/build pass.
-- [ ] Combined PR/main release and bounded production smoke. Native browser visual verification remains unavailable.
+- [x] PR32 merged ata6bdf59; PR/main CI pass, production READY, live demo/theme/compact-CSS/twelve-photo presentation smoke passes. No model downloads or inference repeated. Native visual verification remains unperformed.
