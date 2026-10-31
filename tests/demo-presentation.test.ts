@@ -7,7 +7,7 @@ import {
   productInspiration,
   sceneInspiration,
 } from "../src/lib/demo/inspiration";
-const css = readFileSync("src/app/demo/store.css", "utf8");
+const css = readFileSync("src/app/design.css", "utf8");
 const palette = Object.fromEntries(
   [
     ...css.matchAll(

@@ -1,3 +1,4 @@
+@layer legacy {
 /* Shopping-first presentation. Stronger contrast, readable labels and compact controls. */
 .demo-store {
   --d-muted: var(--shop-ink);
@@ -997,4 +998,6 @@
 .demo-store .demo-experience-image.image-corner-chair > img {
   padding: 10px;
   mix-blend-mode: multiply;
+}
+
 }

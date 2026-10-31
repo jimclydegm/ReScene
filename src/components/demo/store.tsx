@@ -205,7 +205,7 @@ export function DemoStore({ children }: { children: ReactNode }) {
     >
       <div className="demo-store">
         <div className="demo-announcement">
-          A ReScene demo store · AI-reconstructed products, a new way to shop.
+          Interactive shopping by ReScene · Demo listings, no real payments
         </div>
         <header className="demo-header">
           <Link href="/demo" className="demo-brand">
@@ -327,7 +327,7 @@ export function DemoStore({ children }: { children: ReactNode }) {
                 <span className="demo-success">
                   <Check size={30} />
                 </span>
-                <h3>Thanks for trying a different way to shop.</h3>
+                <h3>Your demo order is confirmed</h3>
                 <p>Demo order {order}</p>
                 <p>No payment was taken and nothing will be shipped.</p>
                 <button
@@ -342,7 +342,7 @@ export function DemoStore({ children }: { children: ReactNode }) {
                 {!state.cart.length ? (
                   <div className="demo-empty">
                     <ShoppingBag size={34} />
-                    <h3>Your bag has room for something good.</h3>
+                    <h3>Your bag is empty</h3>
                     <p>Explore a product or shop the room to get started.</p>
                     <button
                       className="d-button primary"
@@ -411,7 +411,7 @@ export function DemoStore({ children }: { children: ReactNode }) {
                     {panel === "checkout" && (
                       <div className="demo-checkout-info">
                         <span className="d-kicker">
-                          SAMPLE DELIVERY DETAILS
+                          Sample delivery details
                         </span>
                         <strong>Alex Sample</strong>
                         <p>

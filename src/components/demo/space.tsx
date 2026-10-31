@@ -121,7 +121,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
       </div>
       <div className="demo-section-heading">
         <div>
-          <span className="d-kicker">YOUR ROOM, YOUR WAY</span>
+          <span className="d-kicker">Build your space</span>
           <h1>{collectionInfo[scene.id].name}</h1>
           <p>
             Arrange the collection, explore colors and find your favorite light.
