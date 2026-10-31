@@ -32,8 +32,8 @@ export function ProductCatalog() {
       </div>
       <div className="retail-catalog-intro">
         <div>
-          <span className="d-kicker">THOUGHTFUL PIECES, EVERYDAY LIVING</span>
-          <h1>Find your next favorite.</h1>
+          <span className="d-kicker">The product collection</span>
+          <h1>Explore the collection</h1>
           <p>
             Browse the collection. Open a product for photos, details and a
             closer look in 3D.
@@ -87,7 +87,7 @@ export function ProductCatalog() {
       </div>
       {!products.length && (
         <div className="demo-empty">
-          <h2>No products match.</h2>
+          <h2>No matching products</h2>
           <button
             className="d-button"
             onClick={() => {
@@ -116,13 +116,13 @@ export function SceneCatalog({ mode }: { mode: "build" | "shop" }) {
         <div>
           <span className="d-kicker">
             {mode === "build"
-              ? "YOUR SPACE STARTS HERE"
-              : "INSPIRATION YOU CAN SHOP"}
+              ? "Build your space"
+              : "Shop the scene"}
           </span>
           <h1>
             {mode === "build"
-              ? "Choose a collection. Make it yours."
-              : "Find a room that feels like you."}
+              ? "Choose your collection"
+              : "Explore a styled scene"}
           </h1>
           <p>
             {mode === "build"
@@ -145,15 +145,15 @@ export function SceneCatalog({ mode }: { mode: "build" | "shop" }) {
                 <Image
                   src={demoImage(id)}
                   alt={info.name}
-                  width={240}
-                  height={160}
-                  sizes="(max-width:580px) 100vw,240px"
+                  width={640}
+                  height={400}
+                  sizes="360px"
                 />
                 <span>{i === 0 ? "Start here" : "Ready to explore"}</span>
               </div>
               <section>
                 <span className="d-kicker">
-                  {collectionProducts[id].length} PRODUCTS · INTERACTIVE 3D
+                  {collectionProducts[id].length} products · Interactive 3D
                 </span>
                 <h2>{info.name}</h2>
                 <p>{info.caption}</p>
@@ -179,7 +179,7 @@ export function SceneCatalog({ mode }: { mode: "build" | "shop" }) {
             <span>Preview collection</span>
           </div>
           <section>
-            <span className="d-kicker">NEXT IN THE COLLECTION</span>
+            <span className="d-kicker">Coming next</span>
             <h2>The Workspace</h2>
             <p>
               A future collection of desks, lighting and everyday essentials.

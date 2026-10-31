@@ -7,7 +7,7 @@ export default function DemoHome() {
       n: "01",
       href: "/demo/products",
       title: "Explore a product",
-      subtitle: "Every angle. One place.",
+      subtitle: "A closer look at every detail",
       text: "Get closer to the texture, turn it around and find your color. Meet the product beyond the photo.",
       image: "corner-chair",
       Icon: Box,
@@ -17,8 +17,8 @@ export default function DemoHome() {
       n: "02",
       href: "/demo/spaces",
       title: "Build your space",
-      subtitle: "Find what feels right together.",
-      text: "Arrange a collection, compare four layouts and see it in a different light. Your space, at your pace.",
+      subtitle: "See how the pieces work together",
+      text: "Arrange a collection, try six layouts and see how the colors look in different light.",
       image: "corner",
       Icon: Move3d,
       action: "Choose your collection",
@@ -27,7 +27,7 @@ export default function DemoHome() {
       n: "03",
       href: "/demo/scenes",
       title: "Shop the scene",
-      subtitle: "Love the room? Meet the pieces.",
+      subtitle: "Discover the pieces in the picture",
       text: "Step into a styled scene. Click a piece to discover it, or bring the whole look into your shopping list.",
       image: "living",
       Icon: ShoppingBag,
@@ -37,11 +37,9 @@ export default function DemoHome() {
   return (
     <main className="demo-main demo-home">
       <section className="demo-home-intro">
-        <span className="d-kicker">WELCOME TO RESCENE LIVING</span>
+        <span className="d-kicker">ReScene Living · Shopping demo</span>
         <h1>
-          A new perspective
-          <br />
-          on finding your favorites.
+          See it. Style it. Make it yours.
         </h1>
         <p>
           Photos inspire. A scene lets you explore.

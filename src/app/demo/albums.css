@@ -1,3 +1,4 @@
+@layer legacy {
 /* Albums are the default shopping surface; WebGL is opt-in. */
 .demo-store .shopping-product-media {
   display: block;
@@ -1149,4 +1150,6 @@
 }
 .demo-store .retail-product-info > .d-kicker {
   display: none;
+}
+
 }

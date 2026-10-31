@@ -67,9 +67,9 @@ export function ProductTile({ id }: { id: string }) {
         <Image
           src={productCover(id)}
           alt={p.name}
-          width={72}
-          height={72}
-          sizes="72px"
+          width={96}
+          height={96}
+          sizes="96px"
         />
         <span>
           <Box size={13} /> View in 3D
@@ -238,7 +238,7 @@ export function ProductPage({ id }: { id: string }) {
           </p>
         </div>
         <div className="demo-product-details retail-product-info">
-          <span className="d-kicker">RESCENE LIVING · THE EDIT</span>
+          <span className="d-kicker">ReScene Living · The collection</span>
           <h1>{p.name}</h1>
           <p className="demo-subtitle">{p.subtitle}</p>
           <button

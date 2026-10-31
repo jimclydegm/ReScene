@@ -249,3 +249,12 @@ Details: DEMO_STORE.md. Jim explicitly chose to continue without browser verific
 - [x] Diagnose saved Muse output, destructive flattening/filtering and source-detail ghosting on e565053d.
 - [x] Shared material policy, per-surface generated-albedo preservation and interior-patch plane mapping; regression coverage for contrast/shadow isolation/plain finishes.
 - [x] PR35 merged at69c1d9f; PR/main CI and237 cases/schema/lint/types/build pass. Production READY; saved scene revision15 maps four surfaces, native WebGL confirms material detail without duplicate projected trim. No new inference; objects/camera/lights/plane vertices unchanged.
+
+
+## Desktop design across all pages — October31
+
+- [x] Read Unslop skill/audit/tokens and map every route/state; retain CC BY 4.0 attribution and ReScene brand.
+- [x] Shared neutral light/dark presentation system, readable type, quiet navigation, consistent controls and scoped legacy cascade.
+- [x] Landing/auth/dashboard/upload/library/image studio/review/editor/public viewer and all retail demos, cart/dialogs/state screens.
+- [x]237 tests/schema/lint/types/build and production-mode demo route/Album/privacy/styles smoke pass; landing/auth/unavailable screens and protected-route checks pass. Backend and saved scene data unchanged.
+- [ ] Final production build, CI/deployment and remaining desktop visual verification (browser access disabled during checks).

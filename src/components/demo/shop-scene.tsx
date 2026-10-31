@@ -99,7 +99,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
       <div className="demo-section-heading">
         <div>
           <span className="d-kicker">
-            A ROOM TO EXPLORE, A LOOK TO MAKE YOURS
+            Shop the scene
           </span>
           <h1>{info.name}</h1>
           <p>
@@ -209,7 +209,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
             {product && item ? (
               <>
                 <div className="demo-panel-heading">
-                  <span className="d-kicker">IN THIS ROOM</span>
+                  <span className="d-kicker">Selected product</span>
                   <button
                     className="d-icon"
                     aria-label="Deselect product"
@@ -291,7 +291,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
             ) : (
               <div className="demo-empty">
                 <Focus size={28} />
-                <h2>Find your favorite piece.</h2>
+                <h2>Select a product</h2>
                 <p>
                   Select a product in the scene to view its details and adjust
                   it.

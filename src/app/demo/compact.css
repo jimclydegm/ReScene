@@ -1,3 +1,4 @@
+@layer legacy {
 /* Compact retail layouts share one thumbnail size and the saved source camera. */
 .demo-store {
   color-scheme: inherit;
@@ -1292,4 +1293,6 @@
 .demo-store textarea::placeholder {
   color: var(--shop-muted);
   opacity: 1;
+}
+
 }

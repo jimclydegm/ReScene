@@ -17,7 +17,7 @@ export default function Home() {
       <section className="landing-hero shell">
         <div className="landing-copy">
           <span className="landing-kicker"><span className="tiny-dot"/>Photo to shoppable 3D · Built with Meta AI</span>
-          <h1>One photo.<br/>A whole new <em>dimension.</em></h1>
+          <h1>Your photos,<br/>in <em>another dimension</em></h1>
           <p>Turn a product or scene photo into an interactive 3D space shoppers can explore and buy from.</p>
           <div className="landing-actions">
             <Link href="/scenes/new" className="button button-dark">Create a scene <ArrowRight size={15}/></Link>

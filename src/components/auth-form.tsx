@@ -46,7 +46,7 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
       <label>Email address<input type="email" name="email" autoComplete="email" placeholder="you@example.com" required maxLength={254}/></label>
       <label>Password<input type="password" name="password" autoComplete={signUp ? "new-password" : "current-password"} placeholder={signUp ? "At least 8 characters" : "Your password"} required minLength={8} maxLength={128}/></label>
       {error && <p className="form-error" role="alert">{error}</p>}
-      <button type="submit" className="button button-dark button-full" disabled={Boolean(pending)}>{pending === "email" ? <><LoaderCircle size={17} className="spin"/> One moment…</> : <>{signUp ? "Create your account" : "Welcome back"}<ArrowUpRight size={17}/></>}</button>
+      <button type="submit" className="button button-dark button-full" disabled={Boolean(pending)}>{pending === "email" ? <><LoaderCircle size={17} className="spin"/> One moment…</> : <>{signUp ? "Create your account" : "Log in"}<ArrowUpRight size={17}/></>}</button>
     </form>
     <p className="auth-switch">{signUp ? "Already have an account?" : "New to ReScene?"} <Link href={signUp ? "/auth/sign-in" : "/auth/sign-up"}>{signUp ? "Log in" : "Create an account"}</Link></p>
   </div>;

@@ -1,3 +1,4 @@
+@layer legacy {
 /* Shared retail palette follows the app's saved Light / Dark / System choice. */
 .demo-store {
   --shop-bg: light-dark(#f6f8f4, #101713);
@@ -1866,4 +1867,6 @@
   max-height: none;
   aspect-ratio: auto;
   background: var(--shop-raised);
+}
+
 }

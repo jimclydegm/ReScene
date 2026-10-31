@@ -1,3 +1,4 @@
+@layer legacy {
 :root {
   --paper: light-dark(#f8f7f3, #1a1916);
   --ink: light-dark(#262923, #dfe3db);
@@ -1917,3 +1918,5 @@ html { background: var(--paper); }
 .studio-preview-cover span { max-width: 360px; font-size: 13px; color: var(--muted); }
 .studio-preview-cover progress { width: min(240px, 70%); height: 5px; accent-color: var(--green); }
 .studio-stage .studio-toast .notice-content { flex-wrap: wrap; }
+
+}
