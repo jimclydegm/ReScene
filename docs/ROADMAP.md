@@ -7,7 +7,7 @@
 - [x] All existing product finishes, centered shared swatch checks, labeled3D fallback for colors without album photos.
 - [x] One compact layout strip, short product picker, inline transform/action rows and buying controls; native desktop/theme/mobile checks without paid jobs or saved-data writes.
 - [x] Schema/lint/235 cases/production build and local UI-only HTTP smoke pass; temporary QA route removed.
-- [ ] Combined PR/CI/main deployment and live verification.
+- [x] PR34 merged at364724e; PR/main CI pass. Production READY, live UI-only HTTP smoke/native color-to3D/Album and desktop screenshot verified. No paid inference or saved-scene mutation.
 
 Updated October 29, 2026, Asia/Manila. This replaces the incremental phase schedule. Jim requested bulk implementation and fewer repeated tests/deployments. Build freeze remains November 2; aim to finish the app sooner.
 

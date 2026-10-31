@@ -2,6 +2,8 @@
 
 October31 visual cleanup: all7–8 illustrative finishes are selectable on every product page. Selecting a finish without an album photograph opens the live3D tint preview; existing photographic variants still select their photo. Shared swatch checks are centered within a contrast badge. Layout chips use one horizontal row; inherited first-child/diagram sizing is removed. Collection cards, position/rotation, item actions, lighting and purchase controls are compact. Product quantity/Add/Buy share a desktop row; redundant headings/navigation and expanded description text are removed or disclosed. Desktop core controls were checked at1280×800 and mobile at390px without horizontal overflow. Saved camera/mesh/layout/cart data remain unchanged. Shopping toasts can be closed. Native checks used local demo state only; no purchases, generation or project mutation.
 
+Visual cleanup release: PR34 merged at364724e; PR/main CI and235 tests/schema/lint/types/build pass. Production rescene-115an74ml-jimclydegms-projects.vercel.app is READY at rescene-eta.vercel.app. Live --ui smoke verifies pages/styles without unchanged binary downloads; native production checks confirm the full palette, color-to3D fallback, correct finish when returning to Album, centered checks and compact desktop layout. The generation cover/default boxes/dismissal checks used a local synthetic fixture, not paid inference. Private screenshot: test-results/visual-cleanup/production-demo.png.
+
 Updated October31,2026. The demo reuses existing successful reconstructions and pre-generated Muse Image product photography. Browsing submits no inference, payments, account creation or database migration.
 
 ## Shopping journeys
