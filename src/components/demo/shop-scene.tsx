@@ -235,7 +235,10 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                     </strong>
                   </div>
                 </div>
-                <p>{product.description}</p>
+                <details className="demo-product-description">
+                  <summary>About this piece</summary>
+                  <p>{product.description}</p>
+                </details>
                 <ColorSwatches
                   product={product}
                   value={item.color}
@@ -296,7 +299,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
               </div>
             )}
           </section>
-          <section className="demo-panel">
+          <section className="demo-panel demo-light-panel">
             <h2>Set the mood</h2>
             <div className="demo-lighting">
               {(["Original", "Day", "Dusk", "Night", "Studio"] as const).map(
@@ -317,10 +320,6 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
               )}
             </div>
           </section>
-          <Link className="d-button full" href="/demo/scenes">
-            Choose another scene
-            <ArrowRight size={15} />
-          </Link>
         </aside>
       </div>
       {reset && (

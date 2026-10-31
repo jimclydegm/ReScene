@@ -26,12 +26,10 @@ export function ColorSwatches({
   product,
   value,
   onChange,
-  allowedColors,
 }: {
   product: DemoProduct;
   value: number;
   onChange: (value: number) => void;
-  allowedColors?: number[];
 }) {
   return (
     <fieldset className="demo-colors">
@@ -39,22 +37,23 @@ export function ColorSwatches({
         Color <strong>{product.colors[value].name}</strong>
       </legend>
       <div>
-        {product.colors
-          .map((c, i) => ({ c, i }))
-          .filter((v) => !allowedColors || allowedColors.includes(v.i))
-          .map(({ c, i }) => (
-            <button
-              key={c.name}
-              type="button"
-              aria-label={c.name}
-              aria-pressed={value === i}
-              title={c.name}
-              onClick={() => onChange(i)}
-              style={{ "--swatch": c.swatch } as React.CSSProperties}
-            >
-              {i === value && <Check size={16} />}
-            </button>
-          ))}
+        {product.colors.map((c, i) => (
+          <button
+            key={c.name}
+            type="button"
+            aria-label={c.name}
+            aria-pressed={value === i}
+            title={c.name}
+            onClick={() => onChange(i)}
+            style={{ "--swatch": c.swatch } as React.CSSProperties}
+          >
+            {i === value && (
+              <span className="swatch-check">
+                <Check size={13} strokeWidth={3} />
+              </span>
+            )}
+          </button>
+        ))}
       </div>
       <small>Illustrative finishes</small>
     </fieldset>
@@ -175,12 +174,12 @@ export function ProductPage({ id }: { id: string }) {
     images = useMemo(() => productAlbum(id), [id]);
   function chooseColor(value: number) {
     setColor(value);
-    setActiveImage(
-      images.find(
-        (i) =>
-          i.kind === "generated" && i.color === value && i.setting === "studio",
-      )?.id ?? "source",
+    const photo = images.find(
+      (i) =>
+        i.kind === "generated" && i.color === value && i.setting === "studio",
     );
+    if (photo) setActiveImage(photo.id);
+    else setMode("3d");
   }
   return (
     <main className="demo-main retail-product-page">
@@ -196,7 +195,12 @@ export function ProductPage({ id }: { id: string }) {
           <div className="shopping-media-modes" aria-label="Product media">
             <button
               aria-pressed={mode === "album"}
-              onClick={() => setMode("album")}
+              onClick={() => {
+                setMode("album");
+                const photo = images.find((image) => image.id === activeImage);
+                if (photo?.color !== null && photo?.color !== undefined)
+                  setColor(photo.color);
+              }}
             >
               <Images size={17} />
               Album mode
@@ -228,8 +232,9 @@ export function ProductPage({ id }: { id: string }) {
             </div>
           )}
           <p className="shopping-media-note">
-            Reference photos and AI-generated product photography. Finishes and
-            reimagined settings are illustrative.
+            {mode === "3d"
+              ? "Live color preview · illustrative finishes on the reconstructed texture."
+              : "Reference photos and AI-generated product photography. Finishes and settings are illustrative."}
           </p>
         </div>
         <div className="demo-product-details retail-product-info">
@@ -249,19 +254,7 @@ export function ProductPage({ id }: { id: string }) {
             <small>USD · Sample listing</small>
           </div>
           <p className="demo-description">{p.description}</p>
-          <ColorSwatches
-            product={p}
-            value={color}
-            onChange={chooseColor}
-            allowedColors={[
-              ...new Set(
-                images
-                  .filter((i) => i.kind === "generated")
-                  .map((i) => i.color)
-                  .filter((v): v is number => v !== null),
-              ),
-            ]}
-          />
+          <ColorSwatches product={p} value={color} onChange={chooseColor} />
           <div className="demo-purchase-row">
             <div className="demo-quantity large">
               <button
@@ -287,14 +280,14 @@ export function ProductPage({ id }: { id: string }) {
               Add to bag · {money(p.price * quantity)}
               <ShoppingIcon />
             </button>
+            <button
+              className="d-button demo-buy-now"
+              onClick={() => store.buy(id, color, quantity)}
+            >
+              Buy now
+              <ArrowRight size={16} />
+            </button>
           </div>
-          <button
-            className="d-button full"
-            onClick={() => store.buy(id, color, quantity)}
-          >
-            Buy now
-            <ArrowRight size={16} />
-          </button>
           <div className="demo-benefits">
             <span>
               <Truck size={16} />

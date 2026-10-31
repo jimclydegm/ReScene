@@ -1,5 +1,7 @@
 # ReScene Living shopping demos
 
+October31 visual cleanup: all7–8 illustrative finishes are selectable on every product page. Selecting a finish without an album photograph opens the live3D tint preview; existing photographic variants still select their photo. Shared swatch checks are centered within a contrast badge. Layout chips use one horizontal row; inherited first-child/diagram sizing is removed. Collection cards, position/rotation, item actions, lighting and purchase controls are compact. Product quantity/Add/Buy share a desktop row; redundant headings/navigation and expanded description text are removed or disclosed. Desktop core controls were checked at1280×800 and mobile at390px without horizontal overflow. Saved camera/mesh/layout/cart data remain unchanged. Shopping toasts can be closed. Native checks used local demo state only; no purchases, generation or project mutation.
+
 Updated October31,2026. The demo reuses existing successful reconstructions and pre-generated Muse Image product photography. Browsing submits no inference, payments, account creation or database migration.
 
 ## Shopping journeys

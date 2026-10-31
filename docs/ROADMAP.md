@@ -1,5 +1,14 @@
 # ReScene — one release pass
 
+## Visual cleanup — October31
+
+- [x] Default boxes and low-opacity cyan object silhouettes; dismissible generation/review/save/shopping notices.
+- [x] Stable canvas inputs during progress polling, blurred generation/asset-loading preview and final reveal.
+- [x] All existing product finishes, centered shared swatch checks, labeled3D fallback for colors without album photos.
+- [x] One compact layout strip, short product picker, inline transform/action rows and buying controls; native desktop/theme/mobile checks without paid jobs or saved-data writes.
+- [x] Schema/lint/235 cases/production build and local UI-only HTTP smoke pass; temporary QA route removed.
+- [ ] Combined PR/CI/main deployment and live verification.
+
 Updated October 29, 2026, Asia/Manila. This replaces the incremental phase schedule. Jim requested bulk implementation and fewer repeated tests/deployments. Build freeze remains November 2; aim to finish the app sooner.
 
 Core flow already works: private photo → live Meta analysis/masks → separate meshes → room/texture/light editing → product cards/replacements → frozen shopper viewer. A fresh deployed two-model author-to-shopper run and 47 focused tests already passed; do not repeat paid inference for unchanged code.

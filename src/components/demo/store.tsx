@@ -281,6 +281,13 @@ export function DemoStore({ children }: { children: ReactNode }) {
             >
               View bag <ArrowRight size={13} />
             </button>
+            <button
+              className="demo-toast-dismiss"
+              aria-label="Dismiss shopping notification"
+              onClick={() => setNotice("")}
+            >
+              <X size={15} />
+            </button>
           </div>
         )}
         {reset && (

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { Box, Scan, Plus, RefreshCw, Check, Undo2 } from "lucide-react";
 import { RangeField } from "@/components/ui/range-field";
+import { MaskHighlight } from "./mask-highlight";
 import type { AnalysisOptions, ReconstructionOptions, SegmentationOptions } from "@/lib/ai/controls";
 import type { SceneWorkspace } from "./types";
 
@@ -20,8 +21,8 @@ export function ObjectReview(props:Props){
     const o=data.objects[0];return o ? {...(o.segmentation ?? {mode:"text",points:[]}),objectId:o.id,label:o.label,concept:o.concept} : freshPrompt();
   });
   const [tool,setTool]=useState<Tool>("preview");
-  const [opacity,setOpacity]=useState(.48);
-  const [boxes,setBoxes]=useState(false);
+  const [opacity,setOpacity]=useState(.2);
+  const [boxes,setBoxes]=useState(true);
   const [confidence,setConfidence]=useState(0);
   const [combined,setCombined]=useState<string[]>([]);
   const [variant,setVariant]=useState<string|null>(null);
@@ -71,9 +72,9 @@ export function ObjectReview(props:Props){
       <div className="review-canvas-column">
         <div className="review-photo-shell"><div className="review-photo fitted-photo" style={{"--photo-aspect":image.width/image.height} as CSSProperties}>
           <Image src={image.url} alt={data.title} width={image.width} height={image.height} unoptimized/>
-          {overlay.map(mask=><Image key={mask.id} className="mask-overlay" src={mask.url} alt="Segmentation preview" fill unoptimized style={{opacity}}/>)}
+          {overlay.map(mask=><MaskHighlight key={mask.id} url={mask.url} width={image.width} height={image.height} opacity={opacity}/>)}
           <svg className={`prompt-canvas tool-${locked?"preview":tool}`} viewBox={`0 0 ${image.width} ${image.height}`} aria-label="Object prompt overlay; use the controls to draw a box or mark include and exclude points" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={()=>{drag.current=null;setPendingBox(undefined);}}>
-            {boxes&&data.objects.filter(o=>o.bounds).map(o=><rect key={o.id} x={o.bounds!.xMin} y={o.bounds!.yMin} width={o.bounds!.xMax-o.bounds!.xMin} height={o.bounds!.yMax-o.bounds!.yMin} className="candidate-box"/>)}
+            {boxes&&data.objects.filter(o=>o.bounds).map(o=><rect key={o.id} x={o.bounds!.xMin} y={o.bounds!.yMin} width={o.bounds!.xMax-o.bounds!.xMin} height={o.bounds!.yMax-o.bounds!.yMin} className={`candidate-box${inspected===o.id?" inspecting-box":""}`}/>)}
             {box&&<rect x={box.xMin} y={box.yMin} width={box.xMax-box.xMin} height={box.yMax-box.yMin} className="user-box"/>}
             {prompt.mode==="spatial"&&prompt.points.map((p,i)=><g key={i}><circle cx={p.x} cy={p.y} r={Math.max(image.width,image.height)*.008} fill={p.label==="positive"?"#45a76c":"#df6657"} stroke="white" strokeWidth={2}/><text x={p.x} y={p.y} textAnchor="middle" dominantBaseline="central" fill="white" fontSize={Math.max(image.width,image.height)*.013}>{p.label==="positive"?"+":"−"}</text></g>)}
           </svg>

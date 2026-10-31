@@ -194,10 +194,6 @@
   gap: 14px;
   padding: 16px;
 }
-.demo-store .demo-layouts > div:first-child {
-  flex-basis: 100%;
-  min-width: 0;
-}
 .demo-store .demo-layouts strong {
   font-size: 13px;
 }

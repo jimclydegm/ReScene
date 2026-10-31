@@ -8,7 +8,6 @@ import {
   Eye,
   EyeOff,
   Moon,
-  Plus,
   Redo2,
   RotateCcw,
   Save,
@@ -229,7 +228,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
           />
         </div>
         <aside className="demo-room-sidebar">
-          <section className="demo-panel">
+          <section className="demo-panel demo-collection-panel">
             <div className="demo-panel-heading">
               <h2>The collection</h2>
               <span>
@@ -247,6 +246,8 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
                   >
                     <button
                       className="demo-room-product-select"
+                      title={p.name}
+                      aria-label={`Select ${p.name}`}
                       aria-pressed={selected === o.id}
                       onClick={() => setSelected(selected === o.id ? "" : o.id)}
                     >
@@ -261,13 +262,11 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
                         <small>{money(p.price)}</small>
                       </span>
                     </button>
-                    <button
-                      className="d-icon"
-                      aria-label={`${d.visible ? "Remove" : "Add"} ${p.name} ${d.visible ? "from" : "to"} room`}
-                      onClick={() => update(o.id, { visible: !d.visible })}
-                    >
-                      {d.visible ? <Eye size={15} /> : <Plus size={15} />}
-                    </button>
+                    {!d.visible && (
+                      <span className="demo-product-hidden">
+                        <EyeOff size={12} /> Hidden
+                      </span>
+                    )}
                   </div>
                 );
               })}
@@ -275,7 +274,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
           </section>
           <section className="demo-panel demo-adjustments">
             <div className="demo-panel-heading">
-              <h2>{product ? "Make it yours" : "Choose a product"}</h2>
+              <h2>{product?.name ?? "Choose a product"}</h2>
               {selected && (
                 <button
                   className="d-icon"
@@ -288,7 +287,6 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
             </div>
             {product && item ? (
               <>
-                <strong className="demo-selected-name">{product.name}</strong>
                 <ColorSwatches
                   product={product}
                   value={item.color}
@@ -326,11 +324,14 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
                     <RotateCcw size={13} />
                     Reset item
                   </button>
+                  <Link
+                    href={`/demo/product/${selected}`}
+                    className="d-text"
+                    aria-label="View product details"
+                  >
+                    Details <ArrowRight size={13} />
+                  </Link>
                 </div>
-                <Link href={`/demo/product/${selected}`} className="d-text">
-                  View product details
-                  <ArrowRight size={13} />
-                </Link>
               </>
             ) : (
               <p>
@@ -339,7 +340,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
               </p>
             )}
           </section>
-          <section className="demo-panel">
+          <section className="demo-panel demo-light-panel">
             <h2>Set the mood</h2>
             <div className="demo-lighting">
               {(["Original", "Day", "Dusk", "Night", "Studio"] as const).map(
