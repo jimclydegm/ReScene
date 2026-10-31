@@ -248,4 +248,4 @@ Details: DEMO_STORE.md. Jim explicitly chose to continue without browser verific
 
 - [x] Diagnose saved Muse output, destructive flattening/filtering and source-detail ghosting on e565053d.
 - [x] Shared material policy, per-surface generated-albedo preservation and interior-patch plane mapping; regression coverage for contrast/shadow isolation/plain finishes.
-- [ ] PR/CI/production, final saved-scene mapping and native verification.
+- [x] PR35 merged at69c1d9f; PR/main CI and237 cases/schema/lint/types/build pass. Production READY; saved scene revision15 maps four surfaces, native WebGL confirms material detail without duplicate projected trim. No new inference; objects/camera/lights/plane vertices unchanged.
