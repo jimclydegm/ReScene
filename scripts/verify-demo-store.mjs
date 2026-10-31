@@ -2,6 +2,8 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
+const presentationOnly = process.argv.includes("--presentation");
+const styles = new Set();
 const base = new URL(process.env.DEMO_BASE_URL ?? "http://localhost:4317");
 assert(
   base.protocol === "https:" ||
@@ -42,6 +44,12 @@ for (const path of [
     !/\.r2\.cloudflarestorage\.com|postgresql:\/\/|LLM_/.test(html),
     "Private credentials/storage URL in demo HTML",
   );
+  assert(html.includes("Theme"), "Missing appearance control");
+  for (const [tag] of html.matchAll(/<link\b[^>]*>/g))
+    if (tag.includes('rel="stylesheet"')) {
+      const href = tag.match(/href="([^"]+)"/);
+      if (href) styles.add(href[1]);
+    }
   console.log(`PASS ${path}`);
 }
 for (const path of [
@@ -51,7 +59,7 @@ for (const path of [
   assert.equal((await get(path)).status, 404, path);
 const assets = frozen.scenes.flatMap((s) => s.objects);
 // Two concurrent reads keep this a bounded check rather than a load test.
-for (let i = 0; i < assets.length; i += 2)
+for (let i = 0; !presentationOnly && i < assets.length; i += 2)
   await Promise.all(
     assets.slice(i, i + 2).map(async (asset) => {
       const response = await get(
@@ -72,20 +80,57 @@ for (let i = 0; i < assets.length; i += 2)
       console.log(`PASS ${asset.id} frozen GLB hash`);
     }),
   );
+const sampleImages = [
+  "black-dining-chair",
+  "white-shell-chair",
+  "writing-desk",
+  "dome-desk-lamp",
+  "travel-tumbler",
+  "navy-bottle",
+  "ceramic-canister",
+  "metal-storage-tin",
+  "graphite-desk-wide",
+  "walnut-table-wide",
+  "bedroom-wide",
+  "kitchen-wide",
+].map((id) => `/samples/v3/${id}.webp`);
 for (const path of [
-  "/demo/images/space.webp",
-  "/demo/images/living.webp",
-  "/demo/images/corner.webp",
-  ...assets.map((a) => `/demo/images/${a.id}.webp`),
-  ...frozen.scenes.flatMap((s) =>
-    Object.values(s.appearance).filter((v) => typeof v === "string"),
-  ),
+  ...sampleImages,
+  ...(presentationOnly
+    ? []
+    : [
+        "/demo/images/space.webp",
+        "/demo/images/living.webp",
+        "/demo/images/corner.webp",
+        ...assets.map((a) => `/demo/images/${a.id}.webp`),
+        ...frozen.scenes.flatMap((s) =>
+          Object.values(s.appearance).filter((v) => typeof v === "string"),
+        ),
+      ]),
 ]) {
   const response = await get(path);
   assert.equal(response.status, 200, path);
   assert(response.headers.get("content-type")?.startsWith("image/"), path);
   await response.arrayBuffer();
 }
+let css = "";
+for (const path of styles) {
+  assert(path.startsWith("/_next/static/"), "Unexpected stylesheet host");
+  const response = await get(path);
+  assert.equal(response.status, 200, path);
+  css += await response.text();
+}
+assert(
+  css.includes("--shop-bg") &&
+    (css.includes("light-dark(") || css.includes("--lightningcss-dark")),
+  "Theme palette missing from delivered styles",
+);
+assert(
+  css.includes("demo-reference-frame"),
+  "Compact reference frame styles missing",
+);
 console.log(
-  "PASS demo routes, unknown-ID rejection, 11 GLB hashes and all approved images. Native browser controls are not covered.",
+  presentationOnly
+    ? "PASS demo pages, theme/compact CSS and 12 sample photos. Unchanged GLB downloads skipped."
+    : "PASS demo pages, theme/compact CSS, 11 GLB hashes and all approved images. Native browser controls are not covered.",
 );

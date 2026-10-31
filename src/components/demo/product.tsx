@@ -63,7 +63,13 @@ export function ProductTile({ id }: { id: string }) {
   return (
     <Link className="demo-product-tile" href={`/demo/product/${id}`}>
       <div>
-        <Image src={demoImage(id)} alt={p.name} width={500} height={500} />
+        <Image
+          src={demoImage(id)}
+          alt={p.name}
+          width={72}
+          height={72}
+          sizes="72px"
+        />
         <span>
           <Box size={13} /> View in 3D
         </span>

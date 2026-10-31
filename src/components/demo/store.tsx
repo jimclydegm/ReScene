@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { ThemeMenu } from "@/components/theme-menu";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -239,6 +240,7 @@ export function DemoStore({ children }: { children: ReactNode }) {
             </Link>
           </nav>
           <div className="demo-header-actions">
+            <ThemeMenu label="Theme" />
             <Link href="/dashboard" className="demo-studio-link">
               <ArrowLeft size={14} /> Studio
             </Link>

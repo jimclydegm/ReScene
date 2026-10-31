@@ -9,6 +9,7 @@ import {
   collectionInfo,
   collectionProducts,
 } from "@/lib/demo/catalog";
+import { PhotoInspiration } from "./photo-inspiration";
 import { ProductTile } from "./product";
 export function ProductCatalog() {
   const [query, setQuery] = useState(""),
@@ -47,6 +48,7 @@ export function ProductCatalog() {
           </span>
         </div>
       </div>
+      <PhotoInspiration kind="products" />
       <div className="retail-catalog-toolbar">
         <nav aria-label="Product categories">
           {categories.map((c) => (
@@ -74,18 +76,12 @@ export function ProductCatalog() {
         {products.length} products · Curated sample collection
       </p>
       <div className="retail-product-grid">
-        {products.map((p, i) => (
+        {products.map((p) => (
           <div key={p.id} className="retail-catalog-product">
             {p.id === "corner-chair" && (
               <span className="retail-start-badge">Start here</span>
             )}
             <ProductTile id={p.id} />
-            {i === 0 && (
-              <Link className="d-text" href={`/demo/product/${p.id}`}>
-                Explore this product
-                <ArrowRight size={15} />
-              </Link>
-            )}
           </div>
         ))}
       </div>
@@ -135,6 +131,7 @@ export function SceneCatalog({ mode }: { mode: "build" | "shop" }) {
           </p>
         </div>
       </div>
+      <PhotoInspiration kind="scenes" />
       <div className="retail-scene-grid">
         {ids.map((id, i) => {
           const info = collectionInfo[id];
@@ -148,8 +145,9 @@ export function SceneCatalog({ mode }: { mode: "build" | "shop" }) {
                 <Image
                   src={demoImage(id)}
                   alt={info.name}
-                  width={1200}
-                  height={750}
+                  width={72}
+                  height={72}
+                  sizes="72px"
                 />
                 <span>{i === 0 ? "Start here" : "Ready to explore"}</span>
               </div>
