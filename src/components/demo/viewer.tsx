@@ -2,18 +2,13 @@
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { Component, type ReactNode, useMemo } from "react";
+import { ReferenceFrame } from "./reference-frame";
 import { LoaderCircle } from "lucide-react";
 import { demoImage, findDemoProduct } from "@/lib/demo/catalog";
 import type { DemoScene } from "@/lib/demo/scenes";
 import type { Arrangement } from "@/lib/demo/state";
 import { lightingPresets } from "@/lib/scene/lighting";
 import type { RenderObject } from "@/components/scene/types";
-const arrangementCamera: DemoScene["composition"]["camera"] = {
-  position: [0, 3.5, 10],
-  target: [0, 1, 0],
-  fov: 43,
-  aspect: 1.5,
-};
 const ModelCanvas = dynamic(() => import("@/components/scene/model-canvas"), {
   ssr: false,
   loading: () => (
@@ -59,7 +54,6 @@ export function DemoViewer({
   onSelect,
   individual,
   isolated,
-  arranging = false,
 }: {
   scene: DemoScene;
   draft: Arrangement;
@@ -67,7 +61,6 @@ export function DemoViewer({
   onSelect: (id: string) => void;
   individual?: string;
   isolated?: string | null;
-  arranging?: boolean;
 }) {
   const objects: RenderObject[] = scene.objects
     .filter((o) => !individual || o.id === individual)
@@ -128,14 +121,13 @@ export function DemoViewer({
   const appearance = individual
     ? { applied: false, floorUrl: null, wallUrl: null, backgroundUrl: null }
     : scene.appearance;
-  return (
+  const canvas = (
     <ViewerBoundary
       key={individual ?? scene.id}
       image={individual ? demoImage(individual) : demoImage(scene.id)}
     >
       <ModelCanvas
         shopping
-        initialCamera={arranging ? arrangementCamera : undefined}
         objects={objects}
         selected={selected}
         onSelect={onSelect}
@@ -148,5 +140,12 @@ export function DemoViewer({
         }
       />
     </ViewerBoundary>
+  );
+  return individual ? (
+    canvas
+  ) : (
+    <ReferenceFrame aspect={scene.composition.camera.aspect}>
+      {canvas}
+    </ReferenceFrame>
   );
 }

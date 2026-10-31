@@ -20,7 +20,7 @@ function apply(theme: Theme) {
 }
 
 /** Header menu for light, dark or system appearance; the root layout applies the saved choice before paint. */
-export function ThemeMenu() {
+export function ThemeMenu({label}:{label?:string} = {}) {
   const theme = useSyncExternalStore(subscribe, read, () => "system" as Theme);
   const menu = useRef<HTMLDetailsElement>(null);
   useEffect(() => {
@@ -29,7 +29,7 @@ export function ThemeMenu() {
   }, []);
   const Icon = theme === "dark" ? Moon : theme === "light" ? Sun : Monitor;
   return <details className="theme-menu" ref={menu}>
-    <summary className="icon-button" aria-label="Appearance" title="Appearance"><Icon size={16}/></summary>
+    <summary className="icon-button" aria-label="Appearance" title="Appearance"><Icon size={16}/>{label&&<span>{label}</span>}</summary>
     <div className="theme-options" role="menu" aria-label="Appearance">{options.map(([value, label, OptionIcon]) =>
       <button key={value} role="menuitemradio" aria-checked={theme === value} onClick={() => { apply(value); if (menu.current) menu.current.open = false; }}><OptionIcon size={15}/><span>{label}</span><span className="theme-check">{theme === value && <Check size={14}/>}</span></button>)}</div>
   </details>;

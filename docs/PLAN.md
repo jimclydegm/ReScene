@@ -110,3 +110,7 @@ Jim approved Explore a product, Build your space and Shop the scene as one combi
 ## Shopping-first demo revision — October31
 
 Jim requested selection pages before each experience, simultaneous photos/3D, higher text contrast and compact reviews with avatars. Use the selected6800b8a2 chair/cabinet/vase as the first arranger collection and retain the earlier collection as a second choice. Share movement/rotation/collision/support controls across Build and Shop. Save four layouts per collection while retaining existing carts/A-B data. All eleven products already have generated assets and can reuse the complete product page; no extra inference or schema migration. See DEMO_STORE.md.
+
+## Compact themed demos — October31
+
+Jim requested uniformly small thumbnails, more sample images, saved-project zoom/framing, larger high-contrast text, visible arrangement comparison and dark mode. Reuse the global persisted ThemeMenu with a semantic dual palette rather than a separate theme state. Move arrangements above the viewer; retain source camera/aspect via a fitted reference viewport instead of a wider fixed camera. Reuse eight product/four setting sample photographs as clearly labeled image-only inspiration; no inference/schema change/original project mutation. See DEMO_STORE.md.

@@ -79,7 +79,7 @@ function ReferenceFraming({reference}:{reference:SceneComposition["camera"]|unde
   }
  },[camera,size.width,size.height,reference]);return null;
 }
-export default function ModelCanvas({ objects, selected, onSelect, composition, lighting, appearance, shopping = false, initialCamera }: { objects: RenderObject[]; selected: string; onSelect: (id: string) => void; composition: SceneComposition | null; lighting: Lighting; appearance: SceneWorkspace["appearance"]; shopping?: boolean; initialCamera?: SceneComposition["camera"] }) {
+export default function ModelCanvas({ objects, selected, onSelect, composition, lighting, appearance, shopping = false }: { objects: RenderObject[]; selected: string; onSelect: (id: string) => void; composition: SceneComposition | null; lighting: Lighting; appearance: SceneWorkspace["appearance"]; shopping?: boolean }) {
   const readOnly = objects.some(o => Boolean(o.worldTransform));
   const controls = useRef<OrbitControlsType>(null);
   const bindControls = useCallback((value: OrbitControlsType | null) => {
@@ -103,7 +103,7 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
     finally{setExporting(false);}
   }
   const floorY=Math.min(composition?.floorY ?? 0,...objects.filter(o=>o.visible&&!o.worldTransform).map(o=>o.positionY));
-  const c = initialCamera ?? composition?.camera;
+  const c = composition?.camera;
   const cameraOptions=useMemo(()=>({position:c?.position??manualStageCamera.position,fov:c?.fov??manualStageCamera.fov,near:.01,far:Math.max(500,c?new Vector3(...c.position).distanceTo(new Vector3(...c.target))*16:500)}),[c]);
   const lightingColor = composition?.environment.lightWarmth === "warm" ? "#fff0d8" : composition?.environment.lightWarmth === "cool" ? "#e1edff" : "#ffffff";
   const target = c?.target ?? manualStageCamera.target;

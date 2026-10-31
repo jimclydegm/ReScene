@@ -40,3 +40,11 @@ Build's initial browsing camera frames the wider preset layouts without changing
 Native browser/WebGL/mobile/download interaction checks remain unverified: browser access still reports disabled and Jim previously chose to continue without browser verification. CSS and HTTP/build checks are not a claim of visual verification.
 
 Release: PR31 merged atf4927b6, PR/main CI pass. Production rescene-iv4tgezvc-jimclydegms-projects.vercel.app is READY; the full read-only demo smoke passes at https://rescene-eta.vercel.app. The selected source remains READY at revision102. No additional inference was used.
+
+## Compact layout, source framing and theme — October31
+
+Demo UI now uses a shared semantic light/dark palette and the existing app ThemeMenu/persisted theme preference. There is no separate demo theme state. Main text is15–16px; secondary labels are12–13px. Text/accent combinations are checked at WCAG AA contrast in both themes. Scene colors and product photographs are preserved when switching UI theme.
+
+Menus/cart/product selectors share72px square thumbnail wells with contain fitting; primary product photographs and the actual3D view remain larger. Twelve existing public sample photographs (eight products, four settings) are available through compact photo-inspiration dialogs; they are explicitly photographic previews and do not pretend to have generated meshes. No new inference or stored assets.
+
+The fixed wide arranger camera is removed. A ResizeObserver fits the saved photo aspect inside the available viewer area; the default source camera position, target and FOV remain unchanged. Letterboxing replaces field-of-view widening, avoiding extra unobserved background/floor in the initial view. Orbit and zoom remain available, so unseen geometry remains approximate. Compare arrangements moves above the viewer with one Save-as/Save action. Native browser verification remains unavailable; mathematical frame fitting, contrast, build and HTTP checks do not substitute for native visual checks.

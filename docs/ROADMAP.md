@@ -204,3 +204,11 @@ Details: DEMO_STORE.md. Jim explicitly chose to continue without browser verific
 - [x] Shared movement/rotation controls, undo/redo/reset/lights in both scene demos; support-following prevents the vase leaving its cabinet.
 - [x]206 tests/schema/lint/types/build and local pages/eleven-model-hash smoke pass; no inference or original-project changes.
 - [x] PR31 merged atf4927b6; PR/main CI pass, production READY, live catalog/product/workflow pages and all eleven GLB hashes/images verified at rescene-eta.vercel.app. Native browser verification remains unavailable.
+
+## Compact themed demos — October31
+
+- [x] Shared72px thumbnail wells, compact scene/product menus and top-of-view arrangement comparison with Save as.
+- [x] Existing persisted ThemeMenu, semantic light/dark palettes and larger high-contrast primary text.
+- [x] Saved camera/aspect framing instead of the wide arranger camera; twelve additional public sample-photo previews.
+- [x]210 tests (including contrast/frame-fitting/preview inventory), schema/lint/types/build pass.
+- [ ] Combined PR/main release and bounded production smoke. Native browser visual verification remains unavailable.

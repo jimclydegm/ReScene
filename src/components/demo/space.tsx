@@ -100,6 +100,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
       ),
     ),
     [slot, setSlot] = useState<LayoutName>("A"),
+    [saveSlot, setSaveSlot] = useState<LayoutName>("A"),
     [selected, setSelected] = useState(
       scene.objects.find((o) => o.id.endsWith("chair"))?.id ??
         scene.objects[0].id,
@@ -131,6 +132,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
   function load(which: LayoutName) {
     setTimeline(editHistory(layouts[which]));
     setSlot(which);
+    setSaveSlot(which);
     setMessage(`Layout ${which} loaded.`);
     setPending(null);
   }
@@ -189,23 +191,6 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
               </button>
             </div>
           </div>
-          <DemoViewer
-            arranging
-            scene={scene}
-            draft={draft}
-            selected={selected}
-            onSelect={setSelected}
-          />
-          <div className="demo-stage-caption">
-            <span>
-              Click a product to edit · Download a screenshot with the viewer’s
-              download button.
-            </span>
-            <small>
-              Your changes stay in this demo. Real dimensions and fit are not
-              verified.
-            </small>
-          </div>
           <section className="demo-layouts">
             <div>
               <LayoutGrid size={17} />
@@ -233,27 +218,51 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
               ))}
             </div>
             <div className="demo-layout-save">
-              {layoutNames.map((which) => (
-                <button
-                  key={which}
-                  className="d-button small"
-                  onClick={() => {
-                    store.setCollection(scene.id, {
-                      ...layouts,
-                      [which]: draft,
-                    });
-                    setSlot(which);
-                    setMessage(
-                      `Your arrangement is saved as Layout ${which} in this browser.`,
-                    );
-                  }}
+              <label>
+                Save as
+                <select
+                  aria-label="Save arrangement as"
+                  value={saveSlot}
+                  onChange={(e) => setSaveSlot(e.target.value as LayoutName)}
                 >
-                  <Save size={13} />
-                  Save to {which}
-                </button>
-              ))}
+                  {layoutNames.map((name) => (
+                    <option key={name} value={name}>
+                      Layout {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                className="d-button small"
+                onClick={() => {
+                  store.setCollection(scene.id, {
+                    ...layouts,
+                    [saveSlot]: draft,
+                  });
+                  setSlot(saveSlot);
+                  setMessage(`Layout ${saveSlot} saved in this browser.`);
+                }}
+              >
+                <Save size={14} />
+                Save
+              </button>
             </div>
           </section>
+          <DemoViewer
+            scene={scene}
+            draft={draft}
+            selected={selected}
+            onSelect={setSelected}
+          />
+          <div className="demo-stage-caption">
+            <span>
+              Click a product to edit · PNG downloads are in the viewer toolbar.
+            </span>
+            <small>
+              Your changes stay in this demo. Real dimensions and fit are not
+              verified.
+            </small>
+          </div>
         </div>
         <aside className="demo-room-sidebar">
           <section className="demo-panel">
