@@ -36,6 +36,7 @@ import {
 } from "@/lib/editor/history";
 import type { ItemDraft } from "@/lib/demo/state";
 import { DemoDialog, useDemoStore } from "./store";
+import { SceneAlbumButton } from "./image-album";
 import { DemoViewer } from "./viewer";
 import { ColorSwatches } from "./product";
 import { PositionControls } from "./position-controls";
@@ -60,7 +61,11 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
   function update(patch: Partial<ItemDraft>, group: string | null = null) {
     const result = changeArrangement(scene, draft, selected, patch);
     setMessage(result.error ?? "");
-    if (!result.error) setTimeline((t) => recordEdit(t, result.draft, group));
+    if (!result.error) {
+      setPhoto(false);
+      if (patch.visible === false && isolated === selected) setIsolated(null);
+      setTimeline((t) => recordEdit(t, result.draft, group));
+    }
   }
   function finish() {
     setTimeline((t) => finishEdit(t));
@@ -80,6 +85,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
       next = result.draft;
     }
     setIsolated(null);
+    setPhoto(false);
     setTimeline((t) => recordEdit(t, next));
     setMessage("");
   }
@@ -118,6 +124,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                   : "Interactive room"}
             </span>
             <div>
+              <SceneAlbumButton sceneId={scene.id} name={info.name} />
               <button
                 className="d-icon"
                 aria-label="Undo scene edit"
@@ -167,16 +174,6 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
               individual={isolated ?? undefined}
             />
           )}
-          <div className="demo-stage-caption">
-            <span>
-              Click a piece to see its details. Position, rotation and lighting
-              controls are on the right.
-            </span>
-            <small>
-              AI reconstruction · geometry, color and material details are
-              approximate.
-            </small>
-          </div>
           <div className="demo-scene-product-strip">
             {scene.objects.map((o) => {
               const p = findDemoProduct(o.id)!;
@@ -201,12 +198,14 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
               );
             })}
           </div>
-          <p className="demo-feedback" role="status">
-            {message}
-          </p>
         </div>
         <aside className="demo-room-sidebar">
           <section className="demo-panel demo-shop-card">
+            {message && (
+              <p className="demo-feedback visibility-feedback" role="alert">
+                {message}
+              </p>
+            )}
             {product && item ? (
               <>
                 <div className="demo-panel-heading">
@@ -254,6 +253,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                     move them together.
                   </p>
                 )}
+
                 <div className="demo-inline-actions">
                   <button
                     className="d-text"

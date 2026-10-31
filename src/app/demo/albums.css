@@ -1,0 +1,520 @@
+/* Albums are the default shopping surface; WebGL is opt-in. */
+.demo-store .shopping-product-media {
+  display: block;
+  position: sticky;
+  top: 12px;
+  min-width: 0;
+}
+.shopping-media-modes {
+  display: flex;
+  gap: 5px;
+  border: 1px solid var(--shop-line);
+  border-radius: 8px;
+  padding: 4px;
+  background: var(--shop-raised);
+  width: fit-content;
+  margin-bottom: 12px;
+}
+.shopping-media-modes button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 7px 15px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--shop-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+.shopping-media-modes button[aria-pressed="true"] {
+  background: var(--shop-surface);
+  border-color: var(--shop-line);
+  color: var(--shop-ink);
+}
+.shopping-album {
+  min-width: 0;
+  width: 100%;
+}
+.shopping-album-main {
+  position: relative;
+  height: clamp(300px, calc(100dvh - 310px), 520px);
+  border: 1px solid var(--shop-line);
+  border-radius: 10px;
+  background: var(--shop-photo);
+  overflow: hidden;
+}
+.shopping-album-main > img {
+  object-fit: contain;
+}
+.album-arrow,
+.album-expand {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--shop-line);
+  border-radius: 50%;
+  background: var(--shop-surface);
+  color: var(--shop-ink);
+  width: 36px;
+  height: 36px;
+  box-shadow: 0 2px 10px var(--shop-shadow);
+}
+.album-arrow {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.album-arrow.previous {
+  left: 12px;
+}
+.album-arrow.next {
+  right: 12px;
+}
+.album-expand {
+  right: 12px;
+  top: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+}
+.album-count {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  border: 1px solid var(--shop-line);
+  border-radius: 20px;
+  background: var(--shop-surface);
+  color: var(--shop-ink);
+  padding: 3px 10px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.album-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin: 9px 0;
+  font-size: 13px;
+  color: var(--shop-muted);
+}
+.album-caption strong {
+  font-size: 14px;
+}
+.album-filmstrip {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 3px 2px 8px;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+.album-filmstrip > button {
+  flex: 0 0 82px;
+  width: 82px;
+  padding: 3px;
+  border: 1px solid var(--shop-line);
+  border-radius: 6px;
+  background: var(--shop-surface);
+  color: var(--shop-ink);
+  text-align: center;
+}
+.album-filmstrip > button[aria-pressed="true"] {
+  outline: 2px solid var(--shop-link);
+  background: var(--shop-selected);
+}
+.album-filmstrip img {
+  width: 74px;
+  height: 60px;
+  object-fit: contain;
+  background: var(--shop-photo);
+  border-radius: 3px;
+}
+.album-filmstrip span {
+  display: block;
+  font-size: 11px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 4px;
+}
+.album-expanded {
+  display: grid;
+  place-items: center;
+  height: 68dvh;
+}
+.album-expanded img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.shopping-optional-3d {
+  position: relative;
+  height: clamp(300px, calc(100dvh - 310px), 520px);
+  border: 1px solid var(--shop-line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.demo-store .shopping-optional-3d > .model-viewport {
+  height: 100%;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  aspect-ratio: auto;
+}
+.shopping-media-note {
+  font-size: 12px !important;
+  line-height: 1.5;
+  color: var(--shop-muted);
+  margin: 8px 0 0 !important;
+}
+.demo-store .demo-dialog .shopping-album-main {
+  height: min(52dvh, 440px);
+}
+/* Collection choices need a useful scene photograph, not a tiny product icon. */
+.demo-store .retail-scene-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.demo-store .retail-scene-card {
+  grid-template-columns: 190px minmax(0, 1fr);
+  gap: 16px;
+  padding: 12px;
+}
+.demo-store .retail-scene-card > div:first-child {
+  width: 190px;
+  height: 136px;
+  aspect-ratio: auto;
+  align-self: center;
+  background: var(--shop-photo);
+}
+.demo-store .retail-scene-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.demo-store .retail-scene-card h2 {
+  font-size: 24px;
+}
+.demo-store .retail-scene-card p {
+  font-size: 14px;
+  line-height: 1.45;
+  margin-bottom: 7px;
+}
+/* Six named layouts fit in a single short strip without another heading. */
+.demo-store .demo-layouts {
+  padding: 7px 10px;
+  gap: 10px;
+  min-height: 44px;
+  flex-wrap: nowrap;
+}
+.demo-store .demo-layout-options {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  min-width: 0;
+  scrollbar-width: thin;
+  flex: 1;
+}
+.demo-store .demo-layout-options > button {
+  flex: 1 0 auto;
+  width: auto;
+  min-width: 61px;
+  min-height: 30px;
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-size: 13px;
+}
+.demo-store .demo-layout-options span {
+  padding: 0;
+  font-size: 13px;
+  gap: 4px;
+  white-space: nowrap;
+}
+.demo-store .demo-layout-save {
+  display: flex;
+  flex-direction: row;
+  width: auto;
+  max-width: none;
+  gap: 6px;
+  align-items: center;
+}
+.demo-store .demo-layout-save label {
+  font-size: 0;
+  gap: 0;
+}
+.demo-store .demo-layout-save select {
+  font-size: 13px;
+  width: 75px;
+  padding: 5px;
+  min-height: 30px;
+}
+.demo-store .demo-layout-save .d-button {
+  width: auto;
+  min-height: 30px;
+  font-size: 13px;
+  padding: 5px 8px;
+}
+.demo-store .demo-room-main > .demo-section-heading {
+  margin: 4px 0 12px;
+  min-height: 36px;
+}
+.demo-store .demo-room-main > .demo-section-heading .d-kicker,
+.demo-store .demo-room-main > .demo-section-heading p {
+  display: none;
+}
+.demo-store .demo-room-main > .demo-section-heading h1 {
+  font-size: 28px;
+}
+.demo-store .demo-room-main .demo-breadcrumb {
+  margin-bottom: 11px;
+}
+.demo-store .demo-room-topbar {
+  min-height: 36px;
+  padding: 5px 10px;
+}
+.demo-store .demo-room-topbar .d-text {
+  font-size: 13px;
+  gap: 5px;
+}
+.demo-store {
+  --shop-scene-height: clamp(240px, calc(100dvh - 310px), 440px);
+}
+.demo-store .demo-room-sidebar {
+  max-height: calc(100dvh - 185px);
+  gap: 10px;
+}
+.demo-store .demo-panel {
+  padding: 11px;
+}
+.demo-store .demo-panel-heading {
+  margin-bottom: 7px;
+}
+.demo-store .demo-room-purchase {
+  padding-top: 0;
+}
+.demo-store .demo-colors > div {
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 6px;
+}
+.demo-store .demo-colors button {
+  width: 27px;
+  height: 27px;
+}
+.demo-store .demo-colors {
+  margin: 10px 0;
+}
+.demo-store .demo-colors small {
+  font-size: 12px;
+}
+.demo-store .retail-transform-controls {
+  margin: 8px 0;
+  padding-top: 8px;
+}
+.demo-store .retail-transform-controls label {
+  margin: 6px 0;
+}
+.demo-store .retail-transform-controls label > span {
+  margin-bottom: 2px;
+  font-size: 14px;
+}
+.demo-store .retail-transform-controls button {
+  height: 25px;
+  min-width: 25px;
+}
+.demo-store .retail-transform-controls input {
+  height: 20px;
+}
+.demo-store .demo-inline-actions {
+  margin: 7px 0;
+}
+.demo-store .demo-lighting {
+  gap: 5px;
+  margin-top: 8px;
+}
+.demo-store .demo-lighting button {
+  padding: 6px 8px;
+}
+.demo-store .retail-shop-product-head > a,
+.demo-store .retail-shop-product-head img {
+  width: 102px;
+  height: 88px;
+  object-fit: contain;
+}
+.demo-store .retail-shop-product-head h2 {
+  font-size: 19px !important;
+}
+.demo-store .demo-shop-card > p {
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 8px 0;
+}
+.demo-store .demo-shop-card .demo-colors {
+  margin: 9px 0;
+}
+.demo-store .demo-scene-product-strip {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 8px;
+  gap: 7px;
+}
+.demo-store .demo-scene-product-strip img {
+  width: 90px;
+  height: 74px;
+  min-width: 90px;
+}
+.demo-store .demo-scene-product-strip > button {
+  padding: 6px;
+  gap: 7px;
+}
+.visibility-feedback {
+  color: var(--shop-ink) !important;
+  background: var(--shop-raised);
+  padding: 8px;
+  border: 1px solid var(--shop-line);
+  border-radius: 5px;
+}
+@media (max-width: 1150px) {
+  .demo-store .retail-scene-card {
+    grid-template-columns: 150px minmax(0, 1fr);
+    gap: 12px;
+  }
+  .demo-store .retail-scene-card > div:first-child {
+    width: 150px;
+    height: 120px;
+  }
+  .demo-store .retail-scene-card h2 {
+    font-size: 22px;
+  }
+  .demo-store .demo-layout-options > button {
+    min-width: 60px;
+    flex: none;
+  }
+  .demo-store .demo-scene-product-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 850px) {
+  .demo-store .retail-product-visuals.shopping-product-media {
+    display: block;
+    position: static;
+  }
+  .demo-store .retail-scene-grid {
+    grid-template-columns: 1fr;
+  }
+  .demo-store .retail-scene-card {
+    grid-template-columns: 190px minmax(0, 1fr);
+  }
+  .demo-store .retail-scene-card > div:first-child {
+    width: 190px;
+    height: 136px;
+  }
+  .shopping-album-main,
+  .shopping-optional-3d {
+    height: 420px;
+  }
+  .demo-store .demo-room-sidebar {
+    max-height: none;
+  }
+  .demo-store .demo-layouts {
+    flex-wrap: wrap;
+  }
+  .demo-store .demo-layout-options {
+    order: 0;
+    flex-basis: calc(100% - 150px);
+  }
+  .demo-store .demo-layout-save {
+    margin: 0;
+  }
+  .demo-store .demo-scene-product-strip img {
+    width: 90px;
+    height: 74px;
+  }
+}
+@media (max-width: 580px) {
+  .demo-store .retail-scene-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .demo-store .retail-scene-card > div:first-child {
+    width: 100%;
+    height: 180px;
+  }
+  .demo-store .retail-scene-card > section {
+    padding: 2px 3px 5px;
+  }
+  .shopping-album-main,
+  .shopping-optional-3d {
+    height: 330px;
+  }
+  .shopping-media-modes {
+    width: 100%;
+  }
+  .shopping-media-modes button {
+    flex: 1;
+    font-size: 14px;
+    padding: 7px 10px;
+  }
+  .album-caption {
+    font-size: 12px;
+    align-items: start;
+  }
+  .album-caption strong {
+    font-size: 13px;
+  }
+  .album-filmstrip > button {
+    flex-basis: 76px;
+    width: 76px;
+  }
+  .album-filmstrip img {
+    width: 68px;
+    height: 56px;
+  }
+  .demo-store .demo-layouts {
+    padding: 6px 8px;
+    gap: 6px;
+  }
+  .demo-store .demo-layout-options {
+    flex-basis: 100%;
+    width: 100%;
+    order: 1;
+  }
+  .demo-store .demo-layout-save {
+    order: 2;
+    margin-left: auto;
+  }
+  .demo-store .demo-layout-options > button {
+    padding: 5px 7px;
+    min-height: 29px;
+    min-width: 58px;
+  }
+  .demo-store .demo-room-main > .demo-section-heading h1 {
+    font-size: 26px;
+  }
+  .demo-store .demo-scene-product-strip {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .demo-store .demo-scene-product-strip > button {
+    min-width: 145px;
+    flex: 0 0 145px;
+    flex-direction: row;
+  }
+  .demo-store .demo-scene-product-strip img {
+    width: 64px;
+    height: 64px;
+    min-width: 64px;
+  }
+  .demo-store .retail-shop-product-head > a,
+  .demo-store .retail-shop-product-head img {
+    width: 96px;
+    height: 84px;
+  }
+}

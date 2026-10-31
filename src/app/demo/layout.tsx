@@ -2,6 +2,7 @@ import { DemoStore } from "@/components/demo/store";
 import "./store.css";
 import "./shopping.css";
 import "./compact.css";
+import "./albums.css";
 export const metadata = {
   title: "ReScene Living — Interactive shopping demo",
   robots: { index: false, follow: false },

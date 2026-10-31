@@ -126,7 +126,7 @@ export function SceneCatalog({ mode }: { mode: "build" | "shop" }) {
           </h1>
           <p>
             {mode === "build"
-              ? "Select a collection to arrange products, compare four layouts and explore colors and light."
+              ? "Choose a collection, try six layouts and explore finishes and light."
               : "Explore a styled room, discover its pieces and bring your favorites into one shopping list."}
           </p>
         </div>
@@ -145,9 +145,9 @@ export function SceneCatalog({ mode }: { mode: "build" | "shop" }) {
                 <Image
                   src={demoImage(id)}
                   alt={info.name}
-                  width={72}
-                  height={72}
-                  sizes="72px"
+                  width={240}
+                  height={160}
+                  sizes="(max-width:580px) 100vw,240px"
                 />
                 <span>{i === 0 ? "Start here" : "Ready to explore"}</span>
               </div>
@@ -169,7 +169,13 @@ export function SceneCatalog({ mode }: { mode: "build" | "shop" }) {
         })}
         <article className="retail-scene-card retail-coming-soon">
           <div className="retail-coming-art">
-            <Box size={42} />
+            <Image
+              src="/samples/v3/graphite-desk-wide.webp"
+              alt="Workspace setting preview"
+              width={240}
+              height={160}
+              sizes="240px"
+            />
             <span>Preview collection</span>
           </div>
           <section>

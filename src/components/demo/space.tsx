@@ -3,12 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import {
-  ArrowLeft,
   ArrowRight,
   Check,
   Eye,
   EyeOff,
-  LayoutGrid,
   Moon,
   Plus,
   Redo2,
@@ -29,13 +27,14 @@ import {
   demoScenes,
   initialArrangement,
   collectionLayouts,
+  resolveCollectionLayouts,
   changeArrangement,
   supportOf,
 } from "@/lib/demo/scenes";
 import {
   layoutNames,
+  layoutTitles,
   type LayoutName,
-  type Arrangement,
   type ItemDraft,
 } from "@/lib/demo/state";
 import {
@@ -47,36 +46,10 @@ import {
 } from "@/lib/editor/history";
 import { PositionControls } from "./position-controls";
 import { ColorSwatches } from "./product";
+import { SceneAlbumButton } from "./image-album";
 import { DemoViewer } from "./viewer";
 import { DemoDialog, useDemoStore } from "./store";
 
-export function LayoutPreview({ draft }: { draft: Arrangement }) {
-  return (
-    <svg viewBox="0 0 120 74" aria-hidden="true">
-      <rect x="1" y="1" width="118" height="72" rx="5" fill="#ece7dc" />
-      {Object.entries(draft.items)
-        .filter(([, d]) => d.visible)
-        .map(([id, d]) => (
-          <rect
-            key={id}
-            x={60 + d.x * 13 - 8}
-            y={37 + d.z * 10 - 6}
-            width={id === "oak-dresser" ? 19 : 14}
-            height={id.endsWith("chair") ? 16 : 11}
-            rx={id.endsWith("table") ? 6 : 2}
-            transform={`rotate(${(-d.yaw * 180) / Math.PI} ${60 + d.x * 13} ${37 + d.z * 10})`}
-            fill={
-              id.endsWith("chair")
-                ? "#87957b"
-                : id.endsWith("table")
-                  ? "#fcfaf5"
-                  : "#b2906f"
-            }
-          />
-        ))}
-    </svg>
-  );
-}
 export function SpacePage({ sceneId = "corner" }: { sceneId?: string }) {
   const store = useDemoStore();
   return store.hydrated ? (
@@ -107,11 +80,13 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
     ),
     [message, setMessage] = useState(""),
     [pending, setPending] = useState<LayoutName | "reset" | null>(null);
-  const layouts =
+  const layouts = resolveCollectionLayouts(
+      scene,
       store.collections[scene.id] ??
-      (scene.id === "space" && store.layouts
-        ? { ...collectionLayouts(scene), ...store.layouts }
-        : collectionLayouts(scene)),
+        (scene.id === "space" && store.layouts
+          ? { ...collectionLayouts(scene), ...store.layouts }
+          : undefined),
+    ),
     draft = timeline.present,
     item = draft.items[selected],
     product = findDemoProduct(selected),
@@ -166,6 +141,10 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
               Interactive showroom
             </span>
             <div>
+              <SceneAlbumButton
+                sceneId={scene.id}
+                name={collectionInfo[scene.id].name}
+              />
               <button
                 className="d-icon"
                 aria-label="Undo arrangement change"
@@ -191,12 +170,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
               </button>
             </div>
           </div>
-          <section className="demo-layouts">
-            <div>
-              <LayoutGrid size={17} />
-              <strong>Compare arrangements</strong>
-              <small>Floor-plan previews</small>
-            </div>
+          <section className="demo-layouts" aria-label="Scene layouts">
             <div className="demo-layout-options">
               {layoutNames.map((which) => (
                 <button
@@ -209,9 +183,8 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
                     else load(which);
                   }}
                 >
-                  <LayoutPreview draft={layouts[which]} />
                   <span>
-                    Layout {which}
+                    {layoutTitles[which]}
                     {slot === which && <Check size={13} />}
                   </span>
                 </button>
@@ -254,15 +227,6 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
             selected={selected}
             onSelect={setSelected}
           />
-          <div className="demo-stage-caption">
-            <span>
-              Click a product to edit · PNG downloads are in the viewer toolbar.
-            </span>
-            <small>
-              Your changes stay in this demo. Real dimensions and fit are not
-              verified.
-            </small>
-          </div>
         </div>
         <aside className="demo-room-sidebar">
           <section className="demo-panel">
@@ -419,16 +383,11 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
           </div>
         </aside>
       </div>
-      <p className="demo-feedback" role="status" aria-live="polite">
-        {message ||
-          (dirty
-            ? `Unsaved arrangement · Save a layout to keep it in this browser.`
-            : "Choose one of four layouts, or make it your own.")}
-      </p>
-      <Link className="d-text" href="/demo">
-        <ArrowLeft size={14} />
-        All demo experiences
-      </Link>
+      {(message || dirty) && (
+        <p className="demo-feedback" role="status" aria-live="polite">
+          {message || (dirty ? "Unsaved arrangement" : "")}
+        </p>
+      )}
       {pending && (
         <DemoDialog
           title={
@@ -440,7 +399,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
         >
           <p>
             {pending === "reset"
-              ? "This restores the original collection arrangement. Your four saved layouts are kept."
+              ? "This restores the original collection arrangement. Your six saved layouts are kept."
               : "This replaces your current edits. Save them to A or B first if you want to keep them."}
           </p>
           <button

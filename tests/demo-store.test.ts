@@ -31,7 +31,7 @@ describe("curated retail demo", () => {
   });
   it("rejects unknown listings, invalid variants, duplicate lines, untrusted totals and malformed local storage", () => {
     expect(() => addToCart([], "private-object")).toThrow();
-    expect(() => addToCart([], "oak-dresser", 2)).toThrow();
+    expect(() => addToCart([], "oak-dresser", 99)).toThrow();
     expect(() => addToCart([], "sage-chair", 0, -1)).toThrow();
     expect(
       cartSchema.safeParse([
@@ -112,7 +112,7 @@ describe("curated retail demo", () => {
   });
 });
 
-it("saves four layouts per collection without mixing products or losing a legacy bag", () => {
+it("saves six layouts per collection without mixing products or losing a legacy bag", () => {
   const collections = Object.fromEntries(
     demoScenes.map((scene) => [scene.id, collectionLayouts(scene)]),
   );
@@ -123,7 +123,14 @@ it("saves four layouts per collection without mixing products or losing a legacy
     collections,
   });
   expect(parsed.cart[0].quantity).toBe(2);
-  expect(Object.keys(parsed.collections.corner)).toEqual(["A", "B", "C", "D"]);
+  expect(Object.keys(parsed.collections.corner)).toEqual([
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+  ]);
   expect(parsed.collections.corner.A.items["sage-chair"]).toBeUndefined();
   expect(
     persistedDemoSchema.safeParse({

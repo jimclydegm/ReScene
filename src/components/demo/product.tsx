@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   ArrowRight,
   Box,
@@ -9,19 +9,16 @@ import {
   Minus,
   Plus,
   Rotate3d,
+  Images,
   ChevronLeft,
   ChevronRight,
-  Maximize,
   ShieldCheck,
   Truck,
 } from "lucide-react";
-import {
-  demoImage,
-  findDemoProduct,
-  money,
-  type DemoProduct,
-} from "@/lib/demo/catalog";
+import { findDemoProduct, money, type DemoProduct } from "@/lib/demo/catalog";
 import { demoScenes, initialArrangement } from "@/lib/demo/scenes";
+import { productAlbum, productCover } from "@/lib/demo/albums";
+import { ImageAlbum } from "./image-album";
 import { DemoViewer } from "./viewer";
 import { DemoDialog, useDemoStore } from "./store";
 
@@ -29,10 +26,12 @@ export function ColorSwatches({
   product,
   value,
   onChange,
+  allowedColors,
 }: {
   product: DemoProduct;
   value: number;
   onChange: (value: number) => void;
+  allowedColors?: number[];
 }) {
   return (
     <fieldset className="demo-colors">
@@ -40,21 +39,24 @@ export function ColorSwatches({
         Color <strong>{product.colors[value].name}</strong>
       </legend>
       <div>
-        {product.colors.map((c, i) => (
-          <button
-            key={c.name}
-            type="button"
-            aria-label={c.name}
-            aria-pressed={value === i}
-            title={c.name}
-            onClick={() => onChange(i)}
-            style={{ "--swatch": c.swatch } as React.CSSProperties}
-          >
-            {i === value && <Check size={16} />}
-          </button>
-        ))}
+        {product.colors
+          .map((c, i) => ({ c, i }))
+          .filter((v) => !allowedColors || allowedColors.includes(v.i))
+          .map(({ c, i }) => (
+            <button
+              key={c.name}
+              type="button"
+              aria-label={c.name}
+              aria-pressed={value === i}
+              title={c.name}
+              onClick={() => onChange(i)}
+              style={{ "--swatch": c.swatch } as React.CSSProperties}
+            >
+              {i === value && <Check size={16} />}
+            </button>
+          ))}
       </div>
-      <small>Illustrative color options; original textures are retained.</small>
+      <small>Illustrative finishes</small>
     </fieldset>
   );
 }
@@ -64,7 +66,7 @@ export function ProductTile({ id }: { id: string }) {
     <Link className="demo-product-tile" href={`/demo/product/${id}`}>
       <div>
         <Image
-          src={demoImage(id)}
+          src={productCover(id)}
           alt={p.name}
           width={72}
           height={72}
@@ -159,11 +161,10 @@ export function ProductPage({ id }: { id: string }) {
     store = useDemoStore();
   const [color, setColor] = useState(0),
     [quantity, setQuantity] = useState(1),
-    [photo, setPhoto] = useState<"product" | "room">("product"),
+    [mode, setMode] = useState<"album" | "3d">("album"),
+    [activeImage, setActiveImage] = useState("studio"),
     [reviewIndex, setReviewIndex] = useState(0),
-    [dialog, setDialog] = useState<
-      "photos" | "specs" | "reviews" | "write" | null
-    >(null),
+    [dialog, setDialog] = useState<"specs" | "reviews" | "write" | null>(null),
     [localReview, setLocalReview] = useState<{
       text: string;
       rating: number;
@@ -171,7 +172,16 @@ export function ProductPage({ id }: { id: string }) {
   const draft = initialArrangement(scene);
   draft.items[id].color = color;
   const review = reviews[reviewIndex],
-    photoUrl = demoImage(photo === "product" ? id : scene.id);
+    images = useMemo(() => productAlbum(id), [id]);
+  function chooseColor(value: number) {
+    setColor(value);
+    setActiveImage(
+      images.find(
+        (i) =>
+          i.kind === "generated" && i.color === value && i.setting === "studio",
+      )?.id ?? "source",
+    );
+  }
   return (
     <main className="demo-main retail-product-page">
       <div className="demo-breadcrumb">
@@ -182,59 +192,32 @@ export function ProductPage({ id }: { id: string }) {
         <span>{p.name}</span>
       </div>
       <section className="demo-product-layout retail-product-layout">
-        <div className="retail-product-visuals">
-          <div className="retail-photo-column">
-            <div className="retail-media-heading">
-              <span>Product photography</span>
-              <button
-                className="d-icon"
-                aria-label="Enlarge sample photo"
-                onClick={() => setDialog("photos")}
-              >
-                <Maximize size={15} />
-              </button>
-            </div>
+        <div className="retail-product-visuals shopping-product-media">
+          <div className="shopping-media-modes" aria-label="Product media">
             <button
-              className="retail-primary-photo"
-              aria-label="Enlarge sample photo"
-              onClick={() => setDialog("photos")}
+              aria-pressed={mode === "album"}
+              onClick={() => setMode("album")}
             >
-              <Image
-                src={photoUrl}
-                alt={`${p.name}, original-color sample photo`}
-                fill
-                sizes="(max-width:850px) 50vw, 30vw"
-                priority
-              />
+              <Images size={17} />
+              Album mode
             </button>
-            <div className="retail-photo-thumbs">
-              {(["product", "room"] as const).map((view) => (
-                <button
-                  key={view}
-                  aria-pressed={photo === view}
-                  onClick={() => setPhoto(view)}
-                >
-                  <Image
-                    src={demoImage(view === "product" ? id : scene.id)}
-                    alt={
-                      view === "product" ? "Product photo" : "Styled room photo"
-                    }
-                    width={64}
-                    height={56}
-                  />
-                  <span>{view === "product" ? "Product" : "In the room"}</span>
-                </button>
-              ))}
-            </div>
+            <button aria-pressed={mode === "3d"} onClick={() => setMode("3d")}>
+              <Rotate3d size={17} />
+              3D mode
+            </button>
           </div>
-          <div className="retail-3d-column">
-            <div className="retail-media-heading">
-              <span>
-                <Rotate3d size={16} /> Explore in 3D
-              </span>
-              <span className="retail-live-badge">Interactive</span>
-            </div>
-            <div className="demo-product-viewer">
+          {mode === "album" ? (
+            <ImageAlbum
+              images={images}
+              activeId={activeImage}
+              label={p.name}
+              onSelect={(image) => {
+                setActiveImage(image.id);
+                if (image.color !== null) setColor(image.color);
+              }}
+            />
+          ) : (
+            <div className="shopping-optional-3d">
               <DemoViewer
                 scene={scene}
                 draft={draft}
@@ -243,20 +226,11 @@ export function ProductPage({ id }: { id: string }) {
                 individual={id}
               />
             </div>
-            <p className="retail-media-note">
-              Drag to rotate · Scroll to zoom · Try a color
-            </p>
-          </div>
-          <div className="retail-photo-disclosure">
-            <Box size={15} />
-            <p>
-              Photography for styling. 3D for another perspective.{" "}
-              <span>
-                Meta AI reconstruction; unseen shapes and material details are
-                approximate.
-              </span>
-            </p>
-          </div>
+          )}
+          <p className="shopping-media-note">
+            Reference photos and AI-generated product photography. Finishes and
+            reimagined settings are illustrative.
+          </p>
         </div>
         <div className="demo-product-details retail-product-info">
           <span className="d-kicker">RESCENE LIVING · THE EDIT</span>
@@ -275,7 +249,19 @@ export function ProductPage({ id }: { id: string }) {
             <small>USD · Sample listing</small>
           </div>
           <p className="demo-description">{p.description}</p>
-          <ColorSwatches product={p} value={color} onChange={setColor} />
+          <ColorSwatches
+            product={p}
+            value={color}
+            onChange={chooseColor}
+            allowedColors={[
+              ...new Set(
+                images
+                  .filter((i) => i.kind === "generated")
+                  .map((i) => i.color)
+                  .filter((v): v is number => v !== null),
+              ),
+            ]}
+          />
           <div className="demo-purchase-row">
             <div className="demo-quantity large">
               <button
@@ -393,28 +379,14 @@ export function ProductPage({ id }: { id: string }) {
       {dialog && (
         <DemoDialog
           title={
-            dialog === "photos"
-              ? p.name
-              : dialog === "specs"
-                ? "Product details"
-                : dialog === "write"
-                  ? "Write a sample review"
-                  : "Sample customer reviews"
+            dialog === "specs"
+              ? "Product details"
+              : dialog === "write"
+                ? "Write a sample review"
+                : "Sample customer reviews"
           }
           onClose={() => setDialog(null)}
-          wide={dialog === "photos"}
         >
-          {dialog === "photos" && (
-            <div className="retail-expanded-photo">
-              <Image
-                src={photoUrl}
-                alt={`${p.name} sample reference`}
-                width={1400}
-                height={1000}
-              />
-              <p>Sample photography · original color</p>
-            </div>
-          )}
           {dialog === "specs" && (
             <div className="retail-specs">
               <h3>Materials</h3>

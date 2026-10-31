@@ -67,28 +67,156 @@ export function supportOf(scene: DemoScene, id: string) {
 }
 export function collectionLayouts(
   scene: DemoScene,
-): import("./state").LayoutSet {
-  const A = initialArrangement(scene);
-  const transform = (angle: number, dx: number, dz: number): Arrangement => ({
-    lighting: "Original",
-    items: Object.fromEntries(
-      Object.entries(A.items).map(([id, d]) => [
-        id,
+): import("./state").CompleteLayoutSet {
+  const A = initialArrangement(scene),
+    preset = (
+      poses: Record<string, [number, number, number]>,
+      lighting: Arrangement["lighting"] = "Original",
+    ): Arrangement => {
+      let draft = initialArrangement(scene);
+      // Hide roots temporarily so changing a complete layout does not collide with
+      // intermediate positions. Restore each root plus its supported accessories.
+      for (const item of Object.values(draft.items)) item.visible = false;
+      for (const [id, [x, z, yaw]] of Object.entries(poses)) {
+        const result = changeArrangement(scene, draft, id, {
+          x,
+          z,
+          yaw,
+          visible: false,
+        });
+        if (result.error)
+          throw new Error(`Invalid ${scene.id} preset: ${id}: ${result.error}`);
+        draft = result.draft;
+      }
+      for (const item of Object.values(draft.items)) item.visible = true;
+      if (newCollision(scene, A, draft))
+        throw new Error(`Invalid ${scene.id} preset collision`);
+      return { ...draft, lighting };
+    };
+  const roots = scene.objects.filter((o) => !supportOf(scene, o.id));
+  const original = Object.fromEntries(
+    roots.map((o) => [
+      o.id,
+      [o.position[0], o.position[2], 0] as [number, number, number],
+    ]),
+  );
+  if (scene.id === "corner")
+    return {
+      A,
+      B: preset({
+        "corner-chair": [-1.45, 0.25, 0.13],
+        "corner-cabinet": [1.45, -0.45, -0.07],
+      }),
+      C: preset({
+        "corner-chair": [-1.5, -0.35, 0],
+        "corner-cabinet": [1.45, -0.35, 0],
+      }),
+      D: preset({
+        "corner-chair": [-1.45, 0.45, 0.22],
+        "corner-cabinet": [1.5, -0.65, -0.06],
+      }),
+      E: preset({
+        "corner-chair": [1.35, 0.1, -0.18],
+        "corner-cabinet": [-1.55, -0.2, 0.04],
+      }),
+      F: preset(
         {
-          ...d,
-          x: d.x * Math.cos(angle) + d.z * Math.sin(angle) + dx,
-          z: -d.x * Math.sin(angle) + d.z * Math.cos(angle) + dz,
-          yaw: angle,
+          "corner-chair": [-1.45, 0.25, 0.13],
+          "corner-cabinet": [1.45, -0.45, -0.07],
         },
-      ]),
-    ),
-  });
+        "Dusk",
+      ),
+    };
+  if (scene.id === "space")
+    return {
+      A,
+      B: preset({
+        "oak-dresser": [-2.15, -0.8, 0],
+        "sage-chair": [-0.4, 0.1, 0.15],
+        "round-table": [1.15, 0.1, 0],
+        "dining-chair": [2.15, -1.1, -0.18],
+      }),
+      C: preset(
+        Object.fromEntries(roots.map((o) => [o.id, [o.position[0], -0.6, 0]])),
+      ),
+      D: preset({
+        "oak-dresser": [-1.9, -0.8, 0],
+        "sage-chair": [-1, 0.8, 0.15],
+        "round-table": [0.8, 0.8, 0],
+        "dining-chair": [2, -0.8, -0.18],
+      }),
+      E: preset(
+        Object.fromEntries(
+          roots.map((o) => [o.id, [-o.position[0], o.position[2], 0]]),
+        ),
+      ),
+      F: preset(original, "Dusk"),
+    };
   return {
     A,
-    B: transform(0.35, 0, 0.35),
-    C: transform(-0.45, 0, 0),
-    D: transform(Math.PI, 0, 0),
+    B: preset({
+      "cloud-sofa": [-0.15, -0.7, 0],
+      "coffee-table": [-0.45, 1.15, 0],
+      "wood-stool": [2.5, 0.6, 0],
+      "ceramic-vase": [-2.4, 0.1, 0],
+    }),
+    C: preset({
+      "cloud-sofa": [-0.1, -0.85, 0],
+      "coffee-table": [0.4, 1, 0],
+      "wood-stool": [-2.25, 0.8, 0],
+      "ceramic-vase": [2.25, 0.35, 0],
+    }),
+    D: preset({
+      "cloud-sofa": [0.1, -1.1, 0],
+      "coffee-table": [-0.35, 0.85, 0],
+      "wood-stool": [2.2, 0.4, 0],
+      "ceramic-vase": [-2.3, 0.4, 0],
+    }),
+    E: preset(
+      Object.fromEntries(
+        roots.map((o) => [o.id, [-o.position[0], o.position[2], 0]]),
+      ),
+    ),
+    F: preset(original, "Dusk"),
   };
+}
+export function resolveCollectionLayouts(
+  scene: DemoScene,
+  saved?: import("./state").LayoutSet,
+): import("./state").CompleteLayoutSet {
+  const defaults = collectionLayouts(scene);
+  if (!saved) return defaults;
+  const result = {
+    ...defaults,
+    ...saved,
+    E: saved.E ?? defaults.E,
+    F: saved.F ?? defaults.F,
+  };
+  const legacyBack = scene.objects.every((o) => {
+    const d = saved.D.items[o.id];
+    return (
+      d &&
+      Math.abs(d.yaw - Math.PI) < 0.00001 &&
+      Math.abs(d.x + o.position[0]) < 0.00001 &&
+      Math.abs(d.z + o.position[2]) < 0.00001
+    );
+  });
+  if (legacyBack)
+    result.D = {
+      ...defaults.D,
+      lighting: saved.D.lighting,
+      items: Object.fromEntries(
+        Object.entries(defaults.D.items).map(([id, item]) => [
+          id,
+          {
+            ...item,
+            color: saved.D.items[id].color,
+            visible: saved.D.items[id].visible,
+          },
+        ]),
+      ),
+    };
+  return result;
 }
 
 export function changeArrangement(
@@ -140,10 +268,25 @@ export function changeArrangement(
       };
     items[parentId].visible = true;
   }
+  const proposed = { ...draft, items };
+  if (newCollision(scene, draft, proposed))
+    return {
+      draft,
+      error:
+        "That move overlaps another product. Try another direction or remove an item first.",
+    };
+  return { draft: { ...draft, items }, error: null };
+}
+
+function newCollision(
+  scene: DemoScene,
+  before: Arrangement,
+  after: Arrangement,
+) {
   const overlaps = (
-    a: typeof source,
-    b: typeof source,
-    values: typeof items,
+    a: DemoScene["objects"][number],
+    b: DemoScene["objects"][number],
+    values: Arrangement["items"],
   ) => {
     if (supportOf(scene, a.id) === b.id || supportOf(scene, b.id) === a.id)
       return false;
@@ -173,12 +316,22 @@ export function changeArrangement(
     for (let j = i + 1; j < scene.objects.length; j++) {
       const a = scene.objects[i],
         b = scene.objects[j];
-      if (overlaps(a, b, items) && !overlaps(a, b, draft.items))
-        return {
-          draft,
-          error:
-            "That move overlaps another product. Try another direction or remove an item first.",
-        };
+      if (overlaps(a, b, after.items) && !overlaps(a, b, before.items)) {
+        // Saved meshes can share conservative footprint boxes without solid
+        // intersection. Hiding/re-showing their accepted relative pose is safe.
+        const original = initialArrangement(scene),
+          aa = after.items[a.id],
+          bb = after.items[b.id],
+          oa = original.items[a.id],
+          ob = original.items[b.id];
+        const sameRelative =
+          (Math.abs(aa.x - bb.x - (oa.x - ob.x)) < 0.00001 ||
+            Math.abs(aa.x - bb.x + (oa.x - ob.x)) < 0.00001) &&
+          Math.abs(aa.z - bb.z - (oa.z - ob.z)) < 0.00001 &&
+          Math.abs(aa.yaw - oa.yaw) < 0.00001 &&
+          Math.abs(bb.yaw - ob.yaw) < 0.00001;
+        if (!sameRelative || !overlaps(a, b, original.items)) return true;
+      }
     }
-  return { draft: { ...draft, items }, error: null };
+  return false;
 }
