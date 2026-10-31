@@ -1,3 +1,4 @@
+import { environmentUsesTexture } from "./environment-material";
 import { Matrix3, Plane, Ray, ShapeUtils, Vector2, Vector3 } from "three";
 import { backgroundCamera } from "./background";
 import type { SceneComposition } from "./composition";
@@ -484,7 +485,7 @@ export function buildEnvironmentGeometry(
           v: [number, number, number];
         }
       | undefined;
-    if (s.finish === "textured") {
+    if (environmentUsesTexture(s)) {
       let best: {
         x: number;
         y: number;
@@ -555,8 +556,8 @@ export function buildEnvironmentGeometry(
       triangles,
       color: s.color,
       roughness: s.roughness,
-      textured: s.finish === "textured",
-      ...(tile ? { tile } : {}),
+      textured: environmentUsesTexture(s),
+      ...(tile ? { tile, materialOnly: true } : {}),
     });
     for (const hole of holes) {
       const v = hole.polygon.map((p) =>

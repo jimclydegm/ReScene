@@ -37,3 +37,9 @@ Single-image depth has unknown scale and uncertain hidden geometry. The saved ca
 - [Open3D plane segmentation](https://www.open3d.org/docs/release/tutorial/geometry/pointcloud.html#plane-segmentation)
 
 The hosted endpoint is labeled commercial-use by fal. Meta also publishes a separate VGGT commercial checkpoint; this work does not claim to have verified which checkpoint the host deploys. WorldGen still has no verified developer API and is not used.
+
+## Material preservation correction October31
+
+Scene e565053d revealed a successful Muse edit followed by destructive postprocessing: plain-classified plaster disabled wall maps, a narrow high-pass/clamp erased material variation, and adding photo detail back created ghost transitions. Material processing now removes a fitted illumination ramp independently inside each surface, retaining generated variation without source-photo shadow blending. A shared material policy preserves natural substrates in older observations while explicitly uniform finishes remain flat. Clean interior material patches map in plane coordinates through optional materialOnly, avoiding repeated architectural trim/shading in the texture; old snapshots retain their projective mode. Atlas review distinguishes geometry-rendered corners from missing painted seams. Raw Muse outputs and earlier review remain private/immutable; restoring the previous background remains available.
+
+The reported scene's generated texture was recovered from its saved Muse result without inference. Object records, camera, lights and numeric surface vertices were checked unchanged. Rendering compatibility is preserved until the new materialOnly contract is deployed; the final mode is applied afterward under revision guards. This is a material-fidelity correction, not a claim of exact hidden geometry or a new visual-review certificate.

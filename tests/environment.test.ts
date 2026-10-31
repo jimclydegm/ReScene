@@ -19,6 +19,7 @@ import {
 import { backgroundCamera } from "../src/lib/scene/background";
 import { compositionSchema } from "../src/lib/scene/composition";
 import { environmentAlbedo } from "../src/lib/appearance/environment-albedo";
+import { environmentUsesTexture } from "../src/lib/scene/environment-material";
 const camera = {
   position: [0, 2, 6],
   target: [0, 1, 0],
@@ -256,6 +257,30 @@ describe("Meta depth coordinates", () => {
   });
 });
 describe("Intrinsic background materials", () => {
+  it("keeps natural finish detail while respecting explicitly uniform surfaces", () => {
+    const surface = room().surfaces[0];
+    expect(
+      environmentUsesTexture({
+        ...surface,
+        finish: "plain",
+        material: "matte plaster paint",
+      }),
+    ).toBe(true);
+    expect(
+      environmentUsesTexture({
+        ...surface,
+        finish: "plain",
+        material: "uniform smooth plaster paint",
+      }),
+    ).toBe(false);
+    expect(
+      environmentUsesTexture({
+        ...surface,
+        finish: "plain",
+        material: "white painted panel",
+      }),
+    ).toBe(false);
+  });
   it("keeps plain surfaces uniform despite shadows and prevents foreground pixels entering the albedo", async () => {
     const width = 80,
       height = 80,
@@ -307,4 +332,53 @@ it("accepts openings clipped by an observed wall boundary", () => {
   expect(withinPolygon(p(1.1, 0.5), polygon)).toBe(false);
 });
 
-it('anchors a horizontal support surface without requiring the floor label',()=>{const plan=room();plan.surfaces.find(s=>s.role==='floor')!.role='surface' as never;const result=buildEnvironmentGeometry(plan,stage(),grid(plan));expect(result.report.projectionError).toBeLessThan(.005);expect(result.report.warnings.some(w=>w.includes('No reliable ground'))).toBe(false);});
+it("anchors a horizontal support surface without requiring the floor label", () => {
+  const plan = room();
+  plan.surfaces.find((s) => s.role === "floor")!.role = "surface" as never;
+  const result = buildEnvironmentGeometry(plan, stage(), grid(plan));
+  expect(result.report.projectionError).toBeLessThan(0.005);
+  expect(
+    result.report.warnings.some((w) => w.includes("No reliable ground")),
+  ).toBe(false);
+});
+
+it("preserves Muse material contrast without reintroducing source shadows or crossing material boundaries", async () => {
+  const w = 80,
+    h = 80,
+    source = Buffer.alloc(w * h * 3, 0),
+    generated = Buffer.alloc(w * h * 3),
+    mask = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++)
+      for (let c = 0; c < 3; c++)
+        generated[(y * w + x) * 3 + c] =
+          (x < 40 ? 130 : 220) + (Math.floor(y / 8) % 2) * 20;
+  const plan = room();
+  plan.openings = [];
+  plan.surfaces = [
+    face("wood", "floor", [p(0, 0), p(0.5, 0), p(0.5, 1), p(0, 1)]),
+    face("paint", "wall", [p(0.5, 0), p(1, 0), p(1, 1), p(0.5, 1)]),
+  ];
+  plan.surfaces[0].finish = "textured";
+  plan.surfaces[1].color = "#eeeeee";
+  const png = (b: Buffer) =>
+    sharp(b, { raw: { width: w, height: h, channels: 3 } })
+      .png()
+      .toBuffer();
+  const out = await sharp(
+    await environmentAlbedo(
+      await png(source),
+      await png(generated),
+      mask,
+      plan,
+    ),
+  )
+    .removeAlpha()
+    .raw()
+    .toBuffer();
+  expect(
+    Math.abs(out[(12 * w + 20) * 3] - out[(20 * w + 20) * 3]),
+  ).toBeGreaterThan(12);
+  expect(out[(12 * w + 20) * 3]).toBeGreaterThan(120);
+  expect(Math.abs(out[(20 * w + 60) * 3] - 238)).toBeLessThan(3);
+});
