@@ -257,4 +257,4 @@ Details: DEMO_STORE.md. Jim explicitly chose to continue without browser verific
 - [x] Shared neutral light/dark presentation system, readable type, quiet navigation, consistent controls and scoped legacy cascade.
 - [x] Landing/auth/dashboard/upload/library/image studio/review/editor/public viewer and all retail demos, cart/dialogs/state screens.
 - [x]237 tests/schema/lint/types/build and production-mode demo route/Album/privacy/styles smoke pass; landing/auth/unavailable screens and protected-route checks pass. Backend and saved scene data unchanged.
-- [ ] Final production build, CI/deployment and remaining desktop visual verification (browser access disabled during checks).
+- [x] PR36 merged at1052841; PR/main CI pass, production READY at rescene-eta.vercel.app. Live demo and authenticated private-page/CSS checks pass. Initial native checks completed on five surfaces; remaining native checks waived explicitly by Jim after browser access was disabled. Temporary fixture removed, local server stopped.
