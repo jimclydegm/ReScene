@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { findDemoProduct, demoProducts } from "./catalog";
+import { findDemoProduct, demoProducts, collectionProducts } from "./catalog";
 export const DEMO_STORAGE = "rescene-store-v1";
 export const cartLineSchema = z
   .object({
@@ -8,7 +8,7 @@ export const cartLineSchema = z
     quantity: z.number().int().min(1).max(20),
   })
   .strict()
-  .refine((l) => l.color < findDemoProduct(l.productId)!.colors.length);
+  .refine((l) => l.color < (findDemoProduct(l.productId)?.colors.length ?? 0));
 export type CartLine = z.infer<typeof cartLineSchema>;
 export const cartSchema = z
   .array(cartLineSchema)
@@ -80,13 +80,47 @@ export const layoutsSchema = z
         JSON.stringify(layoutKeys),
     ),
   );
+export const layoutNames = ["A", "B", "C", "D"] as const;
+export type LayoutName = (typeof layoutNames)[number];
+export const layoutSetSchema = z
+  .object({
+    A: arrangementSchema,
+    B: arrangementSchema,
+    C: arrangementSchema,
+    D: arrangementSchema,
+  })
+  .strict();
+export type LayoutSet = z.infer<typeof layoutSetSchema>;
+export const collectionsSchema = z
+  .record(z.string(), layoutSetSchema)
+  .superRefine((value, ctx) => {
+    for (const [id, layouts] of Object.entries(value)) {
+      const keys = Object.hasOwn(collectionProducts, id)
+        ? collectionProducts[id]
+        : undefined;
+      if (
+        !keys ||
+        Object.values(layouts).some(
+          (layout) =>
+            JSON.stringify(Object.keys(layout.items).sort()) !==
+            JSON.stringify([...keys].sort()),
+        )
+      )
+        ctx.addIssue({
+          code: "custom",
+          message: "Unknown collection or incomplete layout",
+        });
+    }
+  });
 export const persistedDemoSchema = z
   .object({
     version: z.literal(1),
     cart: cartSchema,
     layouts: layoutsSchema.nullable(),
+    collections: collectionsSchema.default({}),
   })
   .strict();
+export type PersistedDemo = z.infer<typeof persistedDemoSchema>;
 export const isDemoId = (id: string) => demoProducts.some((p) => p.id === id);
 // Conservative floor footprints: never lift furniture or move through another item.
 // Rectangles are rotated using the same draft yaw as the renderer (SAT intersection).

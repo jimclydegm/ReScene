@@ -11,6 +11,9 @@ import {
   demoScenes,
   initialArrangement,
   startingLayouts,
+  collectionLayouts,
+  changeArrangement,
+  supportOf,
 } from "../src/lib/demo/scenes";
 import frozen from "../src/lib/demo/frozen-scenes.json";
 import { existsSync } from "node:fs";
@@ -48,7 +51,7 @@ describe("curated retail demo", () => {
     const saved = { version: 1, cart: addToCart([], "round-table"), layouts };
     expect(
       persistedDemoSchema.parse(JSON.parse(JSON.stringify(saved))),
-    ).toEqual(saved);
+    ).toEqual({ ...saved, collections: {} });
     delete layouts.A.items["round-table"];
     expect(persistedDemoSchema.safeParse(saved).success).toBe(false);
     expect(startingLayouts().A.items["sage-chair"].color).toBe(0);
@@ -82,16 +85,16 @@ describe("curated retail demo", () => {
     );
     expect(footprintOverlap(box, { ...box, x: 2 })).toBe(false);
   });
-  it("contains only bounded render state and eight real copied meshes; no source keys or credentials", () => {
+  it("contains only bounded render state and eleven real copied meshes; no source keys or credentials", () => {
     const text = JSON.stringify(frozen);
     expect(text).not.toMatch(
       /ownerId|storageKey|sourceAsset|normalizedAsset|maskAsset|provider|LLM_|postgresql|https:\/\//i,
     );
     expect(text).not.toMatch(/[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}/i);
-    expect(frozen.scenes.flatMap((s) => s.objects)).toHaveLength(8);
+    expect(frozen.scenes.flatMap((s) => s.objects)).toHaveLength(11);
     expect(
       new Set(frozen.scenes.flatMap((s) => s.objects.map((o) => o.id))).size,
-    ).toBe(8);
+    ).toBe(11);
     for (const s of demoScenes) {
       expect(Object.keys(initialArrangement(s).items)).toEqual(
         s.objects.map((o) => o.id),
@@ -107,4 +110,63 @@ describe("curated retail demo", () => {
         expect(existsSync(`public/demo/images/${o.id}.webp`)).toBe(true);
       }
   });
+});
+
+it("saves four layouts per collection without mixing products or losing a legacy bag", () => {
+  const collections = Object.fromEntries(
+    demoScenes.map((scene) => [scene.id, collectionLayouts(scene)]),
+  );
+  const parsed = persistedDemoSchema.parse({
+    version: 1,
+    cart: addToCart([], "corner-chair", 2, 2),
+    layouts: null,
+    collections,
+  });
+  expect(parsed.cart[0].quantity).toBe(2);
+  expect(Object.keys(parsed.collections.corner)).toEqual(["A", "B", "C", "D"]);
+  expect(parsed.collections.corner.A.items["sage-chair"]).toBeUndefined();
+  expect(
+    persistedDemoSchema.safeParse({
+      ...parsed,
+      collections: { bad: collections.corner },
+    }).success,
+  ).toBe(false);
+  expect(
+    cartSchema.safeParse([{ productId: "unknown", color: 0, quantity: 1 }])
+      .success,
+  ).toBe(false);
+});
+it("keeps the vase on its cabinet while moving/rotating the parent and rejects unsupported accessory moves", () => {
+  const scene = demoScenes.find((s) => s.id === "corner")!,
+    initial = initialArrangement(scene),
+    vase = "corner-vase",
+    cabinet = "corner-cabinet";
+  expect(supportOf(scene, vase)).toBe(cabinet);
+  const result = changeArrangement(scene, initial, cabinet, { x: 3, yaw: 0.4 });
+  expect(result.error).toBeNull();
+  expect(result.draft.items[vase].x).not.toBe(initial.items[vase].x);
+  expect(result.draft.items[vase].yaw).toBeCloseTo(0.4);
+  expect(initial.items[cabinet].yaw).toBe(0);
+  expect(
+    changeArrangement(scene, initial, vase, { x: 5 }).error,
+  ).not.toBeNull();
+  const hidden = changeArrangement(scene, initial, cabinet, { visible: false });
+  expect(hidden.draft.items[vase].visible).toBe(false);
+  for (const layout of Object.values(collectionLayouts(scene))) {
+    expect(
+      changeArrangement(scene, layout, vase, { color: 1 }).error,
+    ).toBeNull();
+  }
+});
+it("guards against a new overlap in every editable scene while leaving the accepted state intact", () => {
+  for (const scene of demoScenes) {
+    const draft = initialArrangement(scene),
+      [a, b] = scene.objects;
+    const result = changeArrangement(scene, draft, a.id, {
+      x: draft.items[b.id].x,
+      z: draft.items[b.id].z,
+    });
+    expect(result.error).not.toBeNull();
+    expect(result.draft).toBe(draft);
+  }
 });

@@ -29,16 +29,11 @@ import {
   cartTotal,
   DEMO_STORAGE,
   persistedDemoSchema,
-  type Arrangement,
   type CartLine,
 } from "@/lib/demo/state";
 
-type Saved = {
-  version: 1;
-  cart: CartLine[];
-  layouts: { A: Arrangement; B: Arrangement } | null;
-};
-const empty: Saved = { version: 1, cart: [], layouts: null },
+type Saved = import("@/lib/demo/state").PersistedDemo;
+const empty: Saved = { version: 1, cart: [], layouts: null, collections: {} },
   eventName = "rescene-demo-store";
 let memory: string | null = null,
   storageUnavailable = false;
@@ -79,6 +74,11 @@ type Store = {
   hydrated: boolean;
   cart: CartLine[];
   layouts: Saved["layouts"];
+  collections: Saved["collections"];
+  setCollection: (
+    id: string,
+    value: import("@/lib/demo/state").LayoutSet,
+  ) => void;
   setLayouts: (value: NonNullable<Saved["layouts"]>) => void;
   add: (id: string, color?: number, qty?: number) => void;
   addMany: (items: { id: string; color: number }[]) => void;
@@ -180,6 +180,12 @@ export function DemoStore({ children }: { children: ReactNode }) {
         hydrated,
         cart: state.cart,
         layouts: state.layouts,
+        collections: state.collections,
+        setCollection: (id, value) =>
+          write({
+            ...saved(),
+            collections: { ...saved().collections, [id]: value },
+          }),
         setLayouts: (layouts) => write({ ...saved(), layouts }),
         add,
         addMany: (items) => {
@@ -205,7 +211,7 @@ export function DemoStore({ children }: { children: ReactNode }) {
           </Link>
           <nav aria-label="Demo experiences">
             <Link
-              href="/demo/product/sage-chair"
+              href="/demo/products"
               aria-current={
                 pathname.startsWith("/demo/product") ? "page" : undefined
               }
@@ -213,15 +219,20 @@ export function DemoStore({ children }: { children: ReactNode }) {
               Explore a product
             </Link>
             <Link
-              href="/demo/space"
-              aria-current={pathname === "/demo/space" ? "page" : undefined}
+              href="/demo/spaces"
+              aria-current={
+                pathname.startsWith("/demo/space") ? "page" : undefined
+              }
             >
               Build your space
             </Link>
             <Link
-              href="/demo/shop-the-scene"
+              href="/demo/scenes"
               aria-current={
-                pathname === "/demo/shop-the-scene" ? "page" : undefined
+                pathname === "/demo/scenes" ||
+                pathname.startsWith("/demo/shop-the-scene")
+                  ? "page"
+                  : undefined
               }
             >
               Shop the scene

@@ -21,6 +21,13 @@ async function get(path) {
 }
 for (const path of [
   "/demo",
+  "/demo/products",
+  "/demo/spaces",
+  "/demo/scenes",
+  "/demo/space?collection=corner",
+  "/demo/space?collection=space",
+  "/demo/shop-the-scene?collection=corner",
+  "/demo/shop-the-scene?collection=space",
   "/demo/space",
   "/demo/shop-the-scene",
   ...frozen.scenes.flatMap((s) =>
@@ -68,6 +75,7 @@ for (let i = 0; i < assets.length; i += 2)
 for (const path of [
   "/demo/images/space.webp",
   "/demo/images/living.webp",
+  "/demo/images/corner.webp",
   ...assets.map((a) => `/demo/images/${a.id}.webp`),
   ...frozen.scenes.flatMap((s) =>
     Object.values(s.appearance).filter((v) => typeof v === "string"),
@@ -79,5 +87,5 @@ for (const path of [
   await response.arrayBuffer();
 }
 console.log(
-  "PASS demo routes, unknown-ID rejection, 8 GLB hashes and all approved images. Native browser controls are not covered.",
+  "PASS demo routes, unknown-ID rejection, 11 GLB hashes and all approved images. Native browser controls are not covered.",
 );

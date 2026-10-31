@@ -106,3 +106,7 @@ Add fifteen individually generated Muse setting photos and fifteen single-produc
 # Retail demo store — October 30, 2026
 
 Jim approved Explore a product, Build your space and Shop the scene as one combined implementation. Reuse eight existing reconstructed models and their saved environment/lighting instead of generating more assets. Freeze explicitly curated demo copies and authored fictional commerce fields separately from live projects. Anonymous demo requests have an exact render-asset allowlist and no database writes; cart/A/B layouts use validated browser storage. Checkout/reviews are demonstrations, not payment or customer services. No schema migration/new provider is required. Implementation/validation details: [DEMO_STORE.md](DEMO_STORE.md).
+
+## Shopping-first demo revision — October31
+
+Jim requested selection pages before each experience, simultaneous photos/3D, higher text contrast and compact reviews with avatars. Use the selected6800b8a2 chair/cabinet/vase as the first arranger collection and retain the earlier collection as a second choice. Share movement/rotation/collision/support controls across Build and Shop. Save four layouts per collection while retaining existing carts/A-B data. All eleven products already have generated assets and can reuse the complete product page; no extra inference or schema migration. See DEMO_STORE.md.

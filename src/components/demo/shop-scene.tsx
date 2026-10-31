@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import {
-  ArrowLeft,
   ArrowRight,
   Check,
   Eye,
@@ -11,43 +10,95 @@ import {
   Focus,
   ShoppingBag,
   X,
+  Undo2,
+  Redo2,
+  RotateCcw,
+  Sun,
 } from "lucide-react";
-import { demoImage, findDemoProduct, money } from "@/lib/demo/catalog";
-import { demoScenes, initialArrangement } from "@/lib/demo/scenes";
+import {
+  demoImage,
+  findDemoProduct,
+  money,
+  collectionInfo,
+} from "@/lib/demo/catalog";
+import {
+  demoScenes,
+  initialArrangement,
+  changeArrangement,
+  supportOf,
+} from "@/lib/demo/scenes";
+import {
+  editHistory,
+  recordEdit,
+  finishEdit,
+  undoEdit,
+  redoEdit,
+} from "@/lib/editor/history";
+import type { ItemDraft } from "@/lib/demo/state";
 import { DemoDialog, useDemoStore } from "./store";
 import { DemoViewer } from "./viewer";
 import { ColorSwatches } from "./product";
-
-export function ShopScenePage() {
-  const scene = demoScenes.find((s) => s.id === "living")!,
+import { PositionControls } from "./position-controls";
+export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
+  const scene = demoScenes.find((s) => s.id === sceneId)!,
+    info = collectionInfo[scene.id],
     store = useDemoStore();
-  const [draft, setDraft] = useState(() => initialArrangement(scene)),
-    [selected, setSelected] = useState("cloud-sofa"),
+  const [timeline, setTimeline] = useState(() =>
+      editHistory(initialArrangement(scene)),
+    ),
+    [selected, setSelected] = useState(scene.objects[0].id),
     [isolated, setIsolated] = useState<string | null>(null),
     [look, setLook] = useState(false),
     [included, setIncluded] = useState(scene.objects.map((o) => o.id)),
-    [photo, setPhoto] = useState(false);
-  const product = findDemoProduct(selected),
+    [photo, setPhoto] = useState(false),
+    [reset, setReset] = useState(false),
+    [message, setMessage] = useState("");
+  const draft = timeline.present,
+    product = findDemoProduct(selected),
     item = draft.items[selected],
     total = included.reduce((n, id) => n + findDemoProduct(id)!.price, 0);
+  function update(patch: Partial<ItemDraft>, group: string | null = null) {
+    const result = changeArrangement(scene, draft, selected, patch);
+    setMessage(result.error ?? "");
+    if (!result.error) setTimeline((t) => recordEdit(t, result.draft, group));
+  }
+  function finish() {
+    setTimeline((t) => finishEdit(t));
+  }
   function select(id: string) {
     setSelected(id);
     if (isolated) setIsolated(id || null);
   }
+  function showAll() {
+    let next = draft;
+    for (const obj of scene.objects) {
+      const result = changeArrangement(scene, next, obj.id, { visible: true });
+      if (result.error) {
+        setMessage(result.error);
+        return;
+      }
+      next = result.draft;
+    }
+    setIsolated(null);
+    setTimeline((t) => recordEdit(t, next));
+    setMessage("");
+  }
   return (
     <main className="demo-main demo-room-main">
       <div className="demo-breadcrumb">
-        <Link href="/demo">Demo experiences</Link>
+        <Link href="/demo/scenes">Choose a scene</Link>
         <span>/</span>
-        <span>Shop the scene</span>
+        <span>{info.name}</span>
       </div>
       <div className="demo-section-heading">
         <div>
-          <span className="d-kicker">THE SUNDAY LIVING ROOM</span>
-          <h1>A whole room of possibilities.</h1>
+          <span className="d-kicker">
+            A ROOM TO EXPLORE, A LOOK TO MAKE YOURS
+          </span>
+          <h1>{info.name}</h1>
           <p>
-            A calm palette, warm wood, and pieces worth exploring. Click
-            anything to make it yours.
+            Discover each piece. Move it, try a finish, or add the whole look to
+            your bag.
           </p>
         </div>
         <button className="d-button primary" onClick={() => setLook(true)}>
@@ -61,41 +112,48 @@ export function ShopScenePage() {
             <span>
               <span className="demo-live-dot" />
               {photo
-                ? "Sample reference photo"
+                ? "Sample photography"
                 : isolated
-                  ? "Inspecting one product"
-                  : "Explore the styled room"}
+                  ? "Inspecting a product"
+                  : "Interactive room"}
             </span>
             <div>
+              <button
+                className="d-icon"
+                aria-label="Undo scene edit"
+                disabled={!timeline.past.length}
+                onClick={() => setTimeline((t) => undoEdit(t))}
+              >
+                <Undo2 size={16} />
+              </button>
+              <button
+                className="d-icon"
+                aria-label="Redo scene edit"
+                disabled={!timeline.future.length}
+                onClick={() => setTimeline((t) => redoEdit(t))}
+              >
+                <Redo2 size={16} />
+              </button>
+              <button
+                className="d-icon"
+                aria-label="Reset scene edits"
+                onClick={() => setReset(true)}
+              >
+                <RotateCcw size={16} />
+              </button>
               <button className="d-text" onClick={() => setPhoto((v) => !v)}>
                 {photo ? "Back to 3D" : "Compare photo"}
               </button>
-              {!photo && (
-                <button
-                  className="d-text"
-                  onClick={() => {
-                    setIsolated(null);
-                    setDraft((d) => ({
-                      ...d,
-                      items: Object.fromEntries(
-                        Object.entries(d.items).map(([id, item]) => [
-                          id,
-                          { ...item, visible: true },
-                        ]),
-                      ),
-                    }));
-                  }}
-                >
-                  Show all
-                </button>
-              )}
+              <button className="d-text" onClick={showAll}>
+                Show all
+              </button>
             </div>
           </div>
           {photo ? (
             <div className="demo-scene-photo">
               <Image
-                src={demoImage("living")}
-                alt="Sample reference photo of the living room"
+                src={demoImage(scene.id)}
+                alt={`${info.name} sample photography`}
                 width={1400}
                 height={788}
               />
@@ -111,13 +169,12 @@ export function ShopScenePage() {
           )}
           <div className="demo-stage-caption">
             <span>
-              {photo
-                ? "Original-color sample photo. Switch back to explore the reconstructed objects."
-                : "Select a product in the room, or browse the collection below."}
+              Click a piece to see its details. Position, rotation and lighting
+              controls are on the right.
             </span>
             <small>
-              AI reconstruction from a single image · geometry and material
-              details are approximate.
+              AI reconstruction · geometry, color and material details are
+              approximate.
             </small>
           </div>
           <div className="demo-scene-product-strip">
@@ -144,13 +201,16 @@ export function ShopScenePage() {
               );
             })}
           </div>
+          <p className="demo-feedback" role="status">
+            {message}
+          </p>
         </div>
         <aside className="demo-room-sidebar">
           <section className="demo-panel demo-shop-card">
             {product && item ? (
               <>
                 <div className="demo-panel-heading">
-                  <span className="d-kicker">SELECTED IN THE ROOM</span>
+                  <span className="d-kicker">IN THIS ROOM</span>
                   <button
                     className="d-icon"
                     aria-label="Deselect product"
@@ -159,58 +219,45 @@ export function ShopScenePage() {
                     <X size={16} />
                   </button>
                 </div>
-                <Link
-                  href={`/demo/product/${selected}`}
-                  className="demo-selected-photo"
-                >
-                  <Image
-                    src={demoImage(selected)}
-                    alt={product.name}
-                    width={500}
-                    height={500}
-                  />
-                </Link>
-                <small className="d-kicker">{product.category}</small>
-                <h2>{product.name}</h2>
-                <strong className="demo-shop-price">
-                  {money(product.price)}
-                </strong>
+                <div className="retail-shop-product-head">
+                  <Link href={`/demo/product/${selected}`}>
+                    <Image
+                      src={demoImage(selected)}
+                      alt={product.name}
+                      width={150}
+                      height={150}
+                    />
+                  </Link>
+                  <div>
+                    <small>{product.category}</small>
+                    <h2>{product.name}</h2>
+                    <strong className="demo-shop-price">
+                      {money(product.price)}
+                    </strong>
+                  </div>
+                </div>
                 <p>{product.description}</p>
                 <ColorSwatches
                   product={product}
                   value={item.color}
-                  onChange={(color) =>
-                    setDraft((d) => ({
-                      ...d,
-                      items: {
-                        ...d.items,
-                        [selected]: { ...d.items[selected], color },
-                      },
-                    }))
-                  }
+                  onChange={(color) => update({ color })}
                 />
-                <button
-                  className="d-button primary full"
-                  onClick={() => store.add(selected, item.color)}
-                >
-                  <ShoppingBag size={16} />
-                  Add to shopping list
-                </button>
+                <PositionControls
+                  item={item}
+                  id={selected}
+                  onChange={update}
+                  onFinish={finish}
+                />
+                {supportOf(scene, selected) && (
+                  <p className="retail-support-note">
+                    This accessory stays on its cabinet. Move the cabinet to
+                    move them together.
+                  </p>
+                )}
                 <div className="demo-inline-actions">
                   <button
                     className="d-text"
-                    onClick={() =>
-                      setDraft((d) => ({
-                        ...d,
-                        items: {
-                          ...d.items,
-                          [selected]: {
-                            ...d.items[selected],
-                            visible: !d.items[selected].visible,
-                          },
-                        },
-                      }))
-                    }
+                    onClick={() => update({ visible: !item.visible })}
                   >
                     {item.visible ? <EyeOff size={14} /> : <Eye size={14} />}{" "}
                     {item.visible ? "Hide item" : "Show item"}
@@ -226,8 +273,15 @@ export function ShopScenePage() {
                     {isolated ? "Back to room" : "Inspect alone"}
                   </button>
                 </div>
-                <Link href={`/demo/product/${selected}`} className="d-text">
-                  Full product details
+                <button
+                  className="d-button primary full"
+                  onClick={() => store.add(selected, item.color)}
+                >
+                  <ShoppingBag size={16} />
+                  Add to shopping list
+                </button>
+                <Link className="d-text" href={`/demo/product/${selected}`}>
+                  Photos & product details
                   <ArrowRight size={14} />
                 </Link>
               </>
@@ -236,43 +290,59 @@ export function ShopScenePage() {
                 <Focus size={28} />
                 <h2>Find your favorite piece.</h2>
                 <p>
-                  Click a product in the room to see its details, try a color or
-                  add it to your list.
+                  Select a product in the scene to view its details and adjust
+                  it.
                 </p>
               </div>
             )}
           </section>
-          <section className="demo-panel demo-scene-summary">
-            <h2>Bring the look together.</h2>
-            <p>
-              Choose your favorite pieces and build a shopping list in one step.
-            </p>
-            <button className="d-button full" onClick={() => setLook(true)}>
-              Shop all {scene.objects.length} products
-              <ArrowRight size={15} />
-            </button>
+          <section className="demo-panel">
+            <h2>Set the mood</h2>
+            <div className="demo-lighting">
+              {(["Original", "Day", "Dusk", "Night", "Studio"] as const).map(
+                (name) => (
+                  <button
+                    key={name}
+                    aria-pressed={draft.lighting === name}
+                    onClick={() =>
+                      setTimeline((t) =>
+                        recordEdit(t, { ...t.present, lighting: name }),
+                      )
+                    }
+                  >
+                    <Sun size={14} />
+                    {name}
+                  </button>
+                ),
+              )}
+            </div>
           </section>
+          <Link className="d-button full" href="/demo/scenes">
+            Choose another scene
+            <ArrowRight size={15} />
+          </Link>
         </aside>
       </div>
-      <div className="demo-bottom-prompt">
-        <div>
-          <h2>Have a different arrangement in mind?</h2>
-          <p>Try another collection and make the room your own.</p>
-        </div>
-        <Link className="d-button" href="/demo/space">
-          Build your space
-          <ArrowRight size={16} />
-        </Link>
-      </div>
-      <Link className="d-text" href="/demo">
-        <ArrowLeft size={14} />
-        All demo experiences
-      </Link>
+      {reset && (
+        <DemoDialog title="Reset this room?" onClose={() => setReset(false)}>
+          <p>
+            This restores its original arrangement, colors and lighting. You can
+            undo the reset.
+          </p>
+          <button
+            className="d-button primary"
+            onClick={() => {
+              setTimeline((t) => recordEdit(t, initialArrangement(scene)));
+              setReset(false);
+              setMessage("");
+            }}
+          >
+            Reset room
+          </button>
+        </DemoDialog>
+      )}
       {look && (
-        <DemoDialog
-          title="Shop the Sunday living room"
-          onClose={() => setLook(false)}
-        >
+        <DemoDialog title={`Shop ${info.name}`} onClose={() => setLook(false)}>
           <p>
             Choose the pieces for your demo shopping list. Current color
             selections are included.

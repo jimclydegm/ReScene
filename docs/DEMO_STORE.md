@@ -1,33 +1,40 @@
-# ReScene Living demo store
+# ReScene Living shopping demos
 
-Implemented October 30, 2026. This is the approved three-workflow shopping demo, built from existing successful reconstructions. No inference, payments, account creation or new database tables are involved.
+Updated October31,2026. The demo uses existing successful reconstructions. No inference, payments, account creation or database migration is involved.
 
-## Routes and interactions
+## Shopping journeys
 
-- `/demo`: three experience cards, shared shopping header/bag and Reset demo.
-- `/demo/product/[id]`: eight fictional product listings with existing textured GLB, comparison photo, original/illustrative color variants, quantity, bag/Buy now, specifications/care, fictional reviews and a local-only review preview. Unknown product IDs are rejected. The viewer supports orbit, zoom lock, focus, fullscreen, background preview and scene/transparent PNG exports.
-- `/demo/space`: four saved products, visibility, original textures/tints, floor-constrained X/Z and yaw, five light choices including original, grouped history, A/B arrangements with floor-plan previews, save/switch/reset confirmations, screenshot downloads and arrangement-to-bag. Conservative rotated floor footprints block new product overlap; this is a lightweight browser guard, not a physics/fit certificate.
-- `/demo/shop-the-scene`: four-product living room, selection/deselection, hiding, individual inspection, sample-photo comparison, colors, shopping list, selectable Shop this look bundle and total.
-- The shared bag merges identical product/color variants, preserves distinct variants, supports quantity/removal and calculates totals from authored integer USD cents. Checkout displays fictional delivery details and creates only a local demo confirmation. No payment or personal information is requested.
+`/demo` opens three experiences. Header and hub links lead to selection pages first:
 
-## Reuse and content
+- `/demo/products`: searchable/category-filtered catalog of eleven existing sample products. Haven Accent Chair is the featured starting product. Other products reuse the same complete product-page implementation and already available meshes, so no additional generation was needed. Prices, variants and product specifications are authored fictional listings.
+- `/demo/product/[id]`: sample photography and interactive3D shown simultaneously. Photo thumbnails switch only the photograph;3D stays visible and responds to color choices. Buying panel contains quantity/bag/Buy now, specs/care dialogs and a compact review carousel with illustrated avatars. Full sample reviews and local-only review form use dialogs. Main demo actions do not require scrolling to a separate reviews section.
+- `/demo/spaces`: The Reading Corner is first, The Everyday Collection is second, and Workspace is clearly marked as a non-interactive future collection. Selection opens `/demo/space?collection=corner|space`.
+- `/demo/scenes`: choose Sunday Living Room, Reading Corner or Everyday Collection, then open `/demo/shop-the-scene?collection=...`.
 
-`components/scene/model-canvas.tsx` remains the shared renderer, with optional shopping fullscreen/PNG labels. Existing material cloning/tint, focus/capture, lighting presets and grouped history are reused. `components/demo` owns the retail shell and workflow UI. `lib/demo/catalog.ts` contains fictional merchant fields, dimensions/materials, prices and curated illustrative colors. They never overwrite real Product records.
+Build and Shop both expose the same PositionControls component and changeArrangement validation: floor/surface X/Z movement, yaw with sliders and step buttons, colors, visibility, lighting, grouped undo/redo and reset. Shop retains individual inspection, photography comparison, product cards, list and selectable Shop this look bundle. Both retain the shared renderer's focus, fullscreen, zoom lock, background preview and PNG export.
 
-`scripts/export-demo-store.ts` deliberately curates scene41f2f4b8 revision13 (dresser, sage chair, side table, dining chair) and eb34c54c revision10 (sofa, coffee table, stool, vase). Exact object IDs/order/revision are checked before any export; changed sources require another deliberate curation. It performs no DB writes. Original projects, transforms, merchant metadata and publication links remain unchanged. Protected real fixture f2848b95 is not used.
+Build has four saved layouts per collection (A/B/C/D), floor-plan previews and save/switch/reset confirmation. Old v1 carts and A/B Everyday layouts remain readable; new per-collection layout sets prevent layouts from one room being applied to another. Unsaved edits stay page-local. Intentionally save a layout before leaving. All visitor state is browser-only; blocked storage falls back to session memory.
 
-The script freezes render-safe composition, lights and rebased placements in `lib/demo/frozen-scenes.json`. Bottom-center rebasing preserves the composed source transform and relative scale while making local rotation usable. Selected synthetic sample comparison images/crops and derived background finishes are metadata-stripped intentional public demo copies in `public/demo/images`. These are the selected demo samples only; general project sources, masks, prompts, reviews and signed URLs remain private.
+The shared bag merges matching product/color variants, preserves distinct variants, supports quantity/removal and computes totals from integer USD cents. Checkout uses fictional delivery details and creates only a local demo confirmation. No payment or personal information is collected. Reviews and materials/dimensions are explicitly sample content, not verified customer or product claims.
 
-GLBs are copied to content-addressed R2 keys under the configured prefix's `demo/store-v1/`. The original geometry/accessors/UVs/node transforms and texture dimensions are retained; opaque embedded albedo is JPEG95/4:4:4 in the demo copy only. Each resulting file is about1.8–2.2MB, below the4MB application delivery bound. Original reconstruction GLBs retain their PNG textures.
+## Frozen content and privacy
 
-`GET /api/demo/assets/[id]` resolves only the eight frozen product IDs, serves a bounded GLB directly through the same origin and caches approved copies at the CDN. No arbitrary storage key/scene ID/URL, database query, original source lookup or expiring source URL is accepted. Client model URLs include a content version. Source project deletion/edits do not change an already-curated demo release; remove a product from this dedicated release to withdraw it.
+The original release (PR30, merge50393c5) curated eight meshes from41f2f4b8 revision13 and eb34c54c revision10. The new Reading Corner deliberately copies three independent ready meshes from Jim's selected6800b8a2 revision102. All three source scenes remain unchanged; protected real fixture f2848b95 is never read or mutated by this export.
 
-## Browser storage
+`scripts/export-demo-store.ts` checks source revision/object IDs/order. `DEMO_COLLECTION=corner` exports only the newly selected collection and preserves existing frozen releases. It performs no database writes. Sample reference copies/crops and derived background textures are metadata-stripped intentional public demo assets under `public/demo/images`. General source images, masks, prompts, provider IDs and owner data remain private.
 
-`rescene-store-v1` stores a strictly validated cart and saved A/B layouts; malformed/unknown data falls back to defaults. Hydration finishes before the room loads its saved arrangement. Cross-tab storage updates refresh the shared state. Blocked/quota-limited storage uses session memory. Reset affects only demo state and returns to the demo hub. Unsaved room edits/review previews are page-local; explicitly save A/B before navigating away.
+`lib/demo/frozen-scenes.json` contains render-safe composition, lights and bottom-center-rebased placements. Dedicated content-addressed R2 copies live under the configured prefix's `demo/store-v1/`. Opaque albedo is JPEG95/4:4:4 in demo copies, with original geometry/accessor bytes, UVs, node transforms and texture dimensions preserved. Original GLBs retain PNG textures. All eleven approved files stay below the4MB delivery bound.
 
-## Validation and limits
+`GET /api/demo/assets/[id]` serves only the frozen allowlist directly through the same origin, with versioned URLs/CDN caching and no database lookup or private signed source URL. Source project edits/deletion do not silently replace curated demo assets; removal from the release is explicit.
 
-Tests cover variant arithmetic/limits, invalid and duplicate cart entries, saved-layout round trips, starting-layout footprints, frozen render-only inventory, asset allowlisting without DB access, and geometry-preserving texture repacking. HTTP checks verify pages and every copied GLB against its frozen SHA256. No automated calls can generate new AI assets or submit an order. Native browser/WebGL/desktop/mobile/download interaction checks remain unverified: local browser access is disabled and Jim explicitly chose to continue without browser verification.
+## Placement and support
 
-The underlying single-photo reconstructions retain their existing quality limitations. Demo material names/dimensions/reviews are fictional; color tints do not establish a physical manufacturer's variants or verified fit. Furniture is this demo collection, not a general input restriction.
+Saved geometry identifies the vase's supporting cabinet through its existing bottom/top/footprint relationship. Cabinet translation/yaw carries the vase rigidly; hiding its support hides the accessory. Independent vase moves stay within the cabinet surface. Conservative rotated footprints reject new independent-object overlaps; vertically separated/support contacts are permitted. This is a lightweight browser guard, not a physical fit certificate.
+
+Build's initial browsing camera frames the wider preset layouts without changing the source-camera calibration used to project background textures. Other viewers retain their existing default framing.
+
+## Validation
+
+206 cases pass, including variant arithmetic/limits, invalid storage, legacy A/B preservation, per-collection layout round trips, support-following/unsupported-move rejection, collision guards across all three scenes, render-only inventory, asset allowlisting without DB access and geometry-preserving repacking. Schema/lint/types/build pass. `scripts/verify-demo-store.mjs` checks all selection/product/workflow pages, invalid asset/product IDs, all approved images and eleven model SHA256 hashes without inference or mutations.
+
+Native browser/WebGL/mobile/download interaction checks remain unverified: browser access still reports disabled and Jim previously chose to continue without browser verification. CSS and HTTP/build checks are not a claim of visual verification.

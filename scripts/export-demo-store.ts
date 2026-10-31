@@ -4,7 +4,7 @@
  */
 import { config } from "dotenv";
 config({ path: ".env.local", quiet: true });
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import sharp from "sharp";
 import { Box3, Matrix4, Quaternion, Vector3 } from "three";
@@ -17,6 +17,17 @@ import { defaultLighting, lightingSchema } from "../src/lib/scene/lighting";
 import { optimizeDemoModel } from "../src/lib/demo/optimize-model";
 
 const selections = [
+  {
+    id: "6800b8a2-7c39-4a52-8fde-790eb03ab46c",
+    slug: "corner",
+    revision: 102,
+    products: ["corner-chair", "corner-cabinet", "corner-vase"],
+    objectIds: [
+      "fb506dbc-8182-4125-af82-13255508c25f",
+      "2354cd5f-793b-4a46-bea0-89ade18e3189",
+      "85da158b-34e5-469d-8228-95ceb564e115",
+    ],
+  },
   {
     id: "41f2f4b8-5f05-4834-a5f3-0345f9015c39",
     slug: "space",
@@ -45,10 +56,13 @@ const selections = [
 const db = getDb();
 await mkdir("public/demo/images", { recursive: true });
 await mkdir("src/lib/demo", { recursive: true });
-const exported = [];
+const exported: Array<{ id: string; [key: string]: unknown }> = [];
 try {
   let owner: string | undefined;
-  for (const selection of selections) {
+  for (const selection of selections.filter(
+    (s) =>
+      !process.env.DEMO_COLLECTION || s.slug === process.env.DEMO_COLLECTION,
+  )) {
     const scene = await db.scene.findUniqueOrThrow({
       where: { id: selection.id },
       include: {
@@ -202,9 +216,18 @@ try {
       objects,
     });
   }
+  const previous = JSON.parse(
+    await readFile("src/lib/demo/frozen-scenes.json", "utf8"),
+  );
+  const combined = [
+    ...previous.scenes.filter(
+      (s: { id: string }) => !exported.some((e) => e.id === s.id),
+    ),
+    ...exported,
+  ];
   await writeFile(
     "src/lib/demo/frozen-scenes.json",
-    JSON.stringify({ version: 1, scenes: exported }, null, 2) + "\n",
+    JSON.stringify({ version: 1, scenes: combined }, null, 2) + "\n",
   );
   console.log(
     "Demo catalog frozen. Source scenes and merchant records unchanged.",

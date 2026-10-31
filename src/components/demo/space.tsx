@@ -19,14 +19,22 @@ import {
   Undo2,
   X,
 } from "lucide-react";
-import { demoImage, findDemoProduct, money } from "@/lib/demo/catalog";
+import {
+  demoImage,
+  findDemoProduct,
+  money,
+  collectionInfo,
+} from "@/lib/demo/catalog";
 import {
   demoScenes,
   initialArrangement,
-  startingLayouts,
+  collectionLayouts,
+  changeArrangement,
+  supportOf,
 } from "@/lib/demo/scenes";
 import {
-  footprintOverlap,
+  layoutNames,
+  type LayoutName,
   type Arrangement,
   type ItemDraft,
 } from "@/lib/demo/state";
@@ -37,6 +45,7 @@ import {
   redoEdit,
   undoEdit,
 } from "@/lib/editor/history";
+import { PositionControls } from "./position-controls";
 import { ColorSwatches } from "./product";
 import { DemoViewer } from "./viewer";
 import { DemoDialog, useDemoStore } from "./store";
@@ -53,13 +62,13 @@ export function LayoutPreview({ draft }: { draft: Arrangement }) {
             x={60 + d.x * 13 - 8}
             y={37 + d.z * 10 - 6}
             width={id === "oak-dresser" ? 19 : 14}
-            height={id === "sage-chair" ? 16 : 11}
-            rx={id === "round-table" ? 6 : 2}
+            height={id.endsWith("chair") ? 16 : 11}
+            rx={id.endsWith("table") ? 6 : 2}
             transform={`rotate(${(-d.yaw * 180) / Math.PI} ${60 + d.x * 13} ${37 + d.z * 10})`}
             fill={
-              id === "sage-chair"
+              id.endsWith("chair")
                 ? "#87957b"
-                : id === "round-table"
+                : id.endsWith("table")
                   ? "#fcfaf5"
                   : "#b2906f"
             }
@@ -68,10 +77,10 @@ export function LayoutPreview({ draft }: { draft: Arrangement }) {
     </svg>
   );
 }
-export function SpacePage() {
+export function SpacePage({ sceneId = "corner" }: { sceneId?: string }) {
   const store = useDemoStore();
   return store.hydrated ? (
-    <SpaceEditor />
+    <SpaceEditor sceneId={sceneId} />
   ) : (
     <main className="demo-main demo-empty">
       <h1>Build your space</h1>
@@ -79,17 +88,29 @@ export function SpacePage() {
     </main>
   );
 }
-function SpaceEditor() {
+function SpaceEditor({ sceneId }: { sceneId: string }) {
   const store = useDemoStore(),
-    scene = demoScenes.find((s) => s.id === "space")!;
+    scene = demoScenes.find((s) => s.id === sceneId)!;
   const [timeline, setTimeline] = useState(() =>
-      editHistory(store.layouts?.A ?? startingLayouts().A),
+      editHistory(
+        store.collections[scene.id]?.A ??
+          (scene.id === "space" && store.layouts
+            ? store.layouts.A
+            : collectionLayouts(scene).A),
+      ),
     ),
-    [slot, setSlot] = useState<"A" | "B">("A"),
-    [selected, setSelected] = useState("sage-chair"),
+    [slot, setSlot] = useState<LayoutName>("A"),
+    [selected, setSelected] = useState(
+      scene.objects.find((o) => o.id.endsWith("chair"))?.id ??
+        scene.objects[0].id,
+    ),
     [message, setMessage] = useState(""),
-    [pending, setPending] = useState<"A" | "B" | "reset" | null>(null);
-  const layouts = store.layouts ?? startingLayouts(),
+    [pending, setPending] = useState<LayoutName | "reset" | null>(null);
+  const layouts =
+      store.collections[scene.id] ??
+      (scene.id === "space" && store.layouts
+        ? { ...collectionLayouts(scene), ...store.layouts }
+        : collectionLayouts(scene)),
     draft = timeline.present,
     item = draft.items[selected],
     product = findDemoProduct(selected),
@@ -102,48 +123,12 @@ function SpaceEditor() {
     patch: Partial<ItemDraft>,
     group: string | null = null,
   ) {
-    const proposed = {
-        ...draft,
-        items: { ...draft.items, [id]: { ...draft.items[id], ...patch } },
-      },
-      candidate = proposed.items[id],
-      source = scene.objects.find((o) => o.id === id)!;
-    if (
-      candidate.visible &&
-      ("x" in patch || "z" in patch || "yaw" in patch || "visible" in patch)
-    ) {
-      const overlaps = (a: ItemDraft, other: typeof source, b: ItemDraft) =>
-        footprintOverlap(
-          {
-            ...a,
-            width: source.placement.size[0],
-            depth: source.placement.size[2],
-          },
-          {
-            ...b,
-            width: other.placement.size[0],
-            depth: other.placement.size[2],
-          },
-        );
-      const blocked = scene.objects.some(
-        (o) =>
-          o.id !== id &&
-          proposed.items[o.id].visible &&
-          overlaps(candidate, o, proposed.items[o.id]) &&
-          (!draft.items[id].visible ||
-            !overlaps(draft.items[id], o, draft.items[o.id])),
-      );
-      if (blocked) {
-        setMessage(
-          "That move overlaps another product. Try another direction or hide the other item first.",
-        );
-        return;
-      }
-    }
-    setMessage("");
-    setTimeline((t) => recordEdit(t, proposed, group));
+    const result = changeArrangement(scene, draft, id, patch);
+    setMessage(result.error ?? "");
+    if (!result.error) setTimeline((t) => recordEdit(t, result.draft, group));
   }
-  function load(which: "A" | "B") {
+
+  function load(which: LayoutName) {
     setTimeline(editHistory(layouts[which]));
     setSlot(which);
     setMessage(`Layout ${which} loaded.`);
@@ -154,14 +139,14 @@ function SpaceEditor() {
   return (
     <main className="demo-main demo-room-main">
       <div className="demo-breadcrumb">
-        <Link href="/demo">Demo experiences</Link>
+        <Link href="/demo/spaces">Choose a collection</Link>
         <span>/</span>
         <span>Build your space</span>
       </div>
       <div className="demo-section-heading">
         <div>
           <span className="d-kicker">YOUR ROOM, YOUR WAY</span>
-          <h1>Good together. Even better your way.</h1>
+          <h1>{collectionInfo[scene.id].name}</h1>
           <p>
             Arrange the collection, explore colors and find your favorite light.
           </p>
@@ -205,6 +190,7 @@ function SpaceEditor() {
             </div>
           </div>
           <DemoViewer
+            arranging
             scene={scene}
             draft={draft}
             selected={selected}
@@ -227,7 +213,7 @@ function SpaceEditor() {
               <small>Floor-plan previews</small>
             </div>
             <div className="demo-layout-options">
-              {(["A", "B"] as const).map((which) => (
+              {layoutNames.map((which) => (
                 <button
                   key={which}
                   className={slot === which ? "active" : ""}
@@ -247,12 +233,15 @@ function SpaceEditor() {
               ))}
             </div>
             <div className="demo-layout-save">
-              {(["A", "B"] as const).map((which) => (
+              {layoutNames.map((which) => (
                 <button
                   key={which}
                   className="d-button small"
                   onClick={() => {
-                    store.setLayouts({ ...layouts, [which]: draft });
+                    store.setCollection(scene.id, {
+                      ...layouts,
+                      [which]: draft,
+                    });
                     setSlot(which);
                     setMessage(
                       `Your arrangement is saved as Layout ${which} in this browser.`,
@@ -332,46 +321,18 @@ function SpaceEditor() {
                   value={item.color}
                   onChange={(color) => update(selected, { color })}
                 />
-                <div className="demo-position-controls">
-                  {(
-                    [
-                      ["x", "Left / right", -3, 3],
-                      ["z", "Back / forward", -2, 2],
-                      ["yaw", "Rotate", -Math.PI, Math.PI],
-                    ] as const
-                  ).map(([field, label, min, max]) => (
-                    <label key={field}>
-                      <span>
-                        {label}
-                        <output>
-                          {field === "yaw"
-                            ? `${Math.round((item.yaw * 180) / Math.PI)}°`
-                            : item[field].toFixed(2)}
-                        </output>
-                      </span>
-                      <input
-                        type="range"
-                        min={min}
-                        max={max}
-                        step={0.02}
-                        value={item[field]}
-                        aria-label={label}
-                        disabled={!item.visible}
-                        onChange={(e) =>
-                          update(
-                            selected,
-                            { [field]: Number(e.target.value) },
-                            `${selected}:${field}`,
-                          )
-                        }
-                        onPointerUp={finish}
-                        onPointerCancel={finish}
-                        onBlur={finish}
-                        onKeyUp={finish}
-                      />
-                    </label>
-                  ))}
-                </div>
+                <PositionControls
+                  item={item}
+                  id={selected}
+                  onChange={(patch, group) => update(selected, patch, group)}
+                  onFinish={finish}
+                />
+                {supportOf(scene, selected) && (
+                  <p className="retail-support-note">
+                    This accessory stays on its cabinet. Move the cabinet to
+                    move them together.
+                  </p>
+                )}
                 <div className="demo-inline-actions">
                   <button
                     className="d-text"
@@ -452,8 +413,8 @@ function SpaceEditor() {
       <p className="demo-feedback" role="status" aria-live="polite">
         {message ||
           (dirty
-            ? `Unsaved arrangement · Save to A or B to keep it in this browser.`
-            : "Try the two layouts, or create your own.")}
+            ? `Unsaved arrangement · Save a layout to keep it in this browser.`
+            : "Choose one of four layouts, or make it your own.")}
       </p>
       <Link className="d-text" href="/demo">
         <ArrowLeft size={14} />
@@ -470,7 +431,7 @@ function SpaceEditor() {
         >
           <p>
             {pending === "reset"
-              ? "This restores the original collection arrangement. Your saved A and B layouts are kept."
+              ? "This restores the original collection arrangement. Your four saved layouts are kept."
               : "This replaces your current edits. Save them to A or B first if you want to keep them."}
           </p>
           <button

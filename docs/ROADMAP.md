@@ -191,6 +191,16 @@ Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCH
 - [x] Room arrangement/visibility/colors/lights/grouped history/A-B saves and comparison/screenshot controls.
 - [x] Styled-scene selection/hiding/isolation/product cards/Shop this look and shared cart/mock checkout.
 - [x] Validate cart/storage/footprints/allowlist/geometry preservation; schema/lint/build and bounded HTTP/model-hash checks.
-- [ ] Merge the combined release and verify its automatic production deployment.
+- [x] PR30 merged at50393c5; its automatic production deployment reached READY.
 
 Details: DEMO_STORE.md. Jim explicitly chose to continue without browser verification; native WebGL/mobile/download interaction checks remain unverified.
+
+
+## Shopping-first demo revision — October31
+
+- [x] Product catalog and collection/scene selection pages before the interactive workflows.
+- [x] Simultaneous photos and3D, compact buying panel, review carousel/dialogs with illustrated avatars and stronger text contrast.
+- [x] Selected chair/cabinet/vase collection, existing second collection, four independently saved layouts and legacy-cart/layout compatibility.
+- [x] Shared movement/rotation controls, undo/redo/reset/lights in both scene demos; support-following prevents the vase leaving its cabinet.
+- [x]206 tests/schema/lint/types/build and local pages/eleven-model-hash smoke pass; no inference or original-project changes.
+- [ ] Combined PR/CI/main deployment and production demo smoke.
