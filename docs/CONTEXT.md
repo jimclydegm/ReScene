@@ -1,6 +1,8 @@
 # ReScene — current handoff
 
-Updated October 30, 2026 (Asia/Manila). Read this and the latest ROADMAP entry first; historical milestones are not another work queue.
+Latest work, October31: the coordinated quality pass from RECONSTRUCTION_QUALITY_BRIEF.md is implemented, uncommitted, on main in the shared checkout. See QUALITY_PIPELINE.md. Scene tab → 3D quality offers a free "Check and repair" pass (diagnose → conservative geometry → joint physical placement → full-surface bake → final render review → one bounded correction) and an explicit paid "Use Meta AI" run (Spark plan, SAM 3.1 outline refinement, Muse Image material samples, Spark final review), plus restore and private inspection views. Saved-data evidence ran offline on six fixtures with no inference: most objects' color error vs the de-lit photo fell sharply, floating/wobbling bases now rest on several contacts, and a regressing mouse kept its previous model. 235 tests, lint, types and build pass. Not yet done: no live paid Meta call, no database apply/restore run (the QA-fixture write was blocked pending approval), no browser check of the panel. Follow-up (same day): Jim's desk scene a26c2b0b showed tilted objects and a messy mug/keyboard. Cause: the layout kept SAM 3D pose tilts against the level desk (up to 11.6°) and the old photo copy baked onto that pose. The pass now lays objects flush and re-fits them to the photo (all four desk objects flat, every photo overlap improved), bakes only onto camera-facing surfaces away from rims, and runs automatically after each new reconstruction. Verified offline from saved data only; that scene was not modified. Next action: Jim reviews the diff, approves a QA-fixture apply/restore and decides whether to spend one paid Meta pass on a saved scene. Then commit on a branch.
+
+Updated October 31, 2026 (Asia/Manila). Read this and the latest ROADMAP entry first; historical milestones are not another work queue.
 
 ## Objective and working style
 

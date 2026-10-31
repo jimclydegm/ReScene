@@ -1,5 +1,6 @@
 "use client";
 import {ReconstructionRetry} from "./reconstruction-retry";
+import {QualityControls} from "./quality-controls";
 import {useState} from "react";
 import { Crosshair, ImageIcon, Undo2, WandSparkles } from "lucide-react";
 import type { SceneWorkspace } from "./types";
@@ -8,9 +9,10 @@ type Backdrop = "room" | "studio" | "none";
 const backdrops: [Backdrop, string][] = [["room", "Photo"], ["studio", "Ground"], ["none", "Plain"]];
 
 /** Scene-level layout, backdrop and background actions, grouped in one inspector tab. */
-export function SceneLayoutControls({ data, locked, unsaved, blocked, onMatch, onReview, onRestore, onBackdrop, onBackground,onRestoreBackground,onRetry,onMask }: {
+export function SceneLayoutControls({ data, locked, unsaved, blocked, onMatch, onReview, onRestore, onBackdrop, onBackground,onRestoreBackground,onRetry,onMask,onQuality,onQualityRestore,onQualityPaid }: {
   data: SceneWorkspace; locked: boolean; unsaved: boolean; blocked: boolean;
   onRetry:(ids:string[],seed:number)=>Promise<void>;onMask:(id:string,mask:string)=>Promise<void>;
+  onQuality:()=>void;onQualityRestore:()=>void;onQualityPaid:(options:{materials:boolean;masks:boolean;review:boolean})=>Promise<void>;
   onMatch: () => void; onReview: () => void; onRestore: () => void; onBackdrop: (value: Backdrop) => void; onBackground:(mode:"reference"|"materials"|"photo")=>void;onRestoreBackground:()=>void;
 }) {
   const [backgroundMode,setBackgroundMode]=useState<"reference"|"materials"|"photo">("reference");
@@ -35,6 +37,7 @@ export function SceneLayoutControls({ data, locked, unsaved, blocked, onMatch, o
         <small>Mask overlap from the photo angle. Hidden geometry is not verified.</small>
       </div>}
     </div>
+    <QualityControls data={data} disabled={layoutDisabled} onImprove={onQuality} onRestore={onQualityRestore} onPaid={onQualityPaid}/>
     <ReconstructionRetry data={data} disabled={layoutDisabled} onRetry={onRetry} onMask={onMask}/>
     {composition && <div className="panel-block">
       <div className="panel-heading"><h3>Backdrop</h3></div>

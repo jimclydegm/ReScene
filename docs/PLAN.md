@@ -1,5 +1,7 @@
 # ReScene — consolidated completion plan
 
+October31: the integrated quality bundle from RECONSTRUCTION_QUALITY_BRIEF.md is implemented (QUALITY_PIPELINE.md). Architecture changes: a new pure `src/lib/quality` package (GLB read/write with TRS and texture roles, diagnostics, CPU inspection renderer, repair, bake, placement, review) runs as one ordered pipeline behind `src/lib/services/quality.ts`. The paid Meta steps ride the existing IMAGE_EDIT run kind with a `quality` input (no migration). Results live in new MODEL_GLB assets plus `settings.quality` and `settings.qualityPlan`. `reviewLayout` now seats supported items on several base contacts and no longer drops unsupported tabletop items to the floor. The quality pipeline does not use the old per-object silhouette registration shift because measured color got worse with it. The free pass now replaces the old photo copy right after ingest (the old copy stays as the fallback), so corrected placement comes before baking on the first try. Not yet verified live: paid Meta calls, database apply/restore and the browser panel.
+
 October 29, 2026. Jim requested larger implementation batches to finish quickly and reduce repeated inference, tests and deployments. This plan supersedes the earlier micro-phase schedule; history is preserved in history/PLAN_2026-10-29.md.
 
 ## Finish one usable release

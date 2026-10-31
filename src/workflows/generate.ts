@@ -83,6 +83,44 @@ async function readyWithBackground(runId:string){
     await improveBackground(runId);
   }catch{await backgroundFailed(runId);}
 }
+async function isQualityRun(runId:string){
+  "use step";
+  const {getDb}=await import("@/lib/db");
+  const run=await getDb().generationRun.findUnique({where:{id:runId}});
+  return Boolean(run?.input&&typeof run.input==="object"&&"quality" in run.input);
+}
+// Paid steps run once each with no automatic retry; a failed provider call is
+// recorded as uncertain and the saved scene stays as it was.
+async function qualityPlan(runId:string){
+  "use step";
+  const {planQualityRun}=await import("@/lib/services/quality");
+  await planQualityRun(runId);
+}
+qualityPlan.maxRetries=0;
+async function qualityMasks(runId:string){
+  "use step";
+  const {refineQualityMasks}=await import("@/lib/services/quality");
+  await refineQualityMasks(runId);
+}
+qualityMasks.maxRetries=0;
+async function qualityMaterials(runId:string){
+  "use step";
+  const {sampleQualityMaterials}=await import("@/lib/services/quality");
+  await sampleQualityMaterials(runId);
+}
+qualityMaterials.maxRetries=0;
+async function qualityApply(runId:string){
+  "use step";
+  const {applyQualityRun}=await import("@/lib/services/quality");
+  await applyQualityRun(runId);
+}
+qualityApply.maxRetries=0;
+async function qualityReview(runId:string){
+  "use step";
+  const {reviewQualityRun}=await import("@/lib/services/quality");
+  await reviewQualityRun(runId);
+}
+qualityReview.maxRetries=0;
 async function failure(runId: string) {
   "use step";
   const { failRun } = await import("@/lib/services/generation");
@@ -97,7 +135,8 @@ export async function generateScene(runId: string, kind: string) {
       for (const id of objects) await segment(runId, id);
       await completeAnalysis(runId);
     } else if(kind === "IMAGE_EDIT"){
-      await readyWithBackground(runId);
+      if(await isQualityRun(runId)){await qualityPlan(runId);await qualityMasks(runId);await qualityMaterials(runId);await qualityApply(runId);await qualityReview(runId);}
+      else await readyWithBackground(runId);
     } else if(kind === "SEGMENT_OBJECT"){
       await segment(runId,await requestedObject(runId));
       await completeAnalysis(runId);

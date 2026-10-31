@@ -4,6 +4,19 @@ Updated October 29, 2026, Asia/Manila. This replaces the incremental phase sched
 
 Core flow already works: private photo → live Meta analysis/masks → separate meshes → room/texture/light editing → product cards/replacements → frozen shopper viewer. A fresh deployed two-model author-to-shopper run and 47 focused tests already passed; do not repeat paid inference for unchanged code.
 
+## Coordinated reconstruction quality bundle — October 31
+
+Brief: [RECONSTRUCTION_QUALITY_BRIEF.md](RECONSTRUCTION_QUALITY_BRIEF.md). Implementation and evidence: [QUALITY_PIPELINE.md](QUALITY_PIPELINE.md).
+
+- [x] Layered diagnostics (geometry/mapping/lighting/material/placement) and private wireframe/normal/unlit/neutral orbit views.
+- [x] Conservative geometry repair with mask-evidence fragments, winding and cited planar constraints; replacement kept only if it measures better.
+- [x] Full-surface base-color bake: de-lit observed pixels, protected source markings, grain-aligned Muse samples, harmonized provider fallback, padding, area-weighted coverage and seam metric.
+- [x] Joint placement: multi-point contacts, stable rest tilt, wall/opening clearance, separation, duplicate flags; regressions held.
+- [x] Final reference-camera review with one bounded correction; paid Meta plan/SAM refine/Muse samples/Spark review run with saved-result reuse and zero automatic resubmission.
+- [x] 235 tests, lint, types and build pass; offline before/after evidence on six saved fixtures.
+- [x] Flush-on-support placement with photo re-fit, thin-wall/rim-safe bake, and the free pass run automatically after every new reconstruction (reported desk scene checked offline).
+- [ ] Live paid Meta pass, database apply/restore on the QA fixture and browser check of the panel (need Jim's go-ahead).
+
 ## Current release bundle
 
 - [x] Project management: name/description editing, search/status filters, active sharing indicators, reversible archive/restore with share revocation.

@@ -39,7 +39,7 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(839172640)`;
     const scene = await tx.scene.findFirst({ where: { id: sceneId, ownerId, archivedAt: null } });
     if (!scene) throw new AppError(404, "NOT_FOUND", "Scene not found.");
-    const options = { ...(input.background?{background:input.background}:{}), ...(input.repair?{repair:true}:{}), ...(input.analysis ? {analysis:input.analysis} : {}), ...(input.segmentation ? {segmentation:input.segmentation} : {}), ...(input.reconstruction ? {reconstruction:input.reconstruction} : {}), objectIds:input.objectIds ?? [] };
+    const options = { ...(input.background?{background:input.background}:{}), ...(input.quality?{quality:input.quality}:{}), ...(input.repair?{repair:true}:{}), ...(input.analysis ? {analysis:input.analysis} : {}), ...(input.segmentation ? {segmentation:input.segmentation} : {}), ...(input.reconstruction ? {reconstruction:input.reconstruction} : {}), objectIds:input.objectIds ?? [] };
     const requestHash = digest(Buffer.from(JSON.stringify(options)));
     const prior = await tx.generationRun.findUnique({ where: { sceneId_idempotencyKey: { sceneId, idempotencyKey: input.idempotencyKey } } });
     if (prior) {
@@ -66,6 +66,7 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
       rootIds=selectedIds.filter(id=>!record(available.find(o=>o.id===id)!.provenance).parentObjectId);
       if(!rootIds.length)throw new AppError(400,"SUBJECT_REQUIRED","Include complete subjects before reconstructing product parts.");
     }
+    if(input.quality){const stage=compositionSchema.safeParse(scene.stage);if(!stage.success||stage.data.layoutSource==="manual-stage")throw new AppError(409,"PHOTO_LAYOUT_REQUIRED","Match the photo layout before the quality pass.");}
     if (input.kind === "SEGMENT_OBJECT") {
       if (await tx.sceneObject.count({where:{sceneId,modelAssetId:{not:null}}})) throw new AppError(409,"MODELS_EXIST","Return to object review before changing outlines. This clears later 3D results after confirmation.");
       const image=await tx.asset.findFirstOrThrow({where:{id:scene.normalizedAssetId,sceneId,kind:"NORMALIZED_IMAGE",status:"READY"}});
@@ -74,7 +75,7 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
       if (input.segmentation!.objectId && !await tx.sceneObject.findFirst({where:{sceneId,id:input.segmentation!.objectId}})) throw new AppError(404,"NOT_FOUND","Object not found.");
       if (!input.segmentation!.objectId && await tx.sceneObject.count({where:{sceneId}}) >= 10) throw new AppError(409,"OBJECT_LIMIT","This scene already has ten candidates. Reanalyze to start a new object list.");
     }
-    const reserved = input.kind === "ANALYZE" ? 1.42 : input.kind === "SEGMENT_OBJECT" ? 0.0025 : input.kind === "IMAGE_EDIT" ? .02 : 1;
+    const reserved = input.kind === "ANALYZE" ? 1.42 : input.kind === "SEGMENT_OBJECT" ? 0.0025 : input.quality ? .5 : input.kind === "IMAGE_EDIT" ? .02 : 1;
     // Historical estimates remain auditable; Jim removed the app's cumulative spending cap.
     const run = await tx.generationRun.create({ data: { sceneId, kind: input.kind, idempotencyKey: input.idempotencyKey,
       inputRevision: scene.revision, input: asJson({ ...options, ...(input.kind==="RECONSTRUCT" ? {objectIds:selectedIds,reconstructionObjectIds:rootIds} : {}), requestHash, normalizedAssetId: scene.normalizedAssetId }), reservedCostUsd: reserved,
@@ -388,6 +389,7 @@ export async function workspace(sceneId: string, ownerId: string) {
     canRestoreBackground:Boolean(record(scene.settings).backgroundBackup),
     backgroundInfo: {method:background.version==="reference-environment-v1"?"reference":materialBackground?"materials":"photo",report:background.version==="reference-environment-v1"?{coverage:Number(record(background.report).coverage??0),walls:Number(record(background.report).walls??0),expectedWalls:Number(record(background.report).expectedWalls??0),openings:Number(record(background.report).openings??0)}:null,explanation: typeof record(record(record(scene.settings).environmentObservation).analysis).explanation==="string"?String(record(record(record(scene.settings).environmentObservation).analysis).explanation):typeof record(record(record(scene.settings).backgroundUnderstanding).analysis).explanation==="string"?String(record(record(record(scene.settings).backgroundUnderstanding).analysis).explanation):null,lightingEffects:(Array.isArray(record(record(record(scene.settings).environmentObservation).analysis).lightingEffects)?record(record(record(scene.settings).environmentObservation).analysis).lightingEffects:Array.isArray(record(record(record(scene.settings).backgroundUnderstanding).analysis).lightingEffects)?record(record(record(scene.settings).backgroundUnderstanding).analysis).lightingEffects:[]) as string[],warnings:Array.isArray(background.warnings)?background.warnings as string[]:[]},
     layoutReview:(await import("@/lib/scene/layout-review")).layoutReviewSchema.safeParse(record(scene.settings).layoutReview).data??null,
+    quality:(await import("./quality")).qualitySummary(scene.settings,new Map(objects.map(o=>[o.id,o.label]))),
     analysisSummary:typeof record(scene.settings).analysisSummary === "string" ? String(record(scene.settings).analysisSummary) : null,
     lighting: lightingSchema.safeParse(record(scene.settings).lighting).data ?? defaultLighting(stage),
     appearance: { applied: applied.version === "photo-bake-v1", floorUrl: await textureUrl(materialBackground?background.floorId:applied.floorId), wallUrl: await textureUrl(materialBackground?background.wallId:applied.wallId), backgroundUrl: await textureUrl(record(record(scene.settings).background).assetId) },
@@ -498,7 +500,13 @@ export async function improveGeneratedAppearance(runId:string){
   const run=await getDb().generationRun.findUnique({where:{id:runId},include:{scene:true}});
   if(!run||run.status!=="WAITING"||run.currentStage!=="Enhancing source detail")return;
   try{
-    if(run.scene.status==="READY"&&run.scene.revision===run.inputRevision+1&&!run.scene.archivedAt){const {updateAppearance}=await import("./appearance");await updateAppearance(run.sceneId,run.scene.ownerId,{action:"APPLY",expectedRevision:run.scene.revision});}
+    // First pass, not a later repair: settle every object on its support, then
+    // bake the photo onto that corrected pose. No inference; the previous
+    // photo copy remains the fallback if the coordinated pass cannot run.
+    if(run.scene.status==="READY"&&run.scene.revision===run.inputRevision+1&&!run.scene.archivedAt){
+      try{const {improveSceneQuality}=await import("./quality");await improveSceneQuality(run.sceneId,run.scene.ownerId,run.scene.revision,{runId});}
+      catch{const {updateAppearance}=await import("./appearance");await updateAppearance(run.sceneId,run.scene.ownerId,{action:"APPLY",expectedRevision:run.scene.revision});}
+    }
   }catch{/* Optional source transfer must not discard successful reconstruction or retry inference. */}
   finally{await getDb().generationRun.updateMany({where:{id:runId,status:"WAITING",currentStage:"Enhancing source detail"},data:{currentStage:"Preparing photo background",progress:92}});}
 }

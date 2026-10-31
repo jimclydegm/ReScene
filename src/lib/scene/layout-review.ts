@@ -1,5 +1,5 @@
 import {collisionPairs,separateLayout} from "./collisions";
-import {supportSampler} from "@/lib/appearance/contact";
+import {footprint,seatHeight,supportSampler} from "@/lib/appearance/contact";
 import { Matrix4, Quaternion, Vector3 } from "three";
 import { z } from "zod";
 import { geometry, photoCamera, visibility } from "@/lib/appearance/bake";
@@ -46,8 +46,14 @@ export function reviewLayout(objects:Placement[],inputs:Input[],composition:Scen
   const support=objects.find(o=>o.id===input.supportedById),supportInput=inputs.find(i=>i.id===support?.id);
   const surface=support&&supportInput?supportSampler(supportInput.bytes,support):null;
   const contact=(o:Placement)=>{
-   if(input.support==="floor"||input.support==="tabletop"&&!support)o.position[1]=composition.floorY??0;
-   else if(input.support==="tabletop"&&support&&supportInput){for(const axis of [0,2] as const){const half=Math.max(0,(support.placement.size[axis]-o.placement.size[axis])/2);o.position[axis]=Math.max(support.position[axis]-half,Math.min(support.position[axis]+half,o.position[axis]));}const y=surface!(o.position[0],o.position[2]);o.position[1]=y??support.position[1]+support.placement.size[1];}
+   // A tabletop item without a support mesh keeps its estimated shared plane;
+   // only floor contact snaps to the floor height.
+   if(input.support==="floor")o.position[1]=composition.floorY??0;
+   else if(input.support==="tabletop"&&support&&supportInput){for(const axis of [0,2] as const){const half=Math.max(0,(support.placement.size[axis]-o.placement.size[axis])/2);o.position[axis]=Math.max(support.position[axis]-half,Math.min(support.position[axis]+half,o.position[axis]));}
+    // Rest on the highest of several real base contacts so no part sinks
+    // into the support; fall back to the center ray when none land on it.
+    const lift=seatHeight(footprint(sample.map(p=>p.clone().applyMatrix4(matrix(o)))).points,surface!);
+    if(lift!==null)o.position[1]+=lift;else{const y=surface!(o.position[0],o.position[2]);o.position[1]=y??support.position[1]+support.placement.size[1];}}
   };
   const matrix=(o:Placement)=>new Matrix4().makeTranslation(...o.position).multiply(new Matrix4().makeTranslation(...o.placement.offset)).multiply(new Matrix4().compose(new Vector3(),new Quaternion(...o.placement.rotation),new Vector3(...o.placement.scale)));
   const triangles=geometry(input.bytes,new Matrix4(),0),all=triangles.flatMap(t=>t.points),step=Math.max(1,Math.ceil(all.length/1600)),sample=all.filter((_,i)=>i%step===0);

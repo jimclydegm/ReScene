@@ -28,6 +28,7 @@ export async function updateAppearance(sceneId: string, ownerId: string, input: 
   if (input.action !== "LIGHTING" && (await db.sceneObject.findMany({ where: { sceneId }, select: { provenance: true } })).some(o => record(o.provenance).replacementBackup)) throw new AppError(409, "REPLACEMENTS_ACTIVE", "Restore original objects before changing photo textures.");
   if (scene.status !== "READY" || scene.revision !== input.expectedRevision) throw new AppError(409, "REVISION_CONFLICT", "Reload the ready scene before changing its appearance.");
   const settings = record(scene.settings);
+  if (input.action !== "LIGHTING" && record(settings.quality).version === "coordinated-quality-v1") throw new AppError(409, "QUALITY_ACTIVE", "The quality pass already baked these textures. Restore previous models in Scene first, or run the quality pass again.");
   if (input.action === "LIGHTING") {
     const result = await db.scene.updateMany({ where: { id: sceneId, ownerId, revision: input.expectedRevision, status: "READY", archivedAt: null }, data: {
       settings: json({ ...settings, lighting: input.lighting }), revision: { increment: 1 }

@@ -27,3 +27,18 @@ export function supportSampler(bytes:Buffer,object:{position:[number,number,numb
  };
 }
 export function supportHeight(bytes:Buffer,object:{position:[number,number,number];placement:ModelPlacement},x:number,z:number){return supportSampler(bytes,object)(x,z);}
+
+// Several contact candidates around the actual base, not one center ray or a
+// single stray lowest vertex.
+export function footprint(points: Vector3[]) {
+  let minY = Infinity, maxY = -Infinity; for (const p of points) { minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y); }
+  const band = points.filter(p => p.y <= minY + Math.max(.004, (maxY - minY) * .015));
+  const center = band.reduce((s, p) => s.add(p), new Vector3()).multiplyScalar(1 / Math.max(1, band.length)), picks = new Map<number, Vector3>();
+  for (const p of band) { const sector = Math.floor(((Math.atan2(p.z - center.z, p.x - center.x) + Math.PI) / (2 * Math.PI)) * 16) % 16, best = picks.get(sector); if (!best || Math.hypot(p.x - center.x, p.z - center.z) > Math.hypot(best.x - center.x, best.z - center.z)) picks.set(sector, p); }
+  return { points: [...picks.values()], band, minY, height: maxY - minY };
+}
+export function seatHeight(points: Vector3[], height: (x: number, z: number) => number | null) {
+  let lift = -Infinity, supported = 0;
+  for (const p of points) { const s = height(p.x, p.z); if (s === null) continue; supported++; lift = Math.max(lift, s - p.y); }
+  return supported ? lift : null;
+}
