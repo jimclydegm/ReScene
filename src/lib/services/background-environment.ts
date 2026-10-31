@@ -542,6 +542,7 @@ export async function draftReferenceEnvironment(runId: string) {
       },
       background: {
         version: "reference-environment-v1",
+        materialMethod: "muse-surface-detrend-v2",
         assetId,
         photoId: photo.id,
         warnings: built.report.warnings,

@@ -84,7 +84,8 @@ export const environmentGeometrySchema = z
               .max(768),
             color,
             roughness: z.number().min(0.2).max(1),
-            textured: z.boolean(),
+      textured: z.boolean(),
+      materialOnly: z.boolean().optional(),
           })
           .strict()
           .superRefine((s, c) => {
