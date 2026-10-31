@@ -220,4 +220,4 @@ Details: DEMO_STORE.md. Jim explicitly chose to continue without browser verific
 - [x] Larger scene-choice photos, real Workspace sample, compact six-layout strip and expanded scene finishes.
 - [x] Legacy four-slot/custom data preservation, old auto back-view correction, visibility/contact restoration and photo-to-live edit recovery.
 - [x] All41 photo files visually reviewed, including three clean-top cabinet corrections;215 cases/schema/lint/types/build and local default-album/image-hash smoke pass.
-- [ ] Combined PR/CI/main release and live presentation smoke. Native browser/UI remains unverified.
+- [x] PR33 merged ate905de3; PR/main CI pass, production READY and live presentation smoke verifies default Album mode, all demo pages/styles and all41 photo hashes. Native browser/UI remains unverified.
