@@ -8,6 +8,12 @@ import type { DemoScene } from "@/lib/demo/scenes";
 import type { Arrangement } from "@/lib/demo/state";
 import { lightingPresets } from "@/lib/scene/lighting";
 import type { RenderObject } from "@/components/scene/types";
+const arrangementCamera: DemoScene["composition"]["camera"] = {
+  position: [0, 3.5, 10],
+  target: [0, 1, 0],
+  fov: 43,
+  aspect: 1.5,
+};
 const ModelCanvas = dynamic(() => import("@/components/scene/model-canvas"), {
   ssr: false,
   loading: () => (
@@ -53,6 +59,7 @@ export function DemoViewer({
   onSelect,
   individual,
   isolated,
+  arranging = false,
 }: {
   scene: DemoScene;
   draft: Arrangement;
@@ -60,6 +67,7 @@ export function DemoViewer({
   onSelect: (id: string) => void;
   individual?: string;
   isolated?: string | null;
+  arranging?: boolean;
 }) {
   const objects: RenderObject[] = scene.objects
     .filter((o) => !individual || o.id === individual)
@@ -83,18 +91,7 @@ export function DemoViewer({
       };
     });
   const composition = useMemo(() => {
-    if (!individual) {
-      if (scene.id !== "space") return scene.composition;
-      return {
-        ...scene.composition,
-        camera: {
-          position: [0, 3.2, 8] as [number, number, number],
-          target: [0, 0.6, 0] as [number, number, number],
-          fov: 43,
-          aspect: 1.5,
-        },
-      };
-    }
+    if (!individual) return scene.composition;
     const obj = scene.objects.find((o) => o.id === individual)!,
       size = obj.placement.size,
       extent = Math.max(...size),
@@ -138,6 +135,7 @@ export function DemoViewer({
     >
       <ModelCanvas
         shopping
+        initialCamera={arranging ? arrangementCamera : undefined}
         objects={objects}
         selected={selected}
         onSelect={onSelect}

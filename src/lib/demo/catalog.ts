@@ -146,6 +146,61 @@ export const demoProducts: DemoProduct[] = [
     ],
   },
 ];
+demoProducts.unshift(
+  {
+    ...demoProducts[0],
+    id: "corner-chair",
+    name: "Haven Accent Chair",
+    subtitle: "Your favorite corner starts here.",
+    price: 24900,
+    description:
+      "A softly rounded accent chair with warm wooden legs. Pair it with a cabinet and a sculptural vase for an inviting reading corner.",
+  },
+  {
+    ...demoProducts[2],
+    id: "corner-cabinet",
+    name: "Oakwood Two-Door Cabinet",
+    subtitle: "Warm wood. A little more order.",
+    price: 32900,
+    description:
+      "A compact wooden cabinet with two doors and a clean mid-century silhouette. Everyday storage with room for your favorite objects.",
+    dimensions: "Sample: W100 × D42 × H85 cm",
+  },
+  {
+    ...demoProducts[7],
+    id: "corner-vase",
+    name: "Terra Rounded Vase",
+    subtitle: "A warm finishing touch.",
+    price: 4900,
+    materials: "Sample: matte glazed ceramic",
+    colors: [
+      { name: "Original terracotta", value: null, swatch: "#ad674e" },
+      { name: "Warm ivory", value: "#e4d6bd", swatch: "#e4d6bd" },
+    ],
+    description:
+      "A rounded terracotta vase that brings a sculptural accent to a quiet corner.",
+  },
+);
+export const collectionProducts: Record<string, string[]> = {
+  corner: ["corner-chair", "corner-cabinet", "corner-vase"],
+  space: ["oak-dresser", "sage-chair", "round-table", "dining-chair"],
+  living: ["cloud-sofa", "coffee-table", "wood-stool", "ceramic-vase"],
+};
+export const collectionInfo: Record<string, { name: string; caption: string }> =
+  {
+    corner: {
+      name: "The Reading Corner",
+      caption: "A lounge chair, oak cabinet and terracotta vase.",
+    },
+    space: {
+      name: "The Everyday Collection",
+      caption: "Four pieces. Plenty of ways to make them yours.",
+    },
+    living: {
+      name: "The Sunday Living Room",
+      caption: "A cream sofa, warm wood and a quiet place to slow down.",
+    },
+  };
 export const findDemoProduct = (id: string) =>
   demoProducts.find((p) => p.id === id);
 export const money = (cents: number) =>

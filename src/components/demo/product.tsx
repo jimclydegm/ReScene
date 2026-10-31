@@ -3,20 +3,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import {
-  ArrowLeft,
   ArrowRight,
   Box,
   Check,
   Minus,
   Plus,
   Rotate3d,
+  ChevronLeft,
+  ChevronRight,
+  Maximize,
   ShieldCheck,
-  Star,
   Truck,
 } from "lucide-react";
 import {
   demoImage,
-  demoProducts,
   findDemoProduct,
   money,
   type DemoProduct,
@@ -74,47 +74,160 @@ export function ProductTile({ id }: { id: string }) {
     </Link>
   );
 }
+
+const reviews = [
+  {
+    name: "Alex Morgan",
+    initials: "AM",
+    color: "#d7b7a1",
+    rating: 5,
+    title: "An easy addition to my reading corner",
+    text: "Being able to see the chair next to the cabinet made choosing the combination much easier.",
+  },
+  {
+    name: "Jamie Lee",
+    initials: "JL",
+    color: "#adc3b2",
+    rating: 5,
+    title: "The color preview really helped",
+    text: "I could try a different finish and look around the shape before adding it to my bag.",
+  },
+  {
+    name: "Morgan Davis",
+    initials: "MD",
+    color: "#bdc2dc",
+    rating: 4,
+    title: "A useful extra view",
+    text: "The photo shows the styling, and the 3D preview helps me explore the shape from the other side.",
+  },
+];
+function Avatar({ person }: { person: (typeof reviews)[number] }) {
+  return (
+    <span
+      className="review-avatar"
+      role="img"
+      aria-label={`${person.name} sample avatar`}
+      style={{ background: person.color }}
+    >
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <path
+          d="M4 40c1-10 7-15 16-15s15 5 16 15"
+          fill={
+            person.initials === "AM"
+              ? "#405c4c"
+              : person.initials === "JL"
+                ? "#796447"
+                : "#68658c"
+          }
+        />
+        <ellipse
+          cx="20"
+          cy="17"
+          rx="9"
+          ry="11"
+          fill={person.initials === "MD" ? "#bc8969" : "#e3b895"}
+        />
+        <path
+          d={
+            person.initials === "JL"
+              ? "M10 19C6 2 30 0 30 18l-6-8-8 1z"
+              : "M11 16C7 2 30 1 30 16l-5-7-7 3z"
+          }
+          fill="#443d35"
+        />
+        <circle cx="17" cy="17" r=".8" fill="#302e28" />
+        <circle cx="24" cy="17" r=".8" fill="#302e28" />
+        <path
+          d="M17 23q3 2 6 0"
+          stroke="#9b6851"
+          fill="none"
+          strokeLinecap="round"
+        />
+      </svg>
+    </span>
+  );
+}
 export function ProductPage({ id }: { id: string }) {
   const p = findDemoProduct(id)!,
     scene = demoScenes.find((s) => s.objects.some((o) => o.id === id))!,
     store = useDemoStore();
   const [color, setColor] = useState(0),
     [quantity, setQuantity] = useState(1),
-    [mode, setMode] = useState<"3d" | "photo">("3d"),
-    [review, setReview] = useState(false),
+    [photo, setPhoto] = useState<"product" | "room">("product"),
+    [reviewIndex, setReviewIndex] = useState(0),
+    [dialog, setDialog] = useState<
+      "photos" | "specs" | "reviews" | "write" | null
+    >(null),
     [localReview, setLocalReview] = useState<{
       text: string;
       rating: number;
     } | null>(null);
   const draft = initialArrangement(scene);
   draft.items[id].color = color;
-  const related = demoProducts
-    .filter((v) => v.id !== id && scene.objects.some((o) => o.id === v.id))
-    .slice(0, 3);
+  const review = reviews[reviewIndex],
+    photoUrl = demoImage(photo === "product" ? id : scene.id);
   return (
-    <main className="demo-main">
+    <main className="demo-main retail-product-page">
       <div className="demo-breadcrumb">
-        <Link href="/demo">Home</Link>
+        <Link href="/demo/products">All products</Link>
         <span>/</span>
-        <Link href="/demo/space">The collection</Link>
+        <span>{p.category}</span>
         <span>/</span>
         <span>{p.name}</span>
       </div>
-      <section className="demo-product-layout">
-        <div className="demo-product-media">
-          <div className="demo-media-tabs" aria-label="Product view">
-            <button aria-pressed={mode === "3d"} onClick={() => setMode("3d")}>
-              <Rotate3d size={15} />
-              Interactive 3D
-            </button>
+      <section className="demo-product-layout retail-product-layout">
+        <div className="retail-product-visuals">
+          <div className="retail-photo-column">
+            <div className="retail-media-heading">
+              <span>Product photography</span>
+              <button
+                className="d-icon"
+                aria-label="Enlarge sample photo"
+                onClick={() => setDialog("photos")}
+              >
+                <Maximize size={15} />
+              </button>
+            </div>
             <button
-              aria-pressed={mode === "photo"}
-              onClick={() => setMode("photo")}
+              className="retail-primary-photo"
+              aria-label="Enlarge sample photo"
+              onClick={() => setDialog("photos")}
             >
-              Sample photo
+              <Image
+                src={photoUrl}
+                alt={`${p.name}, original-color sample photo`}
+                fill
+                sizes="(max-width:850px) 50vw, 30vw"
+                priority
+              />
             </button>
+            <div className="retail-photo-thumbs">
+              {(["product", "room"] as const).map((view) => (
+                <button
+                  key={view}
+                  aria-pressed={photo === view}
+                  onClick={() => setPhoto(view)}
+                >
+                  <Image
+                    src={demoImage(view === "product" ? id : scene.id)}
+                    alt={
+                      view === "product" ? "Product photo" : "Styled room photo"
+                    }
+                    width={64}
+                    height={56}
+                  />
+                  <span>{view === "product" ? "Product" : "In the room"}</span>
+                </button>
+              ))}
+            </div>
           </div>
-          {mode === "3d" ? (
+          <div className="retail-3d-column">
+            <div className="retail-media-heading">
+              <span>
+                <Rotate3d size={16} /> Explore in 3D
+              </span>
+              <span className="retail-live-badge">Interactive</span>
+            </div>
             <div className="demo-product-viewer">
               <DemoViewer
                 scene={scene}
@@ -124,39 +237,36 @@ export function ProductPage({ id }: { id: string }) {
                 individual={id}
               />
             </div>
-          ) : (
-            <div className="demo-product-photo">
-              <Image
-                src={demoImage(id)}
-                alt={`Original-color sample photo of ${p.name}`}
-                fill
-                sizes="(max-width: 850px) 100vw, 60vw"
-                priority
-              />
-              <span>Sample photo · original color</span>
-            </div>
-          )}
-          <div className="demo-media-caption">
+            <p className="retail-media-note">
+              Drag to rotate · Scroll to zoom · Try a color
+            </p>
+          </div>
+          <div className="retail-photo-disclosure">
             <Box size={15} />
-            <span>
-              Reconstructed from a single photo with Meta AI.
-              <br />
-              <small>
-                Rotate to inspect. Hidden geometry and fine details are
+            <p>
+              Photography for styling. 3D for another perspective.{" "}
+              <span>
+                Meta AI reconstruction; unseen shapes and material details are
                 approximate.
-              </small>
-            </span>
+              </span>
+            </p>
           </div>
         </div>
-        <div className="demo-product-details">
-          <span className="d-kicker">THE EVERYDAY COLLECTION</span>
+        <div className="demo-product-details retail-product-info">
+          <span className="d-kicker">RESCENE LIVING · THE EDIT</span>
           <h1>{p.name}</h1>
           <p className="demo-subtitle">{p.subtitle}</p>
-          <a className="demo-rating" href="#reviews">
-            <span>★★★★★</span>4.7 <small>· 3 sample reviews</small>
-          </a>
+          <button
+            className="demo-rating d-text"
+            onClick={() => setDialog("reviews")}
+          >
+            <span>★★★★★</span>
+            <strong>4.7</strong>
+            <small>3 sample reviews</small>
+          </button>
           <div className="demo-price">
-            {money(p.price)} <small>USD · demo price</small>
+            {money(p.price)}
+            <small>USD · Sample listing</small>
           </div>
           <p className="demo-description">{p.description}</p>
           <ColorSwatches product={p} value={color} onChange={setColor} />
@@ -165,7 +275,7 @@ export function ProductPage({ id }: { id: string }) {
               <button
                 aria-label="Decrease quantity"
                 disabled={quantity === 1}
-                onClick={() => setQuantity((v) => v - 1)}
+                onClick={() => setQuantity((q) => q - 1)}
               >
                 <Minus size={15} />
               </button>
@@ -173,7 +283,7 @@ export function ProductPage({ id }: { id: string }) {
               <button
                 aria-label="Increase quantity"
                 disabled={quantity === 20}
-                onClick={() => setQuantity((v) => v + 1)}
+                onClick={() => setQuantity((q) => q + 1)}
               >
                 <Plus size={15} />
               </button>
@@ -182,176 +292,198 @@ export function ProductPage({ id }: { id: string }) {
               className="d-button primary"
               onClick={() => store.add(id, color, quantity)}
             >
-              Add to bag <Plus size={16} />
+              Add to bag · {money(p.price * quantity)}
+              <ShoppingIcon />
             </button>
           </div>
           <button
             className="d-button full"
             onClick={() => store.buy(id, color, quantity)}
           >
-            Buy now · demo checkout
+            Buy now
             <ArrowRight size={16} />
           </button>
           <div className="demo-benefits">
             <span>
               <Truck size={16} />
-              Free demo delivery
+              Complimentary demo delivery
             </span>
             <span>
               <ShieldCheck size={16} />
-              No payment required
+              No payment taken
             </span>
           </div>
-          <div className="demo-product-accordions">
-            <details open>
-              <summary>Materials & dimensions</summary>
-              <p>{p.materials}</p>
-              <p>{p.dimensions}</p>
-              <small>
-                Illustrative listing specifications. Not measurements recovered
-                from the image.
-              </small>
-            </details>
-            <details>
-              <summary>Care guide</summary>
-              <p>{p.care}</p>
-            </details>
-            <details>
-              <summary>About the 3D preview</summary>
-              <p>
-                This is an AI reconstruction of a sample image. Colors are
-                interactive tints, and unseen surfaces are estimated. This
-                demonstration does not verify product identity, physical size or
-                real-world color.
-              </p>
-            </details>
-          </div>
-          <Link href="/demo/space" className="d-text">
-            See how the collection works together
-            <ArrowRight size={15} />
-          </Link>
-        </div>
-      </section>
-      <section className="demo-reviews" id="reviews">
-        <div className="demo-section-heading">
-          <div>
-            <span className="d-kicker">SAMPLE CUSTOMER STORIES</span>
-            <h2>A place in everyday life.</h2>
-            <p>Fictional reviews to demonstrate the shopping experience.</p>
-          </div>
-          <button className="d-button" onClick={() => setReview(true)}>
-            Try writing a review
-          </button>
-        </div>
-        <div className="demo-review-grid">
-          {[
-            {
-              name: "Alex · sample customer",
-              title: "An easy addition",
-              text: "The 3D view made it easy to picture this alongside the other pieces.",
-              stars: 5,
-            },
-            {
-              name: "Jamie · sample customer",
-              title: "Loved trying the colors",
-              text: "Switching between finishes helped me put together a calmer corner.",
-              stars: 5,
-            },
-            {
-              name: "Morgan · sample customer",
-              title: "A useful way to explore",
-              text: "I liked being able to rotate the product before adding it to my list.",
-              stars: 4,
-            },
-          ].map((r) => (
-            <article key={r.name}>
-              <span className="demo-stars" aria-label={`${r.stars} of 5 stars`}>
-                {"★".repeat(r.stars)}
-                {"☆".repeat(5 - r.stars)}
-              </span>
-              <h3>{r.title}</h3>
-              <p>{r.text}</p>
-              <small>{r.name}</small>
-            </article>
-          ))}
-          {localReview && (
-            <article>
-              <span className="demo-stars">
-                {"★".repeat(localReview.rating)}
-              </span>
-              <h3>Your demo review</h3>
-              <p>{localReview.text}</p>
-              <small>Local preview · not published</small>
-            </article>
-          )}
-        </div>
-      </section>
-      <section className="demo-related">
-        <div className="demo-section-heading">
-          <div>
-            <span className="d-kicker">BETTER TOGETHER</span>
-            <h2>Complete your corner.</h2>
-          </div>
-          <Link href="/demo/space" className="d-text">
-            Build your space
-            <ArrowRight size={15} />
-          </Link>
-        </div>
-        <div className="demo-related-grid">
-          {related.map((v) => (
-            <ProductTile key={v.id} id={v.id} />
-          ))}
-        </div>
-      </section>
-      <Link href="/demo" className="d-text">
-        <ArrowLeft size={15} />
-        All demo experiences
-      </Link>
-      {review && (
-        <DemoDialog
-          title="Try a product review"
-          onClose={() => setReview(false)}
-        >
-          <p>Preview only. This stays on this page and is not published.</p>
-          <form
-            className="demo-review-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const data = new FormData(e.currentTarget);
-              setLocalReview({
-                text: String(data.get("review")).trim(),
-                rating: Number(data.get("rating")),
-              });
-              setReview(false);
-            }}
-          >
-            <label>
-              Rating
-              <select name="rating" defaultValue="5">
-                {[5, 4, 3, 2, 1].map((n) => (
-                  <option value={n} key={n}>
-                    {n} stars
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Your sample review
-              <textarea
-                required
-                name="review"
-                maxLength={600}
-                minLength={5}
-                placeholder="What did you think of the shopping experience?"
-              />
-            </label>
-            <button className="d-button primary" type="submit">
-              <Star size={15} />
-              Preview review
+          <div className="retail-details-links">
+            <button className="d-text" onClick={() => setDialog("specs")}>
+              Materials, dimensions & care
+              <Plus size={14} />
             </button>
-          </form>
+            <Link
+              className="d-text"
+              href={`/demo/space?collection=${scene.id === "living" ? "corner" : scene.id}`}
+            >
+              Style it in a room
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+          <section
+            className="retail-review-panel"
+            aria-label="Sample customer reviews"
+          >
+            <div className="retail-review-heading">
+              <strong>From the community</strong>
+              <small>Fictional sample reviews</small>
+            </div>
+            <article>
+              <div className="retail-review-person">
+                <Avatar person={review} />
+                <div>
+                  <strong>{review.name}</strong>
+                  <span
+                    className="demo-stars"
+                    aria-label={`${review.rating} out of 5 stars`}
+                  >
+                    {"★".repeat(review.rating)}
+                    {"☆".repeat(5 - review.rating)}
+                  </span>
+                </div>
+                <div className="retail-review-nav">
+                  <button
+                    className="d-icon"
+                    aria-label="Previous review"
+                    onClick={() => setReviewIndex((i) => (i + 2) % 3)}
+                  >
+                    <ChevronLeft size={15} />
+                  </button>
+                  <button
+                    className="d-icon"
+                    aria-label="Next review"
+                    onClick={() => setReviewIndex((i) => (i + 1) % 3)}
+                  >
+                    <ChevronRight size={15} />
+                  </button>
+                </div>
+              </div>
+              <h3>{review.title}</h3>
+              <p>{review.text}</p>
+            </article>
+            <div className="retail-review-actions">
+              <button className="d-text" onClick={() => setDialog("reviews")}>
+                Read all 3 reviews
+              </button>
+              <button className="d-text" onClick={() => setDialog("write")}>
+                Write a sample review
+              </button>
+            </div>
+            {localReview && (
+              <p className="retail-local-review" role="status">
+                Your local review: {"★".repeat(localReview.rating)} ·{" "}
+                {localReview.text}
+              </p>
+            )}
+          </section>
+        </div>
+      </section>
+      {dialog && (
+        <DemoDialog
+          title={
+            dialog === "photos"
+              ? p.name
+              : dialog === "specs"
+                ? "Product details"
+                : dialog === "write"
+                  ? "Write a sample review"
+                  : "Sample customer reviews"
+          }
+          onClose={() => setDialog(null)}
+          wide={dialog === "photos"}
+        >
+          {dialog === "photos" && (
+            <div className="retail-expanded-photo">
+              <Image
+                src={photoUrl}
+                alt={`${p.name} sample reference`}
+                width={1400}
+                height={1000}
+              />
+              <p>Sample photography · original color</p>
+            </div>
+          )}
+          {dialog === "specs" && (
+            <div className="retail-specs">
+              <h3>Materials</h3>
+              <p>{p.materials}</p>
+              <h3>Dimensions</h3>
+              <p>{p.dimensions}</p>
+              <h3>Care</h3>
+              <p>{p.care}</p>
+              <small>
+                Fictional listing specifications. Not physical measurements
+                recovered from the photo.
+              </small>
+            </div>
+          )}
+          {dialog === "reviews" && (
+            <div className="retail-all-reviews">
+              {reviews.map((r) => (
+                <article key={r.name}>
+                  <div className="retail-review-person">
+                    <Avatar person={r} />
+                    <div>
+                      <strong>{r.name}</strong>
+                      <span className="demo-stars">{"★".repeat(r.rating)}</span>
+                    </div>
+                  </div>
+                  <h3>{r.title}</h3>
+                  <p>{r.text}</p>
+                  <small>Fictional sample review</small>
+                </article>
+              ))}
+            </div>
+          )}
+          {dialog === "write" && (
+            <form
+              className="demo-review-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const f = new FormData(e.currentTarget);
+                setLocalReview({
+                  text: String(f.get("review")).trim(),
+                  rating: Number(f.get("rating")),
+                });
+                setDialog(null);
+              }}
+            >
+              <p>Local preview only. Your review is not published.</p>
+              <label>
+                Rating
+                <select name="rating">
+                  {[5, 4, 3, 2, 1].map((n) => (
+                    <option key={n} value={n}>
+                      {n} stars
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Your review
+                <textarea
+                  name="review"
+                  required
+                  minLength={5}
+                  maxLength={500}
+                />
+              </label>
+              <button className="d-button primary" type="submit">
+                Preview review
+              </button>
+            </form>
+          )}
         </DemoDialog>
       )}
     </main>
   );
+}
+function ShoppingIcon() {
+  return <Plus size={16} />;
 }
