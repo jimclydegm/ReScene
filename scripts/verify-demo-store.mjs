@@ -15,6 +15,12 @@ const frozen = JSON.parse(
     "utf8",
   ),
 );
+const albums = JSON.parse(
+  await readFile(
+    new URL("../src/lib/demo/photography.json", import.meta.url),
+    "utf8",
+  ),
+);
 async function get(path) {
   return fetch(new URL(path, base), {
     redirect: "error",
@@ -50,6 +56,20 @@ for (const path of [
       const href = tag.match(/href="([^"]+)"/);
       if (href) styles.add(href[1]);
     }
+  if (path.startsWith("/demo/product/")) {
+    assert(
+      html.includes("Album mode") && html.includes("3D mode"),
+      "Product media mode controls missing",
+    );
+    assert(
+      html.includes('class="shopping-album"'),
+      "Album is not the default product media",
+    );
+    assert(
+      !html.includes('class="shopping-optional-3d"'),
+      "3D should be opt-in",
+    );
+  }
   console.log(`PASS ${path}`);
 }
 for (const path of [
@@ -129,8 +149,29 @@ assert(
   css.includes("demo-reference-frame"),
   "Compact reference frame styles missing",
 );
+const albumImages = [
+  ...Object.values(albums.products),
+  ...Object.values(albums.scenes),
+].flat();
+for (let i = 0; i < albumImages.length; i += 6)
+  await Promise.all(
+    albumImages.slice(i, i + 6).map(async (image) => {
+      assert(image.path.startsWith("/demo/photography/"));
+      const response = await get(image.path);
+      assert.equal(response.status, 200, image.path);
+      const bytes = Buffer.from(await response.arrayBuffer());
+      assert.equal(
+        createHash("sha256").update(bytes).digest("hex"),
+        image.sha256,
+        image.path,
+      );
+    }),
+  );
+console.log(
+  `PASS ${albumImages.length} album image hashes and default Album mode.`,
+);
 console.log(
   presentationOnly
-    ? "PASS demo pages, theme/compact CSS and 12 sample photos. Unchanged GLB downloads skipped."
-    : "PASS demo pages, theme/compact CSS, 11 GLB hashes and all approved images. Native browser controls are not covered.",
+    ? "PASS demo pages, theme/compact CSS and sample photos. Unchanged GLB downloads skipped."
+    : "PASS demo pages, theme/compact CSS, model and image hashes. Native browser controls are not covered.",
 );

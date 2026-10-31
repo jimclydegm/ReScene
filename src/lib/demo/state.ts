@@ -12,7 +12,7 @@ export const cartLineSchema = z
 export type CartLine = z.infer<typeof cartLineSchema>;
 export const cartSchema = z
   .array(cartLineSchema)
-  .max(40)
+  .max(100)
   .refine(
     (lines) =>
       new Set(lines.map((l) => `${l.productId}:${l.color}`)).size ===
@@ -44,7 +44,7 @@ export const itemDraftSchema = z
     z: z.number().min(-8).max(8),
     yaw: z.number().min(-Math.PI).max(Math.PI),
     visible: z.boolean(),
-    color: z.number().int().min(0).max(2),
+    color: z.number().int().min(0).max(15),
   })
   .strict();
 export type ItemDraft = z.infer<typeof itemDraftSchema>;
@@ -80,7 +80,7 @@ export const layoutsSchema = z
         JSON.stringify(layoutKeys),
     ),
   );
-export const layoutNames = ["A", "B", "C", "D"] as const;
+export const layoutNames = ["A", "B", "C", "D", "E", "F"] as const;
 export type LayoutName = (typeof layoutNames)[number];
 export const layoutSetSchema = z
   .object({
@@ -88,9 +88,20 @@ export const layoutSetSchema = z
     B: arrangementSchema,
     C: arrangementSchema,
     D: arrangementSchema,
+    E: arrangementSchema.optional(),
+    F: arrangementSchema.optional(),
   })
   .strict();
 export type LayoutSet = z.infer<typeof layoutSetSchema>;
+export type CompleteLayoutSet = Record<LayoutName, Arrangement>;
+export const layoutTitles: Record<LayoutName, string> = {
+  A: "Original",
+  B: "Relaxed",
+  C: "Gallery",
+  D: "Open",
+  E: "Mirrored",
+  F: "Dusk",
+};
 export const collectionsSchema = z
   .record(z.string(), layoutSetSchema)
   .superRefine((value, ctx) => {

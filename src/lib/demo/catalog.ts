@@ -181,6 +181,25 @@ demoProducts.unshift(
       "A rounded terracotta vase that brings a sculptural accent to a quiet corner.",
   },
 );
+// Append stable tint indices so existing bags/arrangements keep their chosen colors.
+for (const p of demoProducts) {
+  const more = [
+    { name: "Forest", value: "#789b82", swatch: "#789b82" },
+    { name: "Clay", value: "#c9967a", swatch: "#c9967a" },
+    { name: "Deep blue", value: "#829bb9", swatch: "#829bb9" },
+    { name: "Warm gray", value: "#b2b4aa", swatch: "#b2b4aa" },
+    { name: "Charcoal", value: "#737d78", swatch: "#737d78" },
+  ];
+  p.colors = [
+    ...p.colors,
+    ...more.filter(
+      (c) =>
+        !p.colors.some(
+          (old) => old.name.toLowerCase() === c.name.toLowerCase(),
+        ),
+    ),
+  ];
+}
 export const collectionProducts: Record<string, string[]> = {
   corner: ["corner-chair", "corner-cabinet", "corner-vase"],
   space: ["oak-dresser", "sage-chair", "round-table", "dining-chair"],

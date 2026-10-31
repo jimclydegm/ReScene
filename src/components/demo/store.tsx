@@ -24,7 +24,8 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { demoImage, findDemoProduct, money } from "@/lib/demo/catalog";
+import { productCover } from "@/lib/demo/albums";
+import { findDemoProduct, money } from "@/lib/demo/catalog";
 import {
   addToCart,
   cartTotal,
@@ -354,7 +355,7 @@ export function DemoStore({ children }: { children: ReactNode }) {
                             key={`${p.id}:${line.color}`}
                           >
                             <Image
-                              src={demoImage(p.id)}
+                              src={productCover(p.id)}
                               alt={p.name}
                               width={86}
                               height={92}

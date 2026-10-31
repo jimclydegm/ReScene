@@ -4,11 +4,11 @@ import Image from "next/image";
 import { Component, type ReactNode, useMemo } from "react";
 import { ReferenceFrame } from "./reference-frame";
 import { LoaderCircle } from "lucide-react";
-import { demoImage, findDemoProduct } from "@/lib/demo/catalog";
+import { demoImage } from "@/lib/demo/catalog";
 import type { DemoScene } from "@/lib/demo/scenes";
 import type { Arrangement } from "@/lib/demo/state";
 import { lightingPresets } from "@/lib/scene/lighting";
-import type { RenderObject } from "@/components/scene/types";
+import { demoRenderObjects } from "@/lib/demo/render-objects";
 const ModelCanvas = dynamic(() => import("@/components/scene/model-canvas"), {
   ssr: false,
   loading: () => (
@@ -62,27 +62,7 @@ export function DemoViewer({
   individual?: string;
   isolated?: string | null;
 }) {
-  const objects: RenderObject[] = scene.objects
-    .filter((o) => !individual || o.id === individual)
-    .map((o) => {
-      const d = draft.items[o.id],
-        p = findDemoProduct(o.id)!;
-      return {
-        id: o.id,
-        label: p.name,
-        modelUrl: `/api/demo/assets/${o.id}?v=${o.modelVersion}`,
-        tint: p.colors[d.color]?.value ?? null,
-        placement: o.placement,
-        positionX: individual ? 0 : d.x,
-        positionY: individual ? 0 : o.position[1],
-        positionZ: individual ? 0 : d.z,
-        yaw: d.yaw,
-        scale: 1,
-        visible: individual
-          ? true
-          : d.visible && (!isolated || isolated === o.id),
-      };
-    });
+  const objects = demoRenderObjects(scene, draft, { individual, isolated });
   const composition = useMemo(() => {
     if (!individual) return scene.composition;
     const obj = scene.objects.find((o) => o.id === individual)!,
