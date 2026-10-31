@@ -203,4 +203,4 @@ Details: DEMO_STORE.md. Jim explicitly chose to continue without browser verific
 - [x] Selected chair/cabinet/vase collection, existing second collection, four independently saved layouts and legacy-cart/layout compatibility.
 - [x] Shared movement/rotation controls, undo/redo/reset/lights in both scene demos; support-following prevents the vase leaving its cabinet.
 - [x]206 tests/schema/lint/types/build and local pages/eleven-model-hash smoke pass; no inference or original-project changes.
-- [ ] Combined PR/CI/main deployment and production demo smoke.
+- [x] PR31 merged atf4927b6; PR/main CI pass, production READY, live catalog/product/workflow pages and all eleven GLB hashes/images verified at rescene-eta.vercel.app. Native browser verification remains unavailable.

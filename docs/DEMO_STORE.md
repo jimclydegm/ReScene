@@ -38,3 +38,5 @@ Build's initial browsing camera frames the wider preset layouts without changing
 206 cases pass, including variant arithmetic/limits, invalid storage, legacy A/B preservation, per-collection layout round trips, support-following/unsupported-move rejection, collision guards across all three scenes, render-only inventory, asset allowlisting without DB access and geometry-preserving repacking. Schema/lint/types/build pass. `scripts/verify-demo-store.mjs` checks all selection/product/workflow pages, invalid asset/product IDs, all approved images and eleven model SHA256 hashes without inference or mutations.
 
 Native browser/WebGL/mobile/download interaction checks remain unverified: browser access still reports disabled and Jim previously chose to continue without browser verification. CSS and HTTP/build checks are not a claim of visual verification.
+
+Release: PR31 merged atf4927b6, PR/main CI pass. Production rescene-iv4tgezvc-jimclydegms-projects.vercel.app is READY; the full read-only demo smoke passes at https://rescene-eta.vercel.app. The selected source remains READY at revision102. No additional inference was used.
