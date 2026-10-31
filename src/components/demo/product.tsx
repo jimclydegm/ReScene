@@ -195,7 +195,12 @@ export function ProductPage({ id }: { id: string }) {
           <div className="shopping-media-modes" aria-label="Product media">
             <button
               aria-pressed={mode === "album"}
-              onClick={() => setMode("album")}
+              onClick={() => {
+                setMode("album");
+                const photo = images.find((image) => image.id === activeImage);
+                if (photo?.color !== null && photo?.color !== undefined)
+                  setColor(photo.color);
+              }}
             >
               <Images size={17} />
               Album mode
