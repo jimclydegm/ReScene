@@ -79,7 +79,7 @@ function ReferenceFraming({reference}:{reference:SceneComposition["camera"]|unde
   }
  },[camera,size.width,size.height,reference]);return null;
 }
-export default function ModelCanvas({ objects, selected, onSelect, composition, lighting, appearance, shopping = false }: { objects: RenderObject[]; selected: string; onSelect: (id: string) => void; composition: SceneComposition | null; lighting: Lighting; appearance: SceneWorkspace["appearance"]; shopping?: boolean }) {
+export default function ModelCanvas({ objects, selected, onSelect, composition, lighting, appearance, shopping = false, onLoadingChange }: { objects: RenderObject[]; selected: string; onSelect: (id: string) => void; composition: SceneComposition | null; lighting: Lighting; appearance: SceneWorkspace["appearance"]; shopping?: boolean; onLoadingChange?: (loading: boolean) => void }) {
   const readOnly = objects.some(o => Boolean(o.worldTransform));
   const controls = useRef<OrbitControlsType>(null);
   const bindControls = useCallback((value: OrbitControlsType | null) => {
@@ -93,6 +93,7 @@ export default function ModelCanvas({ objects, selected, onSelect, composition, 
   const [backgroundHidden,setBackgroundHidden]=useState(false);
   const [exporting,setExporting]=useState(false),[exportError,setExportError]=useState("");
   const viewerApi=useRef<ViewerApi|null>(null),loading=useProgress(state=>state.active);
+  useEffect(() => { onLoadingChange?.(loading); }, [loading, onLoadingChange]);
   const viewport=useRef<HTMLDivElement>(null);
   async function fullscreen(){try{if(document.fullscreenElement)await document.exitFullscreen();else await viewport.current?.requestFullscreen();}catch{setExportError("Fullscreen is unavailable in this browser.");}}
   async function download(transparent:boolean){

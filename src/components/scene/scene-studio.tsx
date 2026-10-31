@@ -1,6 +1,6 @@
 "use client";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState, Component, type ReactNode, type KeyboardEvent, type FocusEvent, type PointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, memo, Component, type ReactNode, type KeyboardEvent, type FocusEvent, type PointerEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Box, Check, Ellipsis, Eye, EyeOff, Layers, Lightbulb, LoaderCircle, LockKeyhole, Palette, Redo2, RotateCcw, Save, ScanEye, ShoppingBag, Undo2, X } from "lucide-react";
@@ -17,6 +17,7 @@ import { defaultLighting, type Lighting } from "@/lib/scene/lighting";
 import { ReferencePhoto } from "./reference-photo";
 import { ObjectReview } from "./object-review";
 import { SceneLayoutControls } from "./scene-layout-controls";
+import { DismissibleNotice } from "@/components/ui/dismissible-notice";
 import type { SegmentationOptions } from "@/lib/ai/controls";
 import { UploadForm } from "@/components/upload-form";
 import {subjectVisibility} from "@/lib/editor/visibility";
@@ -26,9 +27,15 @@ import type { RestartTarget } from "@/lib/validation/generation";
 type Panel = "objects" | "scene" | "textures" | "lighting" | "products";
 const panels: [Panel, string, typeof Box][] = [["objects", "Objects", Box], ["scene", "Scene", Layers], ["textures", "Textures", Palette], ["lighting", "Light", Lightbulb], ["products", "Products", ShoppingBag]];
 const ModelCanvas = dynamic(() => import("./model-canvas"), { ssr: false, loading: () => <div className="canvas-loading">Opening the 3D viewer…</div> });
-class ViewerBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+// Progress polls refresh signed asset URLs. Keep the current render inputs until
+// the operation finishes, then load the final assets beneath the generation cover.
+const StablePreview = memo(function StablePreview({ children }: { pending: boolean; children: ReactNode }) {
+  return children;
+}, (previous, next) => previous.pending && next.pending);
+class ViewerBoundary extends Component<{ children: ReactNode; onFailure: () => void }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch() { this.props.onFailure(); }
   render() { return this.state.failed ? <div className="viewer-error">A 3D asset could not load. Reload to refresh its access link. Your scene is saved.</div> : this.props.children; }
 }
 export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
@@ -52,6 +59,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const [selected, setSelected] = useState(initial.objects[0]?.id ?? "");
   const [chosen, setChosen] = useState<string[]>(initial.objects.filter(o=>o.maskUrl).map(o=>o.id));
   const [busy, setBusy] = useState(false);
+  const [assetsLoading, setAssetsLoading] = useState(false);
   const dirty=JSON.stringify(draft)!==JSON.stringify(data.objects),lightDirty=JSON.stringify(lights)!==JSON.stringify(data.lighting);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -245,6 +253,8 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   }
   const current = draft.find(o => o.id === selected);
   const ready = data.status === "READY" && draft.some(o => o.modelUrl);
+  const showEditor = ready || (data.status === "RECONSTRUCTING" && draft.some(o => o.modelUrl));
+  const previewPending = busy || running || assetsLoading;
   const hasReplacements = data.objects.some(o => o.canRestoreOriginal);
   const hasMasks = data.objects.some(o => o.maskUrl);
   const restartCopy = {
@@ -268,8 +278,8 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   ] as const;
   const notices = <>
     {error && <p role="alert" className="form-error studio-notice">{error}<button className="icon-button" aria-label="Dismiss" onClick={() => setError("")}><X size={14}/></button></p>}
-    {data.run?.errorMessage && <div className="generation-error studio-notice"><p>{data.run.errorMessage}</p>{data.run.canResume && <button className="button button-dark button-small" disabled={busy} onClick={resume}>Resume generation</button>}</div>}
-    {running && <div className="generation-progress studio-notice" role="status"><LoaderCircle className="spin" size={18}/><div><strong>{data.run?.stage}</strong><progress value={data.run?.progress} max={100}/><p>Safe to close this page. Checking progress uses no credits.</p></div><button className="button button-light button-small" disabled={busy} onClick={requestReload}>Refresh</button>{data.run?.canResume && <button className="button button-light button-small" onClick={resume} disabled={busy}>Resume</button>}</div>}
+    {data.run?.errorMessage && <DismissibleNotice key={`${data.run.id}:${data.run.status}:${data.run.errorMessage}`} className="generation-error studio-notice" role={data.run.status==="FAILED"?"alert":"status"}><p>{data.run.errorMessage}</p>{data.run.canResume && <button className="button button-dark button-small" disabled={busy} onClick={resume}>Resume generation</button>}</DismissibleNotice>}
+    {running && <DismissibleNotice key={`${data.run?.id}:progress`} className="generation-progress studio-notice" label="Dismiss progress notification"><LoaderCircle className="spin" size={18}/><div><strong>{data.run?.stage}</strong><progress value={data.run?.progress} max={100}/><p>Safe to close this page. Checking progress uses no credits.</p></div><button className="button button-light button-small" disabled={busy} onClick={requestReload}>Refresh</button>{data.run?.canResume && <button className="button button-light button-small" onClick={resume} disabled={busy}>Resume</button>}</DismissibleNotice>}
     </>;
   return <div className="generation-studio studio-shell">
     <UnsavedNavigation dirty={unsaved}/>
@@ -300,12 +310,13 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
       <div className="editor-actions"><button className="button button-light" autoFocus disabled={busy} onClick={() => restartDialog.current?.close()}>Keep current scene</button>
         <button className="button button-dark" disabled={busy} onClick={restart}>{busy ? "Clearing…" : restartCopy.confirm}</button></div>
     </dialog>
-    {!ready && <div className="studio-notices">{notices}{message && <p role="status" className="save-message studio-notice">{message}</p>}</div>}
-    {ready ? <div className="editor-layout studio-workspace"><div className="studio-stage">
-      <ViewerBoundary key={`${data.revision}:${viewerRetry}`}><ModelCanvas objects={draft} selected={selected} onSelect={setSelected} composition={data.composition} lighting={lights} appearance={data.appearance}/></ViewerBoundary>
+    {!showEditor && <div className="studio-notices">{notices}{message && <DismissibleNotice key={message} className="save-message studio-notice">{message}</DismissibleNotice>}</div>}
+    {showEditor ? <div className="editor-layout studio-workspace"><div className={`studio-stage${previewPending?" preview-updating":""}`} aria-busy={previewPending}>
+      <div className="studio-preview-content" inert={previewPending}><StablePreview pending={busy || running}><ViewerBoundary key={viewerRetry} onFailure={()=>setAssetsLoading(false)}><ModelCanvas objects={draft} selected={selected} onSelect={setSelected} composition={data.composition} lighting={lights} appearance={data.appearance} onLoadingChange={setAssetsLoading}/></ViewerBoundary></StablePreview></div>
+      {previewPending && <div className="studio-preview-cover" role="status"><LoaderCircle className="spin" size={24}/><strong>{running?"Building your scene":assetsLoading?"Preparing the final view":"Updating your scene"}</strong><span>{running?data.run?.stage:"The finished preview will appear here."}</span>{running&&<progress value={data.run?.progress} max={100}/>}</div>}
       <ReferencePhoto image={data.image} title={data.title}/>
       <div className="studio-notices floating">{notices}</div>
-      {message && <p role="status" className="studio-toast"><Check size={14}/>{message}</p>}
+      {message && <DismissibleNotice key={message} className="studio-toast"><Check size={14}/>{message}</DismissibleNotice>}
     </div>
       <aside className="object-inspector editor-inspector" aria-label="Scene controls">
         <div className="inspector-tabs" role="tablist" aria-label="Scene control sections">{panels.map(([value, label, Icon], index) => <button key={value} id={`inspector-tab-${value}`} role="tab" type="button" aria-selected={panel === value} aria-controls={`inspector-panel-${value}`} tabIndex={panel === value ? 0 : -1} onKeyDown={event => moveTab(event, index)} onClick={() => setPanel(value)}><Icon size={15}/>{label}</button>)}</div>

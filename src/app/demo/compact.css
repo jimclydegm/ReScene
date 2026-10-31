@@ -382,7 +382,7 @@
 }
 .demo-store .retail-product-layout {
   gap: 24px !important;
-  grid-template-columns: minmax(0, 1.5fr) minmax(340px, 0.85fr) !important;
+  grid-template-columns: minmax(0, 1.35fr) minmax(380px, 1fr) !important;
 }
 .demo-store .retail-product-visuals {
   gap: 12px;
@@ -530,14 +530,6 @@
   border-top: 0;
   align-items: center;
 }
-.demo-store .demo-layouts > div:first-child {
-  min-width: 110px;
-  max-width: 140px;
-  width: auto;
-  flex: 0 1 140px;
-  gap: 4px;
-  flex-basis: auto;
-}
 .demo-store .demo-layouts strong {
   font-size: 14px;
 }
@@ -561,10 +553,6 @@
 .demo-store .demo-layout-options > button.active {
   background: var(--shop-selected);
   border-color: var(--shop-link);
-}
-.demo-store .demo-layout-options svg {
-  height: 31px;
-  width: 100%;
 }
 .demo-store .demo-layout-options span {
   font-size: 12px;
@@ -992,10 +980,6 @@
   .demo-store .demo-room-layout {
     grid-template-columns: minmax(0, 1fr) 300px;
   }
-  .demo-store .demo-layouts > div:first-child {
-    min-width: 95px;
-    max-width: 105px;
-  }
   .demo-store .demo-layout-options {
     gap: 5px;
   }
@@ -1100,10 +1084,6 @@
     font-size: 13px;
     gap: 20px;
   }
-  .demo-store .demo-layouts > div:first-child {
-    min-width: 110px;
-    max-width: 130px;
-  }
   .demo-store .demo-layout-save {
     width: 108px;
     max-width: 108px;
@@ -1199,12 +1179,6 @@
     padding: 9px;
     gap: 8px;
   }
-  .demo-store .demo-layouts > div:first-child {
-    width: auto;
-    max-width: none;
-    min-width: 0;
-    flex-basis: calc(100% - 125px);
-  }
   .demo-store .demo-layout-options {
     order: 3;
     flex-basis: 100%;
@@ -1231,9 +1205,6 @@
     font-size: 13px;
     width: auto;
     min-height: 31px;
-  }
-  .demo-store .demo-layout-options svg {
-    height: 27px;
   }
   .demo-store .demo-layout-options span {
     font-size: 13px;

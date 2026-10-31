@@ -2,7 +2,8 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const presentationOnly = process.argv.includes("--presentation");
+const uiOnly = process.argv.includes("--ui");
+const presentationOnly = uiOnly || process.argv.includes("--presentation");
 const styles = new Set();
 const base = new URL(process.env.DEMO_BASE_URL ?? "http://localhost:4317");
 assert(
@@ -115,7 +116,7 @@ const sampleImages = [
   "kitchen-wide",
 ].map((id) => `/samples/v3/${id}.webp`);
 for (const path of [
-  ...sampleImages,
+  ...(uiOnly ? [] : sampleImages),
   ...(presentationOnly
     ? []
     : [
@@ -149,6 +150,22 @@ assert(
   css.includes("demo-reference-frame"),
   "Compact reference frame styles missing",
 );
+if (uiOnly) {
+  for (const selector of [
+    "swatch-check",
+    "mask-highlight",
+    "studio-preview-cover",
+    "notice-dismiss",
+  ])
+    assert(
+      css.includes(selector),
+      `Missing visual cleanup styles: ${selector}`,
+    );
+  console.log(
+    "PASS demo pages, Album default and delivered compact/color/mask/generation/notice styles. Unchanged image and GLB downloads skipped.",
+  );
+  process.exit(0);
+}
 const albumImages = [
   ...Object.values(albums.products),
   ...Object.values(albums.scenes),
