@@ -496,6 +496,7 @@ export async function saveObjects(sceneId: string, ownerId: string, input: z.inf
       }
       const rotation=rotationAfterEdit(original,edit);
       const changed = await tx.sceneObject.updateMany({ where: { id: edit.id, sceneId, status: "READY" }, data: {
+        ...(edit.product!==undefined?{provenance:asJson({...record(original.provenance),catalogSuppressed:edit.product===null})}:{}),
         ...(edit.tint !== undefined ? {appearance: asJson({tint:edit.tint})} : {}), productId, label: edit.label, positionX: edit.positionX, positionY: edit.positionY, positionZ: edit.positionZ,
         rotationX: rotation.x, rotationY: rotation.y, rotationZ: rotation.z, rotationW: rotation.w,
         scaleX: edit.scale, scaleY: edit.scale, scaleZ: edit.scale, visible: edit.visible

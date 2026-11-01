@@ -132,6 +132,7 @@ export function DemoDialog({
   );
 }
 export function DemoStore({ children }: { children: ReactNode }) {
+  const lastBundle = useRef({ signature: "", pending: false });
   const raw = useSyncExternalStore(subscribe, read, () => null),
     state = (() => {
       try {
@@ -158,9 +159,47 @@ export function DemoStore({ children }: { children: ReactNode }) {
     const timer = setTimeout(() => setNotice(""), 3500);
     return () => clearTimeout(timer);
   }, [notice]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      lastBundle.current = { signature: "", pending: false };
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [raw]);
   function add(id: string, color = 0, qty = 1) {
-    write({ ...saved(), cart: addToCart(saved().cart, id, color, qty) });
+    try {
+      write({ ...saved(), cart: addToCart(saved().cart, id, color, qty) });
+    } catch (error) {
+      setNotice(
+        error instanceof RangeError
+          ? error.message
+          : "Your bag is full. Remove an item before adding more.",
+      );
+      return false;
+    }
     setNotice(`${findDemoProduct(id)!.name} added to your bag`);
+    return true;
+  }
+  function addMany(items: { id: string; color: number }[]) {
+    const signature = JSON.stringify(items);
+    if (
+      signature === lastBundle.current.signature &&
+      lastBundle.current.pending
+    )
+      return;
+    let next = saved().cart;
+    try {
+      for (const p of items) next = addToCart(next, p.id, p.color);
+    } catch (error) {
+      setNotice(
+        error instanceof RangeError
+          ? error.message
+          : "Your bag is full. Remove an item before adding more.",
+      );
+      return;
+    }
+    lastBundle.current = { signature, pending: true };
+    write({ ...saved(), cart: next });
+    setPanel("cart");
   }
   function updateLine(line: CartLine, qty: number) {
     write({
@@ -190,22 +229,16 @@ export function DemoStore({ children }: { children: ReactNode }) {
           }),
         setLayouts: (layouts) => write({ ...saved(), layouts }),
         add,
-        addMany: (items) => {
-          let next = saved().cart;
-          for (const p of items) next = addToCart(next, p.id, p.color);
-          write({ ...saved(), cart: next });
-          setPanel("cart");
-        },
+        addMany,
         openCart: () => setPanel("cart"),
         buy: (id, color, qty) => {
-          add(id, color, qty);
-          setPanel("checkout");
+          if (add(id, color, qty)) setPanel("checkout");
         },
       }}
     >
       <div className="demo-store">
         <div className="demo-announcement">
-          Interactive shopping by ReScene · Demo listings, no real payments
+          Interactive shopping by ReScene · Demo checkout, no real payments
         </div>
         <header className="demo-header">
           <Link href="/demo" className="demo-brand">

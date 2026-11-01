@@ -26,9 +26,13 @@ export function addToCart(
 ): CartLine[] {
   const line = cartLineSchema.parse({ productId, color, quantity }),
     found = cart.find((l) => l.productId === productId && l.color === color);
+  if (found && found.quantity + quantity > 20)
+    throw new RangeError(
+      "Your bag supports up to 20 of each finish. Reduce its existing quantity before adding this combination.",
+    );
   if (found)
     return cart.map((l) =>
-      l === found ? { ...l, quantity: Math.min(20, l.quantity + quantity) } : l,
+      l === found ? { ...l, quantity: l.quantity + quantity } : l,
     );
   return cartSchema.parse([...cart, line]);
 }
@@ -50,6 +54,8 @@ export const itemDraftSchema = z
       .refine((id) => !!findDemoProduct(id))
       .optional(),
     locked: z.boolean().optional(),
+    owned: z.boolean().optional(),
+    included: z.boolean().optional(),
   })
   .strict();
 export type ItemDraft = z.infer<typeof itemDraftSchema>;

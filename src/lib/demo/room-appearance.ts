@@ -191,5 +191,5 @@ export function shuffleFinishes(
 }
 export const arrangementProducts = (draft: Arrangement) =>
   Object.entries(draft.items)
-    .filter(([, item]) => item.visible)
+    .filter(([, item]) => item.included !== false && !item.owned)
     .map(([id, item]) => ({ id: itemProductId(id, item), color: item.color }));

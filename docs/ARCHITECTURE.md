@@ -1,5 +1,9 @@
 # ReScene system architecture
 
+## Shopping stylist addition — November 1
+
+The showroom uses approved listing/model snapshots exported from Neon Product records, including newly curated successful reconstructions. Typed/reviewed voice → durable two-step Spark Workflow → deterministic budget/support/collision/observed-wall validation → preview → explicit one-history-entry Apply, then the existing local bag. /api/voice/stylist shares the signed voice identity; no shopping-time image/mesh generation or payment service. Source catalog reuse retains same-scene asset guards by copying target-scoped instance assets. See [SHOPPING_STYLIST.md](SHOPPING_STYLIST.md) for lifecycle, evidence and limits.
+
 Architecture target, October 29, 2026. The app/auth/database, durable analysis/reconstruction, mask review, and saved object-transform editor are implemented. Product editing, original demo catalog replacement and immutable v2 publication/read-only sharing are implemented. Visual browser QA is pending. See [SETUP.md](SETUP.md) for verified deployment/access status, [PLAN.md](PLAN.md) for scope, and [DATA_MODEL.md](DATA_MODEL.md) for constraints.
 
 ## Background fidelity addition — November 1

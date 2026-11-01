@@ -99,7 +99,7 @@ describe("Customizable shopping showroom", () => {
       }).error,
     ).toContain("accessory");
   });
-  it("uses replacement prices and identities in the bag and excludes hidden pieces", () => {
+  it("uses replacement prices and identities while keeping view visibility separate from purchase inclusion", () => {
     const replaced = changeArrangement(
         corner,
         initialArrangement(corner),
@@ -123,6 +123,10 @@ describe("Customizable shopping showroom", () => {
     }).draft;
     expect(
       arrangementProducts(hidden).some((l) => l.id === "dining-chair"),
+    ).toBe(true);
+    hidden.items["corner-chair"].included = false;
+    expect(
+      arrangementProducts(hidden).some((l) => l.id === "dining-chair"),
     ).toBe(false);
   });
   it("rejects larger replacement collisions and leaves the accepted arrangement unchanged", () => {
@@ -131,7 +135,7 @@ describe("Customizable shopping showroom", () => {
       result = changeArrangement(living, draft, "ceramic-vase", {
         productId: "cloud-sofa",
       });
-    expect(result.error).toContain("overlaps");
+    expect(result.error).toMatch(/overlaps|walls/);
     expect(result.draft).toBe(draft);
   });
   it("locks placement while allowing finish edits and supports one-step undo for a color shuffle", () => {

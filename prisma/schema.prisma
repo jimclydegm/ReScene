@@ -96,6 +96,43 @@ enum Provider {
   FAL
 }
 
+enum CatalogRole {
+  SOURCE
+  INSTANCE
+  TEMPLATE
+}
+
+enum CatalogStatus {
+  DRAFT
+  READY
+  ARCHIVED
+}
+
+model ShoppingStylistRequest {
+  id              String     @id @default(uuid()) @db.Uuid
+  actorHash       String     @db.VarChar(64)
+  networkHash     String     @db.VarChar(64)
+  requestKey      String     @db.Uuid
+  inputHash       String     @db.Char(64)
+  catalogRevision String     @db.Char(64)
+  status          StepStatus @default(PENDING)
+  phase           String     @default("QUEUED") @db.VarChar(32)
+  input           Json
+  intent          Json?
+  result          Json?
+  usage           Json       @default("{}")
+  errorCode       String?    @db.VarChar(80)
+  errorMessage    String?    @db.VarChar(500)
+  createdAt       DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime   @updatedAt @db.Timestamptz(3)
+  expiresAt       DateTime   @db.Timestamptz(3)
+
+  @@unique([actorHash, requestKey])
+  @@index([actorHash, createdAt])
+  @@index([networkHash, createdAt])
+  @@index([status, expiresAt])
+}
+
 // Only the opaque managed-auth subject is mirrored; no passwords or sessions.
 model AppUser {
   id          String   @id @default(uuid()) @db.Uuid
@@ -218,28 +255,38 @@ model Asset {
 
 // A small per-scene catalog keeps the MVP simpler than a global product system.
 model Product {
-  id           String   @id @default(uuid()) @db.Uuid
-  sceneId      String   @db.Uuid
-  name         String   @db.VarChar(160)
-  description  String?  @db.VarChar(4000)
-  brand        String?  @db.VarChar(120)
-  sku          String?  @db.VarChar(120)
-  price        Decimal? @db.Decimal(12, 2)
-  currency     String?  @db.Char(3)
-  productUrl   String?  @db.VarChar(2048)
-  imageAssetId String?  @db.Uuid
-  modelAssetId String?  @db.Uuid
+  id              String        @id @default(uuid()) @db.Uuid
+  sceneId         String        @db.Uuid
+  name            String        @db.VarChar(160)
+  description     String?       @db.VarChar(4000)
+  brand           String?       @db.VarChar(120)
+  sku             String?       @db.VarChar(120)
+  price           Decimal?      @db.Decimal(12, 2)
+  currency        String?       @db.Char(3)
+  productUrl      String?       @db.VarChar(2048)
+  imageAssetId    String?       @db.Uuid
+  modelAssetId    String?       @db.Uuid
   // Merchant-supplied fields only, e.g. material/color. Not generated product truth.
-  attributes   Json     @default("{}")
-  createdAt    DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+  attributes      Json          @default("{}")
+  catalogRole     CatalogRole?
+  catalogStatus   CatalogStatus @default(DRAFT)
+  catalogKey      String?       @unique @db.VarChar(80)
+  sourceObjectKey String?       @unique @db.VarChar(80)
+  sourceProductId String?       @db.Uuid
+  inferredDetails Json          @default("{}")
+  createdAt       DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime      @updatedAt @db.Timestamptz(3)
 
-  scene      Scene         @relation(fields: [sceneId], references: [id], onDelete: Cascade)
-  imageAsset Asset?        @relation("ProductImage", fields: [imageAssetId], references: [id], onDelete: SetNull)
-  modelAsset Asset?        @relation("ProductModel", fields: [modelAssetId], references: [id], onDelete: SetNull)
-  objects    SceneObject[]
+  scene         Scene         @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  imageAsset    Asset?        @relation("ProductImage", fields: [imageAssetId], references: [id], onDelete: Restrict)
+  modelAsset    Asset?        @relation("ProductModel", fields: [modelAssetId], references: [id], onDelete: Restrict)
+  objects       SceneObject[]
+  sourceProduct Product?      @relation("ProductInstances", fields: [sourceProductId], references: [id], onDelete: SetNull)
+  instances     Product[]     @relation("ProductInstances")
 
   @@index([sceneId, createdAt])
+  @@index([catalogRole, catalogStatus, sceneId])
+  @@index([sourceProductId])
 }
 
 model SceneObject {

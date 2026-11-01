@@ -1,5 +1,13 @@
 # ReScene — one release pass
 
+## Budget-aware shopping stylist — November 1
+
+Plan: [SHOPPING_STYLIST_PLAN.md](SHOPPING_STYLIST_PLAN.md). Implementation/evidence: [SHOPPING_STYLIST.md](SHOPPING_STYLIST.md). Jim authorized the focused end-to-end implementation and complete ordinary catalog details, deferring enterprise inventory/library administration.
+
+- [x] Product readiness: additive Product/receipt migrations, populated linked generated listings/details/prices, restart retention, owner-scoped cross-scene reuse and fourteen approved database-backed shopping products.
+- [x] Shopping interaction: shared compact typed/voice stylist, two validated Spark looks, transient previews, one-step Apply/Undo and owned/included bag scope. Live$417/$387 results reused for HTTP verification.
+- [ ] Final CI/release and bounded no-inference production smoke. Local persistence/privacy/constraints/recovery tests/build pass; native browser/mic checks deferred. Separate library dashboard/inventory/real checkout deferred.
+
 ## Source material evidence and smooth manufactured surfaces — November 1
 
 - [x] Diagnose56e639ae: relief discarded by uniform policy, raw-plate lighting note misapplied to rendered materials, actual mesh/albedo faceting and non-indexed rewrite failure.
