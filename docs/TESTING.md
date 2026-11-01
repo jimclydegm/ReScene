@@ -329,3 +329,8 @@ Fifteen SAMPLE products and fifteen separate SETTING records are registered and 
 
 `tests/quality.test.ts` covers GLB round trips (TRS, data maps, alpha), layered diagnostics, conservative repair (winding, mask-evidence fragments, planar vs curved), the full-surface bake (coverage, provider harmonization, untouched unused atlas, protected regions), physical placement (multi-contact seating, rest tilt, walls vs openings, duplicates), review gating, strict Meta schemas, paid-run confirmation and an end-to-end synthetic two-object pass. Offline saved-data evidence (no DB writes, no inference): `node --conditions=react-server --import tsx scripts/quality-evidence.ts <fixture-dir> <out-dir> [original-prefix]`; results in ignored `test-results/quality/`.
 
+
+
+## Meta voice — November 1
+
+The279-case suite includes20 focused voice cases covering WAV conversion/validation, Meta multipart contracts, idempotent receipt recovery/failure handling, limits, private actor/auth identity and bounded showroom changes with one-step undo. One live adapter clip plus a second2.24-second HTTP clip and one Spark proposal verify real speech-to-scene interpretation; repeated calls reuse saved receipts. No saved scene was mutated. Production delivery/guard checks pass using `SMOKE_BASE_URL=https://rescene-eta.vercel.app node scripts/verify-voice.mjs`; optionally set VOICE_SESSION_FILE to an existing ignored QA session to include private prompt bundles. This command submits no inference. Native microphone/dialog/click-to-Apply checks remain unavailable because Work browser access is disabled. See VOICE.md; private evidence is ignored under test-results/voice.

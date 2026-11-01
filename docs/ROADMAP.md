@@ -7,7 +7,7 @@
 - [x] Spark-reviewed showroom commands, explicit Apply, stale-preview rejection, existing placement guards and grouped Undo.
 - [x] Durable private receipts, scoped recovery, format/rate/concurrency guards and additive Neon migration.
 - [x]279 cases/schema/lint/types/build; live ASR + Spark and duplicate/auth/origin/context checks without saved-scene mutations.
-- [ ] PR/main CI, production deployment and bounded delivered-control checks. Native microphone/dialog QA unavailable.
+- [x] PR40/main CI pass; production READY and live delivered prompt/demo/style/worklet plus identity/auth/origin/invalid-input checks pass. No further inference or saved-scene writes. Native microphone/dialog QA unavailable.
 
 ## Shopping showroom customization — November 1
 
