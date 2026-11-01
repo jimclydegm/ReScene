@@ -251,3 +251,9 @@ No relational migration: `Scene.settings.environmentObservation={version,photoId
 ## Sample library v3
 
 Thirty immutable public photos have full generation provenance in /samples/v3/provenance.json. The idempotent scripts/seed-sample-library-v3.ts verifies hashes before registering fifteen product SAMPLE and fifteen SETTING ContentItems with sampleKey=:v3, publicPath, aspect, dimensions, prompt/model/time/hash metadata. SETTING rows are excluded from product-library queries. Old keys/media remain unchanged. New CompositionDraft/ContentGeneration writes use templateVersion4, existing templateKey/aspect columns, and composition-v4 requestSnapshot freezes the resolved v2/v3 setting path. New9:16 output is accepted without changing old recipe values. No relational migration.
+
+## Saved appearance versions — November 1
+
+No new relational schema for reconstruction fidelity. Private `Scene.settings.appearanceHistory={undo,redo}` holds up to eight before/after render snapshots per stack. Snapshots reference existing same-scene model/mask/material assets and preserve the compatible transforms/stage, plus quality and background restore metadata. Canonical fingerprints ignore JSONB property order. Workspace returns only the latest undo/redo labels. Public snapshots exclude history and analysis; their optional bounded `composition.background.spatial` contains only rear distance, curve radius, confidence and source enum.
+
+The existing background-variants migration was present in the checkout but unrecorded in Neon, where the exact table/index/constraint schema already existed. After catalog verification, Prisma migration history was baselined to that schema; no table was replaced or data dropped.

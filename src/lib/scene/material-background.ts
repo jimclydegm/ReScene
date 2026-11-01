@@ -20,8 +20,8 @@ export function materialSurfaceGeometry(composition:SceneComposition,floorY:numb
  }
  // A studio sweep has no wall seam to recover. Place its smooth bend behind the
  // observed subjects, retaining an unbounded foreground and no lateral corners.
- const rear=target.clone().addScaledVector(forward,Math.max(3,composition.room.depth*.5));rear.y=floorY;
- return {extent,walls,curve:composition.background?.transition==="curve"||!!points&&!walls.length,rear:rear.toArray() as [number,number,number],yaw:Math.atan2(-forward.x,-forward.z),radius:Math.max(1.5,Math.min(4,composition.room.height*.5))};
+ const rear=target.clone().addScaledVector(forward,composition.background?.spatial?.rearDistance??Math.max(.5,composition.room.height*.35));rear.y=floorY;
+ return {extent,walls,curve:composition.background?.transition==="curve"||!!points&&!walls.length,rear:rear.toArray() as [number,number,number],yaw:Math.atan2(-forward.x,-forward.z),radius:composition.background?.spatial?.curveRadius??Math.max(.25,Math.min(1.5,composition.room.height*.3))};
 }
 export function sweepGeometry(width:number,radius:number,height:number){
  const vertices:number[]=[],uv:number[]=[],indices:number[]=[],rows=33;

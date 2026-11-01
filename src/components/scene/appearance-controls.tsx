@@ -3,23 +3,24 @@ import {lightingPresets} from "@/lib/scene/lighting";
 import { RotateCcw, Sparkles, Check, RefreshCw } from "lucide-react";
 import type { Lighting } from "@/lib/scene/lighting";
 import { RangeField } from "@/components/ui/range-field";
-export function AppearanceControls({ panel, lighting, setLighting, dirty, objectDirty, busy, applied, onTexture, onRefresh, onReset, texturesBlocked = false,relightableBackground=false }: {
+export function AppearanceControls({ panel, lighting, setLighting, dirty, objectDirty, busy, applied, onTexture, onRefresh, onReset, texturesBlocked = false,relightableBackground=false,coordinated=false }: {
   panel: "textures" | "lighting"; lighting: Lighting; setLighting: (value: Lighting) => void; dirty: boolean; objectDirty: boolean; busy: boolean; applied: boolean;
-  relightableBackground?:boolean;texturesBlocked?: boolean; onTexture: () => void; onRefresh:()=>void; onReset: () => void;
+  coordinated?:boolean;relightableBackground?:boolean;texturesBlocked?: boolean; onTexture: () => void; onRefresh:()=>void; onReset: () => void;
 }) {
   if (panel === "textures") return <section className="panel-stack" aria-label="Photo textures">
     <div className="panel-block">
-      <div className="panel-heading"><h3>Photo textures</h3><span className={`setting-badge${applied ? " active" : ""}`}>{applied ? "Applied" : "AI original"}</span></div>
+      <div className="panel-heading"><h3>Photo detail transfer</h3><span className={`setting-badge${applied||coordinated ? " active" : ""}`}>{coordinated?"Quality bake":applied ? "Applied" : "AI original"}</span></div>
       <p className="panel-hint">Copy visible logos, lettering and surface detail from your photo onto the meshes.</p>
-      <div className="texture-status"><span className="texture-swatch"/><div><strong>{applied ? "Source photo detail" : "Generated appearance"}</strong><small>{applied ? "Visible surfaces · up to 2K" : "Original model textures"}</small></div>{applied && <Check size={16}/>}</div>
-      <div className="panel-buttons">
+      <div className="texture-status"><span className="texture-swatch"/><div><strong>{coordinated?"Coordinated material bake":applied ? "Source photo detail" : "Generated appearance"}</strong><small>{coordinated?"Coverage and placement checked":applied ? "Visible surfaces · up to 2K" : "Original model textures"}</small></div>{(applied||coordinated) && <Check size={16}/>}</div>
+      {!coordinated&&<div className="panel-buttons">
         <button className={`button ${applied ? "button-light" : "button-dark"}`} disabled={busy || dirty || objectDirty || texturesBlocked} onClick={onTexture}><Sparkles size={14}/>{busy ? "Working…" : applied ? "Restore AI textures" : "Copy photo textures"}</button>
         {applied&&<button className="button button-light" disabled={busy||dirty||objectDirty||texturesBlocked} onClick={onRefresh}><RefreshCw size={14}/>Refresh detail</button>}
-      </div>
+      </div>}
+      {coordinated&&<p className="panel-hint">The quality bake already includes photo detail. Use Meta materials above to regenerate, or texture versions to undo.</p>}
       {texturesBlocked ? <p className="panel-note">Restore original objects in Products first.</p> : (dirty || objectDirty) && <p className="panel-note">Save your changes before switching textures.</p>}
     </div>
     <details className="panel-details"><summary>What gets copied?</summary>
-      <p>Visible surfaces use aligned photo detail; hidden surfaces keep their AI texture. Small text is limited by photo resolution. Textures save immediately, can be restored, and include the photo&apos;s lighting, so softer scene lights keep more detail.</p>
+      <p>{coordinated?"Visible markings use aligned source detail. Generated material samples cover supported UV surfaces, including hidden faces; remaining regions retain the provider texture. Small text is limited by photo resolution. Unseen detail is estimated.":"Visible surfaces use aligned photo detail; hidden surfaces keep their AI texture. Small text is limited by photo resolution. Textures save immediately and can be restored. Softer scene lights keep more photographed detail."}</p>
     </details>
   </section>;
   return <section className="panel-stack" aria-label="Scene lighting"><div className="panel-block"><h3>Lighting mood</h3><div className="preset-row">{Object.entries(lightingPresets).map(([name,value])=><button className="button button-light" key={name} disabled={busy} onClick={()=>setLighting(structuredClone(value))}>{name}</button>)}</div><p className="panel-note">{relightableBackground?"Presets illuminate the reconstructed background materials and objects. Photo detail on object meshes can still contain source lighting.":"Presets adjust the 3D lights. Photographed background lighting is baked into the image."}</p></div>

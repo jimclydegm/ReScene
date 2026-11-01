@@ -5,6 +5,7 @@ const mocks=vi.hoisted(()=>({
   db:{generationRun:{findUniqueOrThrow:vi.fn(),findFirst:vi.fn(),updateMany:vi.fn(),update:vi.fn()},generationStep:{count:vi.fn(),updateMany:vi.fn(),upsert:vi.fn(),findFirst:vi.fn(),create:vi.fn(),update:vi.fn()},sceneObject:{findMany:vi.fn()},scene:{updateMany:vi.fn()},asset:{create:vi.fn()},$transaction:vi.fn()},
   fill:vi.fn(),analyze:vi.fn(),read:vi.fn(),put:vi.fn(),plain:vi.fn(),composite:vi.fn()
 }));
+vi.mock("@/lib/services/appearance-history",()=>({captureAppearance:async()=>({}),recordAppearance:async()=>{}}));
 vi.mock("server-only",()=>({}));
 vi.mock("@/lib/services/background-understanding",()=>({understandSceneBackground:async()=>({topology:"distant"})}));
 vi.mock("@/lib/db",()=>({getDb:()=>mocks.db}));

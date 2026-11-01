@@ -1,3 +1,4 @@
+import {captureAppearance,recordAppearance} from "./appearance-history";
 import "server-only";
 import {createHash,randomUUID} from "node:crypto";
 import type {Prisma} from "@/generated/prisma/client";
@@ -31,10 +32,18 @@ export async function buildMaterialBackground(runId:string,understanding:Backgro
   catch{await db.generationStep.update({where:{id:check.id},data:{status:"FAILED",errorCode:"MATERIAL_CHECK_UNAVAILABLE",completedAt:new Date()}});warnings.push(`${part}: solid material used because texture review was unavailable.`);}
  }
  if(understanding.topology==="cyclorama"){plan.materials!.wall=plan.materials!.ground;ids.wall=ids.ground;}
+ const {estimateBackgroundSpatial}=await import("@/lib/scene/environment-spatial"),{modelPlacementSchema}=await import("@/lib/scene/composition"),{depthStep}=await import("./background-environment"),{decodeEnvironmentDepth}=await import("@/lib/appearance/environment-depth");
+ const depth=await depthStep(runId);const grid=depth?.response?decodeEnvironmentDepth(JSON.parse((await readLimited(depth.response.storageKey,8*1024*1024)).toString())):null;
+ const anchors=objects.filter(o=>o.mask?.status==="READY").flatMap((o,i)=>{const p=modelPlacementSchema.safeParse(o.initialTransform);return p.success?[{mask:masks[i],position:[o.positionX,o.positionY,o.positionZ] as [number,number,number],size:p.data.size}]:[];});
+ plan.spatial=estimateBackgroundSpatial(composition,grid,anchors);
  const settings=record(scene.settings);
  await db.$transaction(async tx=>{
+    const appearanceBefore=await captureAppearance(tx,scene.id);
+
   if(!await tx.generationRun.findFirst({where:{id:runId,status:{in:["RUNNING","WAITING"]}}}))throw new Error("BACKGROUND_RUN_STALE");
   const changed=await tx.scene.updateMany({where:{id:scene.id,revision:scene.revision,archivedAt:null,status:"READY"},data:{stage:json({...composition,background:plan}),...(!saved.success?{camera:json(composition.camera)}:{}),settings:json({...settings,backgroundBackup:{background:settings.background??null,backgroundPlan:composition.background??null},backgroundPlan:plan,background:{version:"material-background-v2",photoId:scene.normalizedAssetId,floorId:ids.ground,wallId:ids.wall,warnings}}),revision:{increment:1}}});if(!changed.count)throw new Error("BACKGROUND_REVISION_CHANGED");
   if(warnings.length)await tx.generationRun.update({where:{id:runId},data:{errorMessage:"Background rebuilt with clean solid fallbacks where generated texture could not be validated. Your objects are unchanged."}});
- });
+
+    await recordAppearance(tx,scene.id,appearanceBefore,"Rebuild background");
+});
 }

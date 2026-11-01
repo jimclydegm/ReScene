@@ -12,6 +12,7 @@ import { UnsavedNavigation } from "./unsaved-navigation";
 import { PublicationControls } from "./publication-controls";
 import { CatalogControls, type CatalogItem } from "./catalog-controls";
 import { ProductControls } from "./product-controls";
+import {TextureControls,type TextureOptions} from "./texture-controls";
 import { AppearanceControls } from "./appearance-controls";
 import { defaultLighting, type Lighting } from "@/lib/scene/lighting";
 import { ReferencePhoto } from "./reference-photo";
@@ -124,11 +125,11 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     } catch(e) { setError(e instanceof Error ? e.message : "Could not update the object."); }
     finally { setBusy(false); }
   }
-  async function action(kind: "ANALYZE" | "RECONSTRUCT" | "SEGMENT_OBJECT" | "IMAGE_EDIT", segmentation?:SegmentationOptions,backgroundMode?:"reference"|"materials"|"photo") {
+  async function action(kind: "ANALYZE" | "RECONSTRUCT" | "SEGMENT_OBJECT" | "IMAGE_EDIT", segmentation?:SegmentationOptions,backgroundMode?:"reference"|"materials"|"photo",reanalyze=false) {
     setBusy(true); setError(""); setMessage("");
     try {
       await apiJson(`${base}/runs`, { method: "POST", body: JSON.stringify({ kind, expectedRevision: data.revision,
-        idempotencyKey: crypto.randomUUID(), ...(backgroundMode?{background:{mode:backgroundMode}}:{}), ...(kind === "ANALYZE" ? {analysis:analysisOptions} : kind === "SEGMENT_OBJECT" ? {segmentation} : kind === "RECONSTRUCT" ? { objectIds: chosen, reconstruction:reconstructionOptions } : {}) }) });
+        idempotencyKey: crypto.randomUUID(), ...(backgroundMode?{background:{mode:backgroundMode,reanalyze}}:{}), ...(kind === "ANALYZE" ? {analysis:analysisOptions} : kind === "SEGMENT_OBJECT" ? {segmentation} : kind === "RECONSTRUCT" ? { objectIds: chosen, reconstruction:reconstructionOptions } : {}) }) });
       await reload();
     } catch (e) { await reload().catch(()=>{}); setError(e instanceof Error ? e.message : "Generation could not start."); }
     finally { setBusy(false); }
@@ -204,7 +205,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     catch(e){setError(e instanceof Error?e.message:"The quality pass could not finish.");}
     finally{setBusy(false);}
   }
-  async function paidQuality(options:{materials:boolean;masks:boolean;review:boolean}){
+  async function paidQuality(options:TextureOptions){
     setBusy(true);setError("");setMessage("");
     try{await apiJson(`${base}/runs`,{method:"POST",body:JSON.stringify({kind:"IMAGE_EDIT",confirmed:true,quality:options,expectedRevision:data.revision,idempotencyKey:crypto.randomUUID()})});await reload();setMessage("Meta quality pass started. Your current scene stays available.");}
     finally{setBusy(false);}
@@ -214,6 +215,27 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     try{await apiJson(`${base}/composition`,{method:"POST",body:JSON.stringify({action:"BACKGROUND",backdrop,expectedRevision:data.revision})});await reload();setMessage("Backdrop saved. No generation needed.");}
     catch(e){setError(e instanceof Error?e.message:"Could not change the backdrop.");}
     finally{setBusy(false);}
+  }
+  async function generateVariant(stylePrompt?:string){
+    setBusy(true);setError("");setMessage("");
+    try{await apiJson(`${base}/backgrounds`,{method:"POST",body:JSON.stringify({action:"GENERATE",expectedRevision:data.revision,idempotencyKey:crypto.randomUUID(),...(stylePrompt?{stylePrompt}:{})})});await reload();setMessage("New background design started. Your current background stays active.");}
+    catch(e){await reload().catch(()=>{});setError(e instanceof Error?e.message:"Could not start a new background.");}
+    finally{setBusy(false);}
+  }
+  async function selectVariant(variantId:string){
+    setBusy(true);setError("");setMessage("");
+    try{await apiJson(`${base}/backgrounds`,{method:"POST",body:JSON.stringify({action:"SELECT",expectedRevision:data.revision,variantId})});await reload();setViewerRetry(v=>v+1);setMessage("Background design switched and saved.");}
+    catch(e){setError(e instanceof Error?e.message:"Could not switch backgrounds.");}
+    finally{setBusy(false);}
+  }
+  async function deleteVariant(variantId:string){
+    setBusy(true);setError("");setMessage("");
+    try{await apiJson(`${base}/backgrounds`,{method:"POST",body:JSON.stringify({action:"DELETE",expectedRevision:data.revision,variantId})});await reload();setMessage("Background design deleted. Other designs are unchanged.");}
+    catch(e){setError(e instanceof Error?e.message:"Could not delete this background.");}
+    finally{setBusy(false);}
+  }
+  async function textureHistory(action:"UNDO"|"REDO"){
+    setBusy(true);setError("");try{await apiJson(`${base}/appearance`,{method:"POST",body:JSON.stringify({action,expectedRevision:data.revision})});await reload();setViewerRetry(v=>v+1);setMessage(action==="UNDO"?"Previous texture version restored.":"Texture version reapplied.");}catch(e){setError(e instanceof Error?e.message:"Could not change textures.");}finally{setBusy(false);}
   }
   async function appearance(action: "APPLY" | "RESTORE" | "LIGHTING") {
     setBusy(true); setError(""); setMessage("");
@@ -335,9 +357,9 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
               <div className="panel-block"><label className="field-label">Object color<input aria-label="Object color" type="color" value={current.tint??"#ffffff"} onChange={e=>edit(current.id,{tint:e.target.value})}/></label><button className="text-link" onClick={()=>edit(current.id,{tint:null})}>Restore original color</button><p className="panel-note">Color tints the existing texture and preserves surface detail. Dark textures may limit bright colors.</p></div><label className="visibility-toggle"><span><Eye size={14}/>Visible</span><input className="switch-input" role="switch" type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/></label>
             </fieldset>}
           </div>
-          : value === "scene" ? <SceneLayoutControls onRetry={retryObjects} onMask={chooseMask} data={data} locked={locked} unsaved={unsaved} blocked={hasReplacements} onMatch={() => matchLayout("MATCH_PHOTO")} onReview={() => matchLayout("REVIEW_PHOTO")} onRestore={() => matchLayout("RESTORE")} onBackdrop={changeBackdrop} onRestoreBackground={()=>matchLayout("RESTORE_BACKGROUND")} onBackground={mode => action("IMAGE_EDIT",undefined,mode)} onQuality={()=>quality("IMPROVE")} onQualityRestore={()=>quality("RESTORE")} onQualityPaid={paidQuality}/>
+          : value === "scene" ? <SceneLayoutControls onRetry={retryObjects} onMask={chooseMask} data={data} locked={locked} unsaved={unsaved} blocked={hasReplacements} onMatch={() => matchLayout("MATCH_PHOTO")} onReview={() => matchLayout("REVIEW_PHOTO")} onRestore={() => matchLayout("RESTORE")} onBackdrop={changeBackdrop} onRestoreBackground={()=>matchLayout("RESTORE_BACKGROUND")} onBackground={mode => action("IMAGE_EDIT",undefined,mode)} onGenerateVariant={generateVariant} onSelectVariant={selectVariant} onDeleteVariant={deleteVariant} onQuality={()=>quality("IMPROVE")} onQualityRestore={()=>quality("RESTORE")} onQualityPaid={paidQuality}/>
           : value === "products" ? current?.modelUrl ? <div className="panel-stack">{current.assemblyRootId ? <p className="panel-note">This region shares geometry with its complete subject. Move the subject to keep them together; catalog replacement applies to standalone objects.</p> : <CatalogControls items={catalogItems} busy={locked} dirty={unsaved} canRestore={current.canRestoreOriginal} onSeed={() => catalogAction("SEED")} onReplace={id => catalogAction("REPLACE", id)} onRestore={() => catalogAction("RESTORE")}/>}<ProductControls object={current} busy={locked} onChange={product => edit(current.id, { product })}/></div> : <p className="panel-empty">Select an object to add its product card.</p>
-          : <AppearanceControls panel={value} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={locked} texturesBlocked={hasReplacements} relightableBackground={Boolean(data.composition?.background?.surfaceMode)} applied={data.appearance.applied} onRefresh={()=>appearance("APPLY")} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
+          : <>{value==="textures"&&<TextureControls data={data} disabled={locked||unsaved||hasReplacements} onGenerate={paidQuality} onHistory={textureHistory} onBackground={reanalyze=>action("IMAGE_EDIT",undefined,"reference",reanalyze)}/>}<AppearanceControls coordinated={Boolean(data.quality)} panel={value} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={locked} texturesBlocked={hasReplacements} relightableBackground={Boolean(data.composition?.background?.surfaceMode)} applied={data.appearance.applied} onRefresh={()=>appearance("APPLY")} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/></>}
         </div>)}
         <div className="inspector-footer">
           <button className="icon-button" title="Undo (Ctrl/⌘ Z)" aria-label="Undo edit" disabled={!history.length || locked} onClick={() => {interaction.current=null;setEditor(undoEdit);}}><Undo2 size={15}/></button>

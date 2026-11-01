@@ -8,11 +8,19 @@ export const restartInputSchema = z.object({
   confirmed: z.literal(true)
 }).strict();
 export type RestartTarget = z.infer<typeof restartInputSchema>["target"];
+export const backgroundVariantInputSchema = z.object({
+  name: z.string().trim().min(1).max(120).optional(),
+  stylePrompt: z.string().trim().min(1).max(500).optional()
+}).strict();
+export type BackgroundVariantInput = z.infer<typeof backgroundVariantInputSchema>;
+export const materialQualityOptions = z.object({objectIds:z.array(z.uuid()).min(1).max(10).optional(),materials:z.boolean(),masks:z.boolean(),review:z.boolean(),refresh:z.boolean().default(false),textureSize:z.union([z.literal(1024),z.literal(2048),z.literal(4096)]).default(2048),photoStrength:z.number().min(0).max(1).default(.35)}).strict();
+export type MaterialQualityOptions=z.infer<typeof materialQualityOptions>;
 export const runInputSchema = z.object({
   kind: z.enum(["ANALYZE", "SEGMENT_OBJECT", "RECONSTRUCT", "IMAGE_EDIT"]), expectedRevision: z.number().int().nonnegative(),
   idempotencyKey: z.uuid(), objectIds: z.array(z.uuid()).min(1).max(10).optional(),
-  background:z.object({mode:z.enum(["reference","materials","photo"])}).strict().optional(),repair:z.boolean().optional(),
-  quality:z.object({objectIds:z.array(z.uuid()).min(1).max(10).optional(),materials:z.boolean(),masks:z.boolean(),review:z.boolean()}).strict().optional(),confirmed:z.literal(true).optional(),
+  background:z.object({mode:z.enum(["reference","materials","photo"]),reanalyze:z.boolean().optional()}).strict().optional(),repair:z.boolean().optional(),
+  quality:materialQualityOptions.optional(),
+  backgroundVariant:backgroundVariantInputSchema.optional(),confirmed:z.literal(true).optional(),
   analysis: analysisOptionsSchema.optional(), segmentation: segmentationOptionsSchema.optional(), reconstruction: reconstructionOptionsSchema.optional()
 }).strict().superRefine((input, ctx) => {
   if (input.kind === "RECONSTRUCT" && (input.objectIds && new Set(input.objectIds).size !== input.objectIds.length)) {
@@ -20,6 +28,7 @@ export const runInputSchema = z.object({
   }
   if(input.background&&input.kind!=="IMAGE_EDIT")ctx.addIssue({code:"custom",message:"Background controls belong to the background step."});
   if(input.quality&&(input.kind!=="IMAGE_EDIT"||!input.confirmed||input.background))ctx.addIssue({code:"custom",message:"Confirm the paid quality pass separately from background controls."});
+  if(input.backgroundVariant&&(input.kind!=="IMAGE_EDIT"||!input.confirmed||input.background||input.quality))ctx.addIssue({code:"custom",message:"Confirm a background variant separately from other background work."});
   if(input.repair&&(input.kind!=="RECONSTRUCT"||!input.confirmed||!input.objectIds?.length))ctx.addIssue({code:"custom",message:"Confirm a paid retry and choose objects."});
   if (input.kind === "SEGMENT_OBJECT" && !input.segmentation) ctx.addIssue({code:"custom",message:"Choose an object and its segmentation prompt.",path:["segmentation"]});
   if (input.kind !== "SEGMENT_OBJECT" && input.segmentation || input.kind !== "ANALYZE" && input.analysis || input.kind !== "RECONSTRUCT" && (input.reconstruction || input.objectIds)) ctx.addIssue({code:"custom",message:"These controls belong to a different step."});

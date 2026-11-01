@@ -1,9 +1,8 @@
 "use client";
-import {ReferenceBackground} from "./reference-background";
+import {ReferenceBackground, TextureErrorBoundary} from "./reference-background";
 import {MaterialBackground} from "./material-background";
-import { useMemo, useEffect } from "react";
-import { useTexture } from "@react-three/drei";
-import { ClampToEdgeWrapping, MirroredRepeatWrapping, SRGBColorSpace } from "three";
+import { useMemo, useEffect, useState } from "react";
+import { ClampToEdgeWrapping, MirroredRepeatWrapping, SRGBColorSpace, TextureLoader, type Texture } from "three";
 import { backgroundProjection, backgroundSurfaces } from "@/lib/scene/background";
 import { createSurfaceMaterial } from "@/lib/scene/surface-material";
 import type { SceneComposition } from "@/lib/scene/composition";
@@ -11,8 +10,10 @@ import type { SceneComposition } from "@/lib/scene/composition";
 function SurfaceMaterial({ composition, color, url, tiled = false, shadows = true }: {
   composition: SceneComposition; color: string; url?: string | null; tiled?: boolean; shadows?: boolean;
 }) {
-  return url ? <TexturedSurface composition={composition} color={color} url={url} tiled={tiled} shadows={shadows}/> :
-    <SolidSurface composition={composition} color={color} shadows={shadows}/>;
+  if (!url) return <SolidSurface composition={composition} color={color} shadows={shadows}/>;
+  return <TextureErrorBoundary resetKey={url} fallback={<SolidSurface composition={composition} color={color} shadows={shadows}/>}>
+    <TexturedSurface composition={composition} color={color} url={url} tiled={tiled} shadows={shadows}/>
+  </TextureErrorBoundary>;
 }
 function SolidSurface({composition,color,shadows}:{composition:SceneComposition;color:string;shadows:boolean}) {
   const material=useMemo(()=>createSurfaceMaterial(backgroundProjection(composition.camera),color,"solid",shadows ? .2 : 0),[composition.camera,color,shadows]);
@@ -20,18 +21,32 @@ function SolidSurface({composition,color,shadows}:{composition:SceneComposition;
   return <primitive object={material} attach="material"/>;
 }
 function TexturedSurface({composition,color,url,tiled,shadows}:{composition:SceneComposition;color:string;url:string;tiled:boolean;shadows:boolean}) {
-  const source=useTexture(url);
+  // Load imperatively (no suspense throw): a failed signed texture renders
+  // the solid surface instead of crashing the viewer.
+  const [state,setState]=useState<{key:string;loaded:Texture|null;failed:boolean}>({key:"",loaded:null,failed:false});
+  const loadKey=`${url}|${tiled ? "tiled" : "flat"}`;
+  useEffect(()=>{
+    let alive=true;
+    void new TextureLoader().loadAsync(url).then((texture)=>{
+      if(!alive){texture.dispose();return;}
+      texture.colorSpace=SRGBColorSpace;
+      texture.wrapS=texture.wrapT=tiled?MirroredRepeatWrapping:ClampToEdgeWrapping;
+      texture.needsUpdate=true;
+      setState({key:loadKey,loaded:texture,failed:false});
+    }).catch(()=>{if(alive)setState({key:loadKey,loaded:null,failed:true});});
+    return ()=>{alive=false;};
+  },[url,tiled,loadKey]);
+  const loaded=state.key===loadKey?state.loaded:null,failed=state.key===loadKey?state.failed:false;
   const owned=useMemo(()=>{
-    const texture=source.clone();texture.colorSpace=SRGBColorSpace;
-    texture.wrapS=texture.wrapT=tiled?MirroredRepeatWrapping:ClampToEdgeWrapping;
-    // Custom shader UVs apply the tile scale below.
-    texture.needsUpdate=true;
+    if(!loaded)return null;
     const material=createSurfaceMaterial(backgroundProjection(composition.camera),color,tiled?"tile":"photo",shadows ? .2 : 0);
     if(tiled)material.vertexShader=material.vertexShader.replace("surfaceUv = uv;","surfaceUv = uv * 60.0;");
-    material.uniforms.photo.value=texture;
-    return {texture,material};
-  },[source,composition.camera,color,tiled,shadows]);
-  useEffect(()=>()=>{owned.texture.dispose();owned.material.dispose();},[owned]);
+    material.uniforms.photo.value=loaded;
+    return {texture:loaded,material};
+  },[loaded,composition.camera,color,tiled,shadows]);
+  useEffect(()=>()=>{owned?.texture.dispose();owned?.material.dispose();},[owned]);
+  if(failed)return <SolidSurface composition={composition} color={color} shadows={shadows}/>;
+  if(!owned)return null;
   return <primitive object={owned.material} attach="material"/>;
 }
 

@@ -1,5 +1,14 @@
 # ReScene — one release pass
 
+## Reconstruction fidelity — November 1
+
+- [x] Inspect reported22632152 source, failed overlay attempt, materials and fixed background setback.
+- [x] Foreground-calibrated Meta depth for architectural planes and studio sweep spacing, with source-scoped reuse and confidence fallback.
+- [x] High-reasoning material analysis/review, explicit sample regeneration, 2K/4K baking, source-evidence labels, thin-part calibration, structural detail preservation and same-material seam reconciliation.
+- [x] Persisted texture/background Undo/Redo and compact texture/reanalysis controls; durable per-object/per-material provider steps.
+- [x] Live four-object plan/five Muse samples/first final review; fresh environment analysis and one depth job; local252 cases/schema/lint/build pass.
+- [ ] Apply final cached material correction/background, verify real undo/redo, merge CI and production smoke. Native browser checks unavailable.
+
 ## Visual cleanup — October31
 
 - [x] Default boxes and low-opacity cyan object silhouettes; dismissible generation/review/save/shopping notices.

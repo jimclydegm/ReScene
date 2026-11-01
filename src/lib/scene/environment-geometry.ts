@@ -1,3 +1,4 @@
+import {foregroundDepthScale,type EnvironmentAnchor} from "./environment-spatial";
 import { environmentUsesTexture } from "./environment-material";
 import { Matrix3, Plane, Ray, ShapeUtils, Vector2, Vector3 } from "three";
 import { backgroundCamera } from "./background";
@@ -104,6 +105,7 @@ export function buildEnvironmentGeometry(
   composition: SceneComposition,
   grid: DepthGrid,
   masks: Uint8Array[] = [],
+  anchors:EnvironmentAnchor[] = [],
 ) {
   if (
     grid.sourceWidth / grid.sourceHeight / composition.camera.aspect < 0.97 ||
@@ -151,8 +153,9 @@ export function buildEnvironmentGeometry(
           if (s > 0 && s < 1000) scales.push(s);
         }
       }
+  const foreground=foregroundDepthScale(grid,composition,anchors);
   const target = new Vector3(...composition.camera.target),
-    scale =
+    scale = foreground?.anchors && foreground.spread<1.8 ? foreground.scale :
       scales.length >= 12
         ? median(scales)
         : origin.distanceTo(target) /
@@ -160,7 +163,7 @@ export function buildEnvironmentGeometry(
   if (!Number.isFinite(scale) || scale <= 0 || scale > 1000)
     throw new Error("ENVIRONMENT_DEPTH_SCALE");
   const warnings: string[] =
-    scales.length < 12
+    scales.length < 12 && !foreground?.anchors
       ? [
           "No reliable ground anchor; background depth uses the saved scene scale.",
         ]
@@ -628,6 +631,7 @@ export function buildEnvironmentGeometry(
       coverage,
       projectionError,
       depthScale: scale,
+      scaleAnchors:foreground?.anchors??0,
       metrics,
       warnings,
     },

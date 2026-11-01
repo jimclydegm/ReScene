@@ -1,6 +1,5 @@
 "use client";
-import { useEffect, useMemo } from "react";
-import { useTexture } from "@react-three/drei";
+import { Component, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   BufferAttribute,
   BufferGeometry,
@@ -9,6 +8,7 @@ import {
   MeshBasicMaterial,
   MeshStandardMaterial,
   SRGBColorSpace,
+  TextureLoader,
   Vector3,
   type Texture,
 } from "three";
@@ -165,20 +165,70 @@ function Textured({
   url: string;
   shadows: boolean;
 }) {
-  const source = useTexture(url),
-    texture = useMemo(() => {
-      const t = source.clone();
-      t.colorSpace = SRGBColorSpace;
-      t.wrapS = t.wrapT = ClampToEdgeWrapping;
-      t.anisotropy = 8;
-      t.needsUpdate = true;
-      return t;
-    }, [source]);
-  useEffect(() => () => texture.dispose(), [texture]);
+  // Load imperatively instead of suspending: a failed signed texture must
+  // never throw during render (that crashes the viewer / triggers the dev
+  // overlay). While loading or after a failure, faces render untextured.
+  const [state, setState] = useState<{
+    url: string;
+    texture: Texture | null;
+    failed: boolean;
+  }>({ url: "", texture: null, failed: false });
+  useEffect(() => {
+    let alive = true;
+    void new TextureLoader()
+      .loadAsync(url)
+      .then((loaded) => {
+        if (!alive) {
+          loaded.dispose();
+          return;
+        }
+        loaded.colorSpace = SRGBColorSpace;
+        loaded.wrapS = loaded.wrapT = ClampToEdgeWrapping;
+        loaded.anisotropy = 8;
+        setState({ url, texture: loaded, failed: false });
+      })
+      .catch(() => {
+        if (alive) setState({ url, texture: null, failed: true });
+      });
+    return () => {
+      alive = false;
+    };
+  }, [url]);
+  const texture = state.url === url ? state.texture : null;
+  const failed = state.url === url ? state.failed : false;
+  useEffect(() => () => state.texture?.dispose(), [state.texture]);
   return (
-    <Faces composition={composition} texture={texture} shadows={shadows} />
+    <Faces
+      composition={composition}
+      texture={failed ? null : texture}
+      shadows={shadows}
+    />
   );
 }
+/**
+ * A background texture must never take down the viewer. Signed texture URLs
+ * can fail in the browser (expired link, CORS-blocked origin, transient
+ * network) while the rest of the scene is fine, so a texture failure falls
+ * back to untextured reference materials. A fresh URL resets the boundary.
+ */
+export class TextureErrorBoundary extends Component<
+  { resetKey: string; fallback: ReactNode; children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidUpdate(previous: { resetKey: string }) {
+    if (previous.resetKey !== this.props.resetKey && this.state.failed) {
+      this.setState({ failed: false });
+    }
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
+
 export function ReferenceBackground({
   composition,
   url,
@@ -188,9 +238,19 @@ export function ReferenceBackground({
   url: string | null;
   shadows: boolean;
 }) {
-  return url ? (
-    <Textured composition={composition} url={url} shadows={shadows} />
-  ) : (
-    <Faces composition={composition} texture={null} shadows={shadows} />
+  if (!url) {
+    return (
+      <Faces composition={composition} texture={null} shadows={shadows} />
+    );
+  }
+  return (
+    <TextureErrorBoundary
+      resetKey={url}
+      fallback={
+        <Faces composition={composition} texture={null} shadows={shadows} />
+      }
+    >
+      <Textured composition={composition} url={url} shadows={shadows} />
+    </TextureErrorBoundary>
   );
 }

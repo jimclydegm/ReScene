@@ -89,12 +89,24 @@ async function isQualityRun(runId:string){
   const run=await getDb().generationRun.findUnique({where:{id:runId}});
   return Boolean(run?.input&&typeof run.input==="object"&&"quality" in run.input);
 }
+async function isBackgroundVariantRun(runId:string){
+  "use step";
+  const {getDb}=await import("@/lib/db");
+  const run=await getDb().generationRun.findUnique({where:{id:runId}});
+  return Boolean(run?.input&&typeof run.input==="object"&&"backgroundVariant" in run.input);
+}
+async function backgroundVariant(runId:string){
+  "use step";
+  const {generateBackgroundVariantRun}=await import("@/lib/services/background-variants");
+  await generateBackgroundVariantRun(runId);
+}
+backgroundVariant.maxRetries=0;
 // Paid steps run once each with no automatic retry; a failed provider call is
 // recorded as uncertain and the saved scene stays as it was.
-async function qualityPlan(runId:string){
+async function qualityPlan(runId:string,objectId:string){
   "use step";
   const {planQualityRun}=await import("@/lib/services/quality");
-  await planQualityRun(runId);
+  await planQualityRun(runId,objectId);
 }
 qualityPlan.maxRetries=0;
 async function qualityMasks(runId:string){
@@ -103,12 +115,14 @@ async function qualityMasks(runId:string){
   await refineQualityMasks(runId);
 }
 qualityMasks.maxRetries=0;
-async function qualityMaterials(runId:string){
+async function qualityMaterials(runId:string,target:{objectId:string;materialId:string}){
   "use step";
   const {sampleQualityMaterials}=await import("@/lib/services/quality");
-  await sampleQualityMaterials(runId);
+  await sampleQualityMaterials(runId,target);
 }
 qualityMaterials.maxRetries=0;
+async function qualityTargets(runId:string){"use step";const {qualityTargets}=await import("@/lib/services/quality");return qualityTargets(runId);}
+async function qualityMaterialTargets(runId:string){"use step";const {qualityMaterialTargets}=await import("@/lib/services/quality");return qualityMaterialTargets(runId);}
 async function qualityApply(runId:string){
   "use step";
   const {applyQualityRun}=await import("@/lib/services/quality");
@@ -135,7 +149,8 @@ export async function generateScene(runId: string, kind: string) {
       for (const id of objects) await segment(runId, id);
       await completeAnalysis(runId);
     } else if(kind === "IMAGE_EDIT"){
-      if(await isQualityRun(runId)){await qualityPlan(runId);await qualityMasks(runId);await qualityMaterials(runId);await qualityApply(runId);await qualityReview(runId);}
+      if(await isBackgroundVariantRun(runId)){await backgroundVariant(runId);}
+      else if(await isQualityRun(runId)){for(const id of await qualityTargets(runId))await qualityPlan(runId,id);await qualityMasks(runId);for(const target of await qualityMaterialTargets(runId))await qualityMaterials(runId,target);await qualityApply(runId);await qualityReview(runId);}
       else await readyWithBackground(runId);
     } else if(kind === "SEGMENT_OBJECT"){
       await segment(runId,await requestedObject(runId));

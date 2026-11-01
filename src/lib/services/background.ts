@@ -1,3 +1,4 @@
+import {captureAppearance,recordAppearance} from "./appearance-history";
 import { isBackgroundSurface } from "@/lib/scene/surface-role";
 import "server-only";
 import { createHash, randomUUID } from "node:crypto";
@@ -51,13 +52,17 @@ export async function buildSceneBackground(runId: string) {
   if (plain) {
     const observed = { ...(plan ?? fallbackBackground), kind: "seamless" as const, boundary: null, plainColor: plain.color };
     await db.$transaction(async tx => {
+    const appearanceBefore=await captureAppearance(tx,scene.id);
+
       const current = await tx.generationRun.findFirst({ where: { id: runId, status: { in: ["RUNNING", "WAITING"] } } });
       if (!current) throw new AppError(409, "RUN_STALE", "The background request is no longer active.");
       const saved = await tx.scene.updateMany({ where: { id: scene.id, revision: scene.revision, status: "READY", archivedAt: null }, data: {
         stage: json({ ...composition, background: observed }), ...(!savedComposition.success ? { camera: json(composition.camera) } : {}), settings: json({ ...settings, backgroundPlan: observed, background: null }), revision: { increment: 1 }
       } });
       if (!saved.count) throw new Error("BACKGROUND_REVISION_CHANGED");
-    });
+
+    await recordAppearance(tx,scene.id,appearanceBefore,"Rebuild background");
+});
     return;
   }
   // A previous classification is not evidence for the current mask set.
@@ -90,13 +95,17 @@ export async function buildSceneBackground(runId: string) {
     mimeType: "image/png", byteSize: bytes.length, width: image.width, height: image.height, sha256: createHash("sha256").update(bytes).digest("hex"), readyAt: new Date(), derivedFromId: scene.normalizedAssetId,
     provenance: { source: "photo-background-v1", model: generated.model, runId, removedObjectIds: objects.map(o => o.id), maskIds: objects.map(o => o.maskAssetId), preservedVisiblePixels: true } } });
   await db.$transaction(async tx => {
+    const appearanceBefore=await captureAppearance(tx,scene.id);
+
     const current = await tx.generationRun.findFirst({ where: { id: runId, status: { in: ["RUNNING", "WAITING"] } } });
     if (!current) throw new AppError(409, "RUN_STALE", "The background request is no longer active.");
     const changed = await tx.scene.updateMany({ where: { id: scene.id, revision: scene.revision, status: "READY", archivedAt: null }, data: {
       stage: json({ ...composition, background: plan }), ...(!savedComposition.success ? { camera: json(composition.camera) } : {}), settings: json({ ...settings, backgroundPlan: plan, backgroundBackup:{background:settings.background??null,backgroundPlan:composition.background??null},background: { version: "photo-background-v1", assetId: id, photoId: scene.normalizedAssetId, model: generated.model } }), revision: { increment: 1 }
     } });
     if (!changed.count) throw new AppError(409, "REVISION_CONFLICT", "The scene changed during background generation. Your saved background was kept.");
-  });
+
+    await recordAppearance(tx,scene.id,appearanceBefore,"Rebuild background");
+});
 }
 
 export async function finishSceneBackground(runId: string) {
