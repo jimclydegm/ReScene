@@ -215,6 +215,24 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     catch(e){setError(e instanceof Error?e.message:"Could not change the backdrop.");}
     finally{setBusy(false);}
   }
+  async function generateVariant(stylePrompt?:string){
+    setBusy(true);setError("");setMessage("");
+    try{await apiJson(`${base}/backgrounds`,{method:"POST",body:JSON.stringify({action:"GENERATE",expectedRevision:data.revision,idempotencyKey:crypto.randomUUID(),...(stylePrompt?{stylePrompt}:{})})});await reload();setMessage("New background design started. Your current background stays active.");}
+    catch(e){await reload().catch(()=>{});setError(e instanceof Error?e.message:"Could not start a new background.");}
+    finally{setBusy(false);}
+  }
+  async function selectVariant(variantId:string){
+    setBusy(true);setError("");setMessage("");
+    try{await apiJson(`${base}/backgrounds`,{method:"POST",body:JSON.stringify({action:"SELECT",expectedRevision:data.revision,variantId})});await reload();setViewerRetry(v=>v+1);setMessage("Background design switched and saved.");}
+    catch(e){setError(e instanceof Error?e.message:"Could not switch backgrounds.");}
+    finally{setBusy(false);}
+  }
+  async function deleteVariant(variantId:string){
+    setBusy(true);setError("");setMessage("");
+    try{await apiJson(`${base}/backgrounds`,{method:"POST",body:JSON.stringify({action:"DELETE",expectedRevision:data.revision,variantId})});await reload();setMessage("Background design deleted. Other designs are unchanged.");}
+    catch(e){setError(e instanceof Error?e.message:"Could not delete this background.");}
+    finally{setBusy(false);}
+  }
   async function appearance(action: "APPLY" | "RESTORE" | "LIGHTING") {
     setBusy(true); setError(""); setMessage("");
     try {
@@ -335,7 +353,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
               <div className="panel-block"><label className="field-label">Object color<input aria-label="Object color" type="color" value={current.tint??"#ffffff"} onChange={e=>edit(current.id,{tint:e.target.value})}/></label><button className="text-link" onClick={()=>edit(current.id,{tint:null})}>Restore original color</button><p className="panel-note">Color tints the existing texture and preserves surface detail. Dark textures may limit bright colors.</p></div><label className="visibility-toggle"><span><Eye size={14}/>Visible</span><input className="switch-input" role="switch" type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/></label>
             </fieldset>}
           </div>
-          : value === "scene" ? <SceneLayoutControls onRetry={retryObjects} onMask={chooseMask} data={data} locked={locked} unsaved={unsaved} blocked={hasReplacements} onMatch={() => matchLayout("MATCH_PHOTO")} onReview={() => matchLayout("REVIEW_PHOTO")} onRestore={() => matchLayout("RESTORE")} onBackdrop={changeBackdrop} onRestoreBackground={()=>matchLayout("RESTORE_BACKGROUND")} onBackground={mode => action("IMAGE_EDIT",undefined,mode)} onQuality={()=>quality("IMPROVE")} onQualityRestore={()=>quality("RESTORE")} onQualityPaid={paidQuality}/>
+          : value === "scene" ? <SceneLayoutControls onRetry={retryObjects} onMask={chooseMask} data={data} locked={locked} unsaved={unsaved} blocked={hasReplacements} onMatch={() => matchLayout("MATCH_PHOTO")} onReview={() => matchLayout("REVIEW_PHOTO")} onRestore={() => matchLayout("RESTORE")} onBackdrop={changeBackdrop} onRestoreBackground={()=>matchLayout("RESTORE_BACKGROUND")} onBackground={mode => action("IMAGE_EDIT",undefined,mode)} onGenerateVariant={generateVariant} onSelectVariant={selectVariant} onDeleteVariant={deleteVariant} onQuality={()=>quality("IMPROVE")} onQualityRestore={()=>quality("RESTORE")} onQualityPaid={paidQuality}/>
           : value === "products" ? current?.modelUrl ? <div className="panel-stack">{current.assemblyRootId ? <p className="panel-note">This region shares geometry with its complete subject. Move the subject to keep them together; catalog replacement applies to standalone objects.</p> : <CatalogControls items={catalogItems} busy={locked} dirty={unsaved} canRestore={current.canRestoreOriginal} onSeed={() => catalogAction("SEED")} onReplace={id => catalogAction("REPLACE", id)} onRestore={() => catalogAction("RESTORE")}/>}<ProductControls object={current} busy={locked} onChange={product => edit(current.id, { product })}/></div> : <p className="panel-empty">Select an object to add its product card.</p>
           : <AppearanceControls panel={value} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={locked} texturesBlocked={hasReplacements} relightableBackground={Boolean(data.composition?.background?.surfaceMode)} applied={data.appearance.applied} onRefresh={()=>appearance("APPLY")} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/>}
         </div>)}

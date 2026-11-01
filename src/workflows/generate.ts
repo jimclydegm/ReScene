@@ -89,6 +89,18 @@ async function isQualityRun(runId:string){
   const run=await getDb().generationRun.findUnique({where:{id:runId}});
   return Boolean(run?.input&&typeof run.input==="object"&&"quality" in run.input);
 }
+async function isBackgroundVariantRun(runId:string){
+  "use step";
+  const {getDb}=await import("@/lib/db");
+  const run=await getDb().generationRun.findUnique({where:{id:runId}});
+  return Boolean(run?.input&&typeof run.input==="object"&&"backgroundVariant" in run.input);
+}
+async function backgroundVariant(runId:string){
+  "use step";
+  const {generateBackgroundVariantRun}=await import("@/lib/services/background-variants");
+  await generateBackgroundVariantRun(runId);
+}
+backgroundVariant.maxRetries=0;
 // Paid steps run once each with no automatic retry; a failed provider call is
 // recorded as uncertain and the saved scene stays as it was.
 async function qualityPlan(runId:string){
@@ -135,7 +147,8 @@ export async function generateScene(runId: string, kind: string) {
       for (const id of objects) await segment(runId, id);
       await completeAnalysis(runId);
     } else if(kind === "IMAGE_EDIT"){
-      if(await isQualityRun(runId)){await qualityPlan(runId);await qualityMasks(runId);await qualityMaterials(runId);await qualityApply(runId);await qualityReview(runId);}
+      if(await isBackgroundVariantRun(runId)){await backgroundVariant(runId);}
+      else if(await isQualityRun(runId)){await qualityPlan(runId);await qualityMasks(runId);await qualityMaterials(runId);await qualityApply(runId);await qualityReview(runId);}
       else await readyWithBackground(runId);
     } else if(kind === "SEGMENT_OBJECT"){
       await segment(runId,await requestedObject(runId));

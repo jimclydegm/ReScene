@@ -129,3 +129,7 @@ October31 background material correction: retain Muse-generated intrinsic materi
 ## Desktop design pass — October 31
 
 Apply Unslop’s design workflow across every ReScene page, reusing the existing components and approved photography. Preserve the brand, functionality, backend and all saved scene/model data. A single presentation stylesheet owns the neutral light/dark palette, readable type, spacing, controls, page-specific layouts and desktop demo density; older styles retain mechanics in a legacy cascade layer. Scope includes auth, private studio, creative workflow, published viewer, every demo, dialogs and loading/error/empty states. Desktop only; no mobile redesign, new runtime UI package or inference. See DESIGN_SYSTEM.md for route coverage and attribution.
+
+## Background design variants — November 1
+
+Scene tab offers Generate new background after 3D generation. Each variant reuses the saved background geometry and recovers a new Muse Image finish, saved as an immutable SURFACE_TEXTURE plus a SceneBackground row. The active background still hydrates stage.background and settings.background, so rendering and v2 publication are unchanged. Switching and deleting are revision-guarded; generation never overwrites the active background and never auto-retries paid calls.

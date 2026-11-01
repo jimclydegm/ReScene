@@ -39,7 +39,7 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(839172640)`;
     const scene = await tx.scene.findFirst({ where: { id: sceneId, ownerId, archivedAt: null } });
     if (!scene) throw new AppError(404, "NOT_FOUND", "Scene not found.");
-    const options = { ...(input.background?{background:input.background}:{}), ...(input.quality?{quality:input.quality}:{}), ...(input.repair?{repair:true}:{}), ...(input.analysis ? {analysis:input.analysis} : {}), ...(input.segmentation ? {segmentation:input.segmentation} : {}), ...(input.reconstruction ? {reconstruction:input.reconstruction} : {}), objectIds:input.objectIds ?? [] };
+    const options = { ...(input.background?{background:input.background}:{}), ...(input.quality?{quality:input.quality}:{}), ...(input.backgroundVariant?{backgroundVariant:input.backgroundVariant}:{}), ...(input.repair?{repair:true}:{}), ...(input.analysis ? {analysis:input.analysis} : {}), ...(input.segmentation ? {segmentation:input.segmentation} : {}), ...(input.reconstruction ? {reconstruction:input.reconstruction} : {}), objectIds:input.objectIds ?? [] };
     const requestHash = digest(Buffer.from(JSON.stringify(options)));
     const prior = await tx.generationRun.findUnique({ where: { sceneId_idempotencyKey: { sceneId, idempotencyKey: input.idempotencyKey } } });
     if (prior) {
@@ -67,6 +67,7 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
       if(!rootIds.length)throw new AppError(400,"SUBJECT_REQUIRED","Include complete subjects before reconstructing product parts.");
     }
     if(input.quality){const stage=compositionSchema.safeParse(scene.stage);if(!stage.success||stage.data.layoutSource==="manual-stage")throw new AppError(409,"PHOTO_LAYOUT_REQUIRED","Match the photo layout before the quality pass.");}
+    if(input.backgroundVariant){const stage=compositionSchema.safeParse(scene.stage);if(!stage.success)throw new AppError(409,"LAYOUT_UNAVAILABLE","Build your 3D scene before generating a background variant.");}
     if (input.kind === "SEGMENT_OBJECT") {
       if (await tx.sceneObject.count({where:{sceneId,modelAssetId:{not:null}}})) throw new AppError(409,"MODELS_EXIST","Return to object review before changing outlines. This clears later 3D results after confirmation.");
       const image=await tx.asset.findFirstOrThrow({where:{id:scene.normalizedAssetId,sceneId,kind:"NORMALIZED_IMAGE",status:"READY"}});
@@ -383,7 +384,14 @@ export async function workspace(sceneId: string, ownerId: string) {
     return asset ? signRead(asset) : null;
   }
   const stage = compositionSchema.safeParse(scene.stage).data ?? null;
+  const variantRows = await getDb().sceneBackground.findMany({ where: { sceneId, deletedAt: null }, orderBy: { createdAt: "asc" } });
+  const activeVariantId = typeof record(scene.settings).activeBackgroundId === "string" ? String(record(scene.settings).activeBackgroundId) : variantRows[0]?.id ?? null;
+  const backgroundVariants = await Promise.all(variantRows.map(async v => ({
+    id: v.id, name: v.name, prompt: typeof v.prompt === "string" ? v.prompt : null, textureAssetId: v.textureAssetId,
+    previewUrl: await textureUrl(v.textureAssetId), createdAt: v.createdAt.toISOString(), active: v.id === activeVariantId
+  })));
   return { id: scene.id, title: scene.title, description: scene.description, status: scene.status, revision: scene.revision,
+    backgroundVariants, activeBackgroundVariantId: activeVariantId,
     analysisOptions:analysisOptionsSchema.safeParse(record(scene.settings).analysisOptions).data ?? analysisOptionsSchema.parse({}),
     reconstructionOptions:reconstructionOptionsSchema.safeParse(record(scene.settings).reconstructionOptions).data ?? reconstructionOptionsSchema.parse({}),
     canRestoreBackground:Boolean(record(scene.settings).backgroundBackup),

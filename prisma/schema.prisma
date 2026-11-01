@@ -138,6 +138,7 @@ model Scene {
   creativeDraft CompositionDraft?
   contentAdoption ContentAdoption?
   publications    ScenePublication[]
+  backgrounds     SceneBackground[]
 
   @@index([ownerId, archivedAt, updatedAt])
   @@index([status, updatedAt])
@@ -180,6 +181,7 @@ model Asset {
   modelsForProducts   Product[]         @relation("ProductModel")
   responsesForSteps   GenerationStep[]  @relation("StepResponse")
   publication         ScenePublication? @relation("PublicationManifest")
+  backgroundTextures SceneBackground[] @relation("BackgroundTexture")
 
   @@unique([bucket, storageKey])
   @@index([sceneId, kind, status])
@@ -326,6 +328,28 @@ model GenerationStep {
   @@unique([runId, key, attempt])
   @@index([runId, key, status])
   @@index([provider, providerRequestId])
+}
+
+// Saved background variants. The active background still lives in
+// Scene.stage.background + Scene.settings.background for renderer/publication
+// compatibility; variants are selectable copies that never overwrite each other.
+model SceneBackground {
+  id             String    @id @default(uuid()) @db.Uuid
+  sceneId        String    @db.Uuid
+  name           String    @db.VarChar(120)
+  textureAssetId String?   @db.Uuid
+  geometry       Json      @default("{}")
+  prompt         String?   @db.VarChar(2000)
+  provenance     Json      @default("{}")
+  createdAt      DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @db.Timestamptz(3)
+  deletedAt      DateTime? @db.Timestamptz(3)
+
+  scene   Scene  @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  texture Asset? @relation("BackgroundTexture", fields: [textureAssetId], references: [id], onDelete: SetNull)
+
+  @@index([sceneId, createdAt])
+  @@index([sceneId, deletedAt])
 }
 
 // Frozen publication points to a validated immutable manifest in private R2.

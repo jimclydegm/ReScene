@@ -8,10 +8,11 @@ export type SceneObjectView = { id: string; label: string; status: string; error
   maskAlternatives:{assetId:string;confidence:number|null;bounds:NonNullable<SegmentationOptions["box"]>;area:number;url:string;selected:boolean}[];
   canRestoreOriginal: boolean; product: (ProductFields & { imageUrl: string | null }) | null; maskUrl: string | null; modelUrl: string | null; positionX: number; positionY: number; positionZ: number;
   tint?:string|null; yaw: number;pitch?:number;roll?:number; scale: number; visible: boolean; placement: ModelPlacement | null };
+export type BackgroundVariantView = { id: string; name: string; prompt: string | null; textureAssetId: string | null; previewUrl: string | null; createdAt: string; active: boolean };
 export type SceneWorkspace = { id: string; title: string; description: string | null; status: string; revision: number; generationEnabled: boolean;
   analysisOptions:AnalysisOptions;reconstructionOptions:ReconstructionOptions;analysisSummary:string|null;
   lighting: Lighting; appearance: { applied: boolean; floorUrl: string | null; wallUrl: string | null; backgroundUrl?: string | null };
-  canRestoreBackground?:boolean;backgroundInfo?:{method:string;report?:{coverage:number;walls:number;expectedWalls:number;openings:number}|null;explanation:string|null;lightingEffects:string[];warnings:string[]};
+  canRestoreBackground?:boolean;backgroundVariants?:BackgroundVariantView[];activeBackgroundVariantId?:string|null;backgroundInfo?:{method:string;report?:{coverage:number;walls:number;expectedWalls:number;openings:number}|null;explanation:string|null;lightingEffects:string[];warnings:string[]};
   layoutReview?:import("@/lib/scene/layout-review").LayoutReview|null;
   quality?:ReturnType<typeof import("@/lib/services/quality").qualitySummary>;
   composition: SceneComposition | null; canRestoreLayout: boolean;
