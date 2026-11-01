@@ -6,6 +6,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSPr
 import type { OrbitControls as OrbitControlsType } from "three-stdlib";
 import { manualStageCamera, type SceneComposition } from "@/lib/scene/composition";
 import {referenceFov} from "@/lib/scene/reference-framing";
+import {completeSurfaceNormals} from "@/lib/scene/smooth-normals";
 import { PhotoBackground } from "./photo-background";
 import {captureScene,focusDistance} from "@/lib/editor/capture";
 import {Download,Focus,Grid3x3,House,ImageOff,Lock,LockOpen,Maximize} from "lucide-react";
@@ -19,7 +20,10 @@ function Model({ object, selected, select }: { object: RenderObject; selected: b
     const cloned = gltf.scene.clone(true);
     const ownedMaterials: MeshStandardMaterial[] = [];
     const ownedTextures=new Map<Texture,Texture>();
+    const ownedGeometry:import("three").BufferGeometry[]=[];
     cloned.traverse(node => { if (node instanceof Mesh) {
+      const recovered=!node.geometry.hasAttribute("normal");
+      if(recovered){const completed=completeSurfaceNormals(node.geometry);if(completed!==node.geometry){node.geometry=completed;ownedGeometry.push(completed);}}
       node.castShadow = true; node.receiveShadow = false;
       const materials = Array.isArray(node.material) ? node.material : [node.material];
       const copies = materials.map(material => {
@@ -29,7 +33,7 @@ function Model({ object, selected, select }: { object: RenderObject; selected: b
         // without a reflection map. Treat unspecified generated materials as dielectric.
         // Preserve explicit metallic factors/maps and never mutate the shared loader cache.
         if (!(material instanceof MeshStandardMaterial)) return material;
-        const copy = material.clone(); if(pbr?.metallicFactor === undefined && !material.metalnessMap) copy.metalness = 0; if(object.tint) copy.color.set(object.tint);
+        const copy = material.clone(); if(recovered&&node.geometry.hasAttribute("normal"))copy.flatShading=false; if(pbr?.metallicFactor === undefined && !material.metalnessMap) copy.metalness = 0; if(object.tint) copy.color.set(object.tint);
         if(material.map){let texture=ownedTextures.get(material.map);if(!texture){texture=material.map.clone();texture.anisotropy=anisotropy;texture.needsUpdate=true;ownedTextures.set(material.map,texture);}copy.map=texture;}
         ownedMaterials.push(copy); return copy;
       });
@@ -40,9 +44,9 @@ function Model({ object, selected, select }: { object: RenderObject; selected: b
     const size = box.getSize(new Vector3());
     const center = box.getCenter(new Vector3());
     const factor = 1.5 / Math.max(size.x, size.y, size.z, 0.001);
-    return { cloned, factor, ownedMaterials,ownedTextures, offset: [-center.x * factor, -box.min.y * factor, -center.z * factor] as [number, number, number] };
+    return { cloned, factor, ownedMaterials,ownedTextures,ownedGeometry, offset: [-center.x * factor, -box.min.y * factor, -center.z * factor] as [number, number, number] };
   }, [gltf.scene, gltf.parser, object.tint,anisotropy]);
-  useEffect(() => () => { model.ownedMaterials.forEach(material => material.dispose());model.ownedTextures.forEach(texture=>texture.dispose()); }, [model]);
+  useEffect(() => () => { model.ownedMaterials.forEach(material => material.dispose());model.ownedTextures.forEach(texture=>texture.dispose());model.ownedGeometry.forEach(geometry=>geometry.dispose()); }, [model]);
   if (!object.visible) return null;
   const base = object.placement;
   const world = object.worldTransform;

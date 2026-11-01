@@ -10,6 +10,7 @@ import {
   SRGBColorSpace,
   TextureLoader,
   Vector3,
+  Vector4,
   type Texture,
 } from "three";
 import { backgroundProjection } from "@/lib/scene/background";
@@ -81,7 +82,10 @@ function Face({
             .divideScalar(det),
         };
         shader.uniforms.environmentHasTile = { value: tile ? 1 : 0 };
-        shader.uniforms.environmentMaterialOnly = { value: surface.materialOnly ? 1 : 0 };
+        shader.uniforms.environmentMaterialOnly = { value: surface.materialOnly&&surface.role!=="wall" ? 1 : 0 };
+        shader.uniforms.environmentAtlas={value:surface.atlas?surface.atlas.mode==="tile"?1:2:0};
+        shader.uniforms.environmentAtlasRect={value:new Vector4(...(surface.atlas?.rect??[0,0,1,1]))};
+        shader.uniforms.environmentOpening={value:unlit?1:0};
         shader.uniforms.environmentFallback = {
           value: material.color.clone().set(surface.color),
         };
@@ -93,18 +97,20 @@ function Face({
           "#include <project_vertex>\nenvironmentWorld=(modelMatrix * vec4(transformed,1.0)).xyz; environmentProjected = environmentProjector * vec4(environmentWorld,1.0);",
         );
         shader.fragmentShader =
-          "uniform sampler2D environmentPhoto; uniform mat4 environmentProjector; uniform vec3 environmentFallback; uniform vec3 environmentTileOrigin; uniform vec3 environmentTileU; uniform vec3 environmentTileV; uniform vec3 environmentDualU; uniform vec3 environmentDualV; uniform float environmentHasTile; uniform float environmentMaterialOnly; varying vec4 environmentProjected; varying vec3 environmentWorld;\n" +
+          "uniform sampler2D environmentPhoto; uniform mat4 environmentProjector; uniform vec3 environmentFallback; uniform vec3 environmentTileOrigin; uniform vec3 environmentTileU; uniform vec3 environmentTileV; uniform vec3 environmentDualU; uniform vec3 environmentDualV; uniform float environmentHasTile; uniform float environmentMaterialOnly; uniform float environmentAtlas; uniform vec4 environmentAtlasRect; uniform float environmentOpening; varying vec4 environmentProjected; varying vec3 environmentWorld;\n" +
           shader.fragmentShader;
         shader.fragmentShader = shader.fragmentShader.replace(
           "#include <map_fragment>",
           `vec3 backgroundColor=environmentFallback;
      if(environmentHasTile>.5){vec3 rel=environmentWorld-environmentTileOrigin;vec2 t=vec2(dot(rel,environmentDualU),dot(rel,environmentDualV));t=1.-abs(mod(t,2.)-1.);vec4 tp=environmentProjector*vec4(environmentTileOrigin+environmentTileU*t.x+environmentTileV*t.y,1.);backgroundColor=texture2D(environmentPhoto,clamp(tp.xy/tp.w*.5+.5,.001,.999)).rgb;}
      if(environmentMaterialOnly<.5&&environmentProjected.w>0.0){vec2 p=environmentProjected.xy/environmentProjected.w*.5+.5;float edge=smoothstep(0.0,.10,min(min(p.x,p.y),min(1.-p.x,1.-p.y)));backgroundColor=mix(backgroundColor,texture2D(environmentPhoto,clamp(p,.001,.999)).rgb,edge);}
+     if(environmentOpening>.5&&environmentAtlas<.5){vec2 p=environmentProjected.xy/environmentProjected.w*.5+.5;backgroundColor=texture2D(environmentPhoto,clamp(p,.0001,.9999)).rgb;}
+     if(environmentAtlas>.5){vec2 raw;vec2 p;if(environmentAtlas<1.5){vec3 rel=environmentWorld-environmentTileOrigin;raw=vec2(dot(rel,environmentDualU),dot(rel,environmentDualV));p=fract(raw);p.y=1.-p.y;raw.y=-raw.y;}else{raw=environmentProjected.xy/environmentProjected.w*.5+.5;p=clamp(raw,0.,1.);}vec2 span=environmentAtlasRect.zw-environmentAtlasRect.xy;backgroundColor=texture2DGradEXT(environmentPhoto,mix(environmentAtlasRect.xy,environmentAtlasRect.zw,p),dFdx(raw)*span,dFdy(raw)*span).rgb;}
      diffuseColor.rgb *= backgroundColor;`,
         );
       };
       material.customProgramCacheKey = () =>
-        `reference-environment-${unlit ? "window" : "surface"}`;
+        `reference-environment-v3-${unlit ? "window" : "surface"}`;
     }
     return { geometry, material };
   }, [surface, composition.camera, texture]);

@@ -196,7 +196,11 @@ export async function generateBackgroundVariantRun(runId: string) {
     const size = { width: photo.width!, height: photo.height! };
     let reference: Buffer;
     let referenceSource = "photo";
-    if (typeof background.assetId === "string") {
+    const plateId=record(background.atlas).cleanPlateAssetId;
+    if(typeof plateId==="string"){
+      const plate=await db.asset.findFirst({where:{id:plateId,sceneId:scene.id,kind:"PROVIDER_RESPONSE",status:"READY"}});
+      if(!plate)throw new Error("ENVIRONMENT_PLATE_UNAVAILABLE");reference=await readLimited(plate.storageKey,24*1024*1024);referenceSource="empty-background-plate";
+    } else if (typeof background.assetId === "string") {
       const texture = await db.asset.findFirst({ where: { id: background.assetId, sceneId: scene.id, kind: "SURFACE_TEXTURE", status: "READY" } });
       if (texture) {
         reference = await readLimited(texture.storageKey, 12 * 1024 * 1024);
@@ -235,12 +239,14 @@ export async function generateBackgroundVariantRun(runId: string) {
     await ensureOriginalVariant(scene.id);
     const count = await db.sceneBackground.count({ where: { sceneId: scene.id } });
     const name = typeof variantInput.name === "string" && variantInput.name.trim() ? variantInput.name.trim().slice(0, 120) : `Variant ${count + 1}`;
+    const variantPlan=structuredClone(stage.data.background);
+    if(variantPlan?.geometry)for(const surface of variantPlan.geometry.surfaces){delete surface.atlas;surface.materialOnly=false;surface.textured=true;}
     await db.sceneBackground.create({
       data: {
         sceneId: scene.id,
         name,
         textureAssetId: textureId,
-        geometry: json(stage.data.background ?? {}),
+        geometry: json(variantPlan ?? {}),
         prompt: typeof variantInput.stylePrompt === "string" ? variantInput.stylePrompt.slice(0, 2000) : null,
         provenance: json({
           source: "background-variant-v1",

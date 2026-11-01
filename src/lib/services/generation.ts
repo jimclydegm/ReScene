@@ -291,7 +291,7 @@ export async function ingestRun(runId: string, requestId: string, withAppearance
   const derived=new Map<string,{id:string;rootId:string;sourceId:string}>();
   const partitionFailed:string[]=[];
   for (const file of files) {
-    const bytes = await downloadFalArtifact(file.url);
+    const bytes = (await import("@/lib/quality/normals")).completeGlbNormals(await downloadFalArtifact(file.url)).bytes;
     inspectGlb(bytes);layoutBytes.push(bytes);
     const original=await artifact(run.sceneId, runId, "MODEL_GLB", bytes, "model/gltf-binary");
     assets.push(original);
@@ -356,7 +356,7 @@ export async function failRun(runId: string) {
   const steps = await db.generationStep.findMany({ where: { runId } });
   const uncertain = steps.some(s => s.status === "SUBMISSION_UNCERTAIN"||s.status === "RUNNING"&&s.provider!=="INTERNAL"&&!s.providerRequestId&&!["preparing","responded"].includes(String(record(s.input).providerPhase)));
   const analysisFailure=run.kind==="ANALYZE"?steps.find(s=>s.key==="spark"&&s.status==="FAILED"&&s.errorCode):undefined;
-  const knownBackground=steps.some(s=>s.key==="environment-depth"&&s.providerRequestId&&s.status!=="SUCCEEDED");
+  const knownBackground=steps.some(s=>["environment-depth","environment-clean-depth"].includes(s.key)&&s.providerRequestId&&s.status!=="SUCCEEDED");
   const knownJob = steps.some(s => s.key === "sam3d-submit" && s.providerRequestId && s.status !== "SUCCEEDED");
   await db.$transaction([
     db.generationStep.updateMany({ where: { runId, status: "RUNNING" }, data: { status: uncertain ? "SUBMISSION_UNCERTAIN" : "FAILED" } }),

@@ -1,4 +1,5 @@
-import { Matrix4, Quaternion, Vector3 } from "three";
+import { BufferGeometry,BufferAttribute,Matrix4, Quaternion, Vector3 } from "three";
+import {completeSurfaceNormals} from "@/lib/scene/smooth-normals";
 
 // Lossless GLB access for quality work. Unlike the photo-bake reader this keeps
 // indexed vertices, every primitive, TRS nodes, the bound texCoord set and
@@ -140,16 +141,13 @@ export function writeGlb(doc: GlbDocument, edits: GlbEdits) {
   return packGlb(g, views);
 }
 export function vertexNormals(local: Float32Array, indices: Uint32Array) {
-  const out = new Float32Array(local.length), a = new Vector3(), b = new Vector3(), c = new Vector3();
-  for (let i = 0; i < indices.length; i += 3) {
-    a.fromArray(local, indices[i] * 3); b.fromArray(local, indices[i + 1] * 3); c.fromArray(local, indices[i + 2] * 3);
-    const n = b.sub(a).cross(c.sub(a));
-    for (const v of [indices[i], indices[i + 1], indices[i + 2]]) for (let k = 0; k < 3; k++) out[v * 3 + k] += n.getComponent(k);
-  }
-  for (let i = 0; i < out.length; i += 3) { const l = Math.hypot(out[i], out[i + 1], out[i + 2]) || 1; out[i] /= l; out[i + 1] /= l; out[i + 2] /= l; }
-  return out;
+  const geometry=new BufferGeometry();geometry.setAttribute("position",new BufferAttribute(local,3));geometry.setIndex(new BufferAttribute(indices,1));
+  const completed=completeSurfaceNormals(geometry),normals=completed.getAttribute("normal"),out=new Float32Array(local.length);
+  for(let i=0;i<indices.length;i++){const v=indices[i]*3;out[v]+=normals.getX(i);out[v+1]+=normals.getY(i);out[v+2]+=normals.getZ(i);}
+  for(let i=0;i<out.length;i+=3){const length=Math.hypot(out[i],out[i+1],out[i+2])||1;out[i]/=length;out[i+1]/=length;out[i+2]/=length;}
+  geometry.dispose();completed.dispose();return out;
 }
-function packGlb(g: Gltf, views: Buffer[]) {
+export function packGlb(g: Gltf, views: Buffer[]) {
   const used = new Set<number>();
   for (const a of g.accessors ?? []) if (a.bufferView !== undefined) used.add(a.bufferView);
   for (const i of g.images ?? []) if (i.bufferView !== undefined) used.add(i.bufferView);

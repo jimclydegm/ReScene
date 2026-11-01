@@ -106,6 +106,7 @@ export function buildEnvironmentGeometry(
   grid: DepthGrid,
   masks: Uint8Array[] = [],
   anchors:EnvironmentAnchor[] = [],
+  calibrationGrid:DepthGrid=grid,
 ) {
   if (
     grid.sourceWidth / grid.sourceHeight / composition.camera.aspect < 0.97 ||
@@ -153,7 +154,7 @@ export function buildEnvironmentGeometry(
           if (s > 0 && s < 1000) scales.push(s);
         }
       }
-  const foreground=foregroundDepthScale(grid,composition,anchors);
+  const foreground=foregroundDepthScale(calibrationGrid,composition,anchors);
   const target = new Vector3(...composition.camera.target),
     scale = foreground?.anchors && foreground.spread<1.8 ? foreground.scale :
       scales.length >= 12
@@ -555,6 +556,7 @@ export function buildEnvironmentGeometry(
     builtIds.add(s.id);
     surfaces.push({
       role: s.role,
+      materialIndex:observation.surfaces.indexOf(s),
       vertices,
       triangles,
       color: s.color,
@@ -579,6 +581,7 @@ export function buildEnvironmentGeometry(
           [t[i + 1], t[i + 2]] = [t[i + 2], t[i + 1]];
       surfaces.push({
         role: hole.kind === "window" ? "window" : "opening",
+        materialIndex:observation.surfaces.indexOf(s),
         vertices: v.map((p) => p!.toArray() as [number, number, number]),
         triangles: t,
         color: "#ffffff",

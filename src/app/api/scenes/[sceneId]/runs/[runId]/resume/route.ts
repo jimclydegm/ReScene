@@ -15,7 +15,7 @@ export const POST = (request: Request, context: { params: Promise<{ sceneId: str
   const scene = await ownedScene(sceneId, user.id);
   const run = await getDb().generationRun.findFirst({ where: { id: runId, sceneId }, include: { steps: true } });
   if (!run) throw new AppError(404, "NOT_FOUND", "Generation not found.");
-  const backgroundJob=run.errorCode==="KNOWN_BACKGROUND_JOB_INTERRUPTED"?run.steps.find(s=>s.key==="environment-depth"&&s.providerRequestId):null;
+  const backgroundJob=run.errorCode==="KNOWN_BACKGROUND_JOB_INTERRUPTED"?run.steps.find(s=>["environment-depth","environment-clean-depth"].includes(s.key)&&s.providerRequestId&&s.status!=="SUCCEEDED"):null;
   const revision=backgroundJob?Number(record(backgroundJob.input).sceneRevision??run.inputRevision):run.inputRevision;
   if (scene.revision !== revision) throw new AppError(409, "REVISION_CONFLICT", "This scene has changed.");
   if (run.status === "QUEUED") {

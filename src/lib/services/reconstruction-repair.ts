@@ -28,7 +28,7 @@ export async function ingestRepair(runId:string,result:Result){
  const assets=new Map<string,string>();
  for(const [index,id]of ids.entries()){
   const object=objects.find(o=>o.id===id);if(!object?.mask)throw new Error("RETRY_MASK_REQUIRED");
-  const bytes=await downloadFalArtifact(files[index].url);inspectGlb(bytes);
+  const bytes=(await import("@/lib/quality/normals")).completeGlbNormals(await downloadFalArtifact(files[index].url)).bytes;inspectGlb(bytes);
   const assetId=randomUUID(),key=`${storagePrefix()}/scenes/${scene.id}/runs/${runId}/${assetId}.glb`;
   await putObject(key,bytes,"model/gltf-binary");await db.asset.create({data:{id:assetId,sceneId:scene.id,kind:"MODEL_GLB",status:"READY",bucket:bucket(),storageKey:key,mimeType:"model/gltf-binary",byteSize:bytes.length,sha256:createHash("sha256").update(bytes).digest("hex"),readyAt:new Date(),provenance:{source:"selective-reconstruction",runId}}});assets.set(id,assetId);
   const frame=object.model&&record(object.provenance).metadata?object:anchor,p=savedPlacements.find(p=>p.id===frame.id)!;

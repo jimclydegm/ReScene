@@ -20,6 +20,7 @@ export const environmentObservationSchema = z
             color,
             roughness: z.number().min(0.2).max(1),
             material: z.string().min(1).max(180),
+            appearance: z.enum(["uniform","pattern"]).optional(),
             confidence: z.number().min(0).max(1),
           })
           .strict(),
@@ -53,6 +54,8 @@ export const environmentObservationSchema = z
 export type EnvironmentObservation = z.infer<
   typeof environmentObservationSchema
 >;
+// Model-only strict contract; old saved observations can omit appearance.
+export const environmentModelObservationSchema=environmentObservationSchema.safeExtend({surfaces:z.array(environmentObservationSchema.shape.surfaces.element.required({appearance:true})).min(1).max(16)});
 const v = z.tuple([
   z.number().finite().min(-1000).max(1000),
   z.number().finite().min(-1000).max(1000),
@@ -86,6 +89,8 @@ export const environmentGeometrySchema = z
             roughness: z.number().min(0.2).max(1),
       textured: z.boolean(),
       materialOnly: z.boolean().optional(),
+      atlas:z.object({mode:z.enum(["tile","photo"]),rect:z.tuple([z.number().min(0).max(1),z.number().min(0).max(1),z.number().min(0).max(1),z.number().min(0).max(1)])}).strict().refine(a=>a.rect[2]>a.rect[0]&&a.rect[3]>a.rect[1]).optional(),
+      materialIndex:z.number().int().min(0).max(15).optional(),
           })
           .strict()
           .superRefine((s, c) => {
