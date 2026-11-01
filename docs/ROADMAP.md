@@ -7,7 +7,7 @@
 - [x] High-reasoning material analysis/review, explicit sample regeneration, 2K/4K baking, source-evidence labels, thin-part calibration, structural detail preservation and same-material seam reconciliation.
 - [x] Persisted texture/background Undo/Redo and compact texture/reanalysis controls; durable per-object/per-material provider steps.
 - [x] Live four-object plan/five Muse samples/first final review; fresh environment analysis and one depth job; local252 cases/schema/lint/build pass.
-- [ ] Apply final cached material correction/background, verify real undo/redo, merge CI and production smoke. Native browser checks unavailable.
+- [x] Apply final cached material correction/background to revision12, verify real database undo/redo and preservation of independent edits; PR37/38 and main CI pass, production READY and authenticated HTTP/control-asset/guard smoke passes. Native browser checks unavailable.
 
 ## Visual cleanup — October31
 
@@ -33,7 +33,7 @@ Brief: [RECONSTRUCTION_QUALITY_BRIEF.md](RECONSTRUCTION_QUALITY_BRIEF.md). Imple
 - [x] Final reference-camera review with one bounded correction; paid Meta plan/SAM refine/Muse samples/Spark review run with saved-result reuse and zero automatic resubmission.
 - [x] 235 tests, lint, types and build pass; offline before/after evidence on six saved fixtures.
 - [x] Flush-on-support placement with photo re-fit, thin-wall/rim-safe bake, and the free pass run automatically after every new reconstruction (reported desk scene checked offline).
-- [ ] Live paid Meta pass, database apply/restore on the QA fixture and browser check of the panel (need Jim's go-ahead).
+- [x] Live paid Meta material pass and database apply/Undo/Redo on Jim's reported22632152 fixture under his November1 spending authorization. Native panel verification remains unavailable because browser access is disabled.
 
 ## Current release bundle
 
