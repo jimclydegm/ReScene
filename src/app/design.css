@@ -736,3 +736,40 @@ dialog::backdrop { background: #101713a3; backdrop-filter: blur(4px); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }
+
+/* Voice is a small field action; review stays in one focused native dialog. */
+.voice-trigger { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 6px; min-height: 30px; padding: 5px 9px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--ink); font: inherit; font-size: 12px; font-weight: 500; white-space: nowrap; cursor: pointer; }
+.voice-trigger:hover:not(:disabled) { background: var(--surface-2); border-color: var(--green); color: var(--green); }
+.voice-trigger:disabled { opacity: .45; cursor: not-allowed; }
+.voice-field-action { display: flex; justify-content: flex-end; margin: 4px 0 8px; }
+.voice-dialog { width: min(500px, calc(100vw - 48px)); max-height: calc(100vh - 64px); overflow: auto; padding: 24px; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--surface); color: var(--ink); box-shadow: 0 24px 80px #0003; }
+.voice-dialog::backdrop { background: #10161580; backdrop-filter: blur(3px); }
+.voice-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
+.voice-heading h2 { font-size: 23px; line-height: 1.2; letter-spacing: -.5px; font-weight: 500; margin: 6px 0 0; }
+.voice-model { display: block; font-size: 11px; font-weight: 500; color: var(--green); letter-spacing: .04em; margin: 0 0 6px; }
+.voice-close { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: var(--surface); cursor: pointer; }
+.voice-hint { color: var(--ink-2); font-size: 12px; line-height: 1.6; margin: 8px 0 12px; }
+.voice-language { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12px; font-weight: 500; }
+.voice-language select { max-width: 240px; min-height: 32px; border: 1px solid var(--line-strong); border-radius: 5px; background: var(--surface); color: var(--ink); padding: 4px 8px; font: inherit; }
+.voice-recorder { display: grid; justify-items: center; gap: 6px; padding: 20px 12px; margin: 14px 0; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); }
+.voice-meter { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--green-pale); color: var(--green); margin-bottom: 2px; }
+.voice-recorder.recording .voice-meter { background: light-dark(#ffe5df, #4d2c25); color: light-dark(#a42c15, #ffb5a6); }
+.voice-recorder strong { font-size: 14px; font-weight: 500; }
+.voice-recorder > span:last-child { color: var(--ink-2); font-size: 12px; }
+.voice-record-actions, .voice-use-actions { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
+.voice-record-actions { justify-content: center; }
+.voice-use-actions { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; }
+.voice-record-actions .button, .voice-use-actions .button { min-height: 34px; padding: 7px 12px; font-size: 12px; }
+.voice-transcript { display: grid; gap: 6px; font-size: 12px; font-weight: 500; margin-top: 16px; }
+.voice-transcript textarea { width: 100%; min-height: 88px; max-height: 180px; resize: vertical; border: 1px solid var(--line-strong); border-radius: 6px; padding: 10px; color: var(--ink); background: var(--surface); font: inherit; font-size: 14px; font-weight: 400; line-height: 1.5; }
+.voice-error { font-size: 12px; line-height: 1.5; padding: 8px 10px; border: 1px solid light-dark(#dfb6a5, #735044); border-radius: 5px; background: light-dark(#fff5ed, #30221e); color: light-dark(#8c351c, #f9bea4); margin: 12px 0; }
+.voice-recover { display: inline-flex; align-items: center; gap: 5px; padding: 0; border: 0; background: transparent; color: var(--green); font-size: 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.voice-quote { margin: 10px 0 16px; padding: 10px 12px; border-left: 2px solid var(--green); background: var(--surface-2); color: var(--ink); font-size: 14px; line-height: 1.5; }
+.voice-plan-working { display: flex; align-items: center; gap: 8px; color: var(--ink-2); font-size: 13px; min-height: 60px; }
+.voice-plan-summary { color: var(--ink); font-size: 14px; line-height: 1.5; }
+.voice-change-list { display: grid; gap: 8px; padding: 12px 0; margin: 0; list-style: none; }
+.voice-change-list li { display: flex; align-items: flex-start; gap: 8px; color: var(--ink); font-size: 13px; line-height: 1.4; }
+.voice-change-list svg { flex: 0 0 auto; margin-top: 2px; color: var(--green); }
+.demo-store .retail-catalog-toolbar > label { margin-left: auto; }
+.demo-store .showroom-replace-toolbar .voice-trigger { width: auto; padding: 6px 9px; }
+.demo-store .demo-room-topbar > div { gap: 6px; }

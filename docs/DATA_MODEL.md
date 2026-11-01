@@ -257,3 +257,8 @@ Thirty immutable public photos have full generation provenance in /samples/v3/pr
 No new relational schema for reconstruction fidelity. Private `Scene.settings.appearanceHistory={undo,redo}` holds up to eight before/after render snapshots per stack. Snapshots reference existing same-scene model/mask/material assets and preserve the compatible transforms/stage, plus quality and background restore metadata. Canonical fingerprints ignore JSONB property order. Workspace returns only the latest undo/redo labels. Public snapshots exclude history and analysis; their optional bounded `composition.background.spatial` contains only rear distance, curve radius, confidence and source enum.
 
 The existing background-variants migration was present in the checkout but unrecorded in Neon, where the exact table/index/constraint schema already existed. After catalog verification, Prisma migration history was baselined to that schema; no table was replaced or data dropped.
+
+
+## VoiceAttempt — November 1
+
+The additive `20261101010000_meta_voice` migration stores a UUID receipt, domain-separated actor/network HMACs, unique actor/request UUID, input hash, purpose, model, duration, StepStatus and timestamps/expiry. Optional transcript and Spark command plan/status/hash support private recovery and prevent duplicate paid requests. Recordings are not stored. Content is recoverable for15 minutes and cleared after expiry on subsequent new transcription requests; receipt metadata remains. No relation or mutation to Scene, ContentItem, public snapshots or source-photo assets is introduced. See VOICE.md for ownership/rate/retention behavior.

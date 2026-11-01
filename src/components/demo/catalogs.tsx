@@ -1,4 +1,5 @@
 "use client";
+import {VoiceInput} from "@/components/voice-input";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -71,6 +72,7 @@ export function ProductCatalog() {
             onChange={(e) => setQuery(e.target.value)}
           />
         </label>
+        <VoiceInput purpose="search" field="product search" label="Voice search" maxLength={120} replaceOnly onUse={v=>{setQuery(v.text.replace(/[.!?,;:]+$/g,""));setCategory("All products");}}/>
       </div>
       <p className="retail-result-count">
         {products.length} products · Curated sample collection

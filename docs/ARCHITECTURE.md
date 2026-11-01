@@ -2,6 +2,10 @@
 
 Architecture target, October 29, 2026. The app/auth/database, durable analysis/reconstruction, mask review, and saved object-transform editor are implemented. Product editing, original demo catalog replacement and immutable v2 publication/read-only sharing are implemented. Visual browser QA is pending. See [SETUP.md](SETUP.md) for verified deployment/access status, [PLAN.md](PLAN.md) for scope, and [DATA_MODEL.md](DATA_MODEL.md) for constraints.
 
+## Voice addition — November 1
+
+Shared browser dictation uses AudioWorklet → mono PCM WAV → bounded Node route → Meta Muse Voice Transcribe batch API. Neon VoiceAttempt receipts precede paid requests, cache private transcripts/proposals for recovery and prevent automatic resubmission. Prompt insertion is reviewed; demo commands add a Spark JSON proposal, validation through existing arrangement guards and explicit Apply into the existing grouped history. No recording assets or saved-scene mutations are created. See [VOICE.md](VOICE.md).
+
 ## 1. System boundaries
 
 ```mermaid

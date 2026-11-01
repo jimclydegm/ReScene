@@ -9,7 +9,7 @@ Checked against primary sources on October 29, 2026. “Documented” below mean
 | Muse Spark series | Multimodal perception, text output, tools, structured output | Core: inspect the normalized photo and propose object labels/categories |
 | Muse Wonder | Reasoning, complex coding, long-running agents, computer use | Development/review or optional difficult analysis; unnecessary in the core runtime |
 | Muse Image | Text/image-to-image generation and editing | Optional scene/image enhancement or replacement concept; does not output meshes |
-| Muse Voice Transcribe | Speech-to-text with streaming/file paths | Stretch: short voice commands; does not generate speech or manipulate scenes itself |
+| Muse Voice Transcribe | Speech-to-text with streaming/file paths | Implemented: prompt dictation, product search and reviewed demo commands through the batch API; Spark interprets commands |
 | SAM 3.1 | Object detection, segmentation, video tracking | Core: masks for the objects selected for reconstruction |
 | SAM 3D Objects | Geometry, appearance, and pose reconstruction from an image and masks | Core proposed mesh engine, through a GPU host |
 | SAM 3D Body | Human body/shape estimation | Later fashion research; body estimation is not a garment reconstruction/fit system |
@@ -122,7 +122,7 @@ Background cleanup is optional reference imagery. Do not spend the schedule tryi
 
 ## 7. Voice, open weights, and coding tools
 
-- [Muse Voice Transcribe](https://dev.meta.ai/models/muse-voice-transcribe): possible short commands such as “hide the lamp.” The [API overview](https://dev.meta.ai/docs/overview) lists file transcription at `/v1/asr/transcribe` and realtime at `wss://api.meta.ai/v1/asr/realtime`. Start with a capped recording only after the editor works. Feed transcript into a small allowlisted command parser; preserve normal authorization/undo and resolve ambiguity in the UI.
+- [Muse Voice Transcribe](https://dev.meta.ai/models/muse-voice-transcribe) is implemented through `/v1/asr/transcribe`: short-clip dictation/search plus explicit, reviewed showroom commands interpreted by Spark. No realtime WebSocket is used. See [VOICE.md](VOICE.md) for formats, language hints, receipts, guards and live evidence.
 - [Muse Glimmer](https://dev.meta.ai/models/muse-glimmer): open-weight 30B agent model under Apache 2.0, intended for local use. A future local tagging assistant is plausible; serving it adds operational work that the core hosted pipeline avoids.
 - [Muse Spark Open](https://dev.meta.ai/models/muse-spark-open): open-weight multimodal/agentic deployment option. It is not a mesh generator. Hardware requirements and host support need their own check before deployment.
 - [Muse Wonder](https://dev.meta.ai/models/muse-wonder): higher-capability coding/agentic reasoning option. Wonder Full is described as subscription-only in Muse Code, so do not assume an API model ID grants access to it.
