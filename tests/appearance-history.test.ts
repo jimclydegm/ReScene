@@ -9,7 +9,7 @@ describe("Saved texture history",()=>{
   const before=await captureAppearance(m.db as never,"scene");objects[0].modelAssetId="generated";scene.settings.quality={version:"new"};await recordAppearance(m.db as never,"scene",before,"Generate textures");expect(appearanceHistorySummary(scene.settings).undo).toBe("Generate textures");
   expect(appearanceFingerprint({b:1,a:[{y:2,x:1}]})).toBe(appearanceFingerprint({a:[{x:1,y:2}],b:1}));
   // Database JSONB reorders the stored snapshot's keys.
-  scene.settings=JSON.parse(JSON.stringify(scene.settings));scene.settings.lighting={ambient:2};scene.settings.environmentObservation={newAnalysis:true};scene.settings.appearanceHistory.undo[0].after.settings.environmentObservation={oldAnalysis:true};
+  scene.settings=JSON.parse(JSON.stringify(scene.settings));scene.settings.lighting={ambient:2};scene.settings.environmentObservation={newAnalysis:true};scene.settings.activeBackgroundId="registered-original";scene.settings.appearanceHistory.undo[0].after.settings.environmentObservation={oldAnalysis:true};
   await moveAppearanceHistory("scene","owner",1,"UNDO");expect(objects[0].modelAssetId).toBe("original");expect(scene.settings.lighting.ambient).toBe(2);expect(appearanceHistorySummary(scene.settings).redo).toBe("Generate textures");
   await moveAppearanceHistory("scene","owner",2,"REDO");expect(objects[0].modelAssetId).toBe("generated");
  });
