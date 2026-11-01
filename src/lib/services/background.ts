@@ -124,7 +124,7 @@ export async function backgroundFailure(runId:string,error:unknown){
     const status=typeof record(error).status==="number"?Number(record(error).status):null;
     const pending = await db.generationStep.count({ where: { runId, OR:[{key:{startsWith:"background-"}},{key:{startsWith:"environment-"}}], status: "RUNNING" } });
     const uncertain=Boolean(pending&&!(status&&status>=400&&status<500));
-    const known=await db.generationStep.findFirst({where:{runId,key:"environment-depth",providerRequestId:{not:null},status:{in:["RUNNING","WAITING"]}}});
+    const known=await db.generationStep.findFirst({where:{runId,key:{in:["environment-depth","environment-clean-depth"]},providerRequestId:{not:null},status:{in:["RUNNING","WAITING"]}}});
 
     const detail=error instanceof Error?error.message.replace(/data:[^\s"']+|https?:\/\/[^\s"']+/g,"[redacted]").slice(0,900):"Unknown background failure";
     const code=detail.startsWith("ENVIRONMENT_")?detail.split(":")[0]:error instanceof AppError?error.code:status?`META_HTTP_${status}`:error instanceof Error?error.name:"BACKGROUND_FAILED";

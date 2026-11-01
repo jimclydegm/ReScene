@@ -262,3 +262,8 @@ The existing background-variants migration was present in the checkout but unrec
 ## VoiceAttempt — November 1
 
 The additive `20261101010000_meta_voice` migration stores a UUID receipt, domain-separated actor/network HMACs, unique actor/request UUID, input hash, purpose, model, duration, StepStatus and timestamps/expiry. Optional transcript and Spark command plan/status/hash support private recovery and prevent duplicate paid requests. Recordings are not stored. Content is recoverable for15 minutes and cleared after expiry on subsequent new transcription requests; receipt metadata remains. No relation or mutation to Scene, ContentItem, public snapshots or source-photo assets is introduced. See VOICE.md for ownership/rate/retention behavior.
+
+
+## Reference surface atlas — November1
+
+No database migration. Optional surface appearance (uniform/pattern), public numeric materialIndex and atlas rectangles extend validated JSON compatibly. Scene.settings.background stores the matching private observation, native empty-plate lineage and depth audit; raw model outputs remain private GenerationStep/Asset records. One derived SURFACE_TEXTURE atlas continues to be the sole background viewer asset. Each patterned surface and image check gets a durable step, and empty-plate depth has a distinct key/lineage for resume. Appearance/background snapshots retain their matching atlas/mapping. See ENVIRONMENT_FIDELITY.md.

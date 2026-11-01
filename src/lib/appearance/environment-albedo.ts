@@ -12,8 +12,9 @@ export async function environmentAlbedo(
   generated: Buffer,
   footprint: Uint8Array,
   plan: EnvironmentObservation,
+  options:{preserveResolution?:boolean;delight?:boolean}={},
 ) {
-  const source = await sharp(photo)
+  let source = await sharp(photo)
       .removeAlpha()
       .toColourspace("srgb")
       .raw()
@@ -29,6 +30,11 @@ export async function environmentAlbedo(
     footprint.length !== width * height
   )
     throw new Error("ENVIRONMENT_TEXTURE_FRAME");
+  if(options.preserveResolution){
+    source=await sharp(photo).resize(meta.width,meta.height,{fit:"fill"}).removeAlpha().toColourspace("srgb").raw().toBuffer({resolveWithObject:true});
+    footprint=new Uint8Array(await sharp(footprint,{raw:{width,height,channels:1}}).resize(meta.width,meta.height,{kernel:"nearest"}).raw().toBuffer());
+    width=meta.width;height=meta.height;
+  }
   const fill = await sharp(generated)
       .resize(width, height, { fit: "fill" })
       .removeAlpha()
@@ -106,6 +112,7 @@ export async function environmentAlbedo(
         continue;
       }
       if (index < 0) continue;
+      if(options.delight===false)continue;
       const s = plan.surfaces[index],
         fit = fits[index];
       if (!environmentUsesTexture(s)) {

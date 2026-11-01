@@ -1,7 +1,7 @@
 import {captureAppearance,recordAppearance} from "./appearance-history";
 import "server-only";
-import { createHash, randomUUID } from "node:crypto";
 import sharp from "sharp";
+import { createHash, randomUUID } from "node:crypto";
 import type { Prisma } from "@/generated/prisma/client";
 import { getDb } from "@/lib/db";
 import {
@@ -14,19 +14,12 @@ import { getSam3dClient } from "@/lib/ai/sam3d";
 import { downloadFalArtifact } from "@/lib/ai/glb";
 import {
   analyzeEnvironment,
-  cleanEnvironment,
   reviewEnvironment,
 } from "@/lib/ai/environment";
 import { environmentObservationSchema } from "@/lib/scene/environment-plan";
 import { decodeEnvironmentDepth } from "@/lib/appearance/environment-depth";
 import { buildEnvironmentGeometry } from "@/lib/scene/environment-geometry";
-import { environmentAlbedo } from "@/lib/appearance/environment-albedo";
-import { backgroundFootprint } from "@/lib/appearance/background";
-import {
-  compositionSchema,
-  manualBackgroundComposition,
-} from "@/lib/scene/composition";
-import { record, sceneEnvironment } from "./composition";
+import { record } from "./composition";
 const json = (v: unknown) =>
   JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 const model = "fal-ai/vggt-1b";
@@ -264,12 +257,12 @@ export async function saveEnvironmentAsset(
   });
   return id;
 }
-export async function pollEnvironmentDepth(runId: string, requestId: string) {
+export async function pollEnvironmentDepth(runId: string, requestId: string,key="environment-depth") {
   await environmentContext(runId);
   const db = getDb(),
     step = await db.generationStep.findUniqueOrThrow({
       where: {
-        runId_key_attempt: { runId, key: "environment-depth", attempt: 1 },
+        runId_key_attempt: { runId, key, attempt: 1 },
       },
     });
   if (step.providerRequestId !== requestId)
@@ -315,7 +308,7 @@ export async function pollEnvironmentDepth(runId: string, requestId: string) {
     "PROVIDER_RESPONSE",
     bytes,
     "application/json",
-    "depth",
+    key,
   );
   await db.generationStep.update({
     where: { id: step.id },
@@ -329,228 +322,25 @@ export async function pollEnvironmentDepth(runId: string, requestId: string) {
   return true;
 }
 export async function draftReferenceEnvironment(runId: string) {
-  const { scene, photo } = await environmentContext(runId);
-  if (scene.status !== "READY") throw new Error("BACKGROUND_SCENE_NOT_READY");
-  const db = getDb(),
-    plan = await planSceneEnvironment(runId),
-    step = await depthStep(runId);
-  if (!step?.response) throw new Error("ENVIRONMENT_DEPTH_REQUIRED");
-  const grid = decodeEnvironmentDepth(
-    JSON.parse(
-      (await readLimited(step.response.storageKey, 8 * 1024 * 1024)).toString(),
-    ),
-  );
-  if (grid.sourceWidth !== photo.width || grid.sourceHeight !== photo.height)
-    throw new Error("ENVIRONMENT_PHOTO_CHANGED");
-  const parsed = compositionSchema.safeParse(scene.stage),
-    env = parsed.success ? null : await sceneEnvironment(scene),
-    composition = parsed.success
-      ? parsed.data
-      : manualBackgroundComposition(
-          { width: photo.width!, height: photo.height! },
-          env!.environment,
-          env!.environmentSource,
-          0,
-        );
-  const source = await readLimited(photo.storageKey, 4 * 1024 * 1024),
-    raw = await sharp(source)
-      .removeAlpha()
-      .toColourspace("srgb")
-      .raw()
-      .toBuffer({ resolveWithObject: true });
-  const objects = await db.sceneObject.findMany({
-    where: { sceneId: scene.id, maskAssetId: { not: null } },
-    include: { mask: true },
-  });
-  const masks = await Promise.all(
-    objects
-      .filter((o) => o.mask?.status === "READY")
-      .map(async (o) => {
-        const m = await sharp(
-          await readLimited(o.mask!.storageKey, 4 * 1024 * 1024),
-        )
-          .greyscale()
-          .raw()
-          .toBuffer({ resolveWithObject: true });
-        if (m.info.width !== photo.width || m.info.height !== photo.height)
-          throw new Error("BACKGROUND_MASK_SIZE");
-        return m.data;
-      }),
-  );
-  const {modelPlacementSchema}=await import("@/lib/scene/composition");
-  const anchors=objects.filter(o=>o.mask?.status==="READY").flatMap((o,i)=>{const p=modelPlacementSchema.safeParse(o.initialTransform);return p.success&&masks[i]?[{mask:masks[i],position:[o.positionX,o.positionY,o.positionZ] as [number,number,number],size:p.data.size}]:[];});
-  const built = buildEnvironmentGeometry(plan, composition, grid, masks,anchors);
-  await db.generationStep.upsert({
-    where: {
-      runId_key_attempt: { runId, key: "environment-geometry", attempt: 1 },
-    },
-    create: {
-      runId,
-      key: "environment-geometry",
-      attempt: 1,
-      provider: "INTERNAL",
-      status: "SUCCEEDED",
-      output: json(built.report),
-      completedAt: new Date(),
-    },
-    update: { output: json(built.report) },
-  });
-  if (
-    built.report.walls < plan.expectedWallCount ||
-    built.report.coverage < 0.8 ||
-    built.report.projectionError > 0.08
-  )
-    throw new Error("ENVIRONMENT_STRUCTURE_INCOMPLETE");
-  const footprint = await backgroundFootprint(
-    { data: raw.data, width: raw.info.width, height: raw.info.height },
-    masks,
-  );
-  let edit = await db.generationStep.findUnique({
-      where: {
-        runId_key_attempt: { runId, key: "environment-albedo", attempt: 1 },
-      },
-      include: { response: true },
-    }),
-    generated: Buffer;
-  if (edit) {
-    if (edit.status !== "SUCCEEDED" || !edit.response)
-      throw new Error("ENVIRONMENT_IMAGE_ALREADY_ATTEMPTED");
-    generated = await readLimited(edit.response.storageKey, 24 * 1024 * 1024);
-  } else {
-    await environmentContext(runId);
-    await db.generationRun.update({
-      where: { id: runId },
-      data: { currentStage: "Recovering background materials", progress: 96 },
-    });
-    const created = await db.generationStep.create({
-      data: {
-        runId,
-        key: "environment-albedo",
-        attempt: 1,
-        provider: "META",
-        modelId: process.env.META_IMAGE_MODEL ?? "muse-image-1.0",
-        status: "RUNNING",
-        startedAt: new Date(),
-      },
-    });
-    generated = await cleanEnvironment(source, footprint.guide, plan, raw.info);
-    const rawId = await saveEnvironmentAsset(
-      runId,
-      "PROVIDER_RESPONSE",
-      generated,
-      "image/png",
-      "albedo-response",
-    );
-    edit = await db.generationStep.update({
-      where: { id: created.id },
-      data: {
-        status: "SUCCEEDED",
-        responseAssetId: rawId,
-        imageCount: 1,
-        costUsd: 0.01,
-        completedAt: new Date(),
-      },
-      include: { response: true },
-    });
+  const {referenceGeometryContext,buildSurfaceAtlas}=await import("./environment-surfaces");
+  const c=await referenceGeometryContext(runId),{scene,photo,plan,composition,built}=c,db=getDb();
+  await db.generationStep.upsert({where:{runId_key_attempt:{runId,key:"environment-geometry",attempt:1}},create:{runId,key:"environment-geometry",attempt:1,provider:"INTERNAL",status:"SUCCEEDED",output:json(built.report),completedAt:new Date()},update:{output:json(built.report)}});
+  const atlas=await buildSurfaceAtlas(runId,c);
+  let check=await db.generationStep.findUnique({where:{runId_key_attempt:{runId,key:"environment-check",attempt:1}}});
+  if(!check){
+    const started=await db.generationStep.create({data:{runId,key:"environment-check",attempt:1,provider:"META",modelId:process.env.META_ANALYSIS_MODEL??"muse-spark-1.3",status:"RUNNING",startedAt:new Date()}});
+    const review=await reviewEnvironment(c.source,c.plate,plan);
+    check=await db.generationStep.update({where:{id:started.id},data:{status:"SUCCEEDED",output:json(review),completedAt:new Date()}});
   }
-  const albedo = await environmentAlbedo(
-      source,
-      generated,
-      footprint.mask,
-      plan,
-    ),
-    checkPrior = await db.generationStep.findUnique({
-      where: {
-        runId_key_attempt: { runId, key: "environment-check", attempt: 1 },
-      },
-    });
-  let review;
-  if (checkPrior) {
-    if (checkPrior.status !== "SUCCEEDED")
-      throw new Error("ENVIRONMENT_CHECK_ALREADY_ATTEMPTED");
-    review = record(checkPrior.output) as {
-      structureMatches: boolean;
-      empty: boolean;
-      albedoClean: boolean;
-      issues: string[];
-    };
-  } else {
-    const check = await db.generationStep.create({
-      data: {
-        runId,
-        key: "environment-check",
-        attempt: 1,
-        provider: "META",
-        modelId: process.env.META_ANALYSIS_MODEL ?? "muse-spark-1.3",
-        status: "RUNNING",
-        startedAt: new Date(),
-      },
-    });
-    review = await reviewEnvironment(source, albedo, plan);
-    await db.generationStep.update({
-      where: { id: check.id },
-      data: {
-        status: "SUCCEEDED",
-        output: json(review),
-        completedAt: new Date(),
-      },
-    });
-  }
-  if (!review.empty) throw new Error("ENVIRONMENT_FOREGROUND_REMAINS");
-  if (!review.structureMatches)
-    built.report.warnings.push(
-      "Image review flagged background differences. Geometry follows the checked surface plan; inspect the reference comparison.",
-    );
-  if (!review.albedoClean)
-    built.report.warnings.push(
-      "Texture review found possible remaining photographed illumination.",
-    );
-  built.report.warnings.push(...review.issues);
-  const assetId = await saveEnvironmentAsset(
-      runId,
-      "SURFACE_TEXTURE",
-      albedo,
-      "image/webp",
-      "albedo",
-    ),
-    settings = record((await environmentContext(runId)).scene.settings);
+  if(check.status!=="SUCCEEDED")throw new Error("ENVIRONMENT_CHECK_ALREADY_ATTEMPTED");
+  const review=record(check.output);if(review.empty!==true)throw new Error("ENVIRONMENT_FOREGROUND_REMAINS");
+  if(review.structureMatches!==true)built.report.warnings.push("Image review flagged remaining architectural differences; inspect the reference comparison.");
+  if(Array.isArray(review.issues))built.report.warnings.push(...review.issues.filter((i):i is string=>typeof i==="string"));
+  const assetId=await saveEnvironmentAsset(runId,"SURFACE_TEXTURE",atlas.bytes,"image/webp","surface-atlas"),settings=record((await environmentContext(runId)).scene.settings);
   return {
-    sceneId: scene.id,
-    revision: scene.revision,
-    photoId: photo.id,
-    stage: {
-      ...composition,
-      background: {
-        kind:
-          plan.topology === "room"
-            ? ("planes" as const)
-            : ("seamless" as const),
-        groundVisible: plan.surfaces.some(
-          (s) => s.role === "floor" || s.role === "surface",
-        ),
-        boundary: null,
-        description: plan.explanation,
-        surfaceMode: "reference" as const,
-        geometry: built.geometry,
-      },
-    },
-    settings: {
-      ...settings,
-      backgroundPlan: undefined,
-      backgroundBackup: {
-        background: settings.background ?? null,
-        backgroundPlan: composition.background ?? null,
-      },
-      background: {
-        version: "reference-environment-v1",
-        materialMethod: "muse-surface-detrend-v2",
-        assetId,
-        photoId: photo.id,
-        warnings: built.report.warnings,
-        report: built.report,
-      },
-    },
-    report: built.report,
+    sceneId:scene.id,revision:scene.revision,photoId:photo.id,
+    stage:{...composition,background:{kind:plan.topology==="room"?"planes" as const:"seamless" as const,groundVisible:plan.surfaces.some(s=>s.role==="floor"||s.role==="surface"),boundary:null,description:plan.explanation,surfaceMode:"reference" as const,geometry:atlas.geometry}},
+    settings:{...settings,environmentObservation:{version:"environment-observation-v1",photoId:photo.id,analysis:plan},backgroundPlan:undefined,backgroundBackup:{background:settings.background??null,backgroundPlan:composition.background??null},background:{version:"reference-environment-v1",materialMethod:"muse-per-surface-atlas-v3",observation:plan,assetId,photoId:photo.id,warnings:built.report.warnings,report:built.report,atlas:{width:atlas.width,height:atlas.height,cleanPlateAssetId:c.plateAssetId,cleanDepth:c.cleanDepth}}},report:built.report,
   };
 }
 export async function buildReferenceEnvironment(runId: string) {
@@ -609,7 +399,7 @@ export async function reframeSceneEnvironment(
 ) {
   const db = getDb(),
     cache = record(record(scene.settings).environmentObservation),
-    plan = environmentObservationSchema.parse(cache.analysis);
+    plan = environmentObservationSchema.parse(record(record(scene.settings).background).observation??cache.analysis);
   if (cache.photoId !== scene.normalizedAssetId)
     throw new Error("ENVIRONMENT_PHOTO_CHANGED");
   const step = await db.generationStep.findFirst({
@@ -660,5 +450,7 @@ export async function reframeSceneEnvironment(
     built.report.projectionError > 0.08
   )
     throw new Error("ENVIRONMENT_STRUCTURE_INCOMPLETE");
+  const previous=composition.background?.geometry?.surfaces??[];
+  for(const surface of built.geometry.surfaces){const old=previous.find(s=>s.materialIndex===surface.materialIndex&&s.role===surface.role&&s.atlas);if(old?.atlas){surface.atlas=old.atlas;if(surface.tile){const {orthogonalTile}=await import("@/lib/appearance/environment-atlas");surface.tile=orthogonalTile(surface.tile);}}}
   return built;
 }

@@ -69,10 +69,29 @@ async function pollBackground(runId:string,requestId:string){
   const {pollEnvironmentDepth}=await import("@/lib/services/background-environment");
   return pollEnvironmentDepth(runId,requestId);
 }
-async function backgroundFailed(runId:string){
+async function prepareCleanBackground(runId:string){
+  "use step";
+  return (await import("@/lib/services/environment-surfaces")).prepareCleanEnvironmentDepth(runId);
+}
+prepareCleanBackground.maxRetries=0;
+async function pollCleanBackground(runId:string,requestId:string){
+  "use step";
+  return (await import("@/lib/services/background-environment")).pollEnvironmentDepth(runId,requestId,"environment-clean-depth");
+}
+async function surfaceTargets(runId:string){
+  "use step";
+  return (await import("@/lib/services/environment-surfaces")).environmentMaterialTargets(runId);
+}
+surfaceTargets.maxRetries=0;
+async function surfaceMaterial(runId:string,index:number){
+  "use step";
+  await (await import("@/lib/services/environment-surfaces")).buildEnvironmentSurfaceMaterial(runId,index);
+}
+surfaceMaterial.maxRetries=0;
+async function backgroundFailed(runId:string,reason:string,status:number){
   "use step";
   const {backgroundFailure}=await import("@/lib/services/background");
-  await backgroundFailure(runId,new Error("ENVIRONMENT_GEOMETRY_UNAVAILABLE"));
+  await backgroundFailure(runId,Object.assign(new Error(reason),status?{status}:{}));
 }
 async function readyWithBackground(runId:string){
   // This deterministic helper runs inside the caller's workflow. All external
@@ -80,8 +99,11 @@ async function readyWithBackground(runId:string){
   try{
     const requestId=await prepareBackground(runId);
     if(requestId){let done=false;for(let i=0;i<60;i++){if(await pollBackground(runId,requestId)){done=true;break;}await sleep("5s");}if(!done)throw new Error("ENVIRONMENT_DEPTH_TIMEOUT");}
+    const cleanId=await prepareCleanBackground(runId);
+    if(cleanId){let done=false;for(let i=0;i<60;i++){if(await pollCleanBackground(runId,cleanId)){done=true;break;}await sleep("5s");}if(!done)throw new Error("ENVIRONMENT_CLEAN_DEPTH_TIMEOUT");}
+    for(const index of await surfaceTargets(runId))await surfaceMaterial(runId,index);
     await improveBackground(runId);
-  }catch{await backgroundFailed(runId);}
+  }catch(error){const status=Number((error as {status?:number})?.status)||0;const message=error instanceof Error&&error.message.startsWith("ENVIRONMENT_")?error.message.slice(0,120):status?`META_HTTP_${status}`:"ENVIRONMENT_WORKFLOW_INTERRUPTED";await backgroundFailed(runId,message,status);}
 }
 async function isQualityRun(runId:string){
   "use step";
