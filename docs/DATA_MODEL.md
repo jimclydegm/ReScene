@@ -1,5 +1,7 @@
 # ReScene data model and contracts
 
+November1 material-relief addition: private GenerationStep receipts hold source-material audit patches and separate generated object-material reviews. Source observations may use `appearance: microtexture`; older observations stay readable. Public geometry adds optional bounded numeric `relief` (0–.05) alongside its existing atlas rectangle/material index. A height region shares the approved derived atlas; source crops, private observations and provider receipts remain unpublished. No SQL migration. Appearance history retains matching geometry/atlas/model references for Undo/Redo.
+
 The [Prisma schema](../prisma/schema.prisma) has eight models, nine enums, and explicit foreign keys/indexes. The initial [migration](../prisma/migrations/20261029040000_init/migration.sql), including [additional SQL constraints](../prisma/constraints.sql), was applied October 29. This document also specifies behavior for later reconstruction/publication phases; see [SETUP.md](SETUP.md) for current implementation limits.
 
 ## 1. Entity relationships

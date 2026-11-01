@@ -5,7 +5,7 @@
 - [x] Diagnose56e639ae: relief discarded by uniform policy, raw-plate lighting note misapplied to rendered materials, actual mesh/albedo faceting and non-indexed rewrite failure.
 - [x] Source-crop material audit; separate uniform color, microrelief and intrinsic pattern; independent Muse maps, material checks and source-detail fallback.
 - [x] Connected angle-weighted normals; photo-cropped/reframed Spark part plans; bounded smooth-surface fairing and protected topology/UVs; validated simple-material regeneration and spatial part mapping.
-- [ ] Complete combined validation, PR/main deployment, guarded saved-scene correction and history/delivery checks. Native WebGL checks deferred at Jim's instruction after browser access disabled.
+- [x]304 tests/schema/lint/types/build and PR42/main CI pass; production READY.56e639ae updated at revision9 with real Undo/Redo and preservation checks; shader delivery and temporary-route404 pass. A valid2.8% corner note remains. Native combined WebGL checks deferred at Jim's instruction after browser access disabled.
 
 ## Empty-room geometry and surface fidelity — November 1
 

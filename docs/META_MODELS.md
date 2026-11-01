@@ -1,5 +1,7 @@
 # Meta models: capabilities and integration research
 
+November1 source-detail correction: hosted SAM3D still has no verified polygon/quality knob. The follow-up uses Spark crop-based structure/material evidence, bounded CPU fairing/normal recovery and Muse material samples with separate Spark checks. Original-source background crops distinguish uniform paint from monochrome relief and colored pattern; Muse generates corresponding material/height evidence. New reconstructions invoke these durable optional steps automatically for simple unmarked materials. Generated samples are not exact recovery of unseen surfaces. See ENVIRONMENT_FIDELITY.md for applied evidence and deferred native checks.
+
 Checked against primary sources on October 29, 2026. “Documented” below means the public documentation describes a capability; it does not mean ReScene has exercised the endpoint or has account access. Implementation choices and quality expectations are our engineering judgments.
 
 ## 1. What each model contributes

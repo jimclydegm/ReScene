@@ -1,5 +1,11 @@
 # Test the photo-to-3D prototype
 
+## Source relief and smooth surfaces — November 1
+
+All304 tests/schema/lint/types/production build pass (51 workflow steps/four workflows), followed by PR42/main CI. Twelve new cases cover source patch exclusion/lineage, interrupted-audit no-resubmit, microrelief illumination removal/atlas fallback, close disconnected normal fans/scale invariance, simple-material/marking selection, sample-review gating, source-coordinate reframing, same-color part assignment and bounded non-indexed fairing with unchanged topology/UV/silhouette. Ignored local diagnostics produce unused-variable lint warnings; no source lint errors. The temporary preview route is absent from release.
+
+Live56e639ae reuses its completed empty plate/depth. Source/material and cropped object audits support two environment materials and lamp samples; an invented ceramic-pore sample was explicitly corrected and reviewed. CPU evidence keeps20,080 triangles, zero unmapped UV area and .79197 mask IoU; seam contrast20.94→10.78, unlit appearance distance45.00→31.57. These are limited metrics, not exact fidelity. Guarded production apply and actual database Undo/Redo end at revision9, preserving unrelated models/poses/products/camera/lights/source. Production READY/new shader delivery/temporary-route404 pass. A valid2.8% corner note remains. Native normal-only comparison was checked; browser then disabled and Jim deferred the remaining checks. The combined new shader/final lamp is not natively verified. Private backups/evidence: ignored test-results/fidelity-56. Do not repeat inference for release verification.
+
 Updated October 29, 2026. Production and local end-to-end API checks pass: upload → analysis/masks → three meshes → saved edits. Browser access now works. Desktop composition/selection/hide and 390px confirmation/reference dialogs have been visually checked.
 
 ## Browser journey
