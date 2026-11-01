@@ -45,6 +45,11 @@ export const itemDraftSchema = z
     yaw: z.number().min(-Math.PI).max(Math.PI),
     visible: z.boolean(),
     color: z.number().int().min(0).max(15),
+    productId: z
+      .string()
+      .refine((id) => !!findDemoProduct(id))
+      .optional(),
+    locked: z.boolean().optional(),
   })
   .strict();
 export type ItemDraft = z.infer<typeof itemDraftSchema>;
@@ -52,13 +57,35 @@ export const arrangementSchema = z
   .object({
     items: z.record(z.string(), itemDraftSchema),
     lighting: z.enum(["Original", "Day", "Dusk", "Night", "Studio"]),
+    background: z
+      .object({
+        preset: z.enum([
+          "original",
+          "linen",
+          "clay",
+          "sage",
+          "gallery",
+          "studio",
+        ]),
+        wall: z
+          .string()
+          .regex(/^#[\da-fA-F]{6}$/)
+          .optional(),
+        floor: z
+          .string()
+          .regex(/^#[\da-fA-F]{6}$/)
+          .optional(),
+        keepFloor: z.boolean().optional(),
+      })
+      .strict()
+      .optional(),
   })
   .strict()
   .superRefine((a, ctx) => {
     if (Object.keys(a.items).length > 8)
       ctx.addIssue({ code: "custom", message: "Unknown arrangement" });
     for (const [id, item] of Object.entries(a.items)) {
-      const p = findDemoProduct(id);
+      const p = findDemoProduct(item.productId ?? id);
       if (!p || item.color >= p.colors.length)
         ctx.addIssue({ code: "custom", message: "Unknown product or color" });
     }

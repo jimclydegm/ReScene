@@ -2,9 +2,11 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
-const uiOnly = process.argv.includes("--ui");
+const customization = process.argv.includes("--customization");
+const uiOnly = process.argv.includes("--ui") || customization;
 const presentationOnly = uiOnly || process.argv.includes("--presentation");
 const styles = new Set();
+const scripts = new Set();
 const base = new URL(process.env.DEMO_BASE_URL ?? "http://localhost:4317");
 assert(
   base.protocol === "https:" ||
@@ -46,6 +48,12 @@ for (const path of [
   const response = await get(path);
   assert.equal(response.status, 200, path);
   const html = await response.text();
+  if (
+    customization &&
+    (path.startsWith("/demo/space") || path.startsWith("/demo/shop-the-scene"))
+  )
+    for (const match of html.matchAll(/<script[^>]*src="([^"]+)"/g))
+      if (match[1].startsWith("/_next/static/")) scripts.add(match[1]);
   assert(html.includes("ReScene"), path);
   assert(
     !/\.r2\.cloudflarestorage\.com|postgresql:\/\/|LLM_/.test(html),
@@ -140,6 +148,35 @@ for (const path of styles) {
   const response = await get(path);
   assert.equal(response.status, 200, path);
   css += await response.text();
+}
+if (customization) {
+  for (const selector of [
+    "showroom-sidebar",
+    "showroom-tabs",
+    "showroom-panel-body",
+    "showroom-backgrounds",
+    "showroom-replacement-grid",
+  ])
+    assert(css.includes(selector), `Missing showroom styles: ${selector}`);
+  const bundles = await Promise.all(
+    [...scripts].map(async (path) => {
+      const response = await get(path);
+      assert.equal(response.status, 200);
+      return response.text();
+    }),
+  );
+  const delivered = bundles.join("\n");
+  for (const label of [
+    "Replace item",
+    "Background & finishes",
+    "Surprise background",
+    "Showroom controls",
+    "Lock position",
+  ])
+    assert(delivered.includes(label), `Missing showroom control: ${label}`);
+  console.log(
+    "PASS delivered showroom customization controls/styles; no unchanged model/image downloads",
+  );
 }
 assert(
   css.includes("--shop-bg") &&

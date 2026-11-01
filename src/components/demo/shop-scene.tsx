@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import {
   ArrowRight,
+  ArrowRightLeft,
   Check,
   Eye,
   EyeOff,
@@ -20,6 +21,7 @@ import {
   findDemoProduct,
   money,
   collectionInfo,
+  itemProductId,
 } from "@/lib/demo/catalog";
 import {
   demoScenes,
@@ -39,6 +41,8 @@ import { DemoDialog, useDemoStore } from "./store";
 import { SceneAlbumButton } from "./image-album";
 import { DemoViewer } from "./viewer";
 import { ColorSwatches } from "./product";
+import { RoomControls } from "./room-controls";
+import { ReplacementPicker } from "./replacement-picker";
 import { PositionControls } from "./position-controls";
 export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
   const scene = demoScenes.find((s) => s.id === sceneId)!,
@@ -53,11 +57,15 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
     [included, setIncluded] = useState(scene.objects.map((o) => o.id)),
     [photo, setPhoto] = useState(false),
     [reset, setReset] = useState(false),
+    [replacing, setReplacing] = useState(false),
     [message, setMessage] = useState("");
   const draft = timeline.present,
-    product = findDemoProduct(selected),
     item = draft.items[selected],
-    total = included.reduce((n, id) => n + findDemoProduct(id)!.price, 0);
+    product = findDemoProduct(item ? itemProductId(selected, item) : selected),
+    total = included.reduce(
+      (n, id) => n + findDemoProduct(itemProductId(id, draft.items[id]))!.price,
+      0,
+    );
   function update(patch: Partial<ItemDraft>, group: string | null = null) {
     const result = changeArrangement(scene, draft, selected, patch);
     setMessage(result.error ?? "");
@@ -66,6 +74,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
       if (patch.visible === false && isolated === selected) setIsolated(null);
       setTimeline((t) => recordEdit(t, result.draft, group));
     }
+    return result.error;
   }
   function finish() {
     setTimeline((t) => finishEdit(t));
@@ -98,9 +107,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
       </div>
       <div className="demo-section-heading">
         <div>
-          <span className="d-kicker">
-            Shop the scene
-          </span>
+          <span className="d-kicker">Shop the scene</span>
           <h1>{info.name}</h1>
           <p>
             Discover each piece. Move it, try a finish, or add the whole look to
@@ -176,7 +183,9 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
           )}
           <div className="demo-scene-product-strip">
             {scene.objects.map((o) => {
-              const p = findDemoProduct(o.id)!;
+              const p = findDemoProduct(
+                itemProductId(o.id, draft.items[o.id]),
+              )!;
               return (
                 <button
                   key={o.id}
@@ -184,7 +193,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                   onClick={() => select(selected === o.id ? "" : o.id)}
                 >
                   <Image
-                    src={demoImage(o.id)}
+                    src={demoImage(p.id)}
                     alt=""
                     width={100}
                     height={100}
@@ -219,9 +228,9 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                   </button>
                 </div>
                 <div className="retail-shop-product-head">
-                  <Link href={`/demo/product/${selected}`}>
+                  <Link href={`/demo/product/${product.id}`}>
                     <Image
-                      src={demoImage(selected)}
+                      src={demoImage(product.id)}
                       alt={product.name}
                       width={150}
                       height={150}
@@ -239,6 +248,13 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                   <summary>About this piece</summary>
                   <p>{product.description}</p>
                 </details>
+                <button
+                  className="d-button small showroom-swap-button"
+                  onClick={() => setReplacing(true)}
+                >
+                  <ArrowRightLeft size={14} />
+                  Replace item
+                </button>
                 <ColorSwatches
                   product={product}
                   value={item.color}
@@ -252,8 +268,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                 />
                 {supportOf(scene, selected) && (
                   <p className="retail-support-note">
-                    This accessory stays on its cabinet. Move the cabinet to
-                    move them together.
+                    Move its supporting piece to move them together.
                   </p>
                 )}
 
@@ -278,12 +293,12 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                 </div>
                 <button
                   className="d-button primary full"
-                  onClick={() => store.add(selected, item.color)}
+                  onClick={() => store.add(product.id, item.color)}
                 >
                   <ShoppingBag size={16} />
                   Add to shopping list
                 </button>
-                <Link className="d-text" href={`/demo/product/${selected}`}>
+                <Link className="d-text" href={`/demo/product/${product.id}`}>
                   Photos & product details
                   <ArrowRight size={14} />
                 </Link>
@@ -320,8 +335,30 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
               )}
             </div>
           </section>
+          <details className="showroom-shop-room">
+            <summary>Room & backgrounds</summary>
+            <RoomControls
+              scene={scene}
+              draft={draft}
+              onChange={(next, group) => {
+                setPhoto(false);
+                setIsolated(null);
+                setTimeline((t) => recordEdit(t, next, group));
+              }}
+              onFinish={finish}
+            />
+          </details>
         </aside>
       </div>
+      {replacing && selected && (
+        <ReplacementPicker
+          scene={scene}
+          draft={draft}
+          id={selected}
+          onReplace={(productId) => update({ productId })}
+          onClose={() => setReplacing(false)}
+        />
+      )}
       {reset && (
         <DemoDialog title="Reset this room?" onClose={() => setReset(false)}>
           <p>
@@ -348,7 +385,9 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
           </p>
           <div className="demo-look-list">
             {scene.objects.map((o) => {
-              const p = findDemoProduct(o.id)!,
+              const p = findDemoProduct(
+                  itemProductId(o.id, draft.items[o.id]),
+                )!,
                 checked = included.includes(o.id);
               return (
                 <label key={o.id}>
@@ -361,7 +400,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                       )
                     }
                   />
-                  <Image src={demoImage(o.id)} alt="" width={65} height={65} />
+                  <Image src={demoImage(p.id)} alt="" width={65} height={65} />
                   <span>
                     {p.name}
                     <small>{p.colors[draft.items[o.id].color].name}</small>
@@ -381,7 +420,10 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
             onClick={() => {
               setLook(false);
               store.addMany(
-                included.map((id) => ({ id, color: draft.items[id].color })),
+                included.map((id) => ({
+                  id: itemProductId(id, draft.items[id]),
+                  color: draft.items[id].color,
+                })),
               );
             }}
           >

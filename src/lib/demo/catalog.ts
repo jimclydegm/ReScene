@@ -222,6 +222,11 @@ export const collectionInfo: Record<string, { name: string; caption: string }> =
   };
 export const findDemoProduct = (id: string) =>
   demoProducts.find((p) => p.id === id);
+export const itemProductId = (id: string, item: { productId?: string }) =>
+  item.productId ?? id;
+// These are authored fictional listing dimensions, not measurements from AI.
+export const demoListingHeight = (id: string) =>
+  Number(findDemoProduct(id)?.dimensions.match(/H([\d.]+)\s*cm/)?.[1]) || null;
 export const money = (cents: number) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
