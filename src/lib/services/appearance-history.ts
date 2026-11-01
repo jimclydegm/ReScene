@@ -21,7 +21,9 @@ type Entry={name:string;before:Snapshot;after:Snapshot};
 type History={undo:Entry[];redo:Entry[]};
 const history=(v:unknown):History=>{const r=record(v),normalize=(entries:unknown)=>Array.isArray(entries)?(entries.slice(-8) as Entry[]).map(e=>({...e,before:{...e.before,settings:Object.fromEntries(keys.map(k=>[k,record(e.before.settings)[k]??null]))},after:{...e.after,settings:Object.fromEntries(keys.map(k=>[k,record(e.after.settings)[k]??null]))}})):[];return {undo:normalize(r.undo),redo:normalize(r.redo)};};
 export const appearanceFingerprint=(v:unknown):string=>{const canonical=(x:unknown):unknown=>Array.isArray(x)?x.map(canonical):x&&typeof x==="object"?Object.fromEntries(Object.entries(x).sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>[k,canonical(v)])):x;return createHash("sha256").update(JSON.stringify(canonical(v))).digest("hex");};
-const hash=appearanceFingerprint;
+// Registering the original background adds a selector ID without changing any
+// rendered asset. Compare render state while still restoring the saved ID.
+const hash=(v:Snapshot)=>appearanceFingerprint({...v,settings:{...v.settings,activeBackgroundId:null}});
 export async function recordAppearance(tx:Tx,sceneId:string,before:Snapshot,name:string,coalesce=false){
  const after=await captureAppearance(tx,sceneId);if(hash(before)===hash(after))return;
  const s=await tx.scene.findUniqueOrThrow({where:{id:sceneId},select:{settings:true}}),settings=record(s.settings),h=history(settings.appearanceHistory);
