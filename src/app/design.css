@@ -573,6 +573,62 @@ dialog::backdrop { background: #101713a3; backdrop-filter: blur(4px); }
 .demo-store .demo-room-purchase > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
 .demo-store .demo-room-purchase span { font-size: 12px; color: var(--shop-muted); }
 .demo-store .demo-room-purchase strong { font-size: 20px; font-weight: 500; }
+/* Showroom customization stays beside the scene, with buying actions pinned. */
+.demo-store .showroom-main { --shop-scene-height: clamp(340px, calc(100dvh - 300px), 680px); }
+.demo-store .showroom-sidebar { height: calc(var(--shop-scene-height) + 45px); min-height: 0; gap: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--shop-surface); }
+.demo-store .showroom-tabs { display: grid; grid-template-columns: repeat(3, 1fr); padding: 6px; gap: 4px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
+.demo-store .showroom-tabs button { padding: 7px 10px; background: transparent; color: var(--shop-muted); border: 1px solid transparent; border-radius: 6px; font-size: 13px; }
+.demo-store .showroom-tabs button[aria-selected=true] { background: var(--shop-selected); color: var(--shop-link); border-color: var(--line); }
+.demo-store .showroom-panel-body { min-height: 0; overflow-y: auto; scrollbar-gutter: stable; flex: 1; padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+.demo-store .showroom-sidebar .demo-panel { padding: 10px; border-radius: 8px; }
+.demo-store .showroom-sidebar .demo-room-purchase { flex-shrink: 0; border-width: 1px 0 0; border-radius: 0; padding: 10px 12px; }
+.demo-store .showroom-sidebar .demo-collection-panel .demo-room-product-select > span { display: none; }
+.demo-store .showroom-sidebar .demo-room-product-select img { height: 42px; object-fit: contain; }
+.demo-store .showroom-selected-summary, .demo-store .showroom-item-tools { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.demo-store .showroom-selected-summary > strong { font-size: 18px; font-weight: 500; }
+.demo-store .showroom-item-tools { flex-wrap: wrap; padding-block: 6px 0; }
+.demo-store .showroom-item-tools .d-text { font-size: 11px; gap: 4px; }
+.demo-store .showroom-item-tools .d-button { min-height: 28px; padding: 4px 8px; }
+.demo-store .showroom-placement { border-top: 1px solid var(--line); margin-top: 8px; }
+.demo-store .showroom-placement > summary { cursor: pointer; padding-block: 8px; font-size: 12px; color: var(--shop-muted); }
+.demo-store .showroom-layout-panel .demo-layouts { padding: 0; border: 0; display: grid; gap: 14px; }
+.demo-store .showroom-layout-panel .demo-layout-options { display: grid; grid-template-columns: repeat(2, 1fr); width: 100%; }
+.demo-store .showroom-layout-panel .demo-layout-options button { min-height: 38px; text-align: left; }
+.demo-store .showroom-layout-panel .demo-layout-save { margin: 0; width: 100%; justify-content: space-between; }
+.demo-store .showroom-layout-panel .demo-layout-save label { font-size: 12px; }
+.demo-store .showroom-backgrounds { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.demo-store .showroom-backgrounds button { min-width: 0; padding: 4px; border: 1px solid var(--line); background: var(--shop-surface); color: var(--shop-ink); border-radius: 6px; font-size: 11px; }
+.demo-store .showroom-backgrounds button[aria-pressed=true] { border-color: var(--shop-link); background: var(--shop-selected); }
+.demo-store .showroom-finish-preview { display: grid; height: 34px; border-radius: 3px; overflow: hidden; margin-bottom: 4px; grid-template-rows: 2fr 1fr; }
+.demo-store .showroom-color-inputs { display: grid; gap: 6px; margin-top: 12px; }
+.demo-store .showroom-color-inputs label { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.demo-store .showroom-color-inputs input { width: 30px; height: 26px; border: 1px solid var(--line); padding: 2px; background: var(--shop-surface); border-radius: 4px; }
+.demo-store .showroom-color-inputs span { margin-left: auto; font-size: 11px; font-family: var(--font-mono), monospace; color: var(--muted); }
+.demo-store .showroom-check { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--shop-muted); margin-top: 10px; }
+.demo-store .showroom-check input { accent-color: var(--shop-link); }
+.demo-store .showroom-quick-actions { display: grid; gap: 6px; margin-top: 12px; }
+.demo-store .showroom-shop-room { border: 1px solid var(--line); border-radius: 8px; background: var(--shop-surface); }
+.demo-store .showroom-shop-room > summary { padding: 10px 12px; cursor: pointer; font-size: 13px; }
+.demo-store .showroom-shop-room .demo-panel { border: 0; }
+.demo-store .showroom-swap-button { margin-block: 8px; width: 100%; }
+.demo-store .showroom-replace-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.demo-store .showroom-replace-toolbar label { display: flex; align-items: center; flex: 1; gap: 8px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+.demo-store .showroom-replace-toolbar input { min-width: 0; width: 100%; padding: 2px; border: 0; outline-offset: 2px; background: transparent; color: var(--shop-ink); font-size: 13px; }
+.demo-store .showroom-replace-toolbar select { max-width: 165px; padding: 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--shop-surface); color: var(--shop-ink); font-size: 12px; }
+.demo-store .showroom-replacement-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-height: min(440px, 52dvh); overflow-y: auto; padding: 2px; }
+.demo-store .showroom-replacement-grid > button { display: grid; grid-template-columns: 64px minmax(0, 1fr) 18px; align-items: center; gap: 10px; text-align: left; padding: 8px; background: var(--shop-surface); color: var(--shop-ink); border: 1px solid var(--line); border-radius: 8px; }
+.demo-store .showroom-replacement-grid > button[aria-pressed=true] { border-color: var(--shop-link); background: var(--shop-selected); }
+.demo-store .showroom-replacement-grid img { width: 64px; height: 64px; object-fit: contain; background: var(--shop-photo); border-radius: 4px; }
+.demo-store .showroom-replacement-grid strong, .demo-store .showroom-replacement-grid small, .demo-store .showroom-replacement-grid b { display: block; }
+.demo-store .showroom-replacement-grid strong { font-size: 13px; line-height: 1.4; font-weight: 500; }
+.demo-store .showroom-replacement-grid small { font-size: 11px; color: var(--shop-muted); }
+.demo-store .showroom-replacement-grid b { font-size: 13px; margin-top: 4px; font-weight: 500; }
+.demo-store .showroom-replacement-grid > button:disabled { opacity: .55; cursor: not-allowed; }
+.demo-store .showroom-replace-reason { line-height: 1.4; margin-top: 4px; }
+.demo-store .showroom-replace-footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 14px; }
+.demo-store .showroom-replace-footer strong { font-size: 14px; font-weight: 500; }
+.demo-store .showroom-replace-footer p { font-size: 12px; margin-block: 4px 0; }
+.demo-store .showroom-replace-footer > button { flex-shrink: 0; }
 .demo-store .demo-scene-product-strip { display: flex; gap: 8px; padding: 12px; background: var(--shop-surface); border-color: var(--line); overflow-x: auto; }
 .demo-store .demo-scene-product-strip > button { display: flex; flex: 1 0 140px; align-items: center; gap: 8px; padding: 4px; border: 1px solid var(--line); border-radius: 6px; background: var(--shop-surface); }
 .demo-store .demo-scene-product-strip > button[aria-pressed=true] { background: var(--shop-selected); border-color: var(--shop-link); }

@@ -1,5 +1,14 @@
 # ReScene — one release pass
 
+## Shopping showroom customization — November 1
+
+- [x] Replace selected items with approved existing products; update actual assets, labels, photos, finishes, prices and bag lines.
+- [x] Uniform relative sizing, support/tabletop checks, accessory height/following and conservative collision guards.
+- [x] Clean showroom stage; Products/Room/Layouts inspector with pinned purchase actions, isolated preview, position lock and selected-item shopping.
+- [x] Background finishes/studio cove, wall/floor colors, retained original floor option and undoable color/background randomization; browser-persisted choices and legacy-state compatibility.
+- [x] 259 tests/schema/lint/types/build pass; no inference or saved-project mutations.
+- [ ] PR/main CI, deployment and bounded read-only demo smoke. Native visual checks unavailable.
+
 ## Reconstruction fidelity — November 1
 
 - [x] Inspect reported22632152 source, failed overlay attempt, materials and fixed background setback.

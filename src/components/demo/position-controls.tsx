@@ -34,7 +34,7 @@ export function PositionControls({
           <div>
             <button
               aria-label={`Decrease ${label.toLowerCase()}`}
-              disabled={!item.visible}
+              disabled={!item.visible || item.locked}
               onClick={() => {
                 onChange({
                   [field]: Math.max(
@@ -54,7 +54,7 @@ export function PositionControls({
               step={0.02}
               value={item[field]}
               aria-label={label}
-              disabled={!item.visible}
+              disabled={!item.visible || item.locked}
               onChange={(e) =>
                 onChange({ [field]: Number(e.target.value) }, `${id}:${field}`)
               }
@@ -65,7 +65,7 @@ export function PositionControls({
             />
             <button
               aria-label={`Increase ${label.toLowerCase()}`}
-              disabled={!item.visible}
+              disabled={!item.visible || item.locked}
               onClick={() => {
                 onChange({
                   [field]: Math.min(

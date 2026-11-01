@@ -5,7 +5,8 @@ import { Component, type ReactNode, useMemo } from "react";
 import { ReferenceFrame } from "./reference-frame";
 import { LoaderCircle } from "lucide-react";
 import { demoImage } from "@/lib/demo/catalog";
-import type { DemoScene } from "@/lib/demo/scenes";
+import { resolvedDemoObject, type DemoScene } from "@/lib/demo/scenes";
+import { demoRoomAppearance } from "@/lib/demo/room-appearance";
 import type { Arrangement } from "@/lib/demo/state";
 import { lightingPresets } from "@/lib/scene/lighting";
 import { demoRenderObjects } from "@/lib/demo/render-objects";
@@ -63,12 +64,18 @@ export function DemoViewer({
   isolated?: string | null;
 }) {
   const objects = demoRenderObjects(scene, draft, { individual, isolated });
+  const room = useMemo(
+    () => demoRoomAppearance(scene, { background: draft.background }),
+    [scene, draft.background],
+  );
+  const inspected = individual
+      ? resolvedDemoObject(scene, draft, individual)
+      : null,
+    extent = inspected ? Math.max(...inspected.placement.size) : 0,
+    height = inspected?.placement.size[1] ?? 0;
   const composition = useMemo(() => {
-    if (!individual) return scene.composition;
-    const obj = scene.objects.find((o) => o.id === individual)!,
-      size = obj.placement.size,
-      extent = Math.max(...size),
-      height = size[1];
+    if (!individual) return room.composition;
+
     return {
       ...scene.composition,
       floorY: 0,
@@ -97,14 +104,18 @@ export function DemoViewer({
         aspect: 1.12,
       },
     };
-  }, [scene, individual]);
+  }, [scene, individual, extent, height, room.composition]);
   const appearance = individual
     ? { applied: false, floorUrl: null, wallUrl: null, backgroundUrl: null }
-    : scene.appearance;
+    : room.appearance;
   const canvas = (
     <ViewerBoundary
-      key={individual ?? scene.id}
-      image={individual ? demoImage(individual) : demoImage(scene.id)}
+      key={`${individual ?? scene.id}:${individual ? inspected?.productId : "room"}`}
+      image={
+        individual
+          ? demoImage(resolvedDemoObject(scene, draft, individual).productId)
+          : demoImage(scene.id)
+      }
     >
       <ModelCanvas
         shopping

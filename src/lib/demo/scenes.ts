@@ -5,6 +5,7 @@ import {
 } from "@/lib/scene/composition";
 import { lightingSchema } from "@/lib/scene/lighting";
 import { footprintOverlap, type Arrangement, type ItemDraft } from "./state";
+import { findDemoProduct, itemProductId, demoListingHeight } from "./catalog";
 export const demoScenes = frozen.scenes.map((s) => ({
   id: s.id,
   composition: compositionSchema.parse(s.composition),
@@ -18,6 +19,83 @@ export const demoScenes = frozen.scenes.map((s) => ({
   })),
 }));
 export type DemoScene = (typeof demoScenes)[number];
+export function resolvedDemoObject(
+  scene: DemoScene,
+  draft: Arrangement,
+  id: string,
+): DemoScene["objects"][number] & { productId: string } {
+  const slot = scene.objects.find((o) => o.id === id)!;
+  const productId = itemProductId(id, draft.items[id]);
+  const source =
+    demoScenes.flatMap((s) => s.objects).find((o) => o.id === productId) ??
+    slot;
+  // Single-photo scales differ. Use the existing fictional listing heights to
+  // keep demo proportions, then check the new footprint. Never squash a sofa
+  // into a vase-sized box or stretch the replacement geometry.
+  const heightRatio =
+    (demoListingHeight(source.id) ?? 1) / (demoListingHeight(slot.id) ?? 1);
+  const factor =
+    source.id === slot.id
+      ? 1
+      : (slot.placement.size[1] * heightRatio) / source.placement.size[1];
+  const placement =
+    source.id === slot.id
+      ? slot.placement
+      : {
+          ...source.placement,
+          scale: source.placement.scale.map((v) => v * factor) as [
+            number,
+            number,
+            number,
+          ],
+          offset: source.placement.offset.map((v) => v * factor) as [
+            number,
+            number,
+            number,
+          ],
+          size: source.placement.size.map((v) => v * factor) as [
+            number,
+            number,
+            number,
+          ],
+        };
+  const parentId = supportOf(scene, id),
+    parent = parentId ? resolvedDemoObject(scene, draft, parentId) : null;
+  const y = parent
+    ? parent.position[1] + parent.placement.size[1]
+    : slot.position[1];
+  return {
+    ...slot,
+    modelVersion: source.modelVersion,
+    placement,
+    productId,
+    position: [
+      slot.position[0],
+      source.id === slot.id &&
+      (!parent || itemProductId(parentId!, draft.items[parentId!]) === parentId)
+        ? slot.position[1]
+        : y,
+      slot.position[2],
+    ],
+  };
+}
+export function replacementError(
+  scene: DemoScene,
+  id: string,
+  productId: string,
+) {
+  const slot = scene.objects.find((o) => o.id === id),
+    product = findDemoProduct(productId);
+  if (!slot || !product) return "Choose an available product.";
+  if (supportOf(scene, id) && product.category !== "Home accessories")
+    return "Choose an accessory that fits on this supporting surface.";
+  if (
+    scene.objects.some((o) => supportOf(scene, o.id) === id) &&
+    !["Storage", "Side tables", "Coffee tables"].includes(product.category)
+  )
+    return "This piece supports an accessory. Choose a cabinet or table with a top surface.";
+  return null;
+}
 export function initialArrangement(scene: DemoScene): Arrangement {
   return {
     lighting: "Original",
@@ -27,6 +105,26 @@ export function initialArrangement(scene: DemoScene): Arrangement {
         { x: o.position[0], z: o.position[2], yaw: 0, visible: true, color: 0 },
       ]),
     ),
+  };
+}
+export function resetItemPatch(
+  scene: DemoScene,
+  draft: Arrangement,
+  id: string,
+): Partial<ItemDraft> {
+  const original = initialArrangement(scene),
+    reset = { ...original.items[id], productId: id, locked: false },
+    parentId = supportOf(scene, id);
+  if (!parentId) return reset;
+  const parent = draft.items[parentId],
+    base = original.items[parentId],
+    dx = reset.x - base.x,
+    dz = reset.z - base.z;
+  return {
+    ...reset,
+    x: parent.x + dx * Math.cos(parent.yaw) + dz * Math.sin(parent.yaw),
+    z: parent.z - dx * Math.sin(parent.yaw) + dz * Math.cos(parent.yaw),
+    yaw: parent.yaw,
   };
 }
 export function startingLayouts() {
@@ -229,7 +327,26 @@ export function changeArrangement(
   if (!source) return { draft, error: "Choose a product first." };
   const items = structuredClone(draft.items),
     before = items[id];
+  if (
+    before.locked &&
+    patch.locked !== false &&
+    ["x", "z", "yaw"].some(
+      (k) =>
+        k in patch &&
+        patch[k as keyof ItemDraft] !== before[k as keyof ItemDraft],
+    )
+  )
+    return { draft, error: "Unlock this item's position before moving it." };
+  if (patch.productId) {
+    const error = replacementError(scene, id, patch.productId);
+    if (error) return { draft, error };
+  }
   items[id] = { ...before, ...patch };
+  if (patch.productId && patch.productId !== before.productId)
+    items[id].color = 0;
+  const product = findDemoProduct(itemProductId(id, items[id]));
+  if (!product || items[id].color >= product.colors.length)
+    return { draft, error: "Choose an available finish." };
   const descendants = scene.objects.filter(
     (o) => supportOf(scene, o.id) === id,
   );
@@ -246,27 +363,30 @@ export function changeArrangement(
       ...("visible" in patch ? { visible: patch.visible! } : {}),
     };
   }
-  const parentId = supportOf(scene, id);
-  if (parentId && items[id].visible) {
-    const parent = scene.objects.find((o) => o.id === parentId)!,
-      p = items[parentId],
-      d = items[id],
-      dx = d.x - p.x,
-      dz = d.z - p.z;
-    const x = dx * Math.cos(p.yaw) - dz * Math.sin(p.yaw),
-      z = dx * Math.sin(p.yaw) + dz * Math.cos(p.yaw);
-    if (
-      Math.abs(x) >
-        (parent.placement.size[0] - source.placement.size[0]) * 0.5 + 0.02 ||
-      Math.abs(z) >
-        (parent.placement.size[2] - source.placement.size[2]) * 0.5 + 0.02
-    )
-      return {
-        draft,
-        error:
-          "Keep this accessory on its supporting cabinet. Move the cabinet to move them together.",
-      };
-    items[parentId].visible = true;
+  for (const childId of [id, ...descendants.map((o) => o.id)]) {
+    const parentId = supportOf(scene, childId);
+    if (parentId && items[childId].visible) {
+      const parent = resolvedDemoObject(scene, { ...draft, items }, parentId),
+        child = resolvedDemoObject(scene, { ...draft, items }, childId),
+        p = items[parentId],
+        d = items[childId],
+        dx = d.x - p.x,
+        dz = d.z - p.z;
+      const x = dx * Math.cos(p.yaw) - dz * Math.sin(p.yaw),
+        z = dx * Math.sin(p.yaw) + dz * Math.cos(p.yaw);
+      if (
+        Math.abs(x) >
+          (parent.placement.size[0] - child.placement.size[0]) * 0.5 + 0.02 ||
+        Math.abs(z) >
+          (parent.placement.size[2] - child.placement.size[2]) * 0.5 + 0.02
+      )
+        return {
+          draft,
+          error:
+            "Keep this accessory on its supporting surface. Move the supporting piece to move them together.",
+        };
+      items[parentId].visible = true;
+    }
   }
   const proposed = { ...draft, items };
   if (newCollision(scene, draft, proposed))
@@ -286,13 +406,16 @@ function newCollision(
   const overlaps = (
     a: DemoScene["objects"][number],
     b: DemoScene["objects"][number],
-    values: Arrangement["items"],
+    arrangement: Arrangement,
   ) => {
+    const values = arrangement.items;
     if (supportOf(scene, a.id) === b.id || supportOf(scene, b.id) === a.id)
       return false;
+    const aa = resolvedDemoObject(scene, arrangement, a.id),
+      bb = resolvedDemoObject(scene, arrangement, b.id);
     if (
-      a.position[1] + a.placement.size[1] <= b.position[1] + 0.04 ||
-      b.position[1] + b.placement.size[1] <= a.position[1] + 0.04
+      aa.position[1] + aa.placement.size[1] <= bb.position[1] + 0.04 ||
+      bb.position[1] + bb.placement.size[1] <= aa.position[1] + 0.04
     )
       return false;
     return (
@@ -301,13 +424,13 @@ function newCollision(
       footprintOverlap(
         {
           ...values[a.id],
-          width: a.placement.size[0],
-          depth: a.placement.size[2],
+          width: aa.placement.size[0],
+          depth: aa.placement.size[2],
         },
         {
           ...values[b.id],
-          width: b.placement.size[0],
-          depth: b.placement.size[2],
+          width: bb.placement.size[0],
+          depth: bb.placement.size[2],
         },
       )
     );
@@ -316,7 +439,20 @@ function newCollision(
     for (let j = i + 1; j < scene.objects.length; j++) {
       const a = scene.objects[i],
         b = scene.objects[j];
-      if (overlaps(a, b, after.items) && !overlaps(a, b, before.items)) {
+      const changed = [a, b].some(
+        (o) =>
+          itemProductId(o.id, after.items[o.id]) !==
+            itemProductId(o.id, before.items[o.id]) &&
+          resolvedDemoObject(scene, after, o.id).placement.size.some(
+            (v, k) =>
+              k !== 1 &&
+              v >
+                resolvedDemoObject(scene, before, o.id).placement.size[k] *
+                  1.05,
+          ),
+      );
+      if (changed && overlaps(a, b, after)) return true;
+      if (overlaps(a, b, after) && !overlaps(a, b, before)) {
         // Saved meshes can share conservative footprint boxes without solid
         // intersection. Hiding/re-showing their accepted relative pose is safe.
         const original = initialArrangement(scene),
@@ -330,7 +466,13 @@ function newCollision(
           Math.abs(aa.z - bb.z - (oa.z - ob.z)) < 0.00001 &&
           Math.abs(aa.yaw - oa.yaw) < 0.00001 &&
           Math.abs(bb.yaw - ob.yaw) < 0.00001;
-        if (!sameRelative || !overlaps(a, b, original.items)) return true;
+        if (
+          !sameRelative ||
+          itemProductId(a.id, aa) !== a.id ||
+          itemProductId(b.id, bb) !== b.id ||
+          !overlaps(a, b, original)
+        )
+          return true;
       }
     }
   return false;
