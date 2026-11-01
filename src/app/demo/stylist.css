@@ -1,0 +1,243 @@
+.demo-store .showroom-tabs {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.demo-store .showroom-tabs button {
+  padding-inline: 4px;
+}
+.demo-store .shop-stylist-sidebar .showroom-tabs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.demo-store .showroom-panel-body [hidden] {
+  display: none;
+}
+.demo-store .stylist-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--shop-ink);
+  font-size: 13px;
+}
+.stylist-heading,
+.stylist-heading > span,
+.stylist-input-row,
+.stylist-option-top,
+.stylist-option-actions,
+.stylist-preview-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.stylist-heading > span {
+  font-size: 15px;
+  font-weight: 600;
+}
+.stylist-heading small,
+.stylist-caption,
+.stylist-option > small {
+  color: var(--shop-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.stylist-prompt-label {
+  font-weight: 500;
+}
+.demo-store .stylist-panel textarea,
+.demo-store .stylist-panel input:not([type="checkbox"]) {
+  width: 100%;
+  background: var(--shop-surface);
+  color: var(--shop-ink);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px;
+  font: inherit;
+}
+.demo-store .stylist-panel textarea {
+  resize: vertical;
+  min-height: 62px;
+  max-height: 130px;
+  line-height: 1.5;
+}
+.stylist-input-row > label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+.stylist-input-row > label span {
+  color: var(--shop-muted);
+  font-size: 11px;
+}
+.demo-store .stylist-input-row input {
+  max-width: 100px;
+}
+.stylist-keep-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.stylist-keep-controls label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  line-height: 1.4;
+}
+.stylist-keep-controls input {
+  accent-color: var(--shop-link);
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.stylist-kept {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.demo-store .stylist-kept button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  padding: 4px 5px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--shop-selected);
+  color: var(--shop-link);
+}
+.stylist-panel p {
+  margin: 0;
+}
+.stylist-request {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 8px;
+}
+.stylist-request > summary {
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding-block: 5px;
+}
+.stylist-request > summary > span {
+  float: right;
+  color: var(--shop-link);
+  font-size: 11px;
+}
+.stylist-request[open] > summary {
+  margin-bottom: 6px;
+}
+.stylist-request[open] > *:not(summary) {
+  margin-top: 7px;
+}
+.stylist-request > label {
+  display: block;
+}
+.stylist-summary {
+  font-weight: 500;
+  line-height: 1.5;
+}
+.stylist-options {
+  display: grid;
+  gap: 9px;
+}
+.stylist-option {
+  padding: 10px;
+  background: var(--shop-raised);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.stylist-option.previewing,
+.stylist-option.applied {
+  border-color: var(--shop-link);
+}
+.stylist-option-top strong {
+  font-size: 14px;
+}
+.stylist-option-top b {
+  font-size: 17px;
+  white-space: nowrap;
+}
+.stylist-thumbnails {
+  display: flex;
+  gap: 5px;
+  margin-block: 8px;
+}
+.stylist-thumbnails > div {
+  position: relative;
+}
+.stylist-thumbnails img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  background: var(--shop-surface);
+  border-radius: 5px;
+}
+.stylist-thumbnails span {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  font-size: 8px;
+  text-align: center;
+  background: var(--shop-surface);
+  color: var(--shop-ink);
+}
+.stylist-option > p {
+  font-size: 12px;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+.stylist-option details {
+  margin-block: 6px;
+  font-size: 11px;
+}
+.stylist-option summary {
+  cursor: pointer;
+  color: var(--shop-link);
+}
+.stylist-option ul {
+  padding-left: 12px;
+  margin: 6px 0;
+}
+.stylist-option li {
+  line-height: 1.5;
+  margin-block: 4px;
+}
+.stylist-option li b {
+  display: block;
+}
+.stylist-option-actions > button {
+  flex: 1;
+  justify-content: center;
+}
+.stylist-error,
+.stylist-notice {
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  background: var(--shop-selected);
+  color: var(--shop-ink);
+}
+.stylist-preview-banner {
+  padding: 7px 10px;
+  font-size: 12px;
+  background: var(--shop-selected);
+  color: var(--shop-link);
+  border: 1px solid var(--line);
+}
+.stylist-preview-banner button {
+  background: transparent;
+  color: inherit;
+  text-decoration: underline;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.demo-store .shop-stylist-sidebar {
+  height: calc(var(--shop-scene-height) + 45px);
+}
+.demo-store .shop-stylist-sidebar .demo-shop-card {
+  padding: 10px;
+}

@@ -4,7 +4,10 @@ import { readGlb } from "@/lib/appearance/bake";
 /** Repack embedded buffers and encode opaque albedo as high-quality JPEG.
  * No geometry, UVs, transforms or texture dimensions are changed. Demo copies only.
  */
-export async function optimizeDemoModel(bytes: Buffer) {
+export async function optimizeDemoModel(
+  bytes: Buffer,
+  maxBytes = 4 * 1024 * 1024,
+) {
   inspectGlb(bytes);
   const { json: g, binary } = readGlb(bytes);
   const replacements = new Map<number, Buffer>();
@@ -61,7 +64,7 @@ export async function optimizeDemoModel(bytes: Buffer) {
   bh.writeUInt32LE(0x004e4942, 4);
   const result = Buffer.concat([header, json, jpad, bh, ...chunks, bpad]);
   inspectGlb(result);
-  if (result.length > 4 * 1024 * 1024)
+  if (result.length > maxBytes)
     throw new Error("Curated demo exceeds the delivery limit");
   return result;
 }

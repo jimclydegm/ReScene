@@ -1,4 +1,5 @@
 import frozen from "./frozen-scenes.json";
+import catalogModels from "./catalog-models.json";
 import {
   compositionSchema,
   modelPlacementSchema,
@@ -19,6 +20,23 @@ export const demoScenes = frozen.scenes.map((s) => ({
   })),
 }));
 export type DemoScene = (typeof demoScenes)[number];
+export function demoProductScene(id: string): DemoScene {
+  const existing = demoScenes.find((s) => s.objects.some((o) => o.id === id));
+  if (existing) return existing;
+  const model = catalogModels.find((o) => o.id === id);
+  if (!model) throw new Error("Product model unavailable");
+  return {
+    ...demoScenes[0],
+    objects: [
+      {
+        id,
+        modelVersion: model.digest.slice(0, 12),
+        position: [0, 0, 0],
+        placement: modelPlacementSchema.parse(model.placement),
+      },
+    ],
+  };
+}
 export function resolvedDemoObject(
   scene: DemoScene,
   draft: Arrangement,
@@ -26,9 +44,15 @@ export function resolvedDemoObject(
 ): DemoScene["objects"][number] & { productId: string } {
   const slot = scene.objects.find((o) => o.id === id)!;
   const productId = itemProductId(id, draft.items[id]);
-  const source =
-    demoScenes.flatMap((s) => s.objects).find((o) => o.id === productId) ??
-    slot;
+  const source = catalogModels
+    .map((o) => ({
+      ...o,
+      modelVersion: o.digest.slice(0, 12),
+      position: o.position as [number, number, number],
+      placement: modelPlacementSchema.parse(o.placement),
+    }))
+    .find((o) => o.id === productId);
+  if (!source) throw new Error("The selected product model is unavailable.");
   // Single-photo scales differ. Use the existing fictional listing heights to
   // keep demo proportions, then check the new footprint. Never squash a sofa
   // into a vase-sized box or stretch the replacement geometry.
@@ -389,13 +413,121 @@ export function changeArrangement(
     }
   }
   const proposed = { ...draft, items };
-  if (newCollision(scene, draft, proposed))
-    return {
-      draft,
-      error:
-        "That move overlaps another product. Try another direction or remove an item first.",
-    };
+  const error = validateArrangement(scene, draft, proposed);
+  if (error) return { draft, error };
   return { draft: { ...draft, items }, error: null };
+}
+
+/** Validate a complete draft atomically, including indirect support-child moves. */
+export function validateArrangement(
+  scene: DemoScene,
+  before: Arrangement,
+  after: Arrangement,
+  options:{roomBounds?:boolean}={},
+): string | null {
+  if (
+    JSON.stringify(Object.keys(after.items).sort()) !==
+    JSON.stringify(scene.objects.map((o) => o.id).sort())
+  )
+    return "This arrangement belongs to a different collection.";
+  for (const o of scene.objects) {
+    const a = before.items[o.id],
+      b = after.items[o.id],
+      product = findDemoProduct(itemProductId(o.id, b));
+    if (
+      !product ||
+      !catalogModels.some((m) => m.id === product.id) ||
+      b.color < 0 ||
+      b.color >= product.colors.length
+    )
+      return "The selected product or finish is unavailable.";
+    const reason = replacementError(scene, o.id, product.id);
+    if (reason) return reason;
+    if (
+      a.locked &&
+      b.locked !== false &&
+      (a.x !== b.x || a.z !== b.z || a.yaw !== b.yaw)
+    )
+      return "Unlock the item's position before moving it or its supporting piece.";
+    const parentId = supportOf(scene, o.id);
+    if (parentId && b.visible) {
+      if (!after.items[parentId].visible)
+        return "Show the supporting piece before adding its accessory.";
+      const parent = resolvedDemoObject(scene, after, parentId),
+        child = resolvedDemoObject(scene, after, o.id),
+        p = after.items[parentId],
+        dx = b.x - p.x,
+        dz = b.z - p.z;
+      if (
+        Math.abs(dx * Math.cos(p.yaw) - dz * Math.sin(p.yaw)) >
+          (parent.placement.size[0] - child.placement.size[0]) * 0.5 + 0.02 ||
+        Math.abs(dx * Math.sin(p.yaw) + dz * Math.cos(p.yaw)) >
+          (parent.placement.size[2] - child.placement.size[2]) * 0.5 + 0.02
+      )
+        return "Keep the accessory within its supporting surface.";
+    }
+  }
+  if(options.roomBounds){const wallError=wallClearance(scene,before,after);if(wallError)return wallError;}
+  return newCollision(scene, before, after)
+    ? "That arrangement overlaps another product. Try a different placement."
+    : null;
+}
+
+/** Observed architectural planes only; preserve tolerance for inherited source-box errors. */
+function wallClearance(
+  scene: DemoScene,
+  before: Arrangement,
+  after: Arrangement,
+) {
+  if (after.background?.preset === "studio") return null;
+  const walls =
+    scene.composition.background?.geometry?.surfaces.filter(
+      (s) => s.role === "wall",
+    ) ?? [];
+  for (const wall of walls) {
+    const [a, b, c] = wall.vertices;
+    if (!a || !b || !c) continue;
+    const nx = (b[1] - a[1]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[1] - a[1]),
+      nz = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]),
+      length = Math.hypot(nx, nz);
+    if (length < 1e-6) continue;
+    const d = nx * a[0] + nz * a[2],
+      target = scene.composition.camera.target,
+      side = Math.sign(nx * target[0] + nz * target[2] - d);
+    if (!side) continue;
+    const penetration = (slot: string, draft: Arrangement) => {
+      const item = draft.items[slot];
+      const model = resolvedDemoObject(scene, draft, slot),
+        cos = Math.cos(item.yaw),
+        sin = Math.sin(item.yaw);
+      return Math.max(
+        0,
+        ...[-1, 1].flatMap((x) =>
+          [-1, 1].map((z) => {
+            const dx = (x * model.placement.size[0]) / 2,
+              dz = (z * model.placement.size[2]) / 2;
+            return (
+              (-side *
+                (nx * (item.x + dx * cos + dz * sin) +
+                  nz * (item.z - dx * sin + dz * cos) -
+                  d)) /
+              length
+            );
+          }),
+        ),
+      );
+    };
+    for (const o of scene.objects)
+      if (
+        penetration(o.id, after) >
+        (before.background?.preset === "studio"
+          ? 0
+          : penetration(o.id, before)) +
+          0.03
+      )
+        return "Keep products inside the observed room walls.";
+  }
+  return null;
 }
 
 function newCollision(

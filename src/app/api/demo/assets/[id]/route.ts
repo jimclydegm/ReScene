@@ -1,6 +1,7 @@
 import { api, AppError } from "@/lib/http";
-import { readLimited, storagePrefix } from "@/lib/storage/r2";
-import frozen from "@/lib/demo/frozen-scenes.json";
+import { readLimited, storagePrefix, getR2, bucket } from "@/lib/storage/r2";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import models from "@/lib/demo/catalog-models.json";
 export const dynamic = "force-dynamic";
 export const GET = async (
   _request: Request,
@@ -9,19 +10,51 @@ export const GET = async (
   const response = await api(async () => {
     const { id } = await context.params;
     // Explicit frozen catalog only. No database join, arbitrary key, URL or source ID.
-    const asset = frozen.scenes
-      .flatMap((s) => s.objects)
-      .find((o) => o.id === id);
+    const asset = models.find((o) => o.id === id);
     if (!asset)
       throw new AppError(404, "NOT_FOUND", "Demo product unavailable.");
-    const bytes = await readLimited(
-      `${storagePrefix()}/demo/store-v1/${asset.digest}.glb`,
-      4 * 1024 * 1024,
-    );
-    return new Response(new Uint8Array(bytes), {
+    const key = `${storagePrefix()}/demo/store-v1/${asset.digest}.glb`;
+    let body: BodyInit;
+    let contentLength: string | undefined;
+    if (asset.bytes > 4 * 1024 * 1024) {
+      if (asset.bytes > 16 * 1024 * 1024)
+        throw new AppError(
+          413,
+          "MODEL_TOO_LARGE",
+          "This model exceeds the showroom delivery limit.",
+        );
+      const result = await getR2().send(
+        new GetObjectCommand({ Bucket: bucket(), Key: key }),
+      );
+      if (!result.Body || result.ContentLength !== asset.bytes)
+        throw new AppError(
+          404,
+          "MODEL_UNAVAILABLE",
+          "The approved model is unavailable.",
+        );
+      // A real stream avoids Vercel's buffered-response limit; never expose a private URL.
+      let count = 0;
+      body = result.Body.transformToWebStream().pipeThrough(
+        new TransformStream<Uint8Array, Uint8Array>({
+          transform(chunk, controller) {
+            count += chunk.byteLength;
+            if (count > asset.bytes) throw new Error("MODEL_LENGTH_MISMATCH");
+            controller.enqueue(chunk);
+          },
+          flush() {
+            if (count !== asset.bytes) throw new Error("MODEL_LENGTH_MISMATCH");
+          },
+        }),
+      );
+    } else {
+      const bytes = await readLimited(key, 4 * 1024 * 1024);
+      body = new Uint8Array(bytes);
+      contentLength = String(bytes.length);
+    }
+    return new Response(body, {
       headers: {
         "Content-Type": "model/gltf-binary",
-        "Content-Length": String(bytes.length),
+        ...(contentLength ? { "Content-Length": contentLength } : {}),
         "Cache-Control": "public, max-age=3600, s-maxage=86400",
         "X-Content-Type-Options": "nosniff",
         "Referrer-Policy": "no-referrer",

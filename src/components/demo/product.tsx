@@ -16,7 +16,7 @@ import {
   Truck,
 } from "lucide-react";
 import { findDemoProduct, money, type DemoProduct } from "@/lib/demo/catalog";
-import { demoScenes, initialArrangement } from "@/lib/demo/scenes";
+import { demoProductScene, initialArrangement } from "@/lib/demo/scenes";
 import { productAlbum, productCover } from "@/lib/demo/albums";
 import { ImageAlbum } from "./image-album";
 import { DemoViewer } from "./viewer";
@@ -55,7 +55,7 @@ export function ColorSwatches({
           </button>
         ))}
       </div>
-      <small>Illustrative finishes</small>
+      <small>Available finishes</small>
     </fieldset>
   );
 }
@@ -156,7 +156,7 @@ function Avatar({ person }: { person: (typeof reviews)[number] }) {
 }
 export function ProductPage({ id }: { id: string }) {
   const p = findDemoProduct(id)!,
-    scene = demoScenes.find((s) => s.objects.some((o) => o.id === id))!,
+    scene = demoProductScene(id),
     store = useDemoStore();
   const [color, setColor] = useState(0),
     [quantity, setQuantity] = useState(1),
@@ -251,7 +251,7 @@ export function ProductPage({ id }: { id: string }) {
           </button>
           <div className="demo-price">
             {money(p.price)}
-            <small>USD · Sample listing</small>
+            <small>USD</small>
           </div>
           <p className="demo-description">{p.description}</p>
           <ColorSwatches product={p} value={color} onChange={chooseColor} />

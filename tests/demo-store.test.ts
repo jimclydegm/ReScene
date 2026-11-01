@@ -19,14 +19,14 @@ import frozen from "../src/lib/demo/frozen-scenes.json";
 import { existsSync } from "node:fs";
 
 describe("curated retail demo", () => {
-  it("merges matching variants, preserves distinct colors, caps quantities and uses integer totals", () => {
+  it("merges matching variants, preserves distinct colors, rejects overflow and uses integer totals", () => {
     let cart = addToCart([], "sage-chair", 0, 2);
     cart = addToCart(cart, "sage-chair", 0, 1);
     cart = addToCart(cart, "sage-chair", 1, 1);
     expect(cart).toHaveLength(2);
     expect(cart[0].quantity).toBe(3);
     expect(cartTotal(cart)).toBe(99600);
-    expect(addToCart(cart, "sage-chair", 0, 20)[0].quantity).toBe(20);
+    expect(() => addToCart(cart, "sage-chair", 0, 20)).toThrow(/20/);
     expect(cart[0].quantity).toBe(3);
   });
   it("rejects unknown listings, invalid variants, duplicate lines, untrusted totals and malformed local storage", () => {

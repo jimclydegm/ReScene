@@ -19,6 +19,14 @@ describe("shopping albums and scene controls", () => {
     expect(albumData.model).toMatch(/^muse-image-/);
     for (const p of demoProducts) {
       const album = productAlbum(p.id);
+      if (!Object.hasOwn(albumData.products, p.id)) {
+        expect(album[0].kind).toBe("photo");
+        expect(
+          (await sharp(readFileSync(`public${album[0].path}`)).metadata())
+            .width,
+        ).toBeGreaterThan(0);
+        continue;
+      }
       expect(album[0].kind).toBe("generated");
       expect(album[0].id).toBe("studio");
       expect(album.length).toBeGreaterThanOrEqual(5);
@@ -119,7 +127,9 @@ describe("shopping albums and scene controls", () => {
   });
   it("round-trips the expanded finishes and six layout slots without changing earlier variant indices", () => {
     for (const p of demoProducts) {
-      expect(p.colors.length).toBeGreaterThanOrEqual(7);
+      expect(p.colors.length).toBeGreaterThanOrEqual(
+        Object.hasOwn(albumData.products, p.id) ? 7 : 5,
+      );
       expect(p.colors[0].value).toBeNull();
     }
     const scene = demoScenes.find((s) => s.id === "corner")!,

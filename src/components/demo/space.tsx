@@ -1,5 +1,8 @@
 "use client";
-import {DemoVoiceControls} from "./voice-controls";
+import { StylistPanel } from "./stylist-panel";
+import { merchandiseTotal, purchaseLines } from "@/lib/shopping/engine";
+import type { Arrangement } from "@/lib/demo/state";
+import { DemoVoiceControls } from "./voice-controls";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -87,7 +90,10 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
       scene.objects.find((o) => o.id.endsWith("chair"))?.id ??
         scene.objects[0].id,
     ),
-    [panel, setPanel] = useState<"products" | "room" | "layouts">("products"),
+    [panel, setPanel] = useState<"products" | "room" | "layouts" | "stylist">(
+      "stylist",
+    ),
+    [preview, setPreview] = useState<Arrangement | null>(null),
     [replacing, setReplacing] = useState(false),
     [isolated, setIsolated] = useState(false),
     [message, setMessage] = useState(""),
@@ -111,6 +117,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
     patch: Partial<ItemDraft>,
     group: string | null = null,
   ) {
+    setPreview(null);
     const result = changeArrangement(scene, draft, id, patch);
     setMessage(result.error ?? "");
     if (!result.error) {
@@ -121,6 +128,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
   }
 
   function load(which: LayoutName) {
+    setPreview(null);
     setTimeline((t) => recordEdit(t, layouts[which]));
     setSlot(which);
     setSaveSlot(which);
@@ -129,11 +137,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
     setIsolated(false);
   }
   const visible = scene.objects.filter((o) => draft.items[o.id].visible),
-    total = visible.reduce(
-      (s, o) =>
-        s + findDemoProduct(itemProductId(o.id, draft.items[o.id]))!.price,
-      0,
-    );
+    total = merchandiseTotal(draft);
   return (
     <main className="demo-main demo-room-main showroom-main">
       <div className="demo-breadcrumb">
@@ -156,13 +160,34 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
       </div>
       <div className="demo-room-layout">
         <div className="demo-room-stage">
+          {preview && (
+            <div className="stylist-preview-banner">
+              Stylist preview · not applied{" "}
+              <button onClick={() => setPreview(null)}>
+                Back to your scene
+              </button>
+            </div>
+          )}
           <div className="demo-room-topbar">
             <span>
               <span className="demo-live-dot" />
               Interactive showroom
             </span>
             <div>
-              <DemoVoiceControls sceneId={scene.id} draft={draft} selected={selected} onApply={(next,id)=>{setTimeline(t=>recordEdit(t,next));setSelected(id);setIsolated(false);setMessage("Voice changes applied. Undo restores the previous arrangement.");}}/>
+              <DemoVoiceControls
+                sceneId={scene.id}
+                draft={draft}
+                selected={selected}
+                onApply={(next, id) => {
+                  setPreview(null);
+                  setTimeline((t) => recordEdit(t, next));
+                  setSelected(id);
+                  setIsolated(false);
+                  setMessage(
+                    "Voice changes applied. Undo restores the previous arrangement.",
+                  );
+                }}
+              />
               <SceneAlbumButton
                 sceneId={scene.id}
                 name={collectionInfo[scene.id].name}
@@ -171,7 +196,10 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
                 className="d-icon"
                 aria-label="Undo arrangement change"
                 disabled={!timeline.past.length}
-                onClick={() => setTimeline((t) => undoEdit(t))}
+                onClick={() => {
+                  setPreview(null);
+                  setTimeline((t) => undoEdit(t));
+                }}
               >
                 <Undo2 size={16} />
               </button>
@@ -179,7 +207,10 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
                 className="d-icon"
                 aria-label="Redo arrangement change"
                 disabled={!timeline.future.length}
-                onClick={() => setTimeline((t) => redoEdit(t))}
+                onClick={() => {
+                  setPreview(null);
+                  setTimeline((t) => redoEdit(t));
+                }}
               >
                 <Redo2 size={16} />
               </button>
@@ -194,7 +225,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
           </div>
           <DemoViewer
             scene={scene}
-            draft={draft}
+            draft={preview ?? draft}
             selected={selected}
             onSelect={(id) => {
               setSelected(id);
@@ -209,48 +240,59 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
             role="tablist"
             aria-label="Showroom controls"
           >
-            {(["products", "room", "layouts"] as const).map((tab) => (
-              <button
-                key={tab}
-                id={`showroom-tab-${tab}`}
-                role="tab"
-                aria-selected={panel === tab}
-                aria-controls="showroom-panel"
-                tabIndex={panel === tab ? 0 : -1}
-                onKeyDown={(e) => {
-                  const tabs = ["products", "room", "layouts"] as const;
-                  const index = tabs.indexOf(tab);
-                  const next =
-                    e.key === "ArrowRight"
-                      ? (index + 1) % 3
-                      : e.key === "ArrowLeft"
-                        ? (index + 2) % 3
-                        : e.key === "Home"
-                          ? 0
-                          : e.key === "End"
-                            ? 2
-                            : null;
-                  if (next !== null) {
-                    e.preventDefault();
+            {(["stylist", "products", "room", "layouts"] as const).map(
+              (tab) => (
+                <button
+                  key={tab}
+                  id={`showroom-tab-${tab}`}
+                  role="tab"
+                  aria-selected={panel === tab}
+                  aria-controls="showroom-panel"
+                  tabIndex={panel === tab ? 0 : -1}
+                  onKeyDown={(e) => {
+                    const tabs = [
+                      "stylist",
+                      "products",
+                      "room",
+                      "layouts",
+                    ] as const;
+                    const index = tabs.indexOf(tab);
+                    const next =
+                      e.key === "ArrowRight"
+                        ? (index + 1) % 4
+                        : e.key === "ArrowLeft"
+                          ? (index + 3) % 4
+                          : e.key === "Home"
+                            ? 0
+                            : e.key === "End"
+                              ? 3
+                              : null;
+                    if (next !== null) {
+                      e.preventDefault();
+                      finish();
+                      setPreview(null);
+                      setPanel(tabs[next]);
+                      document
+                        .getElementById(`showroom-tab-${tabs[next]}`)
+                        ?.focus();
+                    }
+                  }}
+                  onClick={() => {
                     finish();
-                    setPanel(tabs[next]);
-                    document
-                      .getElementById(`showroom-tab-${tabs[next]}`)
-                      ?.focus();
-                  }
-                }}
-                onClick={() => {
-                  finish();
-                  setPanel(tab);
-                }}
-              >
-                {tab === "products"
-                  ? "Products"
-                  : tab === "room"
-                    ? "Room"
-                    : "Layouts"}
-              </button>
-            ))}
+                    setPreview(null);
+                    setPanel(tab);
+                  }}
+                >
+                  {tab === "stylist"
+                    ? "AI stylist"
+                    : tab === "products"
+                      ? "Products"
+                      : tab === "room"
+                        ? "Room"
+                        : "Layouts"}
+                </button>
+              ),
+            )}
           </div>
           <div
             className="showroom-panel-body"
@@ -258,6 +300,27 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
             role="tabpanel"
             aria-labelledby={`showroom-tab-${panel}`}
           >
+            <div hidden={panel !== "stylist"}>
+              <StylistPanel
+                sceneId={scene.id}
+                draft={draft}
+                selected={selected}
+                previewActive={!!preview}
+                onPreview={(next) => {
+                  setPreview(next);
+                  if (next) setIsolated(false);
+                }}
+                onOwned={(id, owned) => update(id, { owned })}
+                onApply={(option) => {
+                  setPreview(null);
+                  setIsolated(false);
+                  setTimeline((t) => recordEdit(t, option.draft));
+                  setMessage(
+                    `${option.title} applied. Undo restores the previous arrangement.`,
+                  );
+                }}
+              />
+            </div>
             {panel === "products" && (
               <>
                 <section className="demo-panel demo-collection-panel">
@@ -538,12 +601,12 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
           </div>
           <div className="demo-room-purchase">
             <div>
-              <span>{visible.length} products in your arrangement</span>
+              <span>{purchaseLines(draft).length} products to buy</span>
               <strong>{money(total)}</strong>
             </div>
             <button
               className="d-button primary full"
-              disabled={!visible.length}
+              disabled={!!preview || !purchaseLines(draft).length}
               onClick={() => store.addMany(arrangementProducts(draft))}
             >
               <ShoppingBag size={16} />

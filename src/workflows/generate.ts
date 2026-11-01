@@ -187,6 +187,11 @@ async function failure(runId: string) {
   const { failRun } = await import("@/lib/services/generation");
   await failRun(runId);
 }
+async function catalogProducts(runId:string){
+  "use step";
+  try{await (await import("@/lib/services/product-library")).syncGeneratedProducts(runId);}catch{console.error("Product listing preparation deferred",{code:"CATALOG_SYNC_PENDING"});}
+}
+catalogProducts.maxRetries=0;
 export async function generateScene(runId: string, kind: string) {
   "use workflow";
   if (!await claim(runId, getWorkflowMetadata().workflowRunId)) return;
@@ -210,7 +215,7 @@ export async function generateScene(runId: string, kind: string) {
       }
       throw new Error("Generation deadline exceeded");
     }
-  } catch { await failure(runId); }
+  } catch { await failure(runId); } finally {await catalogProducts(runId);}
 }
 
 export async function resumeReconstruction(runId: string, requestId: string) {
@@ -221,10 +226,11 @@ export async function resumeReconstruction(runId: string, requestId: string) {
       await sleep("10s");
     }
     throw new Error("Generation deadline exceeded");
-  } catch { await failure(runId); }
+  } catch { await failure(runId); } finally {await catalogProducts(runId);}
 }
 
 export async function resumeBackground(runId:string){
   "use workflow";
   await readyWithBackground(runId);
+  await catalogProducts(runId);
 }

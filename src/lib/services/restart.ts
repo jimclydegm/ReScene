@@ -48,14 +48,16 @@ export async function restartScene(sceneId: string, ownerId: string, input: z.in
       }
     } else await tx.sceneObject.deleteMany({ where: { sceneId } });
     // Future product/publication work is invalidated too. Historical provider responses are retained privately.
-    await tx.product.deleteMany({ where: { sceneId } });
+    const retainedProducts=await tx.product.findMany({where:{sceneId,catalogRole:"SOURCE"},select:{modelAssetId:true,imageAssetId:true}});
+    const retainedAssetIds=retainedProducts.flatMap(p=>[p.modelAssetId,p.imageAssetId].filter((id):id is string=>!!id));
+    await tx.product.deleteMany({ where: { sceneId,OR:[{catalogRole:null},{catalogRole:{not:"SOURCE"}}] } });
     await tx.scenePublication.updateMany({ where: { sceneId, revokedAt: null }, data: { revokedAt: new Date() } });
     const kinds = input.target === "PHOTO"
       ? ["SOURCE_IMAGE", "NORMALIZED_IMAGE", "MASK", "CUTOUT", "MODEL_GLB", "PRODUCT_IMAGE", "POSTER", "SURFACE_TEXTURE", "UPLOAD_STAGING"] as const
       : input.target === "ANALYSIS" ? ["MASK", "CUTOUT", "MODEL_GLB", "PRODUCT_IMAGE", "POSTER", "SURFACE_TEXTURE"] as const
       : ["MODEL_GLB", "PRODUCT_IMAGE", "POSTER", "SURFACE_TEXTURE"] as const;
     // Logical deletion immediately prevents new signing/attachment. No bucket-wide lifecycle change.
-    await tx.asset.updateMany({ where: { sceneId, kind: { in: [...kinds] }, status: { not: "DELETED" } }, data: { status: "DELETED", deletedAt: new Date() } });
+    await tx.asset.updateMany({ where: { sceneId,id:{notIn:retainedAssetIds},kind: { in: [...kinds] }, status: { not: "DELETED" } }, data: { status: "DELETED", deletedAt: new Date() } });
     return { revision, status: input.target === "RECONSTRUCTION" ? "REVIEW" : "DRAFT" };
   }, { timeout: 20_000 });
 }

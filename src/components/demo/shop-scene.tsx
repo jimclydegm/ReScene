@@ -1,5 +1,8 @@
 "use client";
-import {DemoVoiceControls} from "./voice-controls";
+import { StylistPanel } from "./stylist-panel";
+import { merchandiseTotal, purchasing } from "@/lib/shopping/engine";
+import type { Arrangement } from "@/lib/demo/state";
+import { DemoVoiceControls } from "./voice-controls";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -55,7 +58,8 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
     [selected, setSelected] = useState(scene.objects[0].id),
     [isolated, setIsolated] = useState<string | null>(null),
     [look, setLook] = useState(false),
-    [included, setIncluded] = useState(scene.objects.map((o) => o.id)),
+    [panel, setPanel] = useState<"products" | "stylist">("products"),
+    [preview, setPreview] = useState<Arrangement | null>(null),
     [photo, setPhoto] = useState(false),
     [reset, setReset] = useState(false),
     [replacing, setReplacing] = useState(false),
@@ -63,11 +67,12 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
   const draft = timeline.present,
     item = draft.items[selected],
     product = findDemoProduct(item ? itemProductId(selected, item) : selected),
-    total = included.reduce(
-      (n, id) => n + findDemoProduct(itemProductId(id, draft.items[id]))!.price,
-      0,
-    );
+    included = scene.objects
+      .filter((o) => purchasing(draft.items[o.id]))
+      .map((o) => o.id),
+    total = merchandiseTotal(draft);
   function update(patch: Partial<ItemDraft>, group: string | null = null) {
+    setPreview(null);
     const result = changeArrangement(scene, draft, selected, patch);
     setMessage(result.error ?? "");
     if (!result.error) {
@@ -85,6 +90,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
     if (isolated) setIsolated(id || null);
   }
   function showAll() {
+    setPreview(null);
     let next = draft;
     for (const obj of scene.objects) {
       const result = changeArrangement(scene, next, obj.id, { visible: true });
@@ -122,6 +128,14 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
       </div>
       <div className="demo-room-layout">
         <div className="demo-room-stage">
+          {preview && (
+            <div className="stylist-preview-banner">
+              Stylist preview · not applied{" "}
+              <button onClick={() => setPreview(null)}>
+                Back to your scene
+              </button>
+            </div>
+          )}
           <div className="demo-room-topbar">
             <span>
               <span className="demo-live-dot" />
@@ -132,13 +146,30 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                   : "Interactive room"}
             </span>
             <div>
-              <DemoVoiceControls sceneId={scene.id} draft={draft} selected={selected} onApply={(next,id)=>{setTimeline(t=>recordEdit(t,next));setSelected(id);setIsolated(null);setPhoto(false);setMessage("Voice changes applied. Undo restores the previous scene.");}}/>
+              <DemoVoiceControls
+                sceneId={scene.id}
+                draft={draft}
+                selected={selected}
+                onApply={(next, id) => {
+                  setPreview(null);
+                  setTimeline((t) => recordEdit(t, next));
+                  setSelected(id);
+                  setIsolated(null);
+                  setPhoto(false);
+                  setMessage(
+                    "Voice changes applied. Undo restores the previous scene.",
+                  );
+                }}
+              />
               <SceneAlbumButton sceneId={scene.id} name={info.name} />
               <button
                 className="d-icon"
                 aria-label="Undo scene edit"
                 disabled={!timeline.past.length}
-                onClick={() => setTimeline((t) => undoEdit(t))}
+                onClick={() => {
+                  setPreview(null);
+                  setTimeline((t) => undoEdit(t));
+                }}
               >
                 <Undo2 size={16} />
               </button>
@@ -146,7 +177,10 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                 className="d-icon"
                 aria-label="Redo scene edit"
                 disabled={!timeline.future.length}
-                onClick={() => setTimeline((t) => redoEdit(t))}
+                onClick={() => {
+                  setPreview(null);
+                  setTimeline((t) => redoEdit(t));
+                }}
               >
                 <Redo2 size={16} />
               </button>
@@ -177,7 +211,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
           ) : (
             <DemoViewer
               scene={scene}
-              draft={draft}
+              draft={preview ?? draft}
               selected={selected}
               onSelect={select}
               individual={isolated ?? undefined}
@@ -210,146 +244,226 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
             })}
           </div>
         </div>
-        <aside className="demo-room-sidebar">
-          <section className="demo-panel demo-shop-card">
-            {message && (
-              <p className="demo-feedback visibility-feedback" role="alert">
-                {message}
-              </p>
-            )}
-            {product && item ? (
-              <>
-                <div className="demo-panel-heading">
-                  <span className="d-kicker">Selected product</span>
-                  <button
-                    className="d-icon"
-                    aria-label="Deselect product"
-                    onClick={() => select("")}
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-                <div className="retail-shop-product-head">
-                  <Link href={`/demo/product/${product.id}`}>
-                    <Image
-                      src={demoImage(product.id)}
-                      alt={product.name}
-                      width={150}
-                      height={150}
-                    />
-                  </Link>
-                  <div>
-                    <small>{product.category}</small>
-                    <h2>{product.name}</h2>
-                    <strong className="demo-shop-price">
-                      {money(product.price)}
-                    </strong>
-                  </div>
-                </div>
-                <details className="demo-product-description">
-                  <summary>About this piece</summary>
-                  <p>{product.description}</p>
-                </details>
-                <button
-                  className="d-button small showroom-swap-button"
-                  onClick={() => setReplacing(true)}
-                >
-                  <ArrowRightLeft size={14} />
-                  Replace item
-                </button>
-                <ColorSwatches
-                  product={product}
-                  value={item.color}
-                  onChange={(color) => update({ color })}
-                />
-                <PositionControls
-                  item={item}
-                  id={selected}
-                  onChange={update}
-                  onFinish={finish}
-                />
-                {supportOf(scene, selected) && (
-                  <p className="retail-support-note">
-                    Move its supporting piece to move them together.
+        <aside className="demo-room-sidebar showroom-sidebar shop-stylist-sidebar">
+          <div
+            className="showroom-tabs"
+            role="tablist"
+            aria-label="Shopping controls"
+          >
+            {(["products", "stylist"] as const).map((tab) => (
+              <button
+                key={tab}
+                role="tab"
+                aria-selected={panel === tab}
+                onClick={() => {
+                  setPreview(null);
+                  setPanel(tab);
+                }}
+              >
+                {tab === "stylist" ? "AI stylist" : "Product & room"}
+              </button>
+            ))}
+          </div>
+          <div className="showroom-panel-body">
+            <div hidden={panel !== "stylist"}>
+              <StylistPanel
+                sceneId={scene.id}
+                draft={draft}
+                selected={selected}
+                previewActive={!!preview}
+                onPreview={(next) => {
+                  setPreview(next);
+                  if (next) {
+                    setPhoto(false);
+                    setIsolated(null);
+                  }
+                }}
+                onOwned={(id, owned) => {
+                  setPreview(null);
+                  setTimeline((t) =>
+                    recordEdit(t, {
+                      ...t.present,
+                      items: {
+                        ...t.present.items,
+                        [id]: { ...t.present.items[id], owned },
+                      },
+                    }),
+                  );
+                }}
+                onApply={(option) => {
+                  setPreview(null);
+                  setPhoto(false);
+                  setIsolated(null);
+                  setTimeline((t) => recordEdit(t, option.draft));
+                  setMessage(
+                    `${option.title} applied. Undo restores the previous look.`,
+                  );
+                }}
+              />
+            </div>
+            <div hidden={panel !== "products"}>
+              <section className="demo-panel demo-shop-card">
+                {message && (
+                  <p className="demo-feedback visibility-feedback" role="alert">
+                    {message}
                   </p>
                 )}
+                {product && item ? (
+                  <>
+                    <div className="demo-panel-heading">
+                      <span className="d-kicker">Selected product</span>
+                      <button
+                        className="d-icon"
+                        aria-label="Deselect product"
+                        onClick={() => select("")}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                    <div className="retail-shop-product-head">
+                      <Link href={`/demo/product/${product.id}`}>
+                        <Image
+                          src={demoImage(product.id)}
+                          alt={product.name}
+                          width={150}
+                          height={150}
+                        />
+                      </Link>
+                      <div>
+                        <small>{product.category}</small>
+                        <h2>{product.name}</h2>
+                        <strong className="demo-shop-price">
+                          {money(product.price)}
+                        </strong>
+                      </div>
+                    </div>
+                    <details className="demo-product-description">
+                      <summary>About this piece</summary>
+                      <p>{product.description}</p>
+                    </details>
+                    <button
+                      className="d-button small showroom-swap-button"
+                      onClick={() => setReplacing(true)}
+                    >
+                      <ArrowRightLeft size={14} />
+                      Replace item
+                    </button>
+                    <ColorSwatches
+                      product={product}
+                      value={item.color}
+                      onChange={(color) => update({ color })}
+                    />
+                    <PositionControls
+                      item={item}
+                      id={selected}
+                      onChange={update}
+                      onFinish={finish}
+                    />
+                    {supportOf(scene, selected) && (
+                      <p className="retail-support-note">
+                        Move its supporting piece to move them together.
+                      </p>
+                    )}
 
-                <div className="demo-inline-actions">
-                  <button
-                    className="d-text"
-                    onClick={() => update({ visible: !item.visible })}
-                  >
-                    {item.visible ? <EyeOff size={14} /> : <Eye size={14} />}{" "}
-                    {item.visible ? "Hide item" : "Show item"}
-                  </button>
-                  <button
-                    className="d-text"
-                    onClick={() => {
-                      setPhoto(false);
-                      setIsolated(isolated ? null : selected);
-                    }}
-                  >
-                    <Focus size={14} />
-                    {isolated ? "Back to room" : "Inspect alone"}
-                  </button>
+                    <div className="demo-inline-actions">
+                      <button
+                        className="d-text"
+                        onClick={() => update({ visible: !item.visible })}
+                      >
+                        {item.visible ? (
+                          <EyeOff size={14} />
+                        ) : (
+                          <Eye size={14} />
+                        )}{" "}
+                        {item.visible ? "Hide item" : "Show item"}
+                      </button>
+                      <button
+                        className="d-text"
+                        onClick={() => {
+                          setPhoto(false);
+                          setIsolated(isolated ? null : selected);
+                        }}
+                      >
+                        <Focus size={14} />
+                        {isolated ? "Back to room" : "Inspect alone"}
+                      </button>
+                    </div>
+                    <button
+                      className="d-button primary full"
+                      onClick={() => store.add(product.id, item.color)}
+                    >
+                      <ShoppingBag size={16} />
+                      Add to shopping list
+                    </button>
+                    <Link
+                      className="d-text"
+                      href={`/demo/product/${product.id}`}
+                    >
+                      Photos & product details
+                      <ArrowRight size={14} />
+                    </Link>
+                  </>
+                ) : (
+                  <div className="demo-empty">
+                    <Focus size={28} />
+                    <h2>Select a product</h2>
+                    <p>
+                      Select a product in the scene to view its details and
+                      adjust it.
+                    </p>
+                  </div>
+                )}
+              </section>
+              <section className="demo-panel demo-light-panel">
+                <h2>Set the mood</h2>
+                <div className="demo-lighting">
+                  {(
+                    ["Original", "Day", "Dusk", "Night", "Studio"] as const
+                  ).map((name) => (
+                    <button
+                      key={name}
+                      aria-pressed={draft.lighting === name}
+                      onClick={() =>
+                        setTimeline((t) =>
+                          recordEdit(t, { ...t.present, lighting: name }),
+                        )
+                      }
+                    >
+                      <Sun size={14} />
+                      {name}
+                    </button>
+                  ))}
                 </div>
-                <button
-                  className="d-button primary full"
-                  onClick={() => store.add(product.id, item.color)}
-                >
-                  <ShoppingBag size={16} />
-                  Add to shopping list
-                </button>
-                <Link className="d-text" href={`/demo/product/${product.id}`}>
-                  Photos & product details
-                  <ArrowRight size={14} />
-                </Link>
-              </>
-            ) : (
-              <div className="demo-empty">
-                <Focus size={28} />
-                <h2>Select a product</h2>
-                <p>
-                  Select a product in the scene to view its details and adjust
-                  it.
-                </p>
-              </div>
-            )}
-          </section>
-          <section className="demo-panel demo-light-panel">
-            <h2>Set the mood</h2>
-            <div className="demo-lighting">
-              {(["Original", "Day", "Dusk", "Night", "Studio"] as const).map(
-                (name) => (
-                  <button
-                    key={name}
-                    aria-pressed={draft.lighting === name}
-                    onClick={() =>
-                      setTimeline((t) =>
-                        recordEdit(t, { ...t.present, lighting: name }),
-                      )
-                    }
-                  >
-                    <Sun size={14} />
-                    {name}
-                  </button>
-                ),
-              )}
+              </section>
+              <details className="showroom-shop-room">
+                <summary>Room & backgrounds</summary>
+                <RoomControls
+                  scene={scene}
+                  draft={draft}
+                  onChange={(next, group) => {
+                    setPhoto(false);
+                    setIsolated(null);
+                    setTimeline((t) => recordEdit(t, next, group));
+                  }}
+                  onFinish={finish}
+                />
+              </details>
             </div>
-          </section>
-          <details className="showroom-shop-room">
-            <summary>Room & backgrounds</summary>
-            <RoomControls
-              scene={scene}
-              draft={draft}
-              onChange={(next, group) => {
-                setPhoto(false);
-                setIsolated(null);
-                setTimeline((t) => recordEdit(t, next, group));
-              }}
-              onFinish={finish}
-            />
-          </details>
+          </div>
+          <div className="demo-room-purchase">
+            <div>
+              <span>{included.length} products to buy</span>
+              <strong>{money(total)}</strong>
+            </div>
+            <button
+              className="d-button primary full"
+              disabled={!!preview || !included.length}
+              onClick={() => setLook(true)}
+            >
+              <ShoppingBag size={15} />
+              Shop this look
+            </button>
+          </div>
         </aside>
       </div>
       {replacing && selected && (
@@ -396,9 +510,19 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                   <input
                     type="checkbox"
                     checked={checked}
+                    disabled={!!draft.items[o.id].owned}
                     onChange={() =>
-                      setIncluded((v) =>
-                        checked ? v.filter((id) => id !== o.id) : [...v, o.id],
+                      setTimeline((t) =>
+                        recordEdit(t, {
+                          ...t.present,
+                          items: {
+                            ...t.present.items,
+                            [o.id]: {
+                              ...t.present.items[o.id],
+                              included: !checked,
+                            },
+                          },
+                        }),
                       )
                     }
                   />
@@ -407,7 +531,9 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                     {p.name}
                     <small>{p.colors[draft.items[o.id].color].name}</small>
                   </span>
-                  <strong>{money(p.price)}</strong>
+                  <strong>
+                    {draft.items[o.id].owned ? "Owned" : money(p.price)}
+                  </strong>
                 </label>
               );
             })}
