@@ -1,3 +1,4 @@
+import {captureAppearance,recordAppearance} from "./appearance-history";
 import "server-only";
 import { createHash, randomUUID } from "node:crypto";
 import sharp from "sharp";
@@ -52,7 +53,8 @@ export async function planSceneEnvironment(runId: string) {
     settings = record(scene.settings),
     cache = record(settings.environmentObservation),
     saved = environmentObservationSchema.safeParse(cache.analysis);
-  if (saved.success && cache.photoId === photo.id) return saved.data;
+  const reanalyze=record(record((await getDb().generationRun.findUniqueOrThrow({where:{id:runId}})).input).background).reanalyze===true;
+  if (!reanalyze && saved.success && cache.photoId === photo.id) return saved.data;
   const prior = await db.generationStep.findUnique({
     where: {
       runId_key_attempt: { runId, key: "environment-analysis", attempt: 1 },
@@ -116,7 +118,7 @@ export async function planSceneEnvironment(runId: string) {
   if (!changed.count) throw new Error("BACKGROUND_REVISION_CHANGED");
   return result.analysis;
 }
-async function depthStep(runId: string) {
+export async function depthStep(runId: string) {
   const { scene, photo } = await environmentContext(runId);
   return getDb().generationStep.findFirst({
     where: {
@@ -145,10 +147,7 @@ export async function prepareEnvironmentDepth(
   if (mode === "materials" || mode === "photo") return null;
   const plan = await planSceneEnvironment(runId);
   if (
-    plan.topology === "distant" ||
-    plan.topology === "cyclorama" ||
-    (plan.topology === "open" &&
-      plan.surfaces.every((s) => s.finish === "plain"))
+    plan.topology === "distant"
   )
     return null;
   if (await depthStep(runId)) return null;
@@ -378,7 +377,9 @@ export async function draftReferenceEnvironment(runId: string) {
         return m.data;
       }),
   );
-  const built = buildEnvironmentGeometry(plan, composition, grid, masks);
+  const {modelPlacementSchema}=await import("@/lib/scene/composition");
+  const anchors=objects.filter(o=>o.mask?.status==="READY").flatMap((o,i)=>{const p=modelPlacementSchema.safeParse(o.initialTransform);return p.success&&masks[i]?[{mask:masks[i],position:[o.positionX,o.positionY,o.positionZ] as [number,number,number],size:p.data.size}]:[];});
+  const built = buildEnvironmentGeometry(plan, composition, grid, masks,anchors);
   await db.generationStep.upsert({
     where: {
       runId_key_attempt: { runId, key: "environment-geometry", attempt: 1 },
@@ -557,6 +558,8 @@ export async function buildReferenceEnvironment(runId: string) {
     db = getDb();
   await environmentContext(runId);
   await db.$transaction(async (tx) => {
+    const appearanceBefore=await captureAppearance(tx,draft.sceneId);
+
     if (
       !(await tx.generationRun.findFirst({
         where: {
@@ -593,7 +596,9 @@ export async function buildReferenceEnvironment(runId: string) {
             "Background rebuilt with review notes. Inspect the background interpretation before publishing.",
         },
       });
-  });
+
+    await recordAppearance(tx,draft.sceneId,appearanceBefore,"Rebuild background");
+});
 }
 
 // Matching a layout can change its common coordinate frame. Rebuild only the
@@ -647,7 +652,9 @@ export async function reframeSceneEnvironment(
             .toBuffer(),
         ),
     );
-  const built = buildEnvironmentGeometry(plan, composition, grid, masks);
+  const {modelPlacementSchema}=await import("@/lib/scene/composition");
+  const anchors=objects.filter(o=>o.mask?.status==="READY").flatMap((o,i)=>{const p=modelPlacementSchema.safeParse(o.initialTransform);return p.success&&masks[i]?[{mask:masks[i],position:[o.positionX,o.positionY,o.positionZ] as [number,number,number],size:p.data.size}]:[];});
+  const built = buildEnvironmentGeometry(plan, composition, grid, masks,anchors);
   if (
     built.report.walls < plan.expectedWallCount ||
     built.report.projectionError > 0.08

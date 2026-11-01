@@ -1,0 +1,26 @@
+"use client";
+import {useRef,useState} from "react";
+import {Undo2,Redo2,Layers,ScanSearch,Sparkles} from "lucide-react";
+import type {SceneWorkspace} from "./types";
+import {RangeField} from "@/components/ui/range-field";
+export type TextureOptions={materials:boolean;masks:boolean;review:boolean;refresh?:boolean;textureSize?:1024|2048|4096;photoStrength?:number};
+export function TextureControls({data,disabled,onGenerate,onHistory,onBackground}:{data:SceneWorkspace;disabled:boolean;onGenerate:(options:TextureOptions)=>Promise<void>;onHistory:(action:"UNDO"|"REDO")=>void;onBackground:(reanalyze:boolean)=>void}){
+ const dialog=useRef<HTMLDialogElement>(null),[resolution,setResolution]=useState<2048|4096>(2048),[strength,setStrength]=useState(.35),[refresh,setRefresh]=useState(true),[masks,setMasks]=useState(false),[error,setError]=useState("");
+ const coverage=data.quality?.objects.filter(o=>o.coverage).map(o=>o.coverage!),missing=coverage?.some(c=>c.unmapped>.01);
+ return <section className="panel-stack" aria-label="Generated materials and texture history">
+  <div className="panel-block"><div className="panel-heading"><h3>Texture versions</h3><span className="setting-badge">Up to 8 changes</span></div><div className="panel-buttons">
+   <button className="button button-light" title={data.appearanceHistory?.undo??"No texture change yet"} disabled={disabled||!data.appearanceHistory?.undo} onClick={()=>onHistory("UNDO")}><Undo2 size={14}/>Undo texture</button>
+   <button className="button button-light" title={data.appearanceHistory?.redo??"No texture change to redo"} disabled={disabled||!data.appearanceHistory?.redo} onClick={()=>onHistory("REDO")}><Redo2 size={14}/>Redo texture</button>
+  </div><p className="panel-hint">Restore saved materials and their matching layout without another AI request. Color and product-card edits stay yours.</p></div>
+  <div className="panel-block"><div className="panel-heading"><h3>Meta materials</h3><span className="setting-badge">Full surface bake</span></div><p className="panel-hint">Analyze the mesh and photo, generate clean materials with Muse Image, then bake onto all supported UV surfaces. Original logos and text stay photo-derived.</p>
+   <label className="field-label">Texture atlas<select value={resolution} disabled={disabled} onChange={e=>setResolution(Number(e.target.value) as 2048|4096)}><option value={2048}>2K · Detailed</option><option value={4096}>4K · Extra detail, larger files</option></select></label>
+   <RangeField label="Photo detail blend" min={0} max={1} step={.05} precision={2} disabled={disabled} value={strength} onChange={setStrength}/>
+   <label className="recovery-check"><input type="checkbox" checked={refresh} disabled={disabled} onChange={e=>setRefresh(e.target.checked)}/>Reanalyze materials and generate new samples</label>
+   <label className="recovery-check"><input type="checkbox" checked={masks} disabled={disabled} onChange={e=>setMasks(e.target.checked)}/>Also check and refine incorrect outlines</label>
+   <button className="button button-dark button-full" disabled={disabled||!data.generationEnabled} onClick={()=>{setError("");dialog.current?.showModal();}}><Sparkles size={14}/>Improve textures · Meta AI</button>
+   {coverage&&coverage.length>0&&<p className={missing?"panel-note":"panel-hint"}>{coverage.length} objects checked. {missing?"Some UV surfaces could not be mapped; inspect the quality report.":"No unmapped area reported in the last bake."} Generated hidden detail remains an estimate.</p>}
+  </div>
+  <div className="panel-block"><div className="panel-heading"><h3>Background accuracy</h3></div><div className="panel-buttons"><button className="button button-light" disabled={disabled||!data.generationEnabled} onClick={()=>onBackground(false)}><Layers size={14}/>Rebuild background</button><button className="button button-light" disabled={disabled||!data.generationEnabled} onClick={()=>onBackground(true)}><ScanSearch size={14}/>Reanalyze & rebuild</button></div><p className="panel-hint">Uses the source photo, foreground depth anchors and Meta analysis. Reanalysis creates a fresh structural plan; saved depth is reused. Uses API credits.</p></div>
+  <dialog className="restart-dialog" ref={dialog} aria-labelledby="texture-improve-title"><h2 id="texture-improve-title">Generate improved materials?</h2><p>Muse Spark checks structure and material regions. Muse Image generates up to six clean material samples per object. The baker writes a {resolution/1024}K atlas and Muse Spark reviews the result. Logos and text use visible photo evidence; unseen surfaces are plausible completions.</p><p>Uses Meta API credits. Current materials remain available through texture undo. Paid requests are never resubmitted automatically.</p>{error&&<p className="form-error" role="alert">{error}</p>}<div className="editor-actions"><button className="button button-light" disabled={disabled} onClick={()=>dialog.current?.close()}>Cancel</button><button className="button button-dark" disabled={disabled} onClick={async()=>{try{await onGenerate({materials:true,masks,review:true,refresh,textureSize:resolution,photoStrength:strength});dialog.current?.close();}catch(e){setError(e instanceof Error?e.message:"Could not start material generation.");}}}>Generate materials</button></div></dialog>
+ </section>;
+}

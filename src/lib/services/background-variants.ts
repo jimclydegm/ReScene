@@ -1,3 +1,4 @@
+import {captureAppearance,recordAppearance} from "./appearance-history";
 import "server-only";
 import { randomUUID, createHash } from "node:crypto";
 import type { Prisma } from "@/generated/prisma/client";
@@ -125,6 +126,8 @@ export async function selectBackgroundVariant(sceneId: string, ownerId: string, 
         : {};
   const nextStageBackground = variantGeometry.success ? variantGeometry.data : currentStage.data.background;
   await db.$transaction(async (tx) => {
+    const appearanceBefore=await captureAppearance(tx,sceneId);
+
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(839172640)`;
     const changed = await tx.scene.updateMany({
       where: { id: sceneId, ownerId, revision: expectedRevision, status: "READY", archivedAt: null },
@@ -135,7 +138,9 @@ export async function selectBackgroundVariant(sceneId: string, ownerId: string, 
       }
     });
     if (!changed.count) throw new AppError(409, "REVISION_CONFLICT", "The scene changed. Reload before switching backgrounds.");
-  });
+
+    await recordAppearance(tx,sceneId,appearanceBefore,"Select background");
+});
 }
 
 export async function deleteBackgroundVariant(sceneId: string, ownerId: string, variantId: string, expectedRevision: number) {

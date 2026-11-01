@@ -47,15 +47,17 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
     const backup=record(record(scene.settings).backgroundBackup);if(!("background" in backup))throw new AppError(409,"NO_BACKGROUND_BACKUP","No previous background is available.");
     const stage=(await import("@/lib/scene/composition")).compositionSchema.parse(scene.stage);
     const old=(await import("@/lib/scene/background")).backgroundPlanSchema.safeParse(backup.backgroundPlan);
-    const changed=await getDb().scene.updateMany({where:{id:sceneId,ownerId,revision:input.expectedRevision,status:"READY",archivedAt:null},data:{stage:asJson({...stage,background:old.success?old.data:undefined}),settings:asJson({...record(scene.settings),background:backup.background,backgroundPlan:old.success?old.data:null,backgroundBackup:{background:record(scene.settings).background??null,backgroundPlan:stage.background??null}}),revision:{increment:1}}});
-    if(!changed.count)throw new AppError(409,"REVISION_CONFLICT","The scene changed. Reload before restoring.");return;
+    await getDb().$transaction(async tx=>{const {captureAppearance,recordAppearance}=await import("./appearance-history"),before=await captureAppearance(tx,sceneId);
+      const changed=await tx.scene.updateMany({where:{id:sceneId,ownerId,revision:input.expectedRevision,status:"READY",archivedAt:null},data:{stage:asJson({...stage,background:old.success?old.data:undefined}),settings:asJson({...record(scene.settings),background:backup.background,backgroundPlan:old.success?old.data:null,backgroundBackup:{background:record(scene.settings).background??null,backgroundPlan:stage.background??null}}),revision:{increment:1}}});
+      if(!changed.count)throw new AppError(409,"REVISION_CONFLICT","The scene changed. Reload before restoring.");await recordAppearance(tx,sceneId,before,"Restore background");});return;
   }
   if(input.action==="BACKGROUND"){
     const {compositionSchema}=await import("@/lib/scene/composition");
     const composition=compositionSchema.safeParse(scene.stage);
     if(!composition.success)throw new AppError(422,"LAYOUT_UNAVAILABLE","Match the photo layout before choosing a backdrop.");
-    const saved=await getDb().scene.updateMany({where:{id:sceneId,ownerId,archivedAt:null,revision:input.expectedRevision,status:"READY"},data:{stage:asJson({...composition.data,backdrop:input.backdrop}),revision:{increment:1}}});
-    if(!saved.count)throw new AppError(409,"REVISION_CONFLICT","The scene changed. Reload before saving.");
+    await getDb().$transaction(async tx=>{const {captureAppearance,recordAppearance}=await import("./appearance-history"),before=await captureAppearance(tx,sceneId);
+      const saved=await tx.scene.updateMany({where:{id:sceneId,ownerId,archivedAt:null,revision:input.expectedRevision,status:"READY"},data:{stage:asJson({...composition.data,backdrop:input.backdrop}),revision:{increment:1}}});
+      if(!saved.count)throw new AppError(409,"REVISION_CONFLICT","The scene changed. Reload before saving.");await recordAppearance(tx,sceneId,before,"Change backdrop");});
     return;
   }
   const objects = (await getDb().sceneObject.findMany({ where: { sceneId, status: "READY", modelAssetId: { not: null } }, include: { model: true, mask: true }, orderBy: { sortOrder: "asc" } })).filter(o=>!isBackgroundSurface(o,{width:scene.normalizedAsset?.width??0,height:scene.normalizedAsset?.height??0}));

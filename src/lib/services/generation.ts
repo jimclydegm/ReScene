@@ -80,7 +80,7 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
     // Historical estimates remain auditable; Jim removed the app's cumulative spending cap.
     const run = await tx.generationRun.create({ data: { sceneId, kind: input.kind, idempotencyKey: input.idempotencyKey,
       inputRevision: scene.revision, input: asJson({ ...options, ...(input.kind==="RECONSTRUCT" ? {objectIds:selectedIds,reconstructionObjectIds:rootIds} : {}), requestHash, normalizedAssetId: scene.normalizedAssetId }), reservedCostUsd: reserved,
-      expiresAt: new Date(Date.now() + 15 * 60_000), currentStage: "Waiting to start" } });
+      expiresAt: new Date(Date.now() + (input.quality?90:input.kind==="IMAGE_EDIT"?30:15) * 60_000), currentStage: "Waiting to start" } });
     if (input.kind === "SEGMENT_OBJECT") {
       let objectId = input.segmentation!.objectId;
       if (!objectId) {
@@ -391,6 +391,7 @@ export async function workspace(sceneId: string, ownerId: string) {
     previewUrl: await textureUrl(v.textureAssetId), createdAt: v.createdAt.toISOString(), active: v.id === activeVariantId
   })));
   return { id: scene.id, title: scene.title, description: scene.description, status: scene.status, revision: scene.revision,
+    appearanceHistory:(await import("./appearance-history")).appearanceHistorySummary(scene.settings),
     backgroundVariants, activeBackgroundVariantId: activeVariantId,
     analysisOptions:analysisOptionsSchema.safeParse(record(scene.settings).analysisOptions).data ?? analysisOptionsSchema.parse({}),
     reconstructionOptions:reconstructionOptionsSchema.safeParse(record(scene.settings).reconstructionOptions).data ?? reconstructionOptionsSchema.parse({}),

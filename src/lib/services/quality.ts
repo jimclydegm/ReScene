@@ -1,4 +1,7 @@
+import {qualityMaskOverlay} from "@/lib/quality/reference";
+import {captureAppearance,recordAppearance} from "./appearance-history";
 import "server-only";
+import {materialQualityOptions} from "@/lib/validation/generation";
 import { randomUUID, createHash } from "node:crypto";
 import sharp from "sharp";
 import { Quaternion, Vector3 } from "three";
@@ -86,7 +89,7 @@ async function qualityContext(scene: Awaited<ReturnType<typeof ownedScene>>) {
   return { settings, state, composition: composition.data, size, objects, sources, roots, rootOf, placements: roots.map(placementOf) };
 }
 
-export async function improveSceneQuality(sceneId: string, ownerId: string, expectedRevision: number, extra: { runId?: string; plans?: Map<string, { plan: QualityPlanObservation; samples: Map<string, PixelImage4> }>; masks?: Map<string, string>; planStats?: QualityState["plan"]; planStore?: unknown } = {}) {
+export async function improveSceneQuality(sceneId: string, ownerId: string, expectedRevision: number, extra: { runId?: string; plans?: Map<string, { plan: QualityPlanObservation; samples: Map<string, PixelImage4> }>; masks?: Map<string, string>; planStats?: QualityState["plan"]; planStore?: unknown; materialOptions?: {textureSize:number;photoStrength:number} } = {}) {
   const scene = await ownedScene(sceneId, ownerId), db = getDb();
   if (scene.status !== "READY" || scene.revision !== expectedRevision) throw new AppError(409, "REVISION_CONFLICT", "Reload the ready scene before the quality pass.");
   if (!extra.runId && await db.generationRun.count({ where: { sceneId, status: { in: [...active] } } })) throw new AppError(409, "RUN_ACTIVE", "Wait for generation to finish.");
@@ -99,7 +102,7 @@ export async function improveSceneQuality(sceneId: string, ownerId: string, expe
     return { id: o.id, label: o.label, bytes: ctx.sources[i].bytes, mask: await maskPixels(asset, ctx.size), support: String(p.support ?? "unknown"), supportedById: typeof p.supportedByObjectId === "string" ? p.supportedByObjectId : null,
       rootId: ctx.rootOf(o), repairable: !ctx.rootOf(o) && !ctx.objects.some(c => ctx.rootOf(c) === o.id) && typeof p.assemblyBaseAssetId !== "string", plan: plan?.plan ?? null, samples: plan?.samples ?? new Map() };
   }));
-  const result = await runQualityPipeline({ objects, placements: ctx.placements, composition: ctx.composition, photo });
+  const result = await runQualityPipeline({ objects, placements: ctx.placements, composition: ctx.composition, photo, materialOptions: extra.materialOptions });
   const created = new Map<string, string>();
   for (const [i, r] of result.objects.entries()) {
     if (!r.changed) continue;
@@ -126,6 +129,8 @@ export async function improveSceneQuality(sceneId: string, ownerId: string, expe
   const layoutReview = { version: "mask-layout-v1" as const, objects: result.placement.after.filter(c => roots.has(c.id)).map(c => { const b = result.placement.before.find(e => e.id === c.id); return { id: c.id, label: c.label, before: b?.iou ?? c.iou, after: c.iou, adjusted: moved.has(c.id), orientationAdjusted: result.placement.tilted.includes(c.id), collision: c.collisions.length > 0, needsReview: c.iou < .65 || c.collisions.length > 0 }; }), needsReview: false };
   layoutReview.needsReview = layoutReview.objects.some(o => o.needsReview);
   await db.$transaction(async tx => {
+    const appearanceBefore=await captureAppearance(tx,sceneId);
+
     const changed = await tx.scene.updateMany({ where: { id: sceneId, ownerId, revision: expectedRevision, status: "READY", archivedAt: null }, data: {
       settings: json({ ...ctx.settings, quality: state, appearance: surfacesOnly(previous.appearance), layoutBackup: null, layoutReview: layoutReviewSchema.parse(layoutReview), ...(extra.planStore ? { qualityPlan: extra.planStore } : {}) }), revision: { increment: 1 } } });
     if (!changed.count) throw new AppError(409, "REVISION_CONFLICT", "The scene changed during the quality pass. Its saved models are unchanged.");
@@ -136,7 +141,9 @@ export async function improveSceneQuality(sceneId: string, ownerId: string, expe
         ...(pose ? { positionX: pose.position[0], positionY: pose.position[1], positionZ: pose.position[2], rotationX: 0, rotationY: 0, rotationZ: 0, rotationW: 1, scaleX: 1, scaleY: 1, scaleZ: 1, initialTransform: json(pose.placement) } : {}) } });
       if (!update.count) throw new AppError(409, "MODEL_CHANGED", "A mesh changed during the quality pass. Reload and try again.");
     }
-  }, { timeout: 20_000 });
+
+    await recordAppearance(tx,sceneId,appearanceBefore,"Improve materials");
+}, { timeout: 20_000 });
   return state;
 }
 
@@ -153,6 +160,8 @@ export async function restoreSceneQuality(sceneId: string, ownerId: string, expe
   if (await db.generationRun.count({ where: { sceneId, status: { in: [...active] } } })) throw new AppError(409, "RUN_ACTIVE", "Wait for generation to finish.");
   let skipped = 0;
   await db.$transaction(async tx => {
+    const appearanceBefore=await captureAppearance(tx,sceneId);
+
     const changed = await tx.scene.updateMany({ where: { id: sceneId, ownerId, revision: expectedRevision, status: "READY", archivedAt: null }, data: { settings: json({ ...settings, quality: null, appearance: state.data.backup.appearance ?? null, layoutReview: state.data.backup.layoutReview ?? null }), revision: { increment: 1 } } });
     if (!changed.count) throw new AppError(409, "REVISION_CONFLICT", "The scene changed. Reload before restoring.");
     for (const saved of state.data.backup.objects) {
@@ -162,7 +171,9 @@ export async function restoreSceneQuality(sceneId: string, ownerId: string, expe
       const update = await tx.sceneObject.updateMany({ where: { id, sceneId, ...(entry ? { modelAssetId: entry.modelAssetId } : {}) }, data: { ...fields, initialTransform: json(initialTransform) } });
       if (!update.count) skipped++;
     }
-  }, { timeout: 20_000 });
+
+    await recordAppearance(tx,sceneId,appearanceBefore,"Restore materials");
+}, { timeout: 20_000 });
   return { skipped };
 }
 
@@ -207,35 +218,29 @@ async function privateAsset(sceneId: string, runId: string, bytes: Buffer, kind:
   await putObject(key, bytes, mimeType);
   return getDb().asset.create({ data: { id, sceneId, kind, status: "READY", bucket: bucket(), storageKey: key, mimeType, byteSize: bytes.length, sha256: sha(bytes), readyAt: new Date(), ...size, provenance: { runId, source: "coordinated-quality-v1", purpose } } });
 }
-const runInput = (input: unknown) => z.object({ objectIds: z.array(z.uuid()).max(10).optional(), materials: z.boolean().default(true), masks: z.boolean().default(true), review: z.boolean().default(true) }).strict().parse(record(input).quality ?? {});
+const runInput = (input: unknown) => materialQualityOptions.parse(record(input).quality ?? {materials:true,masks:true,review:true});
 
-async function overlay(photo: Buffer, mask: Uint8Array, size: { width: number; height: number }) {
-  const edge = Buffer.alloc(size.width * size.height * 4);
-  for (let y = 1; y < size.height - 1; y++) for (let x = 1; x < size.width - 1; x++) {
-    const i = y * size.width + x, inside = mask[i] > 127;
-    if (inside && [i - 1, i + 1, i - size.width, i + size.width].some(n => mask[n] <= 127)) for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [-1, 0], [0, -1]]) { const j = ((y + dy) * size.width + x + dx) * 4; edge[j] = 255; edge[j + 1] = 0; edge[j + 2] = 255; edge[j + 3] = 255; }
-  }
-  return sharp(photo).resize(size.width, size.height).composite([{ input: await sharp(edge, { raw: { ...size, channels: 4 } }).png().toBuffer() }]).resize({ width: 1024, height: 1024, fit: "inside" }).png().toBuffer();
-}
+
 async function diagnosticsSheet(bytes: Buffer) {
   const views = [["wireframe", 0], ["normals", 0], ["unlit", 0], ["neutral", 1], ["unlit", 4], ["unlit", 5]] as const;
   const tiles = await Promise.all(views.map(([mode, view]) => inspectionView(bytes, mode, view, 256)));
   return sharp({ create: { width: 768, height: 512, channels: 3, background: "#ffffff" } }).composite(tiles.map((input, i) => ({ input, left: (i % 3) * 256, top: Math.floor(i / 3) * 256 }))).png().toBuffer();
 }
 
-export async function planQualityRun(runId: string) {
+export async function planQualityRun(runId: string,objectId?:string) {
   const run = await runContext(runId), scene = await ownedScene(run.sceneId, run.scene.ownerId), ctx = await qualityContext(scene), options = runInput(run.input);
   if (scene.revision !== run.inputRevision) throw new Error("QUALITY_REVISION_CHANGED");
   const store = planStoreSchema.safeParse(ctx.settings.qualityPlan).data, photoBytes = await readLimited(scene.normalizedAsset!.storageKey, 4 * 1024 * 1024);
   await getDb().generationRun.update({ where: { id: runId }, data: { currentStage: "Analyzing structure and materials", progress: 10 } });
   const { planObjectQuality } = await import("@/lib/ai/quality");
-  const targets = ctx.objects.filter(o => !options.objectIds || options.objectIds.includes(o.id));
+  const targets = ctx.objects.filter(o => (!objectId||o.id===objectId)&&(!options.objectIds || options.objectIds.includes(o.id)));
   for (const [n, o] of targets.entries()) {
     const i = ctx.objects.indexOf(o), source = ctx.sources[i].asset.id;
-    if (store?.entries.some(e => e.objectId === o.id && e.sourceModelAssetId === source && e.maskAssetId === o.maskAssetId)) continue;
+    if (!options.refresh && store?.entries.some(e => e.objectId === o.id && e.sourceModelAssetId === source && e.maskAssetId === o.maskAssetId)) continue;
+    const mask = await maskPixels(o.mask, ctx.size), preparedOverlay = await qualityMaskOverlay(photoBytes, mask, ctx.size), sheet = await diagnosticsSheet(ctx.sources[i].bytes);
     await step(runId, `quality-plan-${o.id}`, "META", process.env.META_ANALYSIS_MODEL ?? "muse-spark-1.3", async () => {
-      const mask = await maskPixels(o.mask, ctx.size), findings = diagnoseMesh(readMesh(ctx.sources[i].bytes)).findings.map(f => `${f.layer}:${f.code}:${f.value.toFixed(3)}`);
-      const result = await planObjectQuality(await sharp(photoBytes).resize({ width: 1024, height: 1024, fit: "inside" }).webp().toBuffer(), await overlay(photoBytes, mask, ctx.size), await diagnosticsSheet(ctx.sources[i].bytes), { label: o.label, findings });
+      const findings = diagnoseMesh(readMesh(ctx.sources[i].bytes)).findings.map(f => `${f.layer}:${f.code}:${f.value.toFixed(3)}`);
+      const result = await planObjectQuality(await sharp(photoBytes).resize({ width: 1600, height: 1600, fit: "inside",withoutEnlargement:true }).webp().toBuffer(), preparedOverlay, sheet, { label: o.label, findings });
       const raw = await privateAsset(scene.id, runId, Buffer.from(result.raw), "PROVIDER_RESPONSE", "application/json", "quality-plan");
       return { output: { objectId: o.id, sourceModelAssetId: source, maskAssetId: o.maskAssetId, plan: result.value }, requestId: result.requestId, responseAssetId: raw.id, usage: result.usage };
     });
@@ -247,7 +252,7 @@ const planOutput = z.object({ objectId: z.uuid(), sourceModelAssetId: z.uuid(), 
 async function runPlans(runId: string, ctx: Awaited<ReturnType<typeof qualityContext>>) {
   const steps = await getDb().generationStep.findMany({ where: { runId, status: "SUCCEEDED", key: { startsWith: "quality-plan-" } } });
   const store = planStoreSchema.safeParse(ctx.settings.qualityPlan).data, plans = new Map<string, { plan: QualityPlanObservation; samples: Record<string, string>; sourceModelAssetId: string; maskAssetId: string }>();
-  for (const e of store?.entries ?? []) plans.set(e.objectId, { plan: e.plan, samples: e.samples, sourceModelAssetId: e.sourceModelAssetId, maskAssetId: e.maskAssetId });
+  for (const e of (runInput((await getDb().generationRun.findUniqueOrThrow({where:{id:runId}})).input).refresh?[]:store?.entries ?? [])) plans.set(e.objectId, { plan: e.plan, samples: e.samples, sourceModelAssetId: e.sourceModelAssetId, maskAssetId: e.maskAssetId });
   for (const s of steps) { const v = planOutput.safeParse(s.output); if (v.success && v.data.maskAssetId) plans.set(v.data.objectId, { plan: v.data.plan, samples: {}, sourceModelAssetId: v.data.sourceModelAssetId, maskAssetId: v.data.maskAssetId }); }
   // A saved plan only applies to the same source mesh and reviewed mask.
   for (const [id, p] of plans) { const i = ctx.objects.findIndex(o => o.id === id); if (i < 0 || ctx.sources[i].asset.id !== p.sourceModelAssetId || ctx.objects[i].maskAssetId !== p.maskAssetId) plans.delete(id); }
@@ -282,20 +287,21 @@ export async function refineQualityMasks(runId: string) {
   }
 }
 
-export async function sampleQualityMaterials(runId: string) {
+export async function sampleQualityMaterials(runId: string,target?:{objectId:string;materialId:string}) {
   const run = await runContext(runId), scene = await ownedScene(run.sceneId, run.scene.ownerId), ctx = await qualityContext(scene), options = runInput(run.input);
   if (!options.materials) return;
   const plans = await runPlans(runId, ctx), photoBytes = await readLimited(scene.normalizedAsset!.storageKey, 4 * 1024 * 1024), { generateMaterialSample } = await import("@/lib/ai/quality");
   let total = 0;
-  for (const [id, p] of plans) for (const material of p.plan.materials.filter(m => m.confidence >= .6).slice(0, 2)) {
-    if (total >= 8 || p.samples[material.id]) continue; total++;
-    await getDb().generationRun.update({ where: { id: runId }, data: { currentStage: `Generating material sample: ${material.name}`.slice(0, 120), progress: 50 + total * 3 } });
+  for (const [id, p] of plans) for (const material of p.plan.materials.filter(m => m.confidence >= .6).slice(0, 6)) {
+    if (target&&(target.objectId!==id||target.materialId!==material.id))continue;
+    if (total >= 60 || p.samples[material.id]) continue; total++;
+    await getDb().generationRun.update({ where: { id: runId }, data: { currentStage: `Generating material sample: ${material.name}`.slice(0, 120), progress: 50 + Math.min(20,total) } });
     await step(runId, `quality-sample-${id}-${material.id}`, "META", process.env.META_IMAGE_MODEL ?? "muse-image-1.0", async () => {
-      const b = material.evidence, left = Math.max(0, Math.floor(b.x0 * ctx.size.width)), top = Math.max(0, Math.floor(b.y0 * ctx.size.height));
-      const width = Math.max(16, Math.min(ctx.size.width - left, Math.ceil((b.x1 - b.x0) * ctx.size.width))), height = Math.max(16, Math.min(ctx.size.height - top, Math.ceil((b.y1 - b.y0) * ctx.size.height)));
-      const crop = await sharp(photoBytes).extract({ left, top, width, height }).resize({ width: 512, height: 512, fit: "inside" }).png().toBuffer();
+      const b = material.evidence, left = Math.max(0, Math.min(ctx.size.width-1,Math.floor(b.x0 * ctx.size.width))), top = Math.max(0, Math.min(ctx.size.height-1,Math.floor(b.y0 * ctx.size.height)));
+      const width = Math.max(1, Math.min(ctx.size.width - left, Math.ceil((b.x1 - b.x0) * ctx.size.width))), height = Math.max(1, Math.min(ctx.size.height - top, Math.ceil((b.y1 - b.y0) * ctx.size.height)));
+      const crop = await sharp(photoBytes).extract({ left, top, width, height }).resize({ width: 1024, height: 1024, fit: "inside",withoutEnlargement:true }).png().toBuffer();
       const result = await generateMaterialSample(material, crop);
-      const stored = await privateAsset(scene.id, runId, await sharp(result.bytes).resize({ width: 1024, height: 1024, fit: "inside" }).png().toBuffer(), "SURFACE_TEXTURE", "image/png", `quality-sample:${material.id}`);
+      const stored = await privateAsset(scene.id, runId, await sharp(result.bytes).resize({ width: 2048, height: 2048, fit: "inside", withoutEnlargement:true }).png().toBuffer(), "SURFACE_TEXTURE", "image/png", `quality-sample:${material.id}`);
       return { output: { objectId: id, regionId: material.id, assetId: stored.id }, responseAssetId: stored.id, imageCount: 1 };
     });
   }
@@ -318,8 +324,9 @@ export async function applyQualityRun(runId: string) {
     }
     resolved.set(id, { plan: p.plan, samples });
   }
+  const options=runInput(run.input);
   const planStore = { version: "quality-plan-v1", entries: [...plans].map(([objectId, p]) => ({ objectId, sourceModelAssetId: p.sourceModelAssetId, maskAssetId: p.maskAssetId, plan: p.plan, samples: p.samples })) };
-  await improveSceneQuality(scene.id, scene.ownerId, run.inputRevision, { runId, plans: resolved, masks, planStore, planStats: { planned: plans.size, samples: [...plans.values()].reduce((s, p) => s + Object.keys(p.samples).length, 0), masks: masks.size } });
+  await improveSceneQuality(scene.id, scene.ownerId, run.inputRevision, { runId, plans: resolved, masks, planStore, materialOptions:{textureSize:options.textureSize,photoStrength:options.photoStrength}, planStats: { planned: plans.size, samples: [...plans.values()].reduce((s, p) => s + Object.keys(p.samples).length, 0), masks: masks.size } });
 }
 
 // Spark reviews the persisted final output. Only numerically supported
@@ -335,7 +342,7 @@ export async function reviewQualityRun(runId: string) {
   const output = await step(runId, "quality-review", "META", process.env.META_ANALYSIS_MODEL ?? "muse-spark-1.3", async () => {
     const current = await Promise.all(ctx.objects.map(async o => readLimited(o.model.storageKey, 40 * 1024 * 1024)));
     const width = Math.min(960, ctx.size.width), height = Math.round(width * ctx.size.height / ctx.size.width);
-    const images = [await sharp(photo).resize({ width: 1024, height: 1024, fit: "inside" }).webp().toBuffer(), await referenceView(ctx.objects.map((o, i) => ({ bytes: current[i], placement: ctx.placements.find(p => p.id === (ctx.rootOf(o) ?? o.id))! })), ctx.composition, width, height)];
+    const images = [await sharp(photo).resize({ width: 1600, height: 1600, fit: "inside",withoutEnlargement:true }).webp().toBuffer(), await referenceView(ctx.objects.map((o, i) => ({ bytes: current[i], placement: ctx.placements.find(p => p.id === (ctx.rootOf(o) ?? o.id))! })), ctx.composition, width, height)];
     for (const bytes of current.slice(0, 4)) { const views = await Promise.all([0, 1, 2, 4, 5].map(v => inspectionView(bytes, "neutral", v, 192))); images.push(await sharp({ create: { width: 960, height: 192, channels: 3, background: "#ffffff" } }).composite(views.map((input, k) => ({ input, left: k * 192, top: 0 }))).png().toBuffer()); }
     const diagnostics = state.objects.map((o, k) => ({ id: `object-${k + 1}`, label: ctx.objects.find(v => v.id === o.objectId)?.label, verdict: o.review.verdict, metrics: o.review.metrics, issues: o.review.issues.map(i => i.type), contact: state.placement.contacts.find(c => c.id === o.objectId) ?? null }));
     const { reviewFinalRenders } = await import("@/lib/ai/quality"), result = await reviewFinalRenders(images, diagnostics);
@@ -346,6 +353,8 @@ export async function reviewQualityRun(runId: string) {
   const reverts = [...corrections].filter(([, c]) => c === "revert-object").map(([id]) => id);
   const next: QualityState = { ...state, objects: state.objects.map((o, k) => ({ ...o, review: reviews[k], ...(reverts.includes(o.objectId) ? { modelAssetId: o.sourceModelAssetId, reverted: true } : {}) })), spark: { summary: review.summary.slice(0, 400), corrections: Object.fromEntries(corrections) } };
   await db.$transaction(async tx => {
+    const appearanceBefore=await captureAppearance(tx,scene.id);
+
     const changed = await tx.scene.updateMany({ where: { id: scene.id, revision: run.inputRevision + 1, status: "READY", archivedAt: null }, data: { settings: json({ ...record(scene.settings), quality: next }), revision: { increment: 1 } } });
     if (!changed.count) throw new Error("QUALITY_REVIEW_STALE");
     for (const id of reverts) {
@@ -354,7 +363,9 @@ export async function reviewQualityRun(runId: string) {
       const update = await tx.sceneObject.updateMany({ where: { id, sceneId: scene.id, modelAssetId: entry.modelAssetId }, data: { modelAssetId: entry.sourceModelAssetId } });
       if (!update.count) throw new Error("QUALITY_REVIEW_MODEL_CHANGED");
     }
-  });
+
+    await recordAppearance(tx,scene.id,appearanceBefore,"Meta material review",true);
+});
   const pending = next.objects.some(o => o.review.verdict !== "PASS");
   await finish(reverts.length ? `Review kept the previous model for ${reverts.length} object(s). Remaining notes are in the quality report.` : pending ? "Some objects still need a look. See the quality report." : null, pending);
 }
@@ -364,5 +375,8 @@ export function qualitySummary(settings: unknown, labels: Map<string, string>) {
   if (!state) return null;
   return { appliedAt: state.appliedAt, paid: Boolean(state.runId), plan: state.plan, spark: state.spark?.summary ?? null, placement: { moved: state.placement.moved.length, tilted: state.placement.tilted.length },
     objects: state.objects.map(o => ({ id: o.objectId, label: labels.get(o.objectId) ?? "Object", verdict: o.review.verdict, reverted: o.reverted, changed: o.changed, geometry: o.geometry.accepted ? Object.entries(o.geometry.operations).filter(([, v]) => v).map(([k, v]) => `${k} ${v}`).join(", ") || "checked" : "kept",
-      coverage: o.bake ? { observed: o.bake.observed, generated: o.bake.generated, inferred: o.bake.inferred, unmapped: o.bake.unmapped } : null, iou: o.review.metrics.iou, notes: o.review.issues.filter(i => i.severity !== "info" || i.type === "reverted").map(i => i.detail).slice(0, 4) })) };
+      coverage: o.bake&&!o.reverted ? { observed: o.bake.observed, generated: o.bake.generated, inferred: o.bake.inferred, unmapped: o.bake.unmapped } : null, iou: o.review.metrics.iou, notes: o.review.issues.filter(i => i.severity !== "info" || i.type === "reverted").map(i => i.detail).slice(0, 4) })) };
 }
+
+export async function qualityTargets(runId:string){const run=await runContext(runId),options=runInput(run.input);return (await getDb().sceneObject.findMany({where:{sceneId:run.sceneId,status:"READY",modelAssetId:{not:null},...(options.objectIds?{id:{in:options.objectIds}}:{})},select:{id:true},orderBy:{sortOrder:"asc"}})).map(o=>o.id);}
+export async function qualityMaterialTargets(runId:string){const run=await runContext(runId);if(!runInput(run.input).materials)return [];const ctx=await qualityContext(await ownedScene(run.sceneId,run.scene.ownerId)),plans=await runPlans(runId,ctx);return [...plans].flatMap(([objectId,p])=>p.plan.materials.filter(m=>m.confidence>=.6&&!p.samples[m.id]).slice(0,6).map(m=>({objectId,materialId:m.id}))).slice(0,60);}

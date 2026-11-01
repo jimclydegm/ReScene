@@ -1,3 +1,5 @@
+import {captureAppearance,recordAppearance} from "./appearance-history";
+import {moveAppearanceHistory} from "./appearance-history";
 import { isBackgroundSurface } from "@/lib/scene/surface-role";
 import "server-only";
 import { randomUUID, createHash } from "node:crypto";
@@ -18,12 +20,15 @@ import { refineOpenings } from "@/lib/appearance/plain";
 import { reconstructionOptionsSchema } from "@/lib/ai/controls";
 const json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 export const appearanceInput = z.discriminatedUnion("action", [
+  z.object({action:z.literal("UNDO"),expectedRevision:z.number().int().nonnegative()}).strict(),
+  z.object({action:z.literal("REDO"),expectedRevision:z.number().int().nonnegative()}).strict(),
   z.object({ action: z.literal("APPLY"), expectedRevision: z.number().int().nonnegative() }).strict(),
   z.object({ action: z.literal("RESTORE"), expectedRevision: z.number().int().nonnegative() }).strict(),
   z.object({ action: z.literal("LIGHTING"), expectedRevision: z.number().int().nonnegative(), lighting: lightingSchema }).strict()
 ]);
 const backupSchema = z.object({ version: z.literal("photo-bake-v1"), models: z.array(z.object({ objectId: z.uuid(), originalId: z.uuid(), bakedId: z.uuid(), copied: z.number() })), floorId: z.uuid().nullable(), wallId: z.uuid().nullable() });
 export async function updateAppearance(sceneId: string, ownerId: string, input: z.infer<typeof appearanceInput>) {
+  if(input.action==="UNDO"||input.action==="REDO")return moveAppearanceHistory(sceneId,ownerId,input.expectedRevision,input.action);
   const scene = await ownedScene(sceneId, ownerId), db = getDb();
   if (input.action !== "LIGHTING" && (await db.sceneObject.findMany({ where: { sceneId }, select: { provenance: true } })).some(o => record(o.provenance).replacementBackup)) throw new AppError(409, "REPLACEMENTS_ACTIVE", "Restore original objects before changing photo textures.");
   if (scene.status !== "READY" || scene.revision !== input.expectedRevision) throw new AppError(409, "REVISION_CONFLICT", "Reload the ready scene before changing its appearance.");
@@ -40,6 +45,8 @@ export async function updateAppearance(sceneId: string, ownerId: string, input: 
   if (input.action === "RESTORE") {
     if (!backup.success) throw new AppError(409, "NO_TEXTURE_BACKUP", "Original textures are already selected.");
     await db.$transaction(async tx => {
+    const appearanceBefore=await captureAppearance(tx,sceneId);
+
       const changed = await tx.scene.updateMany({ where: { id: sceneId, ownerId, revision: input.expectedRevision, status: "READY", archivedAt: null }, data: {
         settings: json({ ...settings, appearance: null }), revision: { increment: 1 }
       } });
@@ -50,7 +57,9 @@ export async function updateAppearance(sceneId: string, ownerId: string, input: 
         const update = await tx.sceneObject.updateMany({ where: { id: model.objectId, sceneId, modelAssetId: model.bakedId }, data: { modelAssetId: model.originalId } });
         if (!update.count) throw new AppError(409, "MODEL_CHANGED", "A mesh changed. Reload before restoring.");
       }
-    }); return;
+
+    await recordAppearance(tx,sceneId,appearanceBefore,"Photo textures");
+}); return;
   }
 
   const composition = compositionSchema.safeParse(scene.stage);
@@ -108,6 +117,8 @@ export async function updateAppearance(sceneId: string, ownerId: string, input: 
   const floor = await cleanPatch(photo, masks, "floor").then(b => asset(b, "SURFACE_TEXTURE", "image/png", "floor-patch", scene.normalizedAssetId!)).catch(() => null);
   const wall = await cleanPatch(photo, masks, "wall").then(b => asset(b, "SURFACE_TEXTURE", "image/png", "wall-patch", scene.normalizedAssetId!)).catch(() => null);
   await db.$transaction(async tx => {
+    const appearanceBefore=await captureAppearance(tx,sceneId);
+
     const result = await tx.scene.updateMany({ where: { id: sceneId, ownerId, revision: input.expectedRevision, status: "READY", archivedAt: null }, data: {
       settings: json({ ...settings, appearance: { version: "photo-bake-v1", method:"registered-2k-v2", skipped, models, floorId: floor?.id ?? null, wallId: wall?.id ?? null } }), revision: { increment: 1 }
     } });
@@ -116,5 +127,7 @@ export async function updateAppearance(sceneId: string, ownerId: string, input: 
       const changed = await tx.sceneObject.updateMany({ where: { id: m.objectId, sceneId, modelAssetId: objects.find(o=>o.id===m.objectId)!.modelAssetId }, data: { modelAssetId: m.bakedId } });
       if (!changed.count) throw new AppError(409, "MODEL_CHANGED", "A mesh changed. Reload before transferring textures.");
     }
-  }, { timeout: 20_000 });
+
+    await recordAppearance(tx,sceneId,appearanceBefore,"Photo textures");
+}, { timeout: 20_000 });
 }

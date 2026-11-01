@@ -130,6 +130,16 @@ describe("Full-surface material bake", () => {
   it("counts protected source details separately", async () => {
     expect((await scene([], [[0, 0, 1, 1]])).coverage.protected).toBeGreaterThan(.1);
   });
+  it("uses source material evidence to keep shaded cloth separate from wood on hidden faces",async()=>{
+    const provider=solid(96,64,[122,112,83]),doc=readMesh(buildGlb(atlasBox(),{png:await png(provider)})),cam=camera(),size=128;
+    const visible=render([renderMesh(doc,new Matrix4(),0)],cam,size,size,"depth"),mask=Uint8Array.from(visible.owners,v=>v===0?255:0),data=new Uint8Array(size*size*3);
+    for(let i=0;i<size*size;i++)data.set([115,135,120],i*3);
+    const result=bakeMaterials({doc,textures:new Map([[0,provider]]),object:0,photo:{width:size,height:size,channels:3,data},mask,camera:cam,visible,protectedBoxes:[],regions:[
+      {id:"cloth",color:[159,181,164],sample:solid(16,16,[159,181,164]),evidence:[0,0,1,1],tileScale:.4,grain:"none",repeating:true},
+      {id:"wood",color:[200,160,117],sample:solid(16,16,[200,160,117]),evidence:[0,0,.01,.01],tileScale:.4,grain:"none",repeating:true}
+    ]});
+    expect(result.coverage.regions.cloth).toBeGreaterThan(.99);expect(result.coverage.regions.wood).toBe(0);expect(result.coverage.unmapped).toBe(0);expect(result.coverage.generated).toBeGreaterThan(.5);
+  });
 });
 
 describe("Physical placement", () => {

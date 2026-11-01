@@ -1,6 +1,8 @@
+vi.mock("@/lib/services/background-environment",()=>({depthStep:async()=>null}));
 import{describe,it,expect,vi,beforeEach}from"vitest";
 import sharp from"sharp";
 const m=vi.hoisted(()=>({db:{generationRun:{findUniqueOrThrow:vi.fn(),findFirst:vi.fn(),update:vi.fn()},generationStep:{create:vi.fn(),update:vi.fn()},sceneObject:{findMany:vi.fn()},asset:{create:vi.fn()},scene:{updateMany:vi.fn()},$transaction:vi.fn()},generate:vi.fn(),inspect:vi.fn(),read:vi.fn(),put:vi.fn()}));
+vi.mock("@/lib/services/appearance-history",()=>({captureAppearance:async()=>({}),recordAppearance:async()=>{}}));
 vi.mock("server-only",()=>({}));vi.mock("@/lib/db",()=>({getDb:()=>m.db}));vi.mock("@/lib/storage/r2",()=>({readLimited:m.read,putObject:m.put,bucket:()=>"private",storagePrefix:()=>"test"}));vi.mock("@/lib/ai/background",()=>({generateMaterial:m.generate,inspectMaterialTile:m.inspect,materialPrompt:()=>"Flat material, no shadows"}));
 import{buildMaterialBackground}from"../src/lib/services/background-materials";
 import type{BackgroundUnderstanding}from"../src/lib/scene/background-understanding";

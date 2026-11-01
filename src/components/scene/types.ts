@@ -12,7 +12,7 @@ export type BackgroundVariantView = { id: string; name: string; prompt: string |
 export type SceneWorkspace = { id: string; title: string; description: string | null; status: string; revision: number; generationEnabled: boolean;
   analysisOptions:AnalysisOptions;reconstructionOptions:ReconstructionOptions;analysisSummary:string|null;
   lighting: Lighting; appearance: { applied: boolean; floorUrl: string | null; wallUrl: string | null; backgroundUrl?: string | null };
-  canRestoreBackground?:boolean;backgroundVariants?:BackgroundVariantView[];activeBackgroundVariantId?:string|null;backgroundInfo?:{method:string;report?:{coverage:number;walls:number;expectedWalls:number;openings:number}|null;explanation:string|null;lightingEffects:string[];warnings:string[]};
+  appearanceHistory?:{undo:string|null;redo:string|null};canRestoreBackground?:boolean;backgroundVariants?:BackgroundVariantView[];activeBackgroundVariantId?:string|null;backgroundInfo?:{method:string;report?:{coverage:number;walls:number;expectedWalls:number;openings:number}|null;explanation:string|null;lightingEffects:string[];warnings:string[]};
   layoutReview?:import("@/lib/scene/layout-review").LayoutReview|null;
   quality?:ReturnType<typeof import("@/lib/services/quality").qualitySummary>;
   composition: SceneComposition | null; canRestoreLayout: boolean;

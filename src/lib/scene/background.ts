@@ -17,6 +17,7 @@ export const backgroundPlanSchema = backgroundObservationSchema.extend({
   transition:z.enum(["open","curve"]).optional(),
   junctions:z.array(z.object({x:z.number().min(0).max(1),y:z.number().min(0).max(1)}).strict()).min(2).max(3).optional(),
   materials:z.object({ground:z.object({color:z.string().regex(/^#[0-9a-fA-F]{6}$/),roughness:z.number().min(.2).max(1),tileSize:z.number().min(.1).max(10)}).strict(),wall:z.object({color:z.string().regex(/^#[0-9a-fA-F]{6}$/),roughness:z.number().min(.2).max(1),tileSize:z.number().min(.1).max(10)}).strict()}).strict().optional(),
+  spatial:z.object({rearDistance:z.number().min(.01).max(1000),curveRadius:z.number().min(.01).max(100),confidence:z.number().min(0).max(1),source:z.enum(["foreground-calibrated-depth","subject-relative-fallback"])}).strict().optional(),
   plainColor:z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
 }).strict();
 export type BackgroundPlan = z.infer<typeof backgroundPlanSchema>;

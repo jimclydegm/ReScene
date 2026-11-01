@@ -13,11 +13,13 @@ export const backgroundVariantInputSchema = z.object({
   stylePrompt: z.string().trim().min(1).max(500).optional()
 }).strict();
 export type BackgroundVariantInput = z.infer<typeof backgroundVariantInputSchema>;
+export const materialQualityOptions = z.object({objectIds:z.array(z.uuid()).min(1).max(10).optional(),materials:z.boolean(),masks:z.boolean(),review:z.boolean(),refresh:z.boolean().default(false),textureSize:z.union([z.literal(1024),z.literal(2048),z.literal(4096)]).default(2048),photoStrength:z.number().min(0).max(1).default(.35)}).strict();
+export type MaterialQualityOptions=z.infer<typeof materialQualityOptions>;
 export const runInputSchema = z.object({
   kind: z.enum(["ANALYZE", "SEGMENT_OBJECT", "RECONSTRUCT", "IMAGE_EDIT"]), expectedRevision: z.number().int().nonnegative(),
   idempotencyKey: z.uuid(), objectIds: z.array(z.uuid()).min(1).max(10).optional(),
-  background:z.object({mode:z.enum(["reference","materials","photo"])}).strict().optional(),repair:z.boolean().optional(),
-  quality:z.object({objectIds:z.array(z.uuid()).min(1).max(10).optional(),materials:z.boolean(),masks:z.boolean(),review:z.boolean()}).strict().optional(),
+  background:z.object({mode:z.enum(["reference","materials","photo"]),reanalyze:z.boolean().optional()}).strict().optional(),repair:z.boolean().optional(),
+  quality:materialQualityOptions.optional(),
   backgroundVariant:backgroundVariantInputSchema.optional(),confirmed:z.literal(true).optional(),
   analysis: analysisOptionsSchema.optional(), segmentation: segmentationOptionsSchema.optional(), reconstruction: reconstructionOptionsSchema.optional()
 }).strict().superRefine((input, ctx) => {

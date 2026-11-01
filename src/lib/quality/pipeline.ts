@@ -19,7 +19,7 @@ export type PipelineObject = {
   id: string; label: string; bytes: Buffer; mask: Uint8Array; support: string; supportedById: string | null;
   rootId: string | null; repairable: boolean; plan: QualityPlanObservation | null; samples: Map<string, PixelImage4>;
 };
-export type PipelineInput = { objects: PipelineObject[]; placements: Placed[]; composition: SceneComposition; photo: Photo; spark?: QualityReviewObservation | null };
+export type PipelineInput = { objects: PipelineObject[]; placements: Placed[]; composition: SceneComposition; photo: Photo; spark?: QualityReviewObservation | null; materialOptions?: {textureSize:number;photoStrength:number} };
 export type PipelineObjectResult = {
   id: string; bytes: Buffer; changed: boolean; reverted: boolean;
   geometry: { attempted: boolean; accepted: boolean; reasons: string[]; operations: Record<string, number>; skipped: string[] };
@@ -28,12 +28,14 @@ export type PipelineObjectResult = {
   review: ObjectReview;
 };
 
-export async function decodeTextures(doc: MeshDocument) {
+export async function decodeTextures(doc: MeshDocument, targetSize?:number) {
   const out = new Map<number, PixelImage4>(), alpha = new Set<number>();
   for (const [index, roles] of doc.roles) {
     if (!roles.includes("baseColor")) continue;
     const image = doc.json.images[index], view = doc.views[image.bufferView];
-    const raw = await sharp(view).toColourspace("srgb").ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const decoder=sharp(view);
+    if(targetSize){if(roles.some(r=>r!=="baseColor"))throw new Error("SHARED_TEXTURE_ROLES");const meta=await sharp(view).metadata();const scale=targetSize/Math.max(meta.width??targetSize,meta.height??targetSize);decoder.resize(Math.max(1,Math.round((meta.width??targetSize)*scale)),Math.max(1,Math.round((meta.height??targetSize)*scale)),{kernel:"lanczos3"});}
+    const raw = await decoder.toColourspace("srgb").ensureAlpha().raw().toBuffer({ resolveWithObject: true });
     if (raw.info.width > 4096 || raw.info.height > 4096) throw new Error("TEXTURE_TOO_LARGE");
     const data = new Uint8Array(raw.data); out.set(index, { data, width: raw.info.width, height: raw.info.height });
     for (let i = 3; i < data.length; i += 4) if (data[i] < 255) { alpha.add(index); break; }
@@ -48,7 +50,7 @@ export function planConstraints(plan: QualityPlanObservation | null): Structural
   return plan.constraints.map(c => ({ id: c.id, kind: c.kind, box: box(c.evidence), confidence: c.confidence }));
 }
 export function planRegions(plan: QualityPlanObservation | null, samples: Map<string, PixelImage4>): MaterialRegion[] {
-  return (plan?.materials ?? []).filter(m => m.confidence >= .4).map(m => ({ id: m.id, color: hex(m.color), sample: samples.get(m.id) ?? null, tileScale: m.patternScale, grain: m.grain, repeating: m.repeating }));
+  return (plan?.materials ?? []).filter(m => m.confidence >= .4).map(m => ({ id: m.id, color: hex(m.color), sample: samples.get(m.id) ?? null, tileScale: m.patternScale, grain: m.grain, repeating: m.repeating,evidence:box(m.evidence) }));
 }
 
 export async function runQualityPipeline(input: PipelineInput) {
@@ -81,10 +83,12 @@ export async function runQualityPipeline(input: PipelineInput) {
   for (const [i, o] of input.objects.entries()) {
     const bytes = geometry.get(o.id)!.bytes;
     try {
-      const { textures, alpha } = await decodeTextures(world[i]);
+      const { textures, alpha } = await decodeTextures(world[i],o.samples.size?input.materialOptions?.textureSize:undefined);
       if (!textures.size) throw new Error("BAKE_NO_BASE_COLOR");
+      const providerLowFrequency=new Map<number,PixelImage4>();
+      if(o.samples.size)for(const [index,image]of textures){const raw=await sharp(Buffer.from(image.data),{raw:{width:image.width,height:image.height,channels:4}}).blur(Math.max(.3,Math.min(32,Math.max(image.width,image.height)/64))).raw().toBuffer();providerLowFrequency.set(index,{...image,data:new Uint8Array(raw)});}
       const result = bakeMaterials({ doc: world[i], textures, object: i, photo, mask: o.mask, camera, visible: { depth: visible.depth, owners: visible.owners, width: size.width, height: size.height },
-        regions: planRegions(o.plan, o.samples), protectedBoxes: (o.plan?.protectedDetails ?? []).filter(d => d.confidence >= .5).map(d => box(d.evidence)) });
+        providerLowFrequency,photoStrength:o.samples.size?input.materialOptions?.photoStrength:1, regions: planRegions(o.plan, o.samples), protectedBoxes: (o.plan?.protectedDetails ?? []).filter(d => d.confidence >= .5).map(d => box(d.evidence)) });
       const images = new Map<number, { bytes: Buffer; mimeType: string }>();
       for (const [index, image] of result.textures) {
         // Base color stays 8-bit sRGB; alpha is written back only when present.

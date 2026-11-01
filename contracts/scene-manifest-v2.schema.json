@@ -409,6 +409,40 @@
                 "plainColor": {
                   "type": "string",
                   "pattern": "^#[0-9a-fA-F]{6}$"
+                },
+                "spatial": {
+                  "type": "object",
+                  "properties": {
+                    "rearDistance": {
+                      "type": "number",
+                      "minimum": 0.01,
+                      "maximum": 1000
+                    },
+                    "curveRadius": {
+                      "type": "number",
+                      "minimum": 0.01,
+                      "maximum": 100
+                    },
+                    "confidence": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "foreground-calibrated-depth",
+                        "subject-relative-fallback"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "rearDistance",
+                    "curveRadius",
+                    "confidence",
+                    "source"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [

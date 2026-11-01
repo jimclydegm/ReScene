@@ -7,11 +7,15 @@ import type { PixelImage4 } from "./render";
 // Muse material sample mapped through grain-aligned triplanar coordinates) and
 // inferred (the provider's own atlas). Muse never produces the atlas itself;
 // it only supplies flat material swatches sampled here into validated UVs.
-export type MaterialRegion = { id: string; color: [number, number, number]; sample: PixelImage4 | null; tileScale: number; grain: "none" | "along-part" | "across-part"; repeating: boolean };
+export type MaterialRegion = { id: string; color: [number, number, number]; sample: PixelImage4 | null; tileScale: number; grain: "none" | "along-part" | "across-part"; repeating: boolean;evidence?:[number,number,number,number] };
 export type Photo = { data: Uint8Array; width: number; height: number; channels: 3 | 4 };
 export type BakeInput = {
   doc: MeshDocument; textures: Map<number, PixelImage4>; object: number;
   photo: Photo; mask: Uint8Array; camera: PerspectiveCamera; visible: { depth: Float32Array; owners: Int16Array; width: number; height: number };
+  photoStrength?:number;
+  // Low-frequency provider color, used only to retain relief-like detail
+  // (joinery, controls, folds) without restoring its broad baked lighting.
+  providerLowFrequency?:Map<number,PixelImage4>;
   regions: MaterialRegion[]; protectedBoxes: [number, number, number, number][];
   registration?: { scaleX: number; scaleY: number; offsetX: number; offsetY: number };
 };
@@ -26,6 +30,9 @@ const lab = (c: ArrayLike<number>) => {
   return [116 * h(y) - 16, 500 * (h(x) - h(y)), 200 * (h(y) - h(z))];
 };
 const distance = (a: number[], b: number[]) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+// Shading changes lightness much more than chroma. Full Lab distance can turn
+// shaded green cloth into the nearest light-brown wood material.
+export const materialDistance=(a:number[],b:number[])=>Math.hypot((a[0]-b[0])*.25,a[1]-b[1],a[2]-b[2]);
 
 // Remove low-frequency photographed shading inside the mask while keeping
 // texture detail. Clipped specular pixels are marked unreliable instead of
@@ -109,7 +116,7 @@ export function bakeMaterials(input: BakeInput): BakeResult {
     return (x: number, y: number) => near(x, y, r) ? 0 : near(x, y, r * 2) ? .4 : near(x, y, r * 3) ? .75 : 1;
   })();
   // Observed sample at a world point, or null when hidden, off-mask or unreliable.
-  const observe = (x: number, y: number, z: number, out: number[]) => {
+  const observe = (x: number, y: number, z: number, out: number[], detail=true) => {
     const w = clip[3] * x + clip[7] * y + clip[11] * z + clip[15], depth = -(view[2] * x + view[6] * y + view[10] * z + view[14]);
     if (depth <= 0 || w <= 0) return false;
     const ox = ((clip[0] * x + clip[4] * y + clip[8] * z + clip[12]) / w + 1) * W / 2, oy = (1 - (clip[1] * x + clip[5] * y + clip[9] * z + clip[13]) / w) * H / 2;
@@ -118,13 +125,13 @@ export function bakeMaterials(input: BakeInput): BakeResult {
     // Thin walls (cup rims, shells) put two surfaces millimetres apart, so the
     // depth tolerance follows object size rather than camera distance.
     if (input.visible.owners[at0] !== input.object || Math.abs(input.visible.depth[at0] - depth) > depthTolerance ) return false;
-    const edgeWeight = edge(Math.floor(ox), Math.floor(oy)); if (!edgeWeight) return false;
+    const edgeWeight = detail?edge(Math.floor(ox), Math.floor(oy)):1; if (!edgeWeight) return false;
     const sx = ox * registration.scaleX + registration.offsetX, sy = oy * registration.scaleY + registration.offsetY, px = Math.floor(sx), py = Math.floor(sy);
     if (px < 3 || py < 3 || px >= W - 3 || py >= H - 3) return false;
     const at = py * W + px;
     // Eroded mask and depth/owner agreement keep neighboring objects and the
     // backdrop out of the albedo.
-    if ([at, at - 2, at + 2, at - 2 * W, at + 2 * W].some(i => mask[i] < 200) || !delit.reliable[at]) return false;
+    if ((detail?[at, at - 2, at + 2, at - 2 * W, at + 2 * W]:[at]).some(i => mask[i] < 200) || !delit.reliable[at]) return false;
     const fx = sx - px, fy = sy - py;
     for (let k = 0; k < 3; k++) out[k] = (delit.rgb[at * 3 + k] * (1 - fx) + delit.rgb[(at + 1) * 3 + k] * fx) * (1 - fy) + (delit.rgb[(at + W) * 3 + k] * (1 - fx) + delit.rgb[(at + W + 1) * 3 + k] * fx) * fy;
     out[3] = sx / W; out[4] = sy / H; out[5] = edgeWeight;
@@ -139,10 +146,16 @@ export function bakeMaterials(input: BakeInput): BakeResult {
   if (input.regions.length) {
     doc.primitives.forEach((prim, p) => { const image = prim.image === null ? undefined : input.textures.get(prim.image); for (let t = 0; t < labels[p].length; t++) {
       const [x, y, z] = centroid(p, t);
-      let color: number[] | null = observe(x, y, z, tmp) ? tmp.slice(0, 3) : null;
+      // Color classification tolerates silhouette proximity; copying detailed
+      // pixels still uses the strict band. Otherwise thin parts and dark
+      // upholstery inherit the provider's incorrect material labels.
+      let color: number[] | null = observe(x, y, z, tmp,false) ? tmp.slice(0, 3) : null;
       if (!color && image && prim.uv) { const [u, v] = uvCentroid(p, t); color = texel(image, u, v, [0, 0, 0]); }
       if (!color) continue;
-      const c = lab(color); let best = 0; regionLab.forEach((r, i) => { if (distance(c, r) < distance(c, regionLab[best])) best = i; }); labels[p][t] = best;
+      const c = lab(color),w=clip[3]*x+clip[7]*y+clip[11]*z+clip[15],sx=((clip[0]*x+clip[4]*y+clip[8]*z+clip[12])/w+1)/2,sy=(1-(clip[1]*x+clip[5]*y+clip[9]*z+clip[13])/w)/2;
+      const evidence=input.regions.map(r=>{const b=r.evidence;return !!b&&w>0&&sx>=b[0]&&sx<=b[2]&&sy>=b[1]&&sy<=b[3];}),single=evidence.filter(Boolean).length===1;
+      const score=(r:number)=>materialDistance(c,regionLab[r])+(single&&!evidence[r]?18:0);
+      let best = 0; regionLab.forEach((_, i) => { if (score(i)<score(best)) best = i; }); labels[p][t] = best;
     } });
     const neighbors = new Map<string, number[]>();
     topology.welded.forEach((w, p) => { for (let t = 0; t < w.length; t += 3) for (let k = 0; k < 3; k++) { const a = w[t + k], b = w[t + (k + 1) % 3], key = a < b ? `${a},${b}` : `${b},${a}`; neighbors.set(key, [...(neighbors.get(key) ?? []), p, t / 3]); } });
@@ -175,7 +188,11 @@ export function bakeMaterials(input: BakeInput): BakeResult {
   // Match each sample's mean color to the observed (or planned) region color
   // so generated and photographed texels meet without a visible step.
   const observedMeans = input.regions.map(() => [0, 0, 0, 0]);
-  doc.primitives.forEach((prim, p) => { for (let t = 0; t < labels[p].length; t++) { const l = labels[p][t]; if (l < 0) continue; const [x, y, z] = centroid(p, t); if (observe(x, y, z, tmp)) { for (let k = 0; k < 3; k++) observedMeans[l][k] += tmp[k] * topology.areas[p][t]; observedMeans[l][3] += topology.areas[p][t]; } } });
+  // Calibrate from Spark's actual source-material evidence, independent of
+  // whether a thin mesh part survives the strict detail-copy edge exclusion.
+  input.regions.forEach((r,l)=>{if(!r.evidence)return;const [x0,y0,x1,y1]=r.evidence;for(let y=Math.max(0,Math.floor(y0*H));y<Math.min(H,y1*H);y+=3)for(let x=Math.max(0,Math.floor(x0*W));x<Math.min(W,x1*W);x+=3){const at=y*W+x;if(mask[at]<200||!delit.reliable[at])continue;const c=lab(delit.rgb.subarray(at*3,at*3+3));if(regionLab.some((other,j)=>j!==l&&materialDistance(c,other)+3<materialDistance(c,regionLab[l])))continue;for(let k=0;k<3;k++)observedMeans[l][k]+=delit.rgb[at*3+k];observedMeans[l][3]++;}});
+  const calibrated=observedMeans.map(v=>v[3]>=12);
+  doc.primitives.forEach((prim, p) => { for (let t = 0; t < labels[p].length; t++) { const l = labels[p][t]; if (l < 0||calibrated[l]) continue; const [x, y, z] = centroid(p, t); if (observe(x, y, z, tmp,false)) { for (let k = 0; k < 3; k++) observedMeans[l][k] += tmp[k] * topology.areas[p][t]; observedMeans[l][3] += topology.areas[p][t]; } } });
   const gains = input.regions.map((region, r) => {
     if (!region.sample) return [1, 1, 1];
     const target = observedMeans[r][3] > 0 ? observedMeans[r].slice(0, 3).map(v => v / observedMeans[r][3]) : region.color, mean = [0, 0, 0];
@@ -236,10 +253,14 @@ export function bakeMaterials(input: BakeInput): BakeResult {
           const provider = [source.data[at * 4], source.data[at * 4 + 1], source.data[at * 4 + 2]];
           // Skip samples that look like backdrop rather than this surface.
           const contaminated = !isProtected && bg[0] >= 0 && distance(obs, bg) < 20 && distance(obs, provider) > 45;
-          weight = contaminated ? 0 : isProtected ? 1 : Math.min(1, Math.max(0, (facing - .18) / .1)) * obs[5];
+          weight = contaminated ? 0 : isProtected ? 1 : (input.regions[label]?.sample?(input.photoStrength??1):1) * Math.min(1, Math.max(0, (facing - .18) / .1)) * obs[5];
         }
         let code: number = provenanceCodes.inferred;
-        if (label >= 0 && input.regions[label].sample) { sampleRegion(label, px, py, pz, nx, ny, nz, base); code = provenanceCodes.generated; }
+        if (label >= 0 && input.regions[label].sample) {
+          sampleRegion(label, px, py, pz, nx, ny, nz, base); code = provenanceCodes.generated;
+          const low=prim.image===null?undefined:input.providerLowFrequency?.get(prim.image);
+          if(low){const lum=(data:Uint8Array)=>.2126*data[at*4]+.7152*data[at*4+1]+.0722*data[at*4+2],ratio=Math.max(.55,Math.min(1.35,(lum(source.data)+8)/(lum(low.data)+8)));for(let k=0;k<3;k++)base[k]=Math.min(255,base[k]*ratio);}
+        }
         else { const gain = harmony.get(label) ?? harmony.get(-1) ?? [1, 1, 1]; for (let k = 0; k < 3; k++) base[k] = Math.min(255, source.data[at * 4 + k] * gain[k]); }
         for (let k = 0; k < 3; k++) out.data[at * 4 + k] = Math.round(obs[k] * weight + base[k] * (1 - weight));
         if (weight >= .5) code = provenanceCodes.observed;
@@ -258,11 +279,12 @@ export function bakeMaterials(input: BakeInput): BakeResult {
       if (label >= 0) coverage.regions[input.regions[label].id] += area;
     }
   });
+  if(input.regions.some(r=>r.sample))stitchMaterialSeams(doc,textures,labels,provenance);
   // Mip-safe padding grows islands into unused texels only, never over
   // another island, so unrelated materials do not bleed into each other.
   for (const [index, out] of textures) {
     const codes = provenance.get(index)!;
-    for (let pass = 0; pass < 4; pass++) {
+    for (let pass = 0; pass < Math.max(4,Math.round(out.width/256)); pass++) {
       const fill: [number, number[]][] = [];
       for (let y = 0; y < out.height; y++) for (let x = 0; x < out.width; x++) {
         const at = y * out.width + x; if (codes[at]) continue;
@@ -280,6 +302,28 @@ export function bakeMaterials(input: BakeInput): BakeResult {
     seams: seamDifference(doc, input.textures, textures)
   };
 }
+
+/** Reconcile paired UV-island borders on the same material. Feather inward
+ * only inside the owning triangle; real material boundaries stay separate. */
+function stitchMaterialSeams(doc:MeshDocument,textures:Map<number,PixelImage4>,labels:Int16Array[],provenance:Map<number,Uint8Array>){
+ const topology=weld(doc),edges=new Map<string,{p:number;t:number;a:number;b:number}[]>();
+ doc.primitives.forEach((prim,p)=>{if(!prim.uv||prim.image===null)return;for(let t=0;t<prim.indices.length/3;t++)for(let k=0;k<3;k++){let a=prim.indices[t*3+k],b=prim.indices[t*3+(k+1)%3],wa=topology.welded[p][t*3+k],wb=topology.welded[p][t*3+(k+1)%3];if(wa>wb){[a,b]=[b,a];[wa,wb]=[wb,wa];}const key=`${wa},${wb}`;edges.set(key,[...(edges.get(key)??[]),{p,t,a,b}]);}});
+ const changes=new Map<number,Map<number,number[]>>(),color=[0,0,0],other=[0,0,0];
+ for(const list of edges.values()){
+  if(list.length!==2)continue;const [a,b]=list,pa=doc.primitives[a.p],pb=doc.primitives[b.p],ia=textures.get(pa.image!),ib=textures.get(pb.image!);if(!ia||!ib||labels[a.p][a.t]<0||labels[a.p][a.t]!==labels[b.p][b.t])continue;
+  const uv=(p:typeof pa,i:number)=>[p.uv![i*2],p.uv![i*2+1]],a0=uv(pa,a.a),a1=uv(pa,a.b),b0=uv(pb,b.a),b1=uv(pb,b.b);
+  if(Math.hypot(a0[0]-b0[0],a0[1]-b0[1])+Math.hypot(a1[0]-b1[0],a1[1]-b1[1])<1e-6)continue;
+  const steps=Math.min(256,Math.max(2,Math.ceil(Math.max(Math.hypot((a1[0]-a0[0])*ia.width,(a1[1]-a0[1])*ia.height),Math.hypot((b1[0]-b0[0])*ib.width,(b1[1]-b0[1])*ib.height)))));
+  for(let n=1;n<steps;n++){const f=n/steps;texel(ia,a0[0]*(1-f)+a1[0]*f,a0[1]*(1-f)+a1[1]*f,color);texel(ib,b0[0]*(1-f)+b1[0]*f,b0[1]*(1-f)+b1[1]*f,other);const mean=color.map((v,k)=>(v+other[k])/2);
+   for(const [e,p,image,v0,v1]of [[a,pa,ia,a0,a1],[b,pb,ib,b0,b1]] as const){const x=(v0[0]*(1-f)+v1[0]*f)*image.width,y=(v0[1]*(1-f)+v1[1]*f)*image.height,c=uvCentroidForSeam(p,e.t,image),dx=c[0]-x,dy=c[1]-y,len=Math.hypot(dx,dy)||1,updates=changes.get(p.image!)??new Map<number,number[]>();changes.set(p.image!,updates);
+    for(let d=0;d<4;d++){const xx=Math.floor(x+dx/len*(d+.5)),yy=Math.floor(y+dy/len*(d+.5));if(xx<0||yy<0||xx>=image.width||yy>=image.height||!insideUvTriangle(p,e.t,(xx+.5)/image.width,(yy+.5)/image.height))continue;const at=yy*image.width+xx;if(!provenance.get(p.image!)?.[at])continue;const w=(1-d/4)*.8,entry=updates.get(at)??[0,0,0,0];for(let k=0;k<3;k++)entry[k]+=mean[k]*w;entry[3]+=w;updates.set(at,entry);}
+   }
+  }
+ }
+ for(const [index,updates]of changes){const image=textures.get(index)!;for(const [at,sum]of updates){const w=Math.min(1,sum[3]);for(let k=0;k<3;k++)image.data[at*4+k]=Math.round(image.data[at*4+k]*(1-w)+sum[k]/sum[3]*w);}}
+}
+function uvCentroidForSeam(p:MeshDocument["primitives"][number],t:number,image:PixelImage4){return [0,1].map(k=>(p.uv![p.indices[t*3]*2+k]+p.uv![p.indices[t*3+1]*2+k]+p.uv![p.indices[t*3+2]*2+k])/3*(k===0?image.width:image.height));}
+function insideUvTriangle(p:MeshDocument["primitives"][number],t:number,x:number,y:number){const uv=p.uv!,i=p.indices,ax=uv[i[t*3]*2],ay=uv[i[t*3]*2+1],bx=uv[i[t*3+1]*2],by=uv[i[t*3+1]*2+1],cx=uv[i[t*3+2]*2],cy=uv[i[t*3+2]*2+1],area=(bx-ax)*(cy-ay)-(cx-ax)*(by-ay);if(Math.abs(area)<1e-10)return false;const a=((bx-x)*(cy-y)-(cx-x)*(by-y))/area,b=((cx-x)*(ay-y)-(ax-x)*(cy-y))/area;return a>=0&&b>=0&&a+b<=1;}
 
 // Color mismatch across UV seams: the same surface edge sampled from both
 // islands. Lower is better; a large value is a visible seam.
