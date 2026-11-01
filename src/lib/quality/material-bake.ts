@@ -7,7 +7,7 @@ import type { PixelImage4 } from "./render";
 // Muse material sample mapped through grain-aligned triplanar coordinates) and
 // inferred (the provider's own atlas). Muse never produces the atlas itself;
 // it only supplies flat material swatches sampled here into validated UVs.
-export type MaterialRegion = { id: string; color: [number, number, number]; sample: PixelImage4 | null; tileScale: number; grain: "none" | "along-part" | "across-part"; repeating: boolean;evidence?:[number,number,number,number] };
+export type MaterialRegion = { id: string; color: [number, number, number]; sample: PixelImage4 | null; tileScale: number; grain: "none" | "along-part" | "across-part"; repeating: boolean;evidence?:[number,number,number,number];preserveProviderDetail?:boolean };
 export type Photo = { data: Uint8Array; width: number; height: number; channels: 3 | 4 };
 export type BakeInput = {
   doc: MeshDocument; textures: Map<number, PixelImage4>; object: number;
@@ -141,6 +141,17 @@ export function bakeMaterials(input: BakeInput): BakeResult {
   // Label every triangle with a material region from observed color where
   // visible and provider color elsewhere, then smooth over mesh adjacency.
   const labels = doc.primitives.map(p => new Int16Array(p.indices.length / 3).fill(-1)), regionLab = input.regions.map(r => lab(r.color)), tmp = [0, 0, 0, 0, 0, 1];
+  const spatialBoxes=input.regions.map(r=>r.evidence);
+  if(input.regions.length>1&&spatialBoxes.every(Boolean)){
+    const source=[Math.min(...spatialBoxes.map(b=>b![0])),Math.min(...spatialBoxes.map(b=>b![1])),Math.max(...spatialBoxes.map(b=>b![2])),Math.max(...spatialBoxes.map(b=>b![3]))],maskBox=[1,1,0,0],projected=[1,1,0,0];
+    for(let y=0;y<H;y+=2)for(let x=0;x<W;x+=2)if(mask[y*W+x]>127){maskBox[0]=Math.min(maskBox[0],x/W);maskBox[1]=Math.min(maskBox[1],y/H);maskBox[2]=Math.max(maskBox[2],(x+1)/W);maskBox[3]=Math.max(maskBox[3],(y+1)/H);}
+    for(const p of doc.primitives)for(let i=0;i<p.positions.length;i+=3){const x=p.positions[i],y=p.positions[i+1],z=p.positions[i+2],w=clip[3]*x+clip[7]*y+clip[11]*z+clip[15];if(w<=0)continue;const sx=((clip[0]*x+clip[4]*y+clip[8]*z+clip[12])/w+1)/2,sy=(1-(clip[1]*x+clip[5]*y+clip[9]*z+clip[13])/w)/2;projected[0]=Math.min(projected[0],sx);projected[1]=Math.min(projected[1],sy);projected[2]=Math.max(projected[2],sx);projected[3]=Math.max(projected[3],sy);}
+    const area=(b:number[])=>Math.max(0,b[2]-b[0])*Math.max(0,b[3]-b[1]),coverage=area(source)/Math.max(1e-9,area(maskBox));
+    // Align part-label priors to the model only when the observed materials
+    // describe almost the entire subject. Small detail-only plans stay local.
+    // Actual photo sampling/protected markings retain original coordinates.
+    if(coverage>.7&&coverage<1.4&&area(projected)>0)for(let i=0;i<spatialBoxes.length;i++){const b=spatialBoxes[i]!;spatialBoxes[i]=[projected[0]+(b[0]-source[0])/(source[2]-source[0])*(projected[2]-projected[0]),projected[1]+(b[1]-source[1])/(source[3]-source[1])*(projected[3]-projected[1]),projected[0]+(b[2]-source[0])/(source[2]-source[0])*(projected[2]-projected[0]),projected[1]+(b[3]-source[1])/(source[3]-source[1])*(projected[3]-projected[1])];}
+  }
   const centroid = (p: number, t: number) => { const prim = doc.primitives[p], i = prim.indices; return [0, 1, 2].map(k => (prim.positions[i[t * 3] * 3 + k] + prim.positions[i[t * 3 + 1] * 3 + k] + prim.positions[i[t * 3 + 2] * 3 + k]) / 3); };
   const uvCentroid = (p: number, t: number) => { const prim = doc.primitives[p], i = prim.indices, uv = prim.uv!; return [(uv[i[t * 3] * 2] + uv[i[t * 3 + 1] * 2] + uv[i[t * 3 + 2] * 2]) / 3, (uv[i[t * 3] * 2 + 1] + uv[i[t * 3 + 1] * 2 + 1] + uv[i[t * 3 + 2] * 2 + 1]) / 3]; };
   if (input.regions.length) {
@@ -153,8 +164,12 @@ export function bakeMaterials(input: BakeInput): BakeResult {
       if (!color && image && prim.uv) { const [u, v] = uvCentroid(p, t); color = texel(image, u, v, [0, 0, 0]); }
       if (!color) continue;
       const c = lab(color),w=clip[3]*x+clip[7]*y+clip[11]*z+clip[15],sx=((clip[0]*x+clip[4]*y+clip[8]*z+clip[12])/w+1)/2,sy=(1-(clip[1]*x+clip[5]*y+clip[9]*z+clip[13])/w)/2;
-      const evidence=input.regions.map(r=>{const b=r.evidence;return !!b&&w>0&&sx>=b[0]&&sx<=b[2]&&sy>=b[1]&&sy<=b[3];}),single=evidence.filter(Boolean).length===1;
-      const score=(r:number)=>materialDistance(c,regionLab[r])+(single&&!evidence[r]?18:0);
+      const evidence=spatialBoxes.map(b=>!!b&&w>0&&sx>=b[0]&&sx<=b[2]&&sy>=b[1]&&sy<=b[3]),single=evidence.filter(Boolean).length===1;
+      // Similar-colored parts (white ceramic beside cream cloth, for example)
+      // need spatial evidence even just outside an approximate model box.
+      // A binary inside/outside penalty left uncovered areas assigned by tiny
+      // color differences, painting one part with its neighbor's material.
+      const score=(r:number)=>{const b=spatialBoxes[r];let spatial=0;if(b&&w>0){const dx=Math.max(b[0]-sx,0,sx-b[2])/Math.max(.01,b[2]-b[0]),dy=Math.max(b[1]-sy,0,sy-b[3])/Math.max(.01,b[3]-b[1]);spatial=Math.min(60,Math.hypot(dx,dy)*20);}return materialDistance(c,regionLab[r])+spatial+(single&&!evidence[r]?18:0);};
       let best = 0; regionLab.forEach((_, i) => { if (score(i)<score(best)) best = i; }); labels[p][t] = best;
     } });
     const neighbors = new Map<string, number[]>();
@@ -253,13 +268,14 @@ export function bakeMaterials(input: BakeInput): BakeResult {
           const provider = [source.data[at * 4], source.data[at * 4 + 1], source.data[at * 4 + 2]];
           // Skip samples that look like backdrop rather than this surface.
           const contaminated = !isProtected && bg[0] >= 0 && distance(obs, bg) < 20 && distance(obs, provider) > 45;
-          weight = contaminated ? 0 : isProtected ? 1 : (input.regions[label]?.sample?(input.photoStrength??1):1) * Math.min(1, Math.max(0, (facing - .18) / .1)) * obs[5];
+          const cleanMaterial=input.regions[label]?.sample&&input.regions[label].preserveProviderDetail===false;
+          weight = contaminated ? 0 : isProtected ? 1 : cleanMaterial?0:(input.regions[label]?.sample?(input.photoStrength??1):1) * Math.min(1, Math.max(0, (facing - .18) / .1)) * obs[5];
         }
         let code: number = provenanceCodes.inferred;
         if (label >= 0 && input.regions[label].sample) {
           sampleRegion(label, px, py, pz, nx, ny, nz, base); code = provenanceCodes.generated;
           const low=prim.image===null?undefined:input.providerLowFrequency?.get(prim.image);
-          if(low){const lum=(data:Uint8Array)=>.2126*data[at*4]+.7152*data[at*4+1]+.0722*data[at*4+2],ratio=Math.max(.55,Math.min(1.35,(lum(source.data)+8)/(lum(low.data)+8)));for(let k=0;k<3;k++)base[k]=Math.min(255,base[k]*ratio);}
+          if(low&&input.regions[label].preserveProviderDetail!==false){const lum=(data:Uint8Array)=>.2126*data[at*4]+.7152*data[at*4+1]+.0722*data[at*4+2],ratio=Math.max(.55,Math.min(1.35,(lum(source.data)+8)/(lum(low.data)+8)));for(let k=0;k<3;k++)base[k]=Math.min(255,base[k]*ratio);}
         }
         else { const gain = harmony.get(label) ?? harmony.get(-1) ?? [1, 1, 1]; for (let k = 0; k < 3; k++) base[k] = Math.min(255, source.data[at * 4 + k] * gain[k]); }
         for (let k = 0; k < 3; k++) out.data[at * 4 + k] = Math.round(obs[k] * weight + base[k] * (1 - weight));

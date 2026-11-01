@@ -4,7 +4,7 @@ import type { EnvironmentObservation } from "./environment-plan";
 export function environmentUsesTexture(
   surface: Pick<EnvironmentObservation["surfaces"][number],"finish"|"material"|"appearance">,
 ) {
-  if(surface.appearance)return surface.appearance==="pattern";
+  if(surface.appearance)return surface.appearance!=="uniform";
   if (surface.finish === "textured") return true;
   if (
     /\b(uniform|smooth|solid|flat color|untextured)\b/i.test(surface.material)

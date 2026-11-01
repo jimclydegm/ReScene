@@ -335,7 +335,10 @@ export async function draftReferenceEnvironment(runId: string) {
   if(check.status!=="SUCCEEDED")throw new Error("ENVIRONMENT_CHECK_ALREADY_ATTEMPTED");
   const review=record(check.output);if(review.empty!==true)throw new Error("ENVIRONMENT_FOREGROUND_REMAINS");
   if(review.structureMatches!==true)built.report.warnings.push("Image review flagged remaining architectural differences; inspect the reference comparison.");
-  if(Array.isArray(review.issues))built.report.warnings.push(...review.issues.filter((i):i is string=>typeof i==="string"));
+  // The raw plate is architectural/depth evidence; its wall/floor illumination
+  // is not rendered after independent material maps replace those pixels.
+  // Keep the receipt for inspection, but report only applicable output defects.
+  if(review.structureMatches!==true&&Array.isArray(review.issues))built.report.warnings.push(...review.issues.filter((i):i is string=>typeof i==="string"));
   const assetId=await saveEnvironmentAsset(runId,"SURFACE_TEXTURE",atlas.bytes,"image/webp","surface-atlas"),settings=record((await environmentContext(runId)).scene.settings);
   return {
     sceneId:scene.id,revision:scene.revision,photoId:photo.id,
@@ -378,12 +381,11 @@ export async function buildReferenceEnvironment(runId: string) {
       },
     });
     if (!changed.count) throw new Error("BACKGROUND_REVISION_CHANGED");
-    if (draft.report.warnings.length)
-      await tx.generationRun.update({
+    await tx.generationRun.update({
         where: { id: runId },
         data: {
           errorMessage:
-            "Background rebuilt with review notes. Inspect the background interpretation before publishing.",
+            draft.report.warnings.length?`Background ready with ${draft.report.warnings.length} review note${draft.report.warnings.length===1?"":"s"}: ${draft.report.warnings[0]}`.slice(0,900):null,
         },
       });
 
@@ -451,6 +453,6 @@ export async function reframeSceneEnvironment(
   )
     throw new Error("ENVIRONMENT_STRUCTURE_INCOMPLETE");
   const previous=composition.background?.geometry?.surfaces??[];
-  for(const surface of built.geometry.surfaces){const old=previous.find(s=>s.materialIndex===surface.materialIndex&&s.role===surface.role&&s.atlas);if(old?.atlas){surface.atlas=old.atlas;if(surface.tile){const {orthogonalTile}=await import("@/lib/appearance/environment-atlas");surface.tile=orthogonalTile(surface.tile);}}}
+  for(const surface of built.geometry.surfaces){const old=previous.find(s=>s.materialIndex===surface.materialIndex&&s.role===surface.role&&s.atlas);if(old?.atlas){surface.atlas=old.atlas;if(old.relief!==undefined)surface.relief=old.relief;if(surface.tile){const {orthogonalTile}=await import("@/lib/appearance/environment-atlas");surface.tile=orthogonalTile(surface.tile);}}}
   return built;
 }

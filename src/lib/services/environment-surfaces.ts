@@ -4,7 +4,7 @@ import {createHash} from "node:crypto";
 import {getDb} from "@/lib/db";
 import {readLimited} from "@/lib/storage/r2";
 import {analyzeEnvironment,cleanEnvironment} from "@/lib/ai/environment";
-import {generateMaterial,inspectMaterialTile} from "@/lib/ai/background";
+import {generateMaterial} from "@/lib/ai/background";
 import {getSam3dClient} from "@/lib/ai/sam3d";
 import {environmentObservationSchema} from "@/lib/scene/environment-plan";
 import {compositionSchema,modelPlacementSchema,manualBackgroundComposition} from "@/lib/scene/composition";
@@ -13,6 +13,8 @@ import {backgroundFootprint} from "@/lib/appearance/background";
 import {decodeEnvironmentDepth} from "@/lib/appearance/environment-depth";
 import {alignCleanDepth} from "@/lib/appearance/clean-depth";
 import {materialTargets,rectifyMaterial,prepareSurfaceTile,packEnvironmentAtlas} from "@/lib/appearance/environment-atlas";
+import {materialEvidence,materialPatchSchema,tileFromEvidence} from "@/lib/appearance/material-evidence";
+import {analyzeSourceMaterials,inspectEnvironmentMaterial} from "@/lib/ai/environment-materials";
 import {environmentContext,planSceneEnvironment,depthStep,saveEnvironmentAsset} from "./background-environment";
 import {record,sceneEnvironment} from "./composition";
 import type {Prisma} from "@/generated/prisma/client";
@@ -24,12 +26,12 @@ export async function environmentPhotos(runId:string){
 }
 /** Each paid operation is reserved before submission and independently reusable. */
 export async function prepareEnvironmentPlate(runId:string){
- const db=getDb(),c=await environmentPhotos(runId),plan=await planSceneEnvironment(runId),raw=await sharp(c.source).removeAlpha().raw().toBuffer({resolveWithObject:true}),footprint=await backgroundFootprint({data:raw.data,width:raw.info.width,height:raw.info.height},c.masks);
+ const db=getDb(),c=await environmentPhotos(runId),initialPlan=await planSceneEnvironment(runId),raw=await sharp(c.source).removeAlpha().raw().toBuffer({resolveWithObject:true}),footprint=await backgroundFootprint({data:raw.data,width:raw.info.width,height:raw.info.height},c.masks);
  let step=await db.generationStep.findUnique({where:{runId_key_attempt:{runId,key:"environment-albedo",attempt:1}},include:{response:true}});
  if(!step){
   await db.generationRun.update({where:{id:runId},data:{currentStage:"Removing foreground before environment reconstruction",progress:94}});
   const started=await db.generationStep.create({data:{runId,key:"environment-albedo",attempt:1,provider:"META",modelId:process.env.META_IMAGE_MODEL??"muse-image-1.0",status:"RUNNING",startedAt:new Date()}});
-  const output=await cleanEnvironment(c.source,footprint.guide,plan,raw.info),id=await saveEnvironmentAsset(runId,"PROVIDER_RESPONSE",output,"image/png","empty-plate");
+  const output=await cleanEnvironment(c.source,footprint.guide,initialPlan,raw.info),id=await saveEnvironmentAsset(runId,"PROVIDER_RESPONSE",output,"image/png","empty-plate");
   step=await db.generationStep.update({where:{id:started.id},data:{status:"SUCCEEDED",responseAssetId:id,imageCount:1,completedAt:new Date()},include:{response:true}});
  }
  if(step.status!=="SUCCEEDED"||!step.response)throw new Error("ENVIRONMENT_IMAGE_ALREADY_ATTEMPTED");
@@ -41,7 +43,17 @@ export async function prepareEnvironmentPlate(runId:string){
   const result=await analyzeEnvironment(await sharp(plate).webp({quality:95}).toBuffer(),c.source);analysis=await db.generationStep.update({where:{id:started.id},data:{status:"SUCCEEDED",output:json(result.analysis),providerRequestId:result.requestId,inputTokens:result.usage?.prompt_tokens,outputTokens:result.usage?.completion_tokens,completedAt:new Date()}});
  }
  if(analysis.status!=="SUCCEEDED")throw new Error("ENVIRONMENT_CLEAN_ANALYSIS_ALREADY_ATTEMPTED");
- return {...c,plate,plateAssetId:step.response.id,plan:environmentObservationSchema.parse(analysis.output),footprint};
+ let plan=environmentObservationSchema.parse(analysis.output);
+ let material=await db.generationStep.findUnique({where:{runId_key_attempt:{runId,key:"environment-source-materials",attempt:1}}});
+ if(!material){
+  const patches=await materialEvidence(c.source,plan,c.masks),started=await db.generationStep.create({data:{runId,key:"environment-source-materials",attempt:1,provider:patches.length?"META":"INTERNAL",modelId:patches.length?process.env.META_ANALYSIS_MODEL??"muse-spark-1.3":null,status:"RUNNING",startedAt:new Date(),input:{photoId:c.photo.id,plateAssetId:step.response.id,patches}}});
+  const result=patches.length?await analyzeSourceMaterials(c.source,plan,patches):{analysis:plan,requestId:null,usage:null};
+  material=await db.generationStep.update({where:{id:started.id},data:{status:"SUCCEEDED",output:json(result.analysis),providerRequestId:result.requestId,inputTokens:result.usage?.prompt_tokens,outputTokens:result.usage?.completion_tokens,completedAt:new Date()}});
+ }
+ if(material.status!=="SUCCEEDED")throw new Error("ENVIRONMENT_MATERIAL_ANALYSIS_ALREADY_ATTEMPTED");
+ const materialInput=record(material.input);if(materialInput.photoId!==c.photo.id||materialInput.plateAssetId!==step.response.id)throw new Error("ENVIRONMENT_MATERIAL_SOURCE_CHANGED");
+ const materialPatches=materialPatchSchema.array().max(16).parse(materialInput.patches);plan=environmentObservationSchema.parse(material.output);
+ return {...c,plate,plateAssetId:step.response.id,plan,materialPatches,footprint};
 }
 export async function prepareCleanEnvironmentDepth(runId:string):Promise<string|null>{
  const {run}=await environmentContext(runId),mode=record(record(run.input).background).mode;if(mode==="materials"||mode==="photo")return null;
@@ -62,6 +74,7 @@ export async function referenceGeometryContext(runId:string){
  }
  const parsed=compositionSchema.safeParse(c.scene.stage),fallback=parsed.success?null:await sceneEnvironment(c.scene),composition=parsed.success?parsed.data:manualBackgroundComposition({width:c.photo.width!,height:c.photo.height!},fallback!.environment,fallback!.environmentSource,0),anchors=c.objects.flatMap((o,i)=>{const p=modelPlacementSchema.safeParse(o.initialTransform);return p.success?[{mask:c.masks[i],position:[o.positionX,o.positionY,o.positionZ] as [number,number,number],size:p.data.size}]:[];}),built=buildEnvironmentGeometry(c.plan,composition,grid,clean?[]:c.masks,anchors,original);
  if(depthWarning)built.report.warnings.push(depthWarning);
+ for(const surface of built.geometry.surfaces){const observation=surface.materialIndex===undefined?null:c.plan.surfaces[surface.materialIndex],patch=c.materialPatches.find(p=>p.id===observation?.id);if(!observation||surface.role==="window"||surface.role==="opening")continue;if(surface.textured&&patch)surface.tile=tileFromEvidence(surface,patch,composition);if(observation.appearance==="microtexture"&&surface.tile)surface.relief=Math.min(.02,Math.min(Math.hypot(...surface.tile.u),Math.hypot(...surface.tile.v))*.002);}
  if(built.report.walls<c.plan.expectedWallCount||built.report.coverage<.8||built.report.projectionError>.08)throw new Error("ENVIRONMENT_STRUCTURE_INCOMPLETE");
  return {...c,composition,built,cleanDepth:clean};
 }
@@ -73,18 +86,22 @@ export async function environmentMaterialTargets(runId:string){
 export async function buildEnvironmentSurfaceMaterial(runId:string,index:number){
  const c=await referenceGeometryContext(runId),target=materialTargets(c.built.geometry,c.plan).find(t=>t.index===index);if(!target)throw new Error("ENVIRONMENT_MATERIAL_TARGET");
  const db=getDb(),key=`environment-surface-${index}`,prior=await db.generationStep.findUnique({where:{runId_key_attempt:{runId,key,attempt:1}}});if(prior){if(prior.status==="SUCCEEDED")return;throw new Error("ENVIRONMENT_MATERIAL_ALREADY_ATTEMPTED");}
- const swatch=await rectifyMaterial(c.plate,target.surface,c.composition),step=await db.generationStep.create({data:{runId,key,attempt:1,provider:"META",modelId:process.env.META_IMAGE_MODEL??"muse-image-1.0",status:"RUNNING",startedAt:new Date(),input:{plateAssetId:c.plateAssetId,materialIndex:index,swatchHash:createHash("sha256").update(swatch).digest("hex")}}});
+ const patch=c.materialPatches.find(p=>p.id===target.observation.id),swatch=await rectifyMaterial(patch?c.source:c.plate,target.surface,c.composition),step=await db.generationStep.create({data:{runId,key,attempt:1,provider:"META",modelId:process.env.META_IMAGE_MODEL??"muse-image-1.0",status:"RUNNING",startedAt:new Date(),input:{plateAssetId:c.plateAssetId,photoId:c.photo.id,evidence:patch?"original-source":"empty-plate",materialIndex:index,swatchHash:createHash("sha256").update(swatch).digest("hex")}}});
  await db.generationRun.update({where:{id:runId},data:{currentStage:`Generating ${target.observation.role} material`,progress:97}});
- const result=await generateMaterial({...target.observation,material:target.observation.material+". Preserve the reference grain/plank direction and feature spacing. Fine texture, no architectural borders or extra pattern motifs."},swatch),id=await saveEnvironmentAsset(runId,"PROVIDER_RESPONSE",result.bytes,"image/png",key);
+ const result=await generateMaterial({...target.observation,material:target.observation.material+(target.observation.appearance==="microtexture"?". Preserve the fine resolved surface relief only, subtle monochrome detail on a single base color. No mottled paint, large ridges, cracks, decorative pattern or lighting gradients.":". Preserve the reference grain/plank direction and feature spacing. Fine texture, no architectural borders or extra pattern motifs.")},swatch),id=await saveEnvironmentAsset(runId,"PROVIDER_RESPONSE",result.bytes,"image/png",key);
  await db.generationStep.update({where:{id:step.id},data:{status:"SUCCEEDED",responseAssetId:id,imageCount:1,completedAt:new Date()}});
 }
 export async function buildSurfaceAtlas(runId:string,c:Awaited<ReturnType<typeof referenceGeometryContext>>){
  const tiles=new Map<number,Buffer>(),db=getDb();
  for(const target of materialTargets(c.built.geometry,c.plan)){
   const index=target.index,step=await db.generationStep.findUnique({where:{runId_key_attempt:{runId,key:`environment-surface-${index}`,attempt:1}},include:{response:true}});if(step?.status!=="SUCCEEDED"||!step.response)throw new Error("ENVIRONMENT_MATERIAL_REQUIRED");
-  const tile=await prepareSurfaceTile(await readLimited(step.response.storageKey,24*1024*1024)),key=`environment-surface-check-${index}`;let check=await db.generationStep.findUnique({where:{runId_key_attempt:{runId,key,attempt:1}}});
-  if(!check){const started=await db.generationStep.create({data:{runId,key,attempt:1,provider:"META",modelId:process.env.META_ANALYSIS_MODEL??"muse-spark-1.3",status:"RUNNING",startedAt:new Date()}});const result=await inspectMaterialTile(tile);check=await db.generationStep.update({where:{id:started.id},data:{status:"SUCCEEDED",output:result,completedAt:new Date()}});}
-  if(check.status!=="SUCCEEDED")throw new Error("ENVIRONMENT_MATERIAL_CHECK_ALREADY_ATTEMPTED");if(record(check.output).clean===true)tiles.set(index,tile);else c.built.report.warnings.push(`${target.observation.role}: generated material failed illumination/content review; clean solid material retained.`);
+  const tile=await prepareSurfaceTile(await readLimited(step.response.storageKey,24*1024*1024),target.observation.appearance==="microtexture"),key=`environment-surface-check-${index}`;let check=await db.generationStep.findUnique({where:{runId_key_attempt:{runId,key,attempt:1}}});
+  const patch=c.materialPatches.find(p=>p.id===target.observation.id),evidence=await rectifyMaterial(patch?c.source:c.plate,target.surface,c.composition);
+  if(!check){const started=await db.generationStep.create({data:{runId,key,attempt:1,provider:"META",modelId:process.env.META_ANALYSIS_MODEL??"muse-spark-1.3",status:"RUNNING",startedAt:new Date()}});const result=await inspectEnvironmentMaterial(tile,evidence,target.observation);check=await db.generationStep.update({where:{id:started.id},data:{status:"SUCCEEDED",output:result,completedAt:new Date()}});}
+  if(check.status!=="SUCCEEDED")throw new Error("ENVIRONMENT_MATERIAL_CHECK_ALREADY_ATTEMPTED");
+  if(record(check.output).clean===true&&record(check.output).faithful!==false)tiles.set(index,tile);
+  else if(patch){tiles.set(index,await prepareSurfaceTile(evidence,target.observation.appearance==="microtexture"));c.built.report.warnings.push(`${target.observation.role}: generated material failed review; cleaned original-source detail retained. ${String(record(check.output).reason??"")}`.slice(0,350));}
+  else c.built.report.warnings.push(`${target.observation.role}: generated material failed review and no unobscured source patch was available; solid fallback needs inspection.`);
  }
  // Preserve visible window frames/exterior from the source, never repeat them.
  const {environmentAlbedo}=await import("@/lib/appearance/environment-albedo");

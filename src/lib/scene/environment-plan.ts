@@ -20,7 +20,7 @@ export const environmentObservationSchema = z
             color,
             roughness: z.number().min(0.2).max(1),
             material: z.string().min(1).max(180),
-            appearance: z.enum(["uniform","pattern"]).optional(),
+            appearance: z.enum(["uniform","microtexture","pattern"]).optional(),
             confidence: z.number().min(0).max(1),
           })
           .strict(),
@@ -91,6 +91,7 @@ export const environmentGeometrySchema = z
       materialOnly: z.boolean().optional(),
       atlas:z.object({mode:z.enum(["tile","photo"]),rect:z.tuple([z.number().min(0).max(1),z.number().min(0).max(1),z.number().min(0).max(1),z.number().min(0).max(1)])}).strict().refine(a=>a.rect[2]>a.rect[0]&&a.rect[3]>a.rect[1]).optional(),
       materialIndex:z.number().int().min(0).max(15).optional(),
+      relief:z.number().min(0).max(.05).optional(),
           })
           .strict()
           .superRefine((s, c) => {

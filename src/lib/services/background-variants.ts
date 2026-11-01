@@ -240,7 +240,7 @@ export async function generateBackgroundVariantRun(runId: string) {
     const count = await db.sceneBackground.count({ where: { sceneId: scene.id } });
     const name = typeof variantInput.name === "string" && variantInput.name.trim() ? variantInput.name.trim().slice(0, 120) : `Variant ${count + 1}`;
     const variantPlan=structuredClone(stage.data.background);
-    if(variantPlan?.geometry)for(const surface of variantPlan.geometry.surfaces){delete surface.atlas;surface.materialOnly=false;surface.textured=true;}
+    if(variantPlan?.geometry)for(const surface of variantPlan.geometry.surfaces){delete surface.atlas;delete surface.relief;surface.materialOnly=false;surface.textured=true;}
     await db.sceneBackground.create({
       data: {
         sceneId: scene.id,

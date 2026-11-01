@@ -15,7 +15,7 @@ import { isBackgroundSurface } from "@/lib/scene/surface-role";
 import { compositionSchema, modelPlacementSchema } from "@/lib/scene/composition";
 import { layoutReviewSchema } from "@/lib/scene/layout-review";
 import { pixelBoxSchema } from "@/lib/ai/controls";
-import { qualityPlanObservationSchema, qualityReviewObservationSchema, type QualityPlanObservation } from "@/lib/quality/contracts";
+import { automaticMaterialTargets,reviewedMaterialSample,qualityPlanObservationSchema, qualityReviewObservationSchema, type QualityPlanObservation } from "@/lib/quality/contracts";
 import { objectReviewSchema, mergeSparkReview } from "@/lib/quality/review";
 import { contactSchema, type Placed } from "@/lib/quality/placement";
 import { readMesh, geometryDigest } from "@/lib/quality/mesh";
@@ -58,6 +58,7 @@ async function maskPixels(asset: { storageKey: string }, size: { width: number; 
   if (m.info.width !== size.width || m.info.height !== size.height) throw new AppError(422, "MASK_SIZE", "A mask does not match the photo.");
   return new Uint8Array(m.data);
 }
+function qualityBounds(input:unknown,size:{width:number;height:number}){const b=pixelBoxSchema.safeParse(input).data;return b?{...b,imageWidth:size.width,imageHeight:size.height}:undefined;}
 // Editor yaw/scale are folded into the saved placement, matching selective retries.
 function placementOf(o: SceneObject): Placed {
   const p = modelPlacementSchema.parse(o.initialTransform), q = new Quaternion(o.rotationX, o.rotationY, o.rotationZ, o.rotationW);
@@ -220,6 +221,39 @@ async function privateAsset(sceneId: string, runId: string, bytes: Buffer, kind:
 }
 const runInput = (input: unknown) => materialQualityOptions.parse(record(input).quality ?? {materials:true,masks:true,review:true});
 
+export async function generatedStructureTargets(runId:string){
+ const run=await runContext(runId);if(run.kind!=="RECONSTRUCT"||run.scene.status!=="READY"||run.scene.revision!==run.inputRevision+1)return [];
+ const scene=await ownedScene(run.sceneId,run.scene.ownerId),ctx=await qualityContext(scene);
+ return ctx.objects.filter(o=>!ctx.rootOf(o)&&!ctx.objects.some(c=>ctx.rootOf(c)===o.id)&&!record(o.provenance).replacementBackup).map(o=>o.id);
+}
+export async function planGeneratedStructure(runId:string,objectId:string){
+ const run=await runContext(runId);if(run.kind!=="RECONSTRUCT"||run.scene.revision!==run.inputRevision+1)throw new Error("QUALITY_REVISION_CHANGED");
+ const scene=await ownedScene(run.sceneId,run.scene.ownerId),ctx=await qualityContext(scene),index=ctx.objects.findIndex(o=>o.id===objectId);if(index<0)throw new Error("QUALITY_OBJECT_CHANGED");
+ const o=ctx.objects[index],bytes=ctx.sources[index].bytes,photo=await readLimited(scene.normalizedAsset!.storageKey,4*1024*1024),mask=await maskPixels(o.mask!,ctx.size);
+ await getDb().generationRun.update({where:{id:runId},data:{currentStage:`Reviewing surface geometry: ${o.label}`.slice(0,120),progress:88}});
+ const {planObjectQuality}=await import("@/lib/ai/quality");
+ await step(runId,`quality-plan-${o.id}`,"META",process.env.META_ANALYSIS_MODEL??"muse-spark-1.3",async()=>{
+  const result=await planObjectQuality(photo,await qualityMaskOverlay(photo,mask,ctx.size),await diagnosticsSheet(bytes),{label:o.label,findings:diagnoseMesh(readMesh(bytes)).findings.map(f=>f.detail),bounds:qualityBounds(o.imageBounds,ctx.size)});
+  const raw=await privateAsset(scene.id,runId,Buffer.from(result.raw),"PROVIDER_RESPONSE","application/json","generated-structure-plan");
+  return {output:{objectId:o.id,sourceModelAssetId:ctx.sources[index].asset.id,maskAssetId:o.maskAssetId,plan:result.value},requestId:result.requestId,responseAssetId:raw.id,usage:result.usage};
+ });
+}
+export async function generatedStructurePlans(runId:string){
+ const run=await runContext(runId),scene=await ownedScene(run.sceneId,run.scene.ownerId),ctx=await qualityContext(scene),stored=await runPlans(runId,ctx);
+ const steps=await getDb().generationStep.findMany({where:{runId,status:"SUCCEEDED",key:{startsWith:"quality-"}}});
+ for(const s of steps){const o=record(s.output),p=stored.get(String(o.objectId));if(p&&typeof o.regionId==="string"&&typeof o.assetId==="string"&&reviewedMaterialSample(o,steps))p.samples[o.regionId]=o.assetId;}
+ const plans=new Map<string,{plan:QualityPlanObservation;samples:Map<string,PixelImage4>}>();
+ for(const[id,p]of stored){const samples=new Map<string,PixelImage4>();for(const[region,assetId]of Object.entries(p.samples)){const asset=await getDb().asset.findFirst({where:{id:assetId,sceneId:scene.id,kind:"SURFACE_TEXTURE",status:"READY"}});if(!asset)continue;const raw=await sharp(await readLimited(asset.storageKey,16*1024*1024)).ensureAlpha().raw().toBuffer({resolveWithObject:true});samples.set(region,{data:new Uint8Array(raw.data),width:raw.info.width,height:raw.info.height});}plans.set(id,{plan:p.plan,samples});}
+ return {plans,planStore:{version:"quality-plan-v1",entries:[...stored].map(([objectId,p])=>({objectId,...p}))},planStats:{planned:stored.size,samples:[...plans.values()].reduce((n,p)=>n+p.samples.size,0),masks:0},materialOptions:{textureSize:2048,photoStrength:.65}};
+}
+export async function generatedMaterialTargets(runId:string){
+ const run=await runContext(runId);if(run.kind!=="RECONSTRUCT"||run.scene.revision!==run.inputRevision+1)return [];
+ const scene=await ownedScene(run.sceneId,run.scene.ownerId),ctx=await qualityContext(scene),plans=await runPlans(runId,ctx);
+ // Plain unmarked materials are vulnerable to baked facet shading. Patterned,
+ // directional and marked regions retain photographic/provider detail.
+ return [...plans].flatMap(([objectId,p])=>automaticMaterialTargets(p.plan).map(materialId=>({objectId,materialId})));
+}
+
 
 async function diagnosticsSheet(bytes: Buffer) {
   const views = [["wireframe", 0], ["normals", 0], ["unlit", 0], ["neutral", 1], ["unlit", 4], ["unlit", 5]] as const;
@@ -240,7 +274,7 @@ export async function planQualityRun(runId: string,objectId?:string) {
     const mask = await maskPixels(o.mask, ctx.size), preparedOverlay = await qualityMaskOverlay(photoBytes, mask, ctx.size), sheet = await diagnosticsSheet(ctx.sources[i].bytes);
     await step(runId, `quality-plan-${o.id}`, "META", process.env.META_ANALYSIS_MODEL ?? "muse-spark-1.3", async () => {
       const findings = diagnoseMesh(readMesh(ctx.sources[i].bytes)).findings.map(f => `${f.layer}:${f.code}:${f.value.toFixed(3)}`);
-      const result = await planObjectQuality(await sharp(photoBytes).resize({ width: 1600, height: 1600, fit: "inside",withoutEnlargement:true }).webp().toBuffer(), preparedOverlay, sheet, { label: o.label, findings });
+      const result = await planObjectQuality(await sharp(photoBytes).resize({ width: 1600, height: 1600, fit: "inside",withoutEnlargement:true }).webp().toBuffer(), preparedOverlay, sheet, { label: o.label, findings,bounds:qualityBounds(o.imageBounds,ctx.size) });
       const raw = await privateAsset(scene.id, runId, Buffer.from(result.raw), "PROVIDER_RESPONSE", "application/json", "quality-plan");
       return { output: { objectId: o.id, sourceModelAssetId: source, maskAssetId: o.maskAssetId, plan: result.value }, requestId: result.requestId, responseAssetId: raw.id, usage: result.usage };
     });
@@ -296,13 +330,18 @@ export async function sampleQualityMaterials(runId: string,target?:{objectId:str
     if (target&&(target.objectId!==id||target.materialId!==material.id))continue;
     if (total >= 60 || p.samples[material.id]) continue; total++;
     await getDb().generationRun.update({ where: { id: runId }, data: { currentStage: `Generating material sample: ${material.name}`.slice(0, 120), progress: 50 + Math.min(20,total) } });
-    await step(runId, `quality-sample-${id}-${material.id}`, "META", process.env.META_IMAGE_MODEL ?? "muse-image-1.0", async () => {
+    const crop=async()=>{
       const b = material.evidence, left = Math.max(0, Math.min(ctx.size.width-1,Math.floor(b.x0 * ctx.size.width))), top = Math.max(0, Math.min(ctx.size.height-1,Math.floor(b.y0 * ctx.size.height)));
       const width = Math.max(1, Math.min(ctx.size.width - left, Math.ceil((b.x1 - b.x0) * ctx.size.width))), height = Math.max(1, Math.min(ctx.size.height - top, Math.ceil((b.y1 - b.y0) * ctx.size.height)));
-      const crop = await sharp(photoBytes).extract({ left, top, width, height }).resize({ width: 1024, height: 1024, fit: "inside",withoutEnlargement:true }).png().toBuffer();
-      const result = await generateMaterialSample(material, crop);
+      return sharp(photoBytes).extract({ left, top, width, height }).resize({ width: 1024, height: 1024, fit: "inside",withoutEnlargement:true }).png().toBuffer();
+    };
+    const sample=await step(runId, `quality-sample-${id}-${material.id}`, "META", process.env.META_IMAGE_MODEL ?? "muse-image-1.0", async () => {
+      const result = await generateMaterialSample(material, await crop());
       const stored = await privateAsset(scene.id, runId, await sharp(result.bytes).resize({ width: 2048, height: 2048, fit: "inside", withoutEnlargement:true }).png().toBuffer(), "SURFACE_TEXTURE", "image/png", `quality-sample:${material.id}`);
-      return { output: { objectId: id, regionId: material.id, assetId: stored.id }, responseAssetId: stored.id, imageCount: 1 };
+      return { output: { objectId: id, regionId: material.id, assetId: stored.id,reviewRequired:true }, responseAssetId: stored.id, imageCount: 1 };
+    });
+    if(record(sample).reviewRequired===true)await step(runId,`quality-material-check-${id}-${material.id}`,"META",process.env.META_ANALYSIS_MODEL??"muse-spark-1.3",async()=>{
+      const asset=await getDb().asset.findFirst({where:{id:String(record(sample).assetId),sceneId:scene.id,kind:"SURFACE_TEXTURE",status:"READY"}});if(!asset)throw new Error("QUALITY_SAMPLE_MISSING");const {reviewMaterialSample}=await import("@/lib/ai/quality"),r=await reviewMaterialSample(material,await crop(),await readLimited(asset.storageKey,24*1024*1024));return {output:r.value,requestId:r.requestId,usage:r.usage};
     });
   }
 }
@@ -312,7 +351,7 @@ export async function applyQualityRun(runId: string) {
   if (scene.revision !== run.inputRevision) throw new Error("QUALITY_REVISION_CHANGED");
   await db.generationRun.update({ where: { id: runId }, data: { currentStage: "Repairing, baking and placing", progress: 75 } });
   const plans = await runPlans(runId, ctx), steps = await db.generationStep.findMany({ where: { runId, status: "SUCCEEDED", key: { startsWith: "quality-" } } });
-  for (const s of steps) { const o = record(s.output); if (typeof o.regionId === "string" && typeof o.assetId === "string") { const p = plans.get(String(o.objectId)); if (p) p.samples[o.regionId] = o.assetId; } }
+  for (const s of steps) { const o = record(s.output); if (typeof o.regionId === "string" && typeof o.assetId === "string"&&reviewedMaterialSample(o,steps)) { const p = plans.get(String(o.objectId)); if (p) p.samples[o.regionId] = o.assetId; } }
   const masks = new Map<string, string>(); for (const s of steps) { const o = record(s.output); if (s.key.startsWith("quality-mask-") && typeof o.maskAssetId === "string") masks.set(String(o.objectId), o.maskAssetId); }
   const resolved = new Map<string, { plan: QualityPlanObservation; samples: Map<string, PixelImage4> }>();
   for (const [id, p] of plans) {

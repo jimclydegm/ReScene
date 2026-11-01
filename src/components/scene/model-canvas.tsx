@@ -1,12 +1,12 @@
 "use client";
 import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, useGLTF, useProgress, Grid } from "@react-three/drei";
-import { Box3, Mesh, MeshStandardMaterial, PCFShadowMap, PerspectiveCamera, Vector3, type Texture } from "three";
+import { Box3, Mesh, SkinnedMesh, MeshStandardMaterial, PCFShadowMap, PerspectiveCamera, Vector3, type Texture } from "three";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type RefObject } from "react";
 import type { OrbitControls as OrbitControlsType } from "three-stdlib";
 import { manualStageCamera, type SceneComposition } from "@/lib/scene/composition";
 import {referenceFov} from "@/lib/scene/reference-framing";
-import {completeSurfaceNormals} from "@/lib/scene/smooth-normals";
+import {completeSurfaceNormals,normalMethod} from "@/lib/scene/smooth-normals";
 import { PhotoBackground } from "./photo-background";
 import {captureScene,focusDistance} from "@/lib/editor/capture";
 import {Download,Focus,Grid3x3,House,ImageOff,Lock,LockOpen,Maximize} from "lucide-react";
@@ -22,8 +22,10 @@ function Model({ object, selected, select }: { object: RenderObject; selected: b
     const ownedTextures=new Map<Texture,Texture>();
     const ownedGeometry:import("three").BufferGeometry[]=[];
     cloned.traverse(node => { if (node instanceof Mesh) {
-      const recovered=!node.geometry.hasAttribute("normal");
-      if(recovered){const completed=completeSurfaceNormals(node.geometry);if(completed!==node.geometry){node.geometry=completed;ownedGeometry.push(completed);}}
+      const association=gltf.parser.associations.get(node) as {meshes?:number;primitives?:number}|undefined,primitive=association?.meshes===undefined?undefined:gltf.parser.json.meshes?.[association.meshes]?.primitives?.[association.primitives??0];
+      const legacyGenerated=/trimesh/i.test(gltf.parser.json.asset?.generator??"")&&primitive?.extras?.resceneNormals!==normalMethod&&!(node instanceof SkinnedMesh)&&!node.morphTargetInfluences;
+      const recovered=!node.geometry.hasAttribute("normal")||legacyGenerated;
+      if(recovered){const completed=completeSurfaceNormals(node.geometry,legacyGenerated);if(completed!==node.geometry){node.geometry=completed;ownedGeometry.push(completed);}}
       node.castShadow = true; node.receiveShadow = false;
       const materials = Array.isArray(node.material) ? node.material : [node.material];
       const copies = materials.map(material => {

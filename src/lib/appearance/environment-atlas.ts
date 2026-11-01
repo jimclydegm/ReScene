@@ -25,13 +25,18 @@ export async function rectifyMaterial(plate:Buffer,surface:Surface,composition:S
 }
 /** Preserve native material detail, remove a broad lighting ramp, then reconcile
  * opposite borders without mirroring the whole texture into a visible motif. */
-export async function prepareSurfaceTile(bytes:Buffer){
+export async function prepareSurfaceTile(bytes:Buffer,relief=false){
  const {data,info}=await sharp(bytes,{limitInputPixels:10_000_000}).resize({width:2048,height:2048,fit:"inside",withoutEnlargement:true}).removeAlpha().toColourspace("srgb").raw().toBuffer({resolveWithObject:true});const {width:w,height:h}=info,out=Buffer.from(data);
  const sx=[0,0,0],sy=[0,0,0];let xx=0,yy=0;
  for(let y=0;y<h;y+=4)for(let x=0;x<w;x+=4){const a=(x+.5)/w-.5,b=(y+.5)/h-.5;xx+=a*a;yy+=b*b;for(let c=0;c<3;c++){const z=data[(y*w+x)*3+c];sx[c]+=z*a;sy[c]+=z*b;}}
  for(let y=0;y<h;y++)for(let x=0;x<w;x++)for(let c=0;c<3;c++)out[(y*w+x)*3+c]=Math.max(0,Math.min(255,data[(y*w+x)*3+c]-(sx[c]/xx*((x+.5)/w-.5)+sy[c]/yy*((y+.5)/h-.5))));
  const border=Math.max(2,Math.round(Math.min(w,h)*.025));
  for(let i=0;i<border;i++){const weight=(1-i/border)*.5;for(let y=0;y<h;y++)for(let c=0;c<3;c++){const a=(y*w+i)*3+c,b=(y*w+w-1-i)*3+c,d=(out[b]-out[a])*weight;out[a]+=d;out[b]-=d;}for(let x=0;x<w;x++)for(let c=0;c<3;c++){const a=(i*w+x)*3+c,b=((h-1-i)*w+x)*3+c,d=(out[b]-out[a])*weight;out[a]+=d;out[b]-=d;}}
+ if(relief){
+  const base=await sharp(out,{raw:{width:w,height:h,channels:3}}).greyscale().raw().toBuffer(),blur=await sharp(base,{raw:{width:w,height:h,channels:1}}).blur(Math.max(1,Math.min(w,h)*.015)).greyscale().raw().toBuffer();
+  const height=Buffer.alloc(w*h);for(let i=0;i<height.length;i++)height[i]=Math.max(80,Math.min(176,128+(base[i]-blur[i])*2));
+  return sharp(height,{raw:{width:w,height:h,channels:1}}).png().toBuffer();
+ }
  return sharp(out,{raw:{width:w,height:h,channels:3}}).png().toBuffer();
 }
 /** One approved derived atlas preserves the existing publication allowlist.
@@ -46,7 +51,7 @@ export async function packEnvironmentAtlas(plate:Buffer,geometry:EnvironmentGeom
  const mapped=structuredClone(geometry);
  for(const s of mapped.surfaces){
   if(!s.textured)continue;const opening=s.role==="window"||s.role==="opening",rect=regions.get(opening?-1:s.materialIndex??-2);
-  if(!rect){s.textured=false;delete s.tile;continue;}
+  if(!rect){s.textured=false;delete s.tile;delete s.relief;continue;}
   s.atlas={mode:opening?"photo":"tile",rect};if(s.tile)s.tile=orthogonalTile(s.tile);s.materialOnly=!opening;
  }
  return {bytes:await sharp({create:{width:side,height:side,channels:3,background:"#ffffff"}}).composite(composites).webp({quality:98,effort:5}).toBuffer(),geometry:mapped,width:side,height:side};

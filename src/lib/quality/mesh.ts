@@ -133,7 +133,7 @@ export function writeGlb(doc: GlbDocument, edits: GlbEdits) {
     }
     if (prim.attributes.NORMAL !== undefined) {
       const local = value.local ?? Float32Array.from(readAccessor({ json: g, views }, prim.attributes.POSITION).values);
-      const indices = value.indices ?? Uint32Array.from(readAccessor({ json: g, views }, prim.indices).values);
+      const indices = value.indices ?? (prim.indices===undefined?Uint32Array.from({length:local.length/3},(_,i)=>i):Uint32Array.from(readAccessor({ json: g, views }, prim.indices).values));
       g.accessors.push({ bufferView: addView(Buffer.from(vertexNormals(local, indices).buffer), 34962), componentType: 5126, count: local.length / 3, type: "VEC3" });
       prim.attributes.NORMAL = g.accessors.length - 1;
     }
