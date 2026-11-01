@@ -6,7 +6,7 @@
 - [x] Missing-normal recovery for exports/viewers/quality rewrites; preserve geometry, UVs and images.
 - [x] Native empty plate, exposed-surface analysis, aligned clean VGGT, independent reviewed materials, uniform colors and direct window mapping.
 - [x] Durable per-operation checkpoints/resume, atlas/publication/history/reframe/variant compatibility and native WebGL verification.
-- [ ] Complete combined checks, PR/main deployment, revision-guarded saved-scene correction and production verification.
+- [x] 292 tests/schema/lint/types/build and PR41/main CI pass; production READY. Reported8541ad0a corrected at revision8 under CAS, actual database Undo/Redo and preserved foreground/products/camera/lights verified. Native production WebGL proof saved; no further inference needed.
 
 ## Meta voice integration — November 1
 
