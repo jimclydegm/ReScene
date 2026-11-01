@@ -108,6 +108,33 @@ model AppUser {
   scenes Scene[]
 }
 
+// Short private voice-result recovery cache; raw recordings are never stored.
+// Actor/network identifiers are domain-separated HMACs, not raw user IDs/IPs.
+model VoiceAttempt {
+  id String @id @default(uuid()) @db.Uuid
+  actorHash String @db.VarChar(64)
+  networkHash String @db.VarChar(64)
+  requestKey String @db.Uuid
+  purpose String @db.VarChar(24)
+  inputHash String @db.VarChar(64)
+  status StepStatus @default(RUNNING)
+  model String @db.VarChar(80)
+  durationMs Int
+  transcript String? @db.VarChar(4000)
+  errorCode String? @db.VarChar(80)
+  commandStatus StepStatus?
+  commandInputHash String? @db.VarChar(64)
+  commandPlan Json?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+  expiresAt DateTime @db.Timestamptz(3)
+
+  @@unique([actorHash, requestKey])
+  @@index([actorHash, createdAt])
+  @@index([networkHash, createdAt])
+  @@index([expiresAt])
+}
+
 model Scene {
   id                String      @id @default(uuid()) @db.Uuid
   ownerId           String      @db.Uuid

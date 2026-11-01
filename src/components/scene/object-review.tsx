@@ -1,4 +1,5 @@
 "use client";
+import {VoiceInput,mergeVoiceText} from "@/components/voice-input";
 import Image from "next/image";
 import { useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { Box, Scan, Plus, RefreshCw, Check, Undo2 } from "lucide-react";
@@ -86,7 +87,7 @@ export function ObjectReview(props:Props){
       <aside className="object-inspector pipeline-inspector">
         <details className="pipeline-section analysis-controls" open={!data.objects.length}><summary><Scan size={16}/> Analysis controls</summary><fieldset disabled={locked}>
           <label className="inline-field">Find<select value={analysis.focus} onChange={e=>setAnalysis({...analysis,focus:e.target.value as AnalysisOptions["focus"]})}><option value="auto">Automatic · any scene</option><option value="products">Products</option><option value="clothing">Clothing & footwear</option><option value="objects">Individual objects</option></select></label>
-          <details className="analysis-focus"><summary>Focus instructions <span className="optional">{analysis.instructions.trim()?"· added":"· optional"}</span></summary><label><span className="sr-only">Focus instructions</span><textarea rows={2} value={analysis.instructions} maxLength={600} placeholder="Prioritize specific products or subjects…" onChange={e=>setAnalysis({...analysis,instructions:e.target.value})}/></label></details>
+          <details className="analysis-focus"><summary>Focus instructions <span className="optional">{analysis.instructions.trim()?"· added":"· optional"}</span></summary><label><span className="sr-only">Focus instructions</span><textarea rows={2} value={analysis.instructions} maxLength={600} placeholder="Prioritize specific products or subjects…" onChange={e=>setAnalysis({...analysis,instructions:e.target.value})}/></label><div className="voice-field-action"><VoiceInput purpose="analysis" field="analysis focus" disabled={locked} maxLength={600} onUse={v=>setAnalysis({...analysis,instructions:mergeVoiceText(analysis.instructions,v.text,600,v.mode)})}/></div></details>
           <button className="button button-dark" disabled={!data.generationEnabled} onClick={props.onAnalyze}><Scan size={15}/>{data.status==="DRAFT"?"Analyze photo":"Analyze again…"}</button><small>Meta API credits · confirms before replacing results.</small>
         </fieldset></details>
         {!data.objects.length&&!running&&data.run?.errorCode==="NO_OBJECTS"&&<div className="pipeline-notice" role="status"><strong>No objects were identified.</strong><p>Adjust the discovery focus, or add an item and draw its outline.</p></div>}

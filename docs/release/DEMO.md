@@ -4,7 +4,7 @@ Status: release preparation, not a submitted entry. Product demo freeze stays No
 
 ## Description draft
 
-ReScene turns a room photo into an editable, interactive 3D product scene. A seller uploads a photo, reviews the objects identified by Meta AI, reconstructs separate 3D meshes, and adds their own product names, prices and store links. They can move, resize, hide or replace furniture, adjust lighting, and publish a read-only showroom where visitors select objects to explore product details.
+ReScene turns a scene or product photo into an editable, interactive 3D product scene. A seller uploads a photo, reviews the objects identified by Meta AI, reconstructs separate 3D meshes, and adds their own product names, prices and store links. They can move, resize, hide or replace furniture, adjust lighting, and publish a read-only showroom where visitors select objects to explore product details.
 
 Muse Spark analyzes the photo, SAM 3.1 segments individual objects, and Meta SAM 3D Objects reconstructs meshes through fal. ReScene fits the saved poses to an approximate room, transfers visible source detail into object textures, and preserves generated appearance on unseen surfaces. Shared scenes are frozen snapshots, so subsequent merchant edits do not change earlier links.
 
@@ -29,7 +29,8 @@ Use a short recording suitable for the participant portal's actual limit. The ti
 - Meta SAM 3D Objects: fal-ai/sam-3/3d-objects hosted on fal, independent meshes and inferred textures.
 - ReScene: source-photo UV transfer, estimated room planes, lighting UI, editing/product mapping and immutable snapshots.
 - Demo catalog: three original procedural GLBs and SVG thumbnails, CC0 1.0. See CATALOG.md.
-- Muse Image background editing is implemented and tested. No WorldGen API, voice, garment fit or exact unseen reconstruction is claimed. Body/Align remain experiments, not runtime defaults. Do not list unused Meta models or Muse Code as integrations.
+- Meta Muse Voice Transcribe: muse-voice-transcribe-1.0, directly through Meta Model API, prompt dictation/product search. Muse Spark turns reviewed speech into bounded, undoable showroom proposals.
+- Muse Image background editing is implemented and tested. No WorldGen API, garment fit or exact unseen reconstruction is claimed. Body/Align remain experiments, not runtime defaults. Do not list unused Meta models or Muse Code as integrations.
 
 ## Links and fields
 
@@ -54,3 +55,8 @@ The deployed fresh author-to-shopper API flow passed on October 29 with two real
 ## Current completion approach
 
 Jim requested one bulk completion pass. Project details/search/archive/restore, sharing indicators, publish shortcut, unsaved-edit and sign-out protection, discard/reload and viewer recovery ship together. Use the single saved-data release check rather than repeatedly regenerating the demo or running every historical smoke script. The active plan is ROADMAP.md; earlier phases are historical. Final recording/private-portal review remain human/access gates.
+
+
+## Optional voice demo beat
+
+In Build your space, select the chair → Voice controls → Record “make the chair blue and use dusk lighting” → Stop & transcribe → review text → Review scene changes → Apply. Show one Undo restoring both changes. This demonstrates Voice Transcribe + Spark + interactive3D without another mesh/image generation. Image Studio also accepts dictated creative direction and Textures accepts background style dictation. Native microphone/click verification remains pending while browser access is disabled; the live recorded-clip API and proposal pipeline pass.

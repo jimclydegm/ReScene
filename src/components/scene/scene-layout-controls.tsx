@@ -1,4 +1,5 @@
 "use client";
+import {VoiceInput,mergeVoiceText} from "@/components/voice-input";
 import {ReconstructionRetry} from "./reconstruction-retry";
 import {QualityControls} from "./quality-controls";
 import {useState} from "react";
@@ -60,7 +61,7 @@ export function SceneLayoutControls({ data, locked, unsaved, blocked, onMatch, o
     {composition && <div className="panel-block">
       <div className="panel-heading"><h3>Background designs</h3>{data.backgroundVariants && data.backgroundVariants.length > 0 && <span className="setting-badge active">{data.backgroundVariants.length}</span>}</div>
       <p className="panel-hint">Generate a new AI design from the current 3D background. The current background is kept; switch or delete variants anytime.</p>
-      <label className="field">Style hint (optional)<input value={variantStyle} maxLength={500} placeholder="e.g. warm plaster, light oak floor" disabled={locked} onChange={e=>setVariantStyle(e.target.value)}/></label>
+      <label className="field">Style hint (optional)<input value={variantStyle} maxLength={500} placeholder="e.g. warm plaster, light oak floor" disabled={locked} onChange={e=>setVariantStyle(e.target.value)}/></label><div className="voice-field-action"><VoiceInput purpose="background" field="background design" disabled={locked} maxLength={500} onUse={v=>setVariantStyle(mergeVoiceText(variantStyle,v.text,500,v.mode))}/></div>
       <div className="panel-buttons">
         <button className="button button-dark button-full" disabled={locked || unsaved || !data.generationEnabled || !composition} onClick={()=>onGenerateVariant(variantStyle.trim() ? variantStyle.trim() : undefined)}><ImageIcon size={14}/>Generate new background</button>
       </div>

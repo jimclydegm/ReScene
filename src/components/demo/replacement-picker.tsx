@@ -1,4 +1,5 @@
 "use client";
+import {VoiceInput} from "@/components/voice-input";
 import Image from "next/image";
 import { useState } from "react";
 import { ArrowRightLeft, Check, Search } from "lucide-react";
@@ -50,6 +51,7 @@ export function ReplacementPicker({
             onChange={(e) => setQuery(e.target.value)}
           />
         </label>
+        <VoiceInput purpose="search" field="product search" label="Voice search" maxLength={120} replaceOnly onUse={v=>{setQuery(v.text.replace(/[.!?,;:]+$/g,""));setCategory("All");}}/>
         <select
           aria-label="Replacement category"
           value={category}

@@ -1,5 +1,14 @@
 # ReScene — one release pass
 
+## Meta voice integration — November 1
+
+- [x] Muse Voice Transcribe adapter, mono PCM recording/WAV upload, editable transcripts and language hints.
+- [x] Dictation for creative/background/analysis prompts and catalog/replacement search.
+- [x] Spark-reviewed showroom commands, explicit Apply, stale-preview rejection, existing placement guards and grouped Undo.
+- [x] Durable private receipts, scoped recovery, format/rate/concurrency guards and additive Neon migration.
+- [x]279 cases/schema/lint/types/build; live ASR + Spark and duplicate/auth/origin/context checks without saved-scene mutations.
+- [ ] PR/main CI, production deployment and bounded delivered-control checks. Native microphone/dialog QA unavailable.
+
 ## Shopping showroom customization — November 1
 
 - [x] Replace selected items with approved existing products; update actual assets, labels, photos, finishes, prices and bag lines.

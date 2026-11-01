@@ -1,4 +1,5 @@
 "use client";
+import {DemoVoiceControls} from "./voice-controls";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -161,6 +162,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
               Interactive showroom
             </span>
             <div>
+              <DemoVoiceControls sceneId={scene.id} draft={draft} selected={selected} onApply={(next,id)=>{setTimeline(t=>recordEdit(t,next));setSelected(id);setIsolated(false);setMessage("Voice changes applied. Undo restores the previous arrangement.");}}/>
               <SceneAlbumButton
                 sceneId={scene.id}
                 name={collectionInfo[scene.id].name}
