@@ -1,6 +1,6 @@
 # Budget-aware shopping stylist — proposed implementation
 
-November 1, 2026, Asia/Manila. **Planning only; not implemented.** Jim clarified that “for demo” means prioritize the essential end-to-end experience, not restrict it to the eleven products on the existing demo pages. This plan replaces the larger standalone-library proposal considered during investigation.
+November 1, 2026, Asia/Manila. **Approved planning record; focused core implemented in PR43.** Current behavior, Jim's later request for complete ordinary product listings, scope adjustments and live evidence are in [SHOPPING_STYLIST.md](SHOPPING_STYLIST.md). The proposals below preserve the design reasoning rather than claiming every suggested detail shipped. Jim clarified that “for demo” means prioritize the essential end-to-end experience, not restrict it to the eleven products on the existing demo pages. This plan replaces the larger standalone-library proposal considered during investigation.
 
 ## 1. The outcome and the boundary
 

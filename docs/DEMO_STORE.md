@@ -1,5 +1,9 @@
 # ReScene Living shopping demos
 
+## Budget-aware shopping stylist — November 1
+
+PR43 adds AI stylist in Build and Shop: typed/reviewed Muse voice input, budget/keep/owned controls, two Spark-selected combinations checked by code, transient previews and one-step Apply/Undo with explicit bag actions. Fourteen approved database-backed products now include a saved ceramic lamp, armchair and side table beyond the original eleven. Product catalog persistence/restart retention and owner-scoped editor reuse are implemented. Browsing still submits no inference; **Suggest two looks** explicitly submits the bounded Spark workflow. Production READY;333 tests and production no-inference/reused-result checks pass. Native UI/mic QA deferred. See [SHOPPING_STYLIST.md](SHOPPING_STYLIST.md) for current behavior and evidence; older eleven-product release notes below are historical.
+
 ## Showroom customization — November 1
 
 Build your space keeps the showroom canvas clear and groups the right inspector into Products, Room and Layouts, with the buying total/action pinned underneath. Six named arrangements and save-as controls are on the Layouts tab. Position/rotation controls disclose beneath the selected product instead of taking permanent space.

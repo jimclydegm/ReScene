@@ -2,6 +2,8 @@
 
 November 1, 2026, Asia/Manila. Implements the focused end-to-end scope in [SHOPPING_STYLIST_PLAN.md](SHOPPING_STYLIST_PLAN.md). Release status is recorded in CONTEXT.md; this document describes the code and evidence, not a promise of exact geometry or real commerce.
 
+PR43 merged at cbe6a4d; PR/main CI pass with333 tests/schema/lint/types/build. Production `rescene-ic65p37yw-jimclydegms-projects.vercel.app` is READY at `rescene-eta.vercel.app`. Production verification passed fourteen product pages, three new GLB checksums including the streamed7.75MB lamp, actual zero-inference Workflow dispatch, saved-result duplicate/Apply/stale/guest checks and delivered Build/Shop UI/styles. Native browser/microphone checks remain deferred. Local4317 stopped. No further paid inference was used for release checks.
+
 ## Shopper flow
 
 Open `/demo/space?collection=corner` → **AI stylist**. Enter a request and USD merchandise budget, optionally keep the selected product or mark it already owned. Speak uses the existing reviewed Muse Voice Transcribe input. Spark 1.3 interprets the goal, code searches role-compatible combinations with exact minor-unit pricing, then Spark ranks two validated candidates and explains them. No new image, mask or mesh generation is submitted while shopping.

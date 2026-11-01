@@ -6,7 +6,7 @@ Plan: [SHOPPING_STYLIST_PLAN.md](SHOPPING_STYLIST_PLAN.md). Implementation/evide
 
 - [x] Product readiness: additive Product/receipt migrations, populated linked generated listings/details/prices, restart retention, owner-scoped cross-scene reuse and fourteen approved database-backed shopping products.
 - [x] Shopping interaction: shared compact typed/voice stylist, two validated Spark looks, transient previews, one-step Apply/Undo and owned/included bag scope. Live$417/$387 results reused for HTTP verification.
-- [ ] Final CI/release and bounded no-inference production smoke. Local persistence/privacy/constraints/recovery tests/build pass; native browser/mic checks deferred. Separate library dashboard/inventory/real checkout deferred.
+- [x] PR43/main CI pass:333 tests/schema/lint/types/build. Production READY at rescene-eta.vercel.app. Production zero-inference Workflow preflight and saved-result Apply/duplicate/stale/guest tests,14 product pages, three GLB hashes/large lamp streaming and delivered controls/styles pass. Native browser/mic checks deferred; independent library dashboard/inventory/real checkout deferred.
 
 ## Source material evidence and smooth manufactured surfaces — November 1
 
