@@ -52,6 +52,31 @@ async function improveAppearance(runId:string){
   await improveGeneratedAppearance(runId);
 }
 improveAppearance.maxRetries=0;
+async function generatedStructureTargets(runId:string){
+  "use step";
+  try{return await (await import("@/lib/services/quality")).generatedStructureTargets(runId);}catch{return [];}
+}
+async function generatedStructure(runId:string,objectId:string){
+  "use step";
+  // Optional plans retain their failed/uncertain receipt, never resubmit, and
+  // cannot discard an otherwise usable Meta reconstruction.
+  try{await (await import("@/lib/services/quality")).planGeneratedStructure(runId,objectId);}catch{}
+}
+generatedStructure.maxRetries=0;
+async function generatedMaterialTargets(runId:string){
+  "use step";
+  try{return await (await import("@/lib/services/quality")).generatedMaterialTargets(runId);}catch{return [];}
+}
+async function generatedMaterial(runId:string,target:{objectId:string;materialId:string}){
+  "use step";
+  try{await (await import("@/lib/services/quality")).sampleQualityMaterials(runId,target);}catch{}
+}
+generatedMaterial.maxRetries=0;
+async function improveGenerated(runId:string){
+  for(const id of await generatedStructureTargets(runId))await generatedStructure(runId,id);
+  for(const target of await generatedMaterialTargets(runId))await generatedMaterial(runId,target);
+  await improveAppearance(runId);
+}
 async function improveBackground(runId:string){
   "use step";
   const {finishSceneBackground}=await import("@/lib/services/background");
@@ -180,7 +205,7 @@ export async function generateScene(runId: string, kind: string) {
     } else {
       const requestId = await submit(runId);
       for (let attempt = 0; attempt < 70; attempt++) {
-        if (await poll(runId, requestId)) { if(await ingest(runId, requestId))return; await improveAppearance(runId); await readyWithBackground(runId); return; }
+        if (await poll(runId, requestId)) { if(await ingest(runId, requestId))return; await improveGenerated(runId); await readyWithBackground(runId); return; }
         await sleep("10s");
       }
       throw new Error("Generation deadline exceeded");
@@ -192,7 +217,7 @@ export async function resumeReconstruction(runId: string, requestId: string) {
   "use workflow";
   try {
     for (let attempt = 0; attempt < 70; attempt++) {
-      if (await poll(runId, requestId)) { if(await ingest(runId, requestId))return; await improveAppearance(runId); await readyWithBackground(runId); return; }
+      if (await poll(runId, requestId)) { if(await ingest(runId, requestId))return; await improveGenerated(runId); await readyWithBackground(runId); return; }
       await sleep("10s");
     }
     throw new Error("Generation deadline exceeded");

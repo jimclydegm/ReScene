@@ -2,12 +2,13 @@ import { Matrix4, Vector3, type PerspectiveCamera } from "three";
 import { weld, writeGlb, readMesh } from "./mesh";
 import { components, diagnoseMesh, type MeshDiagnostics } from "./diagnostics";
 import { render, renderMesh, maskOverlap } from "./render";
+import {fairSmoothSurfaces} from "./surface-fairing";
 
 // Constraints come from a Spark plan with image evidence. Only "planar" changes
 // geometry today; the rest are recorded so placement/review can use them.
-export type StructuralConstraint = { id: string; kind: "planar" | "straight" | "symmetric" | "upright" | "opening" | "thin-part"; box: [number, number, number, number]; confidence: number };
+export type StructuralConstraint = { id: string; kind: "planar" | "smooth" | "straight" | "symmetric" | "upright" | "opening" | "thin-part"; box: [number, number, number, number]; confidence: number };
 export type Evidence = { camera: PerspectiveCamera; matrix: Matrix4; mask: Uint8Array; width: number; height: number };
-export type RepairResult = { bytes: Buffer; changed: boolean; operations: Record<string, number>; maxDisplacement: number; skipped: string[] };
+export type RepairResult = { bytes: Buffer; changed: boolean; operations: Record<string, number>; maxDisplacement: number; skipped: string[]; smoothingImproved?:boolean };
 
 function project(evidence: Evidence, p: Vector3) {
   const v = p.clone().applyMatrix4(evidence.matrix).project(evidence.camera);
@@ -84,7 +85,7 @@ export function repairGeometry(bytes: Buffer, options: { evidence?: Evidence; co
   let maxDisplacement = 0;
   const moved = doc.primitives.map(p => new Float32Array(p.positions)), weldedOf = doc.primitives.map((prim, p) => { const m = new Uint32Array(prim.positions.length / 3); prim.indices.forEach((v, i) => { m[v] = topology.welded[p][i]; }); return m; });
   for (const constraint of options.constraints ?? []) {
-    if (constraint.kind !== "planar") { skipped.push(`${constraint.kind}:${constraint.id}`); continue; }
+    if (constraint.kind !== "planar") { if(constraint.kind!=="smooth")skipped.push(`${constraint.kind}:${constraint.id}`); continue; }
     if (!options.evidence || constraint.confidence < .6) { skipped.push(`planar-low-evidence:${constraint.id}`); continue; }
     const faces: [number, number][] = [], normal = new Vector3();
     doc.primitives.forEach((prim, p) => { for (let t = 0; t < prim.indices.length; t += 3) {
@@ -128,7 +129,7 @@ export function repairGeometry(bytes: Buffer, options: { evidence?: Evidence; co
   }
 
   const changed = Object.values(operations).some(Boolean);
-  if (!changed) return { bytes, changed, operations, maxDisplacement, skipped };
+  if (!changed) {const fair=fairSmoothSurfaces(bytes,options.evidence,options.constraints??[]);return {bytes:fair.bytes,changed:fair.improved,operations:{...operations,smoothedVertices:fair.vertices},maxDisplacement,skipped,smoothingImproved:fair.improved};}
   const primitives = new Map<string, { local?: Float32Array; indices?: Uint32Array }>();
   doc.primitives.forEach((prim, p) => {
     const indices: number[] = [];
@@ -139,7 +140,8 @@ export function repairGeometry(bytes: Buffer, options: { evidence?: Evidence; co
     if (!indices.length) throw new Error("REPAIR_REMOVED_PRIMITIVE");
     primitives.set(prim.key, { indices: Uint32Array.from(indices), ...(positionsChanged ? { local } : {}) });
   });
-  return { bytes: writeGlb(doc, { primitives }), changed, operations, maxDisplacement, skipped };
+  const fair=fairSmoothSurfaces(writeGlb(doc,{primitives}),options.evidence,options.constraints??[]);
+  return { bytes:fair.bytes,changed,operations:{...operations,smoothedVertices:fair.vertices},maxDisplacement,skipped,smoothingImproved:fair.improved };
 }
 
 export type GeometryComparison = { accepted: boolean; reasons: string[]; before: { iou: number | null; diagnostics: MeshDiagnostics }; after: { iou: number | null; diagnostics: MeshDiagnostics } };
@@ -150,7 +152,7 @@ function silhouette(bytes: Buffer, evidence: Evidence) {
 }
 // A replacement must beat the previous model on structure without losing
 // reference agreement, surface or extent. Otherwise the previous mesh stays.
-export function compareGeometry(before: Buffer, after: Buffer, evidence?: Evidence): GeometryComparison {
+export function compareGeometry(before: Buffer, after: Buffer, evidence?: Evidence,smoothingImproved=false): GeometryComparison {
   const a = diagnoseMesh(readMesh(before)), b = diagnoseMesh(readMesh(after)), reasons: string[] = [];
   const area = (bytes: Buffer) => { const t = weld(readMesh(bytes)); return t.areas.reduce((s, v) => s + v.reduce((x, y) => x + y, 0), 0); };
   const size = (bytes: Buffer) => { const d = readMesh(bytes), min = new Vector3(Infinity, Infinity, Infinity), max = new Vector3(-Infinity, -Infinity, -Infinity), v = new Vector3(); for (const p of d.primitives) for (let i = 0; i < p.positions.length; i += 3) { v.fromArray(p.positions, i); min.min(v); max.max(v); } return { min, max, diagonal: max.distanceTo(min) }; };
@@ -162,6 +164,6 @@ export function compareGeometry(before: Buffer, after: Buffer, evidence?: Eviden
   const ia = evidence ? silhouette(before, evidence) : null, ib = evidence ? silhouette(after, evidence) : null;
   if (ia !== null && ib !== null && ib < ia - .005) reasons.push(`silhouette ${ia.toFixed(3)}→${ib.toFixed(3)}`);
   const improved = b.windingConflicts < a.windingConflicts || b.degenerate < a.degenerate || b.duplicateFaces < a.duplicateFaces || b.fragmentArea < a.fragmentArea - 1e-4 || b.foldedEdges < a.foldedEdges || (ia !== null && ib !== null && ib > ia + .002);
-  if (!improved && !reasons.length) reasons.push("no-measured-improvement");
+  if (!improved && !smoothingImproved && !reasons.length) reasons.push("no-measured-improvement");
   return { accepted: !reasons.length, reasons, before: { iou: ia, diagnostics: a }, after: { iou: ib, diagnostics: b } };
 }

@@ -50,7 +50,7 @@ function Face({
       material.polygonOffsetUnits = -1;
     }
     if (surface.textured && texture) {
-      material.color.set("white");
+      if(!surface.relief)material.color.set("white");
       const projector = backgroundProjection(composition.camera);
       material.onBeforeCompile = (shader) => {
         shader.uniforms.environmentPhoto = { value: texture };
@@ -86,6 +86,7 @@ function Face({
         shader.uniforms.environmentAtlas={value:surface.atlas?surface.atlas.mode==="tile"?1:2:0};
         shader.uniforms.environmentAtlasRect={value:new Vector4(...(surface.atlas?.rect??[0,0,1,1]))};
         shader.uniforms.environmentOpening={value:unlit?1:0};
+        shader.uniforms.environmentRelief={value:surface.relief??0};
         shader.uniforms.environmentFallback = {
           value: material.color.clone().set(surface.color),
         };
@@ -97,7 +98,7 @@ function Face({
           "#include <project_vertex>\nenvironmentWorld=(modelMatrix * vec4(transformed,1.0)).xyz; environmentProjected = environmentProjector * vec4(environmentWorld,1.0);",
         );
         shader.fragmentShader =
-          "uniform sampler2D environmentPhoto; uniform mat4 environmentProjector; uniform vec3 environmentFallback; uniform vec3 environmentTileOrigin; uniform vec3 environmentTileU; uniform vec3 environmentTileV; uniform vec3 environmentDualU; uniform vec3 environmentDualV; uniform float environmentHasTile; uniform float environmentMaterialOnly; uniform float environmentAtlas; uniform vec4 environmentAtlasRect; uniform float environmentOpening; varying vec4 environmentProjected; varying vec3 environmentWorld;\n" +
+          "uniform sampler2D environmentPhoto; uniform mat4 environmentProjector; uniform vec3 environmentFallback; uniform vec3 environmentTileOrigin; uniform vec3 environmentTileU; uniform vec3 environmentTileV; uniform vec3 environmentDualU; uniform vec3 environmentDualV; uniform float environmentHasTile; uniform float environmentMaterialOnly; uniform float environmentAtlas; uniform vec4 environmentAtlasRect; uniform float environmentOpening; uniform float environmentRelief; varying vec4 environmentProjected; varying vec3 environmentWorld;\n" +
           shader.fragmentShader;
         shader.fragmentShader = shader.fragmentShader.replace(
           "#include <map_fragment>",
@@ -106,11 +107,18 @@ function Face({
      if(environmentMaterialOnly<.5&&environmentProjected.w>0.0){vec2 p=environmentProjected.xy/environmentProjected.w*.5+.5;float edge=smoothstep(0.0,.10,min(min(p.x,p.y),min(1.-p.x,1.-p.y)));backgroundColor=mix(backgroundColor,texture2D(environmentPhoto,clamp(p,.001,.999)).rgb,edge);}
      if(environmentOpening>.5&&environmentAtlas<.5){vec2 p=environmentProjected.xy/environmentProjected.w*.5+.5;backgroundColor=texture2D(environmentPhoto,clamp(p,.0001,.9999)).rgb;}
      if(environmentAtlas>.5){vec2 raw;vec2 p;if(environmentAtlas<1.5){vec3 rel=environmentWorld-environmentTileOrigin;raw=vec2(dot(rel,environmentDualU),dot(rel,environmentDualV));p=fract(raw);p.y=1.-p.y;raw.y=-raw.y;}else{raw=environmentProjected.xy/environmentProjected.w*.5+.5;p=clamp(raw,0.,1.);}vec2 span=environmentAtlasRect.zw-environmentAtlasRect.xy;backgroundColor=texture2DGradEXT(environmentPhoto,mix(environmentAtlasRect.xy,environmentAtlasRect.zw,p),dFdx(raw)*span,dFdy(raw)*span).rgb;}
-     diffuseColor.rgb *= backgroundColor;`,
+     float environmentHeight=dot(backgroundColor,vec3(.2126,.7152,.0722))*environmentRelief;
+     if(environmentRelief<=0.)diffuseColor.rgb *= backgroundColor;`,
         );
+        if(surface.relief)shader.fragmentShader=shader.fragmentShader.replace("#include <normal_fragment_maps>",`#include <normal_fragment_maps>
+          vec3 surfaceDx=dFdx(-vViewPosition),surfaceDy=dFdy(-vViewPosition);
+          vec3 reliefX=cross(surfaceDy,normal),reliefY=cross(normal,surfaceDx);
+          float reliefDet=dot(surfaceDx,reliefX)*faceDirection;
+          vec3 reliefGradient=sign(reliefDet)*(dFdx(environmentHeight)*reliefX+dFdy(environmentHeight)*reliefY);
+          normal=normalize(max(abs(reliefDet),1e-10)*normal-reliefGradient);`);
       };
       material.customProgramCacheKey = () =>
-        `reference-environment-v3-${unlit ? "window" : "surface"}`;
+        `reference-environment-v4-${unlit ? "window" : surface.relief ? "relief" : "surface"}`;
     }
     return { geometry, material };
   }, [surface, composition.camera, texture]);

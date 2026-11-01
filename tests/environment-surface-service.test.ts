@@ -1,14 +1,15 @@
 import {beforeEach,describe,it,expect,vi} from "vitest";
 import sharp from "sharp";
-const m=vi.hoisted(()=>({db:{sceneObject:{findMany:vi.fn()},generationRun:{update:vi.fn()},generationStep:{findUnique:vi.fn(),create:vi.fn(),update:vi.fn()}},context:vi.fn(),plan:vi.fn(),read:vi.fn(),submit:vi.fn(),analyze:vi.fn(),clean:vi.fn()}));
+const m=vi.hoisted(()=>({db:{sceneObject:{findMany:vi.fn()},generationRun:{update:vi.fn()},generationStep:{findUnique:vi.fn(),create:vi.fn(),update:vi.fn()}},context:vi.fn(),plan:vi.fn(),read:vi.fn(),submit:vi.fn(),analyze:vi.fn(),clean:vi.fn(),materials:vi.fn()}));
 vi.mock("server-only",()=>({}));vi.mock("@/lib/db",()=>({getDb:()=>m.db}));vi.mock("@/lib/storage/r2",()=>({readLimited:m.read}));vi.mock("@/lib/ai/environment",()=>({analyzeEnvironment:m.analyze,cleanEnvironment:m.clean}));vi.mock("@/lib/ai/sam3d",()=>({getSam3dClient:()=>({client:{queue:{submit:m.submit}}})}));
 vi.mock("@/lib/services/background-environment",()=>({environmentContext:m.context,planSceneEnvironment:m.plan,depthStep:vi.fn(),saveEnvironmentAsset:vi.fn()}));
-import {prepareCleanEnvironmentDepth} from "../src/lib/services/environment-surfaces";
+vi.mock("@/lib/ai/environment-materials",()=>({analyzeSourceMaterials:m.materials}));
+import {prepareCleanEnvironmentDepth,prepareEnvironmentPlate} from "../src/lib/services/environment-surfaces";
 const plan={version:"environment-observation-v1",topology:"room",surfaces:[{id:"wall",role:"wall",finish:"plain",appearance:"uniform",color:"#eeeeee",roughness:.8,material:"uniform plaster",confidence:1,polygon:[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]}],openings:[],expectedWallCount:1,lightingEffects:[],explanation:"One wall"};
 let prior:Record<string,unknown>|null;
 beforeEach(async()=>{
  vi.resetAllMocks();prior=null;m.context.mockResolvedValue({run:{input:{background:{mode:"reference"}}},scene:{id:"scene",revision:5},photo:{id:"photo",storageKey:"photo",width:32,height:32}});m.plan.mockResolvedValue(plan);m.db.sceneObject.findMany.mockResolvedValue([{mask:{status:"READY",storageKey:"mask"}}]);m.read.mockResolvedValue(await sharp({create:{width:32,height:32,channels:3,background:"#dddddd"}}).png().toBuffer());
- m.db.generationStep.findUnique.mockImplementation(({where})=>{const key=where.runId_key_attempt.key;return key==="environment-albedo"?{status:"SUCCEEDED",response:{id:"plate",storageKey:"plate"}}:key==="environment-clean-analysis"?{status:"SUCCEEDED",output:plan}:prior;});m.db.generationStep.create.mockImplementation(({data})=>{prior={...data,id:"step"};return prior;});m.db.generationStep.update.mockImplementation(({data})=>{prior={...prior,...data};return prior;});m.submit.mockResolvedValue({request_id:"known-job"});
+ m.db.generationStep.findUnique.mockImplementation(({where})=>{const key=where.runId_key_attempt.key;return key==="environment-albedo"?{status:"SUCCEEDED",response:{id:"plate",storageKey:"plate"}}:key==="environment-clean-analysis"?{status:"SUCCEEDED",output:plan}:key==="environment-source-materials"?{status:"SUCCEEDED",input:{photoId:"photo",plateAssetId:"plate",patches:[]},output:plan}:prior;});m.db.generationStep.create.mockImplementation(({data})=>{prior={...data,id:"step"};return prior;});m.db.generationStep.update.mockImplementation(({data})=>{prior={...prior,...data};return prior;});m.submit.mockResolvedValue({request_id:"known-job"});
 });
 describe("Object-free background job receipts",()=>{
  it("reuses a known job and its paid plate/analysis without another model submission",async()=>{
@@ -22,5 +23,13 @@ describe("Object-free background job receipts",()=>{
  });
  it("keeps photo/material-only modes on their existing routes without extra paid work",async()=>{
   m.context.mockResolvedValue({run:{input:{background:{mode:"photo"}}}});expect(await prepareCleanEnvironmentDepth("run")).toBeNull();expect(m.submit).not.toHaveBeenCalled();expect(m.read).not.toHaveBeenCalled();
+ });
+ it("rejects stale material evidence rather than applying another photo's texture decision",async()=>{
+  const read=m.db.generationStep.findUnique.getMockImplementation()!;m.db.generationStep.findUnique.mockImplementation(args=>args.where.runId_key_attempt.key==="environment-source-materials"?{status:"SUCCEEDED",input:{photoId:"different-photo",plateAssetId:"plate",patches:[]},output:plan}:read(args));
+  await expect(prepareEnvironmentPlate("run")).rejects.toThrow("MATERIAL_SOURCE_CHANGED");expect(m.materials).not.toHaveBeenCalled();
+ });
+ it("never resubmits an interrupted source-material audit",async()=>{
+  const read=m.db.generationStep.findUnique.getMockImplementation()!;m.db.generationStep.findUnique.mockImplementation(args=>args.where.runId_key_attempt.key==="environment-source-materials"?{status:"RUNNING"}:read(args));
+  await expect(prepareEnvironmentPlate("run")).rejects.toThrow("MATERIAL_ANALYSIS_ALREADY_ATTEMPTED");expect(m.materials).not.toHaveBeenCalled();
  });
 });

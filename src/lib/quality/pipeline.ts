@@ -7,7 +7,7 @@ import { bakeMaterials, delightPhoto, type MaterialRegion, type Photo, type Cove
 import { evaluatePlacement, placementMatrix, solvePlacement, type ContactEntry, type Placed } from "./placement";
 import { boundsOf, maskOverlap, orbitCameras, render, renderMesh, type PixelImage4, type RenderMode } from "./render";
 import { appearanceDifference, mergeSparkReview, numericReview, type ObjectReview } from "./review";
-import type { QualityPlanObservation, QualityReviewObservation } from "./contracts";
+import {automaticMaterialTargets,type QualityPlanObservation,type QualityReviewObservation} from "./contracts";
 import { photoCamera } from "@/lib/appearance/bake";
 import type { SceneComposition } from "@/lib/scene/composition";
 
@@ -50,7 +50,8 @@ export function planConstraints(plan: QualityPlanObservation | null): Structural
   return plan.constraints.map(c => ({ id: c.id, kind: c.kind, box: box(c.evidence), confidence: c.confidence }));
 }
 export function planRegions(plan: QualityPlanObservation | null, samples: Map<string, PixelImage4>): MaterialRegion[] {
-  return (plan?.materials ?? []).filter(m => m.confidence >= .4).map(m => ({ id: m.id, color: hex(m.color), sample: samples.get(m.id) ?? null, tileScale: m.patternScale, grain: m.grain, repeating: m.repeating,evidence:box(m.evidence) }));
+  const clean=new Set(plan?automaticMaterialTargets(plan):[]);
+  return (plan?.materials ?? []).filter(m => m.confidence >= .4).map(m => ({ id: m.id, color: hex(m.color), sample: samples.get(m.id) ?? null, tileScale: m.patternScale, grain: m.grain, repeating: m.repeating,evidence:box(m.evidence),preserveProviderDetail:!clean.has(m.id) }));
 }
 
 export async function runQualityPipeline(input: PipelineInput) {
@@ -66,7 +67,7 @@ export async function runQualityPipeline(input: PipelineInput) {
     const evidence = { camera, matrix: placementMatrix(pose), mask: o.mask, width: size.width, height: size.height };
     try {
       const repaired = repairGeometry(o.bytes, { evidence, constraints: planConstraints(o.plan) });
-      const verdict = repaired.changed ? compareGeometry(o.bytes, repaired.bytes, evidence) : { accepted: false, reasons: ["no-change"] };
+      const verdict = repaired.changed ? compareGeometry(o.bytes, repaired.bytes, evidence,repaired.smoothingImproved) : { accepted: false, reasons: ["no-change"] };
       geometry.set(o.id, { attempted: true, accepted: verdict.accepted, reasons: verdict.reasons, operations: repaired.operations, skipped: repaired.skipped, bytes: verdict.accepted ? repaired.bytes : o.bytes });
     } catch (e) { geometry.set(o.id, { attempted: true, accepted: false, reasons: [e instanceof Error ? e.message.slice(0, 60) : "repair-failed"], operations: {}, skipped: [], bytes: o.bytes }); }
   }

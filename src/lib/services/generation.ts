@@ -80,7 +80,7 @@ export async function reserveRun(sceneId: string, ownerId: string, input: z.infe
     // Historical estimates remain auditable; Jim removed the app's cumulative spending cap.
     const run = await tx.generationRun.create({ data: { sceneId, kind: input.kind, idempotencyKey: input.idempotencyKey,
       inputRevision: scene.revision, input: asJson({ ...options, ...(input.kind==="RECONSTRUCT" ? {objectIds:selectedIds,reconstructionObjectIds:rootIds} : {}), requestHash, normalizedAssetId: scene.normalizedAssetId }), reservedCostUsd: reserved,
-      expiresAt: new Date(Date.now() + (input.quality?90:input.kind==="IMAGE_EDIT"?30:15) * 60_000), currentStage: "Waiting to start" } });
+      expiresAt: new Date(Date.now() + (input.quality?90:input.kind==="IMAGE_EDIT"?30:input.kind==="RECONSTRUCT"?45:15) * 60_000), currentStage: "Waiting to start" } });
     if (input.kind === "SEGMENT_OBJECT") {
       let objectId = input.segmentation!.objectId;
       if (!objectId) {
@@ -513,7 +513,7 @@ export async function improveGeneratedAppearance(runId:string){
     // bake the photo onto that corrected pose. No inference; the previous
     // photo copy remains the fallback if the coordinated pass cannot run.
     if(run.scene.status==="READY"&&run.scene.revision===run.inputRevision+1&&!run.scene.archivedAt){
-      try{const {improveSceneQuality}=await import("./quality");await improveSceneQuality(run.sceneId,run.scene.ownerId,run.scene.revision,{runId});}
+      try{const {improveSceneQuality,generatedStructurePlans}=await import("./quality");await improveSceneQuality(run.sceneId,run.scene.ownerId,run.scene.revision,{runId,...await generatedStructurePlans(runId)});}
       catch{const {updateAppearance}=await import("./appearance");await updateAppearance(run.sceneId,run.scene.ownerId,{action:"APPLY",expectedRevision:run.scene.revision});}
     }
   }catch{/* Optional source transfer must not discard successful reconstruction or retry inference. */}

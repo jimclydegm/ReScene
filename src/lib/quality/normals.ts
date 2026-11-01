@@ -1,13 +1,13 @@
 import {BufferAttribute,BufferGeometry} from "three";
 import {decodeGlb,packGlb,readAccessor} from "./mesh";
-import {completeSurfaceNormals} from "@/lib/scene/smooth-normals";
+import {completeSurfaceNormals,normalMethod} from "@/lib/scene/smooth-normals";
 const types:Record<number,Float32ArrayConstructor|Uint32ArrayConstructor|Uint16ArrayConstructor|Uint8ArrayConstructor|Int16ArrayConstructor|Int8ArrayConstructor>={5126:Float32Array,5125:Uint32Array,5123:Uint16Array,5121:Uint8Array,5122:Int16Array,5120:Int8Array};
 /** Add crease-aware normals without changing a triangle, UV, material or node.
  * Expansion duplicates attributes at hard edges; it never subdivides geometry. */
-export function completeGlbNormals(bytes:Buffer){
+export function completeGlbNormals(bytes:Buffer,options:{recompute?:boolean}={}){
  const doc=decodeGlb(bytes),g=structuredClone(doc.json),views=[...doc.views];let changed=0;
  for(const mesh of g.meshes)for(const prim of mesh.primitives){
-  if(prim.attributes.NORMAL!==undefined||prim.mode!==undefined&&prim.mode!==4||prim.targets||prim.extensions?.KHR_draco_mesh_compression||prim.extensions?.EXT_meshopt_compression)continue;
+  if(prim.attributes.NORMAL!==undefined&&!options.recompute||prim.mode!==undefined&&prim.mode!==4||prim.targets||prim.extensions?.KHR_draco_mesh_compression||prim.extensions?.EXT_meshopt_compression)continue;
   const geometry=new BufferGeometry();
   for(const [name,index]of Object.entries(prim.attributes)){
    const a=doc.json.accessors[index as number],shape=readAccessor(doc,index as number),Type=types[a.componentType];if(!Type)throw new Error("NORMAL_ATTRIBUTE_FORMAT");
@@ -16,7 +16,7 @@ export function completeGlbNormals(bytes:Buffer){
    geometry.setAttribute(name==="POSITION"?"position":name,new BufferAttribute(array,shape.width,a.normalized??false));
   }
   if(prim.indices!==undefined)geometry.setIndex(new BufferAttribute(Uint32Array.from(readAccessor(doc,prim.indices).values),1));
-  const normals=completeSurfaceNormals(geometry);if(normals===geometry){geometry.dispose();continue;}
+  const normals=completeSurfaceNormals(geometry,options.recompute);if(normals===geometry){geometry.dispose();continue;}
   const attributes:Record<string,number>={};
   for(const [name,attribute]of Object.entries(normals.attributes)){
    const array=attribute.array,componentType=Object.entries(types).find(([,Type])=>array instanceof Type)?.[0];if(!componentType)throw new Error("NORMAL_ATTRIBUTE_TYPE");
@@ -29,7 +29,7 @@ export function completeGlbNormals(bytes:Buffer){
   // this codec preserves glTF names and supplies the generated normal.
   if(attributes.normal!==undefined){attributes.NORMAL=attributes.normal;delete attributes.normal;}
   attributes.POSITION=attributes.position;delete attributes.position;
-  prim.attributes=attributes;delete prim.indices;geometry.dispose();normals.dispose();changed++;
+  prim.attributes=attributes;prim.extras={...prim.extras,resceneNormals:normalMethod};delete prim.indices;geometry.dispose();normals.dispose();changed++;
  }
  return {bytes:changed?packGlb(g,views):bytes,primitives:changed};
 }
