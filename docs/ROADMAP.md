@@ -2,6 +2,9 @@
 
 ## Submission preparation — November 2
 
+- [x] Add Jim Clyde Monge credit and a five-image README showcase covering furniture, personal items, space building and product inspection; retain separate attribution.
+- [ ] Verify and publish the README showcase refresh.
+
 - [x] Review current code/setup/public repo metadata and participant guide; record confirmed fresh-start baseline.
 - [x] Save repository/judge-access plan and2:55 video structure without narration or runtime changes. See release/REPOSITORY_PLAN.md and release/VIDEO_STRUCTURE.md.
 - [x] Implement/test keyless samples and two-external-key local live setup; update README/model inventory/attribution. Fresh local analysis/masks/two meshes/background/save/reload and live Spark stylist pass; 72 approved release GLBs and clean-checkout setup verified.
