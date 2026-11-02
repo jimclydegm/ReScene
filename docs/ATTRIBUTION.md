@@ -2,7 +2,7 @@
 
 ReScene was started from scratch during the Meta Global AI Developer Hackathon. The repository was created October 28, 2026. Application workflows, editing, graphics integration and shopping behavior were built during the event. Existing libraries and pretrained models are credited separately.
 
-The README screenshot is captured from ReScene’s actual working Playtime showroom, using its prepared generated catalog.
+The five README screenshots were captured from ReScene’s working public desktop demos on November 2, 2026: The Sunday Living Room, City essentials, Home essentials, The Everyday Collection and the Form Sage Chair product page. They show the prepared generated catalog in the actual app. Cropping removes browser chrome; the scene content is unchanged.
 
 ## Application code
 
