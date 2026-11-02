@@ -34,13 +34,17 @@
 .demo-store .showroom-color-inputs .cf { padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--shop-surface); }
 .demo-store .showroom-color-inputs .cf-label { font-size: 13px; color: var(--shop-ink); }
 .demo-store .showroom-color-inputs .cf-head { padding: 0; }
+.demo-store .showroom-color-inputs .cf-value { font-size: 12px; }
 @media (min-width: 1050px) and (max-height: 850px) {
   .demo-store .demo-announcement { padding-block: 4px; font-size: 11px; }
   .demo-store .demo-header { min-height: 58px; padding-block: 8px; }
   .demo-store .demo-main { padding-top: 16px; }
   .demo-store .demo-room-main > .demo-section-heading { margin-bottom: 12px; }
   .demo-store .demo-room-main > .demo-section-heading h1 { font-size: 26px; }
-  .demo-store .demo-room-main { --shop-scene-height: clamp(340px, calc(100dvh - 235px), 610px); }
+  .demo-store .demo-room-main { --shop-scene-height: clamp(260px, calc(100dvh - 300px), 540px); }
+  .demo-store .demo-room-topbar > span { display: none; }
+  .demo-store .demo-room-topbar > div { width: 100%; flex-wrap: nowrap; justify-content: flex-end; overflow-x: auto; }
+  .demo-store .demo-room-topbar > div > * { flex-shrink: 0; }
   .demo-store .retail-product-info .demo-description { margin-block: 8px; line-height: 1.5; }
   .demo-store .retail-product-info .demo-colors { margin-block: 12px; }
   .demo-store .retail-review-panel { padding: 12px; margin-top: 10px; }

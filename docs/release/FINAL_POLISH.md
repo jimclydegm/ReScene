@@ -17,7 +17,7 @@ November 2, 2026. Scope: refine the working desktop app, fix recovery problems a
 
 The consolidated local suite passes **380 tests in68files**, Prisma validation, lint and production build. Typecheck also passes. The keyless local setup verifies all72 approved model hashes without new downloads or inference. Read-only HTTP verification passes all98 shopping routes, default Album/3D controls and invalid collection/asset boundaries.
 
-Native Chrome checks cover the Reading Corner scene, room color input and matching Undo, preset selection, product Album/3D and color choice, the correct variant/subtotal in the bag, mock checkout completion and readable dark-mode product layout. Further release/clean-checkout results are recorded below when complete. These checks do not assert every historical scene or GPU/driver combination is visually perfect.
+Native Chrome checks cover the Reading Corner scene, room color input and matching Undo, preset selection, product Album/3D and color choice, the correct variant/subtotal in the bag, mock checkout completion and readable dark-mode product layout. Native checks also cover actual price sorting, Shop the Scene hide/show, lighting and its four-item $966 bag. The smaller desktop check uses Chrome zoom to exercise the short-viewport styles. A detached fresh checkout with no .env files passes npm ci, setup:judge, all98 HTTP pages and the complete380-test/schema/lint/build suite; previously verified public model files were copied into its cache and rehashed, avoiding redundant downloads. These checks do not assert every historical scene or GPU/driver combination is visually perfect.
 
 The registry audit reports no high/critical production advisories; low/moderate transitive advisories remain, including Auth UI/Workflow tooling dependencies. No unreviewed major dependency downgrade is applied to the working inference/auth stack.
 
@@ -29,4 +29,4 @@ The video, participant submission, input rights and exact hosted auxiliary-model
 
 ## Release
 
-Clean-checkout verification, PR checks and the production deployment are pending for this bundle. No fresh image, mesh, transcription or stylist inference was submitted during this pass. Existing saved scenes and approved media were not regenerated.
+PR48 is open. Its first CI and Vercel preview passed; the final compact-toolbar adjustment is being rechecked before merge/production verification. No fresh image, mesh, transcription or stylist inference was submitted during this pass. Existing saved scenes and approved media were not regenerated.
