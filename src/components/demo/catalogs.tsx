@@ -16,6 +16,7 @@ import { ProductTile } from "./product";
 export function ProductCatalog() {
   const [query, setQuery] = useState(""),
     [category, setCategory] = useState("All products"),
+    [sort, setSort] = useState("featured"),
     [page, setPage] = useState(0);
   const categories = [
     "All products",
@@ -29,7 +30,7 @@ export function ProductCatalog() {
           .toLowerCase()
           .includes(query.toLowerCase()),
     )
-    .sort((a, b) => Number(!!b.imagePath) - Number(!!a.imagePath));
+    .sort((a, b) => sort === "price-low" ? a.price-b.price : sort === "price-high" ? b.price-a.price : sort === "name" ? a.name.localeCompare(b.name) : Number(b.id==="corner-chair")-Number(a.id==="corner-chair") || Number(!!b.imagePath)-Number(!!a.imagePath));
   const pages = Math.max(1, Math.ceil(products.length / 12)),
     currentPage = Math.min(page, pages - 1);
   return (
@@ -48,14 +49,14 @@ export function ProductCatalog() {
             closer look in 3D.
           </p>
         </div>
-        <div className="retail-feature-label">
+        <Link href="/demo/product/corner-chair" className="retail-feature-label">
           <Box size={18} />
           <span>
             Start with the Haven chair
             <br />
             <strong>Photos + interactive 3D</strong>
           </span>
-        </div>
+        </Link>
       </div>
       <PhotoInspiration kind="products" />
       <div className="retail-catalog-toolbar">
@@ -72,6 +73,15 @@ export function ProductCatalog() {
             {categories.map((c) => (
               <option key={c}>{c}</option>
             ))}
+          </select>
+        </label>
+        <label className="retail-sort-select">
+          <span>Sort</span>
+          <select aria-label="Sort products" value={sort} onChange={e=>{setSort(e.target.value);setPage(0);}}>
+            <option value="featured">Featured</option>
+            <option value="price-low">Price: low to high</option>
+            <option value="price-high">Price: high to low</option>
+            <option value="name">Name</option>
           </select>
         </label>
         <label>
@@ -107,7 +117,7 @@ export function ProductCatalog() {
       <div className="retail-product-grid">
         {products.slice(currentPage * 12, currentPage * 12 + 12).map((p) => (
           <div key={p.id} className="retail-catalog-product">
-            {p.id === "haven-linen-chair" && (
+            {p.id === "corner-chair" && (
               <span className="retail-start-badge">Start here</span>
             )}
             <ProductTile id={p.id} />

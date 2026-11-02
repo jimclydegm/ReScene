@@ -49,7 +49,7 @@ Create an isolated local database with user/password/database `rescene` on 127.0
 
 The launchers ignore cloud credentials in `.env.local`, set local configuration explicitly, and read only the two inference keys from `.judge/keys.env` or your shell. Local files, generated images, session secret and receipts stay in ignored `.judge/` (including `.judge/workflows/` for durable local jobs). Docker persists database state in a named volume. Stop the app with Ctrl+C and Postgres with `docker compose -f compose.judge.yaml stop`. No automatic deletion runs.
 
-To use another local HTTP port, set `JUDGE_PORT=4317 npm run dev:judge:live`; the generated links use that port. If 3000 is busy, stop the other server or choose a port. Stop the development server before running a production build. Do not run sample/live instances concurrently in the same checkout because Next caches their different public configuration.
+To use another local HTTP port, set `JUDGE_PORT=4317 npm run dev:judge:live`; the generated links use that port. If 3000 is busy, stop the other server or choose a port. Judge playback uses its own `.judge/next/` development cache, so it can run beside the normal authoring server on a different port. Stop the normal authoring server before a production build, which owns `.next/`. Sample and live judge modes share their cache; stop one before starting the other. Lint and TypeScript exclude local data and diagnostic captures.
 
 ## Verification
 

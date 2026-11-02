@@ -26,11 +26,11 @@ import {
 } from "lucide-react";
 import { productCover } from "@/lib/demo/albums";
 import { findDemoProduct, money } from "@/lib/demo/catalog";
+import { readDemoState } from "@/lib/demo/persistence";
 import {
   addToCart,
   cartTotal,
   DEMO_STORAGE,
-  persistedDemoSchema,
   type CartLine,
 } from "@/lib/demo/state";
 
@@ -49,11 +49,7 @@ function read() {
   }
 }
 function saved(): Saved {
-  try {
-    return persistedDemoSchema.parse(JSON.parse(read() ?? "null"));
-  } catch {
-    return empty;
-  }
+  return readDemoState(read());
 }
 function write(value: Saved) {
   memory = JSON.stringify(value);
@@ -134,13 +130,7 @@ export function DemoDialog({
 export function DemoStore({ children }: { children: ReactNode }) {
   const lastBundle = useRef({ signature: "", pending: false });
   const raw = useSyncExternalStore(subscribe, read, () => null),
-    state = (() => {
-      try {
-        return persistedDemoSchema.parse(JSON.parse(raw ?? "null"));
-      } catch {
-        return empty;
-      }
-    })();
+    state = readDemoState(raw);
   const [panel, setPanel] = useState<
       "cart" | "checkout" | "confirmation" | null
     >(null),

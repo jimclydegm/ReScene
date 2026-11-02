@@ -175,3 +175,8 @@ November2 submission planning (proposed, not implemented): retain the working pr
 ## November 2 — recorded narration timing
 
 Use Jim’s supplied2:25.633 ElevenLabs narration unchanged instead of the earlier307-word draft. Insert29seconds at seven existing sentence pauses to make a2:55 video. VIDEO_TIMELINE maps16sections to source audio, actual UI actions, brief workflow annotations and evidence; VIDEO_TIMING.csv provides cumulative video offsets. The genuine microphone quote must be recorded through the app (or its real audio substituted), not inferred from the ElevenLabs narration. Keep Image Studio photo reconstruction separate from showroom mesh reuse. Local FFmpeg plus Muse transcription analyze timing only; no reconstruction, image generation or stylist demo inference is performed by this planning work. No backend/schema/application changes.
+
+
+## November 2 — final desktop and judge polish
+
+Complete the existing presentation changes and prioritize failures that affect the judging path: controlled color entry/Undo, replacement source identity, usable catalog discovery, resilient saved browser state and bounded HTTP requests. Add subtle reduced-motion-aware transitions and compact short-desktop controls. Keep Meta models, reconstruction, production auth and media boundaries unchanged. Isolate judge Next output in .judge/next, independent of durable workflows/media and authoring output; exclude local generated artifacts from lint/types. No schema migration or new inference. See release/FINAL_POLISH.md for checks and release status.

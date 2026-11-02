@@ -406,6 +406,7 @@ export async function workspace(sceneId: string, ownerId: string) {
     image: scene.normalizedAsset ? { url: await signRead(scene.normalizedAsset), width: scene.normalizedAsset.width!, height: scene.normalizedAsset.height! } : null,
     generationEnabled: process.env.GENERATION_ENABLED === "true", objects: await Promise.all(visibleObjects.map(async o => ({
       tint: objectAppearanceSchema.safeParse(o.appearance).data?.tint ?? null, id: o.id, label: o.label, status: o.status, errorCode: o.lastErrorCode, canRestoreOriginal: Boolean(record(o.provenance).replacementBackup),
+      replacementProductId: record(o.provenance).replacementBackup && typeof record(o.product?.attributes).demoSourceId === "string" ? String(record(o.product?.attributes).demoSourceId) : null,
       parentObjectId:typeof record(o.provenance).parentObjectId === "string" ? String(record(o.provenance).parentObjectId) : null, assemblyRootId:typeof record(o.provenance).assemblyRootId === "string" ? String(record(o.provenance).assemblyRootId) : null,
       concept:o.segmentationConcept ?? o.label, confidence:o.confidence, bounds:pixelBoxSchema.safeParse(o.imageBounds).data ?? null,
       segmentation:segmentationOptionsSchema.safeParse(record(o.provenance).segmentationOptions).data ?? null,

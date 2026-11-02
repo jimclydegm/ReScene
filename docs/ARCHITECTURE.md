@@ -1,6 +1,6 @@
 # ReScene system architecture
 
-Local evaluation adds an explicit loopback-only adapter layer: `RESCENE_JUDGE_MODE=samples` reads approved filesystem copies without a database; `live` uses PrismaPg/local Postgres, a local developer identity and signed private files. Meta receives inline images; fal receives uploaded input files using the same fal key. The isolated launcher supplies configuration before Next loads environment files and stores durable workflows under `.judge/workflows/`. Production retains the Neon/Auth/R2 adapters. See [JUDGE_SETUP.md](JUDGE_SETUP.md).
+Local evaluation adds an explicit loopback-only adapter layer: `RESCENE_JUDGE_MODE=samples` reads approved filesystem copies without a database; `live` uses PrismaPg/local Postgres, a local developer identity and signed private files. Meta receives inline images; fal receives uploaded input files using the same fal key. The isolated launcher supplies configuration before Next loads environment files and stores durable workflows under `.judge/workflows/`. Reviewer development uses `.judge/next/`, separate from authoring/build output and private data. Production retains the Neon/Auth/R2 adapters. See [JUDGE_SETUP.md](JUDGE_SETUP.md).
 
 ## Muse example library — November 2
 

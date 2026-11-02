@@ -1,5 +1,11 @@
 # ReScene — one release pass
 
+## Final desktop and judge polish — November 2
+
+- [x] Audit public shopping flows and local bootstrap; fix color-state recovery, replacement discovery, saved browser data, request limits/timeouts and reviewer cache isolation.
+- [x]380 tests/schema/lint/build/types,72 approved local mesh hashes and98 keyless shopping pages pass; targeted native light/dark shopping/color/Undo/checkout checks pass.
+- [ ] Complete clean-checkout/PR/deployment verification and record the final handoff.
+
 ## Submission preparation — November 2
 
 - [x] Revise the 2:55 video outline around merchant upload/product persistence, product-reference composition, editing/model roles and all three shopping workflows; verify gallery choice and budget feasibility without inference. Add explicit 30/25/20/25 judging evidence, visible live-call chain and brief validation-code view.

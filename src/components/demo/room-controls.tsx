@@ -1,5 +1,6 @@
 "use client";
 import { Shuffle, RotateCcw } from "lucide-react";
+import { ColorField } from "@/components/ui/color-field";
 import {
   roomFinishes,
   roomColors,
@@ -74,41 +75,35 @@ export function RoomControls({
       <div className="showroom-color-inputs">
         {(continuous ? (["wall"] as const) : (["wall", "floor"] as const)).map(
           (part) => (
-            <label key={part}>
-              <input
-                aria-label={
-                  continuous
-                    ? "Backdrop color"
-                    : part === "wall"
-                      ? "Wall color"
-                      : "Floor color"
-                }
-                type="color"
-                value={colors[part]}
-                onBlur={onFinish}
-                onPointerUp={onFinish}
-                onKeyUp={onFinish}
-                onChange={(e) =>
-                  onChange(
-                    {
-                      ...draft,
-                      background: {
-                        ...background,
-                        [part]: e.target.value,
-                        ...(continuous
-                          ? { wall: e.target.value, floor: e.target.value }
-                          : part === "floor"
-                            ? { keepFloor: false }
-                            : {}),
-                      },
+            <ColorField
+              key={part}
+              label={
+                continuous
+                  ? "Backdrop"
+                  : part === "wall"
+                    ? "Walls"
+                    : "Floor"
+              }
+              value={colors[part]}
+              onFinish={onFinish}
+              onChange={(color) => {
+                onChange(
+                  {
+                    ...draft,
+                    background: {
+                      ...background,
+                      [part]: color,
+                      ...(continuous
+                        ? { wall: color, floor: color }
+                        : part === "floor"
+                          ? { keepFloor: false }
+                          : {}),
                     },
-                    `room-${part}`,
-                  )
-                }
-              />
-              {continuous ? "Backdrop" : part === "wall" ? "Walls" : "Floor"}
-              <span>{colors[part].toUpperCase()}</span>
-            </label>
+                  },
+                  `room-${part}`,
+                );
+              }}
+            />
           ),
         )}
       </div>

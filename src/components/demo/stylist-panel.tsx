@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { Check, LoaderCircle, Sparkles, X } from "lucide-react";
+import { apiJson } from "@/lib/client-api";
 import { VoiceInput } from "@/components/voice-input";
 import { findDemoProduct, itemProductId, money } from "@/lib/demo/catalog";
 import { productCover } from "@/lib/demo/albums";
@@ -117,14 +118,7 @@ export function StylistPanel({
     let timer: ReturnType<typeof setTimeout>;
     async function poll() {
       try {
-        const response = await fetch(`/api/voice/stylist/${id}`, {
-            cache: "no-store",
-          }),
-          data = await response.json();
-        if (!response.ok)
-          throw new Error(
-            data.error?.message ?? "The saved request could not be retrieved.",
-          );
+        const data = await apiJson<{phase:string;status:string;result?:unknown;error?:string}>(`/api/voice/stylist/${id}`, {cache:"no-store"});
         if (disposed) return;
         setPhase(data.phase);
         if (
@@ -203,14 +197,7 @@ export function StylistPanel({
     setPreview("");
     onPreview(null);
     try {
-      const response = await fetch("/api/voice/stylist", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(request),
-        }),
-        data = await response.json();
-      if (!response.ok)
-        throw new Error(data.error?.message ?? "The stylist could not start.");
+      const data = await apiJson<{id:string}>("/api/voice/stylist", {method:"POST",body:JSON.stringify(request)});
       if (alive.current) {
         setId(data.id);
         try {
@@ -251,6 +238,7 @@ export function StylistPanel({
           if (!m) throw new Error("A product model is unavailable.");
           const r = await fetch(
             `/api/demo/assets/${productId}?v=${m.digest.slice(0, 12)}`,
+            {signal:AbortSignal.timeout(30_000)},
           );
           if (!r.ok)
             throw new Error(
@@ -270,16 +258,7 @@ export function StylistPanel({
           "Your scene changed while loading. Request fresh suggestions.",
         );
       if (apply) {
-        const response = await fetch(`/api/voice/stylist/${id}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ optionId: option.id, draft }),
-          }),
-          data = await response.json();
-        if (!response.ok)
-          throw new Error(
-            data.error?.message ?? "The option could not be applied.",
-          );
+        const data = await apiJson<{draft:Arrangement}>(`/api/voice/stylist/${id}`, {method:"POST",body:JSON.stringify({optionId:option.id,draft})});
         if (original !== canonicalJson(current.current))
           throw new Error("Your scene changed. The option was not applied.");
         onPreview(null);
