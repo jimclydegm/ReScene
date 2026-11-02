@@ -5,7 +5,7 @@
 - [x] Generate and visually review eight scene examples,30 distinct product variations and28 separate studio product photographs with Muse Image. Repair the misidentified black-cap perfume shot using a separate preserved paid receipt.
 - [x] Finish all38 saved Meta analysis/mask/SAM3D/environment builds; inspect actual meshes and recover any interrupted jobs without blind paid resubmission.
 - [x] Persist approved R2 model/photo copies and complete priced Product listings; export72 approved products and11 interactive collections with dynamic voice/stylist routes.
-- [ ] Verify role-compatible replacements, budgets, layouts, albums/privacy and full checks; one PR/release and bounded production smoke. Native browser checks deferred.
+- [x] PR44/main CI pass:354 tests/schema/lint/types/build. Production READY; all98 shopping pages,66 new Muse photo hashes and58 new textured model hashes pass. Live$48/$68 distinct-mouse combinations verify budget/keeps/owned pieces/Apply/one-step Undo; production saved-result replay verifies Workflow/Apply/duplicate/stale/guest guards with zero inference. Native browser checks deferred.
 
 Implementation/readiness: [DEMO_EXAMPLES.md](DEMO_EXAMPLES.md).
 

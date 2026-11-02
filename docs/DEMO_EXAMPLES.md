@@ -1,6 +1,6 @@
 # Demo example library
 
-Requested November1: eight attached scene concepts and five genuinely different products in each of six categories. This is one release bundle. All38 reconstructions and the final72-product/11-collection snapshot are complete. Release verification is in progress.
+Requested November1: eight attached scene concepts and five genuinely different products in each of six categories. This is one release bundle. All38 reconstructions and the final72-product/11-collection snapshot are shipped in PR44 (c3023b7), November2. Production rescene-2zo624kct-jimclydegms-projects.vercel.app is READY at https://rescene-eta.vercel.app.
 
 The new photographs use Muse Image1.0 high-reasoning reference edits. Eight scenes preserve their inventory and setting;30 product variations each have a new full-product studio photograph. Another28 studio photographs identify each scene product independently. These are generated photographs, not crops or mesh screenshots. Visual review caught a wrong perfume bottle; its original paid receipt is retained and a separate explicit correction produced the requested slim black-cap bottle.
 
@@ -27,13 +27,13 @@ Private state: ignored `test-results/demo-expansion-v1/`. Generated approved pho
 - [x] All30 replacement products and eight scenes reconstructed and inspected.
 - [x] Neon/R2 approved listings and complete public snapshot synchronized.
 - [x] Stylist/voice use all approved collections with role, budget and placement guards.
-- [ ] Combined schema/types/lint/tests/build, release and production smoke complete.
+- [x] Combined schema/types/lint/354 tests/build, PR/main CI, release and production smoke complete.
 
 Native browser verification remains deferred at Jim's instruction. Single-photo geometry, especially glass, hidden surfaces and tiny printed details, remains approximate; a successful render does not establish physical fit or faithful unseen geometry.
 
-The final read-only data check confirms38 ready owned builds,72 approved Neon listings with ready same-scene R2 models/photos, and58 new embedded-texture GLBs with UVs/normals (minimum4,132 triangles; largest5.22MiB). All eight scene model assemblies were inspected in private reference-camera renders.354 automated tests, Prisma validation, lint, typecheck, production build and98-page local HTTP smoke pass. Deployment verification is pending.
+The final read-only data check confirms38 ready owned builds,72 approved Neon listings with ready same-scene R2 models/photos, and58 new embedded-texture GLBs with UVs/normals (minimum4,132 triangles; largest5.22MiB). All eight scene model assemblies were inspected in private reference-camera renders.354 automated tests, Prisma validation, lint, typecheck, production build and98-page local HTTP smoke pass. Production passes all98 shopping pages/invalid collection and asset boundaries,66 new Muse photograph hashes and58 immutable model hashes.
 
-A real Spark intent/ranking proof returned two different workspace mice at$48/$68, preserved kept/owned pieces and verified canonical Apply, one-step Undo and duplicate reuse. Two earlier test receipts are preserved: the original output allowance was insufficient, and another interpretation returned an unnecessary clarification. The adapter now scopes catalog context to compatible slots, allows8,000 completion tokens/90seconds, explicitly distinguishes alternative looks from simultaneous duplicate items, and records safe response diagnostics without automatic retry. Network uncertainty remains separate from a known invalid/truncated response. Restoring accepted spread layouts allows no deeper conservative footprint overlap; new collisions remain blocked.
+A real Spark intent/ranking proof returned two different workspace mice at$48/$68, preserved kept/owned pieces and verified canonical Apply, one-step Undo and duplicate reuse. Two earlier test receipts are preserved: the original output allowance was insufficient, and another interpretation returned an unnecessary clarification. The adapter now scopes catalog context to compatible slots, allows8,000 completion tokens/90seconds, explicitly distinguishes alternative looks from simultaneous duplicate items, and records safe response diagnostics without automatic retry. Network uncertainty remains separate from a known invalid/truncated response. Production replays the successful paid result for HTTP Apply, duplicate reservation, stale-draft and cross-guest checks; a deployed Workflow preflight fails an impossible budget without model calls. No paid inference is repeated for release checks. Restoring accepted spread layouts allows no deeper conservative footprint overlap; new collisions remain blocked.
 
 ## Short stylist demonstrations
 
