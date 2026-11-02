@@ -3,7 +3,7 @@
 ## Submission preparation — November 2
 
 - [x] Add Jim Clyde Monge credit and a five-image README showcase covering furniture, personal items, space building and product inspection; retain separate attribution.
-- [ ] Verify and publish the README showcase refresh.
+- [x] PR47 merged atcab87a1; docs CI, five-image/local-link checks and native GitHub gallery verification pass. All five images load on public main.
 
 - [x] Review current code/setup/public repo metadata and participant guide; record confirmed fresh-start baseline.
 - [x] Save repository/judge-access plan and2:55 video structure without narration or runtime changes. See release/REPOSITORY_PLAN.md and release/VIDEO_STRUCTURE.md.
