@@ -5,7 +5,7 @@
 - [x] Review current code/setup/public repo metadata and participant guide; record confirmed fresh-start baseline.
 - [x] Save repository/judge-access plan and2:55 video structure without narration or runtime changes. See release/REPOSITORY_PLAN.md and release/VIDEO_STRUCTURE.md.
 - [x] Implement/test keyless samples and two-external-key local live setup; update README/model inventory/attribution. Fresh local analysis/masks/two meshes/background/save/reload and live Spark stylist pass; 72 approved release GLBs and clean-checkout setup verified.
-- [ ] Merge/release repository bundle and verify production auth/local-route guards.
+- [x] PR46 merged at462b69f; PR/main CI pass. Production READY; 98 shopping pages, approved-model hash, authoring login/401 and local-file404 guards pass. Temporary local servers/database stopped.
 - [ ] Confirm hosted auxiliary model/checkpoint terms, reference rights and final participant fields; these remain external submission gates.
 - [ ] Rehearse, record actual working calls, edit/upload/verify video, then complete the participant submission with Jim.
 
@@ -155,7 +155,7 @@ The clothing correction has 61 passing unit cases, passed CI/build and saved-dat
 
 ## External completion gates
 
-Browser access is now available through Chrome; record desktop/mobile checks per release. Recording remains deferred. Participant video limits/private portal fields and actual submission need the authenticated portal and final user review. Keep these separate from implemented app functionality. Continue independent work; do not label these gates as passed.
+Record browser verification status per release in CONTEXT.md; access is currently disabled and Jim waived remaining native checks. Recording remains deferred. Participant video limits/private portal fields and actual submission need the authenticated portal and final user review. Keep these separate from implemented app functionality. Continue independent work; do not label these gates as passed.
 
 Original phase history: history/ROADMAP_2026-10-29.md. Technical contracts: ARCHITECTURE.md, DATA_MODEL.md, META_MODELS.md. Current state: CONTEXT.md.
 
