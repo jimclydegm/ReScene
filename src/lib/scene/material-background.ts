@@ -1,5 +1,5 @@
 import {BufferGeometry,Float32BufferAttribute,Plane,Ray,Vector3} from "three";
-import {backgroundCamera,type BackgroundPlan} from "./background";
+import {backgroundCamera,offsetBackgroundWalls,type BackgroundPlan} from "./background";
 import type {SceneComposition} from "./composition";
 export type BackgroundWall={position:[number,number,number];yaw:number;width:number;height:number};
 export function materialSurfaceGeometry(composition:SceneComposition,floorY:number){
@@ -21,7 +21,7 @@ export function materialSurfaceGeometry(composition:SceneComposition,floorY:numb
  // A studio sweep has no wall seam to recover. Place its smooth bend behind the
  // observed subjects, retaining an unbounded foreground and no lateral corners.
  const rear=target.clone().addScaledVector(forward,composition.background?.spatial?.rearDistance??Math.max(.5,composition.room.height*.35));rear.y=floorY;
- return {extent,walls,curve:composition.background?.transition==="curve"||!!points&&!walls.length,rear:rear.toArray() as [number,number,number],yaw:Math.atan2(-forward.x,-forward.z),radius:composition.background?.spatial?.curveRadius??Math.max(.25,Math.min(1.5,composition.room.height*.3))};
+ return {extent,walls:offsetBackgroundWalls(walls,composition.camera.position,composition.background?.wallOffsets),curve:composition.background?.transition==="curve"||!!points&&!walls.length,rear:rear.toArray() as [number,number,number],yaw:Math.atan2(-forward.x,-forward.z),radius:composition.background?.spatial?.curveRadius??Math.max(.25,Math.min(1.5,composition.room.height*.3))};
 }
 export function sweepGeometry(width:number,radius:number,height:number){
  const vertices:number[]=[],uv:number[]=[],indices:number[]=[],rows=33;

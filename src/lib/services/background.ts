@@ -113,6 +113,9 @@ export async function finishSceneBackground(runId: string) {
   try {
     await buildSceneBackground(runId);
     const run = await db.generationRun.findUniqueOrThrow({ where: { id: runId } });
+    const scene = await db.scene.findUniqueOrThrow({where:{id:run.sceneId},select:{id:true,ownerId:true,revision:true}});
+    const {repairBackgroundClearance}=await import("./background-clearance");
+    await repairBackgroundClearance(scene.id,scene.ownerId,scene.revision,true,runId);
     await db.generationRun.updateMany({ where: { id: runId, status: { in: ["RUNNING", "WAITING"] } }, data: { status: run.errorMessage ? "PARTIAL" : "SUCCEEDED", progress: 100, currentStage: "Your 3D scene is ready", completedAt: new Date() } });
   } catch (error) {
     await backgroundFailure(runId,error);

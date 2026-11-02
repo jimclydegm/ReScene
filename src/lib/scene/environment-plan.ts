@@ -80,6 +80,7 @@ export const environmentGeometrySchema = z
               "opening",
             ]),
             vertices: z.array(v).min(3).max(160),
+            photoUv: z.array(z.tuple([z.number().finite(), z.number().finite()])).min(3).max(160).optional(),
             tile: z.object({ origin: v, u: v, v: v }).strict().optional(),
             triangles: z
               .array(z.number().int().min(0).max(159))
@@ -97,6 +98,7 @@ export const environmentGeometrySchema = z
           .superRefine((s, c) => {
             if (
               s.triangles.length % 3 ||
+              (s.photoUv && s.photoUv.length !== s.vertices.length) ||
               s.triangles.some((i) => i >= s.vertices.length)
             )
               c.addIssue({

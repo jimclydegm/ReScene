@@ -170,16 +170,16 @@ describe("Physical placement", () => {
     solvePlacement(objects, [{ ...input("table", table, "floor"), mask: masks.table }, { ...input("cup", cup, "tabletop", "table"), mask: masks.cup }], stage(), { width: 96, height: 96 });
     expect(objects[1].position[1]).toBeCloseTo(.8, 3); expect(objects[0].position[1]).toBeCloseTo(0, 5);
   });
-  it("pushes geometry out of an observed wall but lets it pass through an opening", () => {
+  it("checks walls and the opaque backing actually rendered for a window", () => {
     const s = stage(); s.background = { kind: "planes", groundVisible: true, boundary: null, description: "wall", geometry: { version: "reference-environment-v1", surfaces: [
       { role: "wall", vertices: [[-3, 0, -1], [3, 0, -1], [3, 3, -1], [-3, 3, -1]], triangles: [0, 1, 2, 0, 2, 3] },
       { role: "window", vertices: [[1, .2, -1], [2.5, .2, -1], [2.5, 2, -1], [1, 2, -1]], triangles: [0, 1, 2, 0, 2, 3] }] } } as SceneComposition["background"];
     const bytes = buildGlb(atlasBox(.5, .5, .5));
     const into = [{ id: "a", position: [-1, 0, -1.1] as [number, number, number], placement: placement([.5, .5, .5]) }];
-    expect(environmentWalls(s)).toHaveLength(1);
+    expect(environmentWalls(s)).toHaveLength(2);
     expect(evaluatePlacement(into, [input("a", bytes, "floor")], s, { width: 96, height: 96 })[0].wallPenetration).toBeGreaterThan(.3);
     const opening = [{ id: "a", position: [1.75, .5, -1.1] as [number, number, number], placement: placement([.5, .5, .5]) }];
-    expect(evaluatePlacement(opening, [input("a", bytes, "wall")], s, { width: 96, height: 96 })[0].wallPenetration).toBe(0);
+    expect(evaluatePlacement(opening, [input("a", bytes, "wall")], s, { width: 96, height: 96 })[0].wallPenetration).toBeGreaterThan(.3);
   });
   it("flags two objects occupying the same space as possible duplicates", () => {
     const bytes = buildGlb(atlasBox(.6, .6, .6)), objects = ["a", "b"].map(id => ({ id, position: [0, 0, 0] as [number, number, number], placement: placement([.6, .6, .6]) }));

@@ -65,8 +65,8 @@ export function DemoViewer({
 }) {
   const objects = demoRenderObjects(scene, draft, { individual, isolated });
   const room = useMemo(
-    () => demoRoomAppearance(scene, { background: draft.background }),
-    [scene, draft.background],
+    () => demoRoomAppearance(scene, draft),
+    [scene, draft],
   );
   const inspected = individual
       ? resolvedDemoObject(scene, draft, individual)

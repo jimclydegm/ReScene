@@ -12,6 +12,7 @@ export const backgroundObservationSchema = z.object({
   description: z.string().min(1).max(500)
 }).strict();
 export const backgroundPlanSchema = backgroundObservationSchema.extend({
+  wallOffsets:z.array(z.number().min(0).max(1000)).max(8).optional(),
   surfaceMode:z.enum(["materials","reference"]).optional(),
   geometry:environmentGeometrySchema.optional(),
   transition:z.enum(["open","curve"]).optional(),
@@ -60,5 +61,13 @@ export function backgroundSurfaces(composition: SceneComposition, floorY: number
       };
     }
   }
+  if (wall) wall = offsetBackgroundWalls([wall], composition.camera.position, plan.wallOffsets)[0];
   return { ground: plan.groundVisible, wall, extent, plan };
+}
+/** Keep material-wall corners connected when clearance expands their planes. */
+export function offsetBackgroundWalls<T extends {position:[number,number,number];yaw:number;width:number;height:number}>(walls:T[],eye:[number,number,number],offsets:number[]=[]):T[] {
+  if (!offsets.some(v=>v>0)) return walls;
+  const spans=walls.map((w,i)=>{const c=new Vector3(...w.position),u=new Vector3(Math.cos(w.yaw),0,-Math.sin(w.yaw)),n=new Vector3(Math.sin(w.yaw),0,Math.cos(w.yaw));if(n.dot(new Vector3(...eye).sub(c))<0)n.negate();const d=n.dot(c)-(offsets[i]??0),shift=n.clone().multiplyScalar(-(offsets[i]??0));return {n,d,old:[c.clone().addScaledVector(u,-w.width/2),c.clone().addScaledVector(u,w.width/2)],ends:[c.clone().addScaledVector(u,-w.width/2).add(shift),c.clone().addScaledVector(u,w.width/2).add(shift)]};});
+  for(let i=0;i<spans.length-1;i++){const a=spans[i],b=spans[i+1],det=a.n.x*b.n.z-a.n.z*b.n.x;if(Math.abs(det)<1e-8)continue;for(let x=0;x<2;x++)for(let y=0;y<2;y++)if(a.old[x].distanceTo(b.old[y])<.01){const p=new Vector3((a.d*b.n.z-a.n.z*b.d)/det,a.ends[x].y,(a.n.x*b.d-a.d*b.n.x)/det);a.ends[x]=p;b.ends[y]=p.clone();}}
+  return walls.map((w,i)=>({...w,position:spans[i].ends[0].clone().add(spans[i].ends[1]).multiplyScalar(.5).toArray() as [number,number,number],width:spans[i].ends[0].distanceTo(spans[i].ends[1])}));
 }

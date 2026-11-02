@@ -1,4 +1,6 @@
 import frozen from "./frozen-scenes.json";
+import {environmentBoundaries,boundaryPenetration} from "@/lib/scene/environment-clearance";
+import {Matrix4,Quaternion,Vector3} from "three";
 import catalogModels from "./catalog-models.json";
 import {
   compositionSchema,
@@ -215,7 +217,11 @@ export function supportOf(scene: DemoScene, id: string) {
     )
     .sort((a, b) => b.position[1] - a.position[1])[0]?.id;
 }
-export function collectionLayouts(
+const presetCache=new WeakMap<DemoScene,import("./state").CompleteLayoutSet>();
+export function collectionLayouts(scene:DemoScene){
+ let defaults=presetCache.get(scene);if(!defaults){defaults=buildCollectionLayouts(scene);presetCache.set(scene,defaults);}return structuredClone(defaults);
+}
+function buildCollectionLayouts(
   scene: DemoScene,
 ): import("./state").CompleteLayoutSet {
   const A = initialArrangement(scene),
@@ -239,6 +245,7 @@ export function collectionLayouts(
         draft = result.draft;
       }
       for (const item of Object.values(draft.items)) item.visible = true;
+      draft = constrainDemoBackground(scene,draft) ?? structuredClone(A);
       if (newCollision(scene, A, draft))
         throw new Error(`Invalid ${scene.id} preset collision`);
       return { ...draft, lighting };
@@ -277,6 +284,8 @@ export function collectionLayouts(
         };
       }
       draft.lighting = lighting;
+      const fitted=constrainDemoBackground(scene,draft);
+      if(fitted)return fitted;
       return validateArrangement(scene, A, draft)
         ? { ...structuredClone(A), lighting }
         : draft;
@@ -412,6 +421,8 @@ export function resolveCollectionLayouts(
         ]),
       ),
     };
+  for(const key of ["A","B","C","D","E","F"] as const)
+    result[key]=constrainDemoBackground(scene,result[key])??defaults[key];
   return result;
 }
 
@@ -541,7 +552,7 @@ export function validateArrangement(
         return "Keep the accessory within its supporting surface.";
     }
   }
-  if (options.roomBounds) {
+  if (options.roomBounds !== false) {
     const wallError = wallClearance(scene, before, after);
     if (wallError) return wallError;
   }
@@ -550,59 +561,45 @@ export function validateArrangement(
     : null;
 }
 
-/** Observed architectural planes only; preserve tolerance for inherited source-box errors. */
-function wallClearance(
-  scene: DemoScene,
-  before: Arrangement,
-  after: Arrangement,
-) {
+/** Same rendered planes as generation. Never ratchet deeper on repeated edits. */
+function demoBoundsPoints(scene:DemoScene,draft:Arrangement,id:string){
+  const item=draft.items[id],model=resolvedDemoObject(scene,draft,id),source=catalogSources.get(model.productId)!;
+  const matrix=new Matrix4().makeTranslation(item.x,model.position[1],item.z)
+    .multiply(new Matrix4().makeRotationY(item.yaw)).multiply(new Matrix4().makeTranslation(...model.placement.offset))
+    .multiply(new Matrix4().compose(new Vector3(),new Quaternion(...model.placement.rotation),new Vector3(...model.placement.scale)));
+  return source.clearanceHull.map(p=>new Vector3(...p as [number,number,number]).applyMatrix4(matrix));
+}
+
+/** Repair old saved presets without allowing ordinary edits through a wall. */
+export function constrainDemoBackground(scene:DemoScene,input:Arrangement):Arrangement|null{
+  if(input.background?.preset==="studio")return input;
+  const draft=structuredClone(input),original=initialArrangement(scene),boundaries=environmentBoundaries(scene.composition).filter(b=>b.role!=="floor"&&b.role!=="surface");
+  for(let pass=0;pass<8;pass++){
+    let moved=false;
+    for(const b of boundaries)for(const o of scene.objects){
+      if(!draft.items[o.id].visible)continue;
+      const allowed=0,depth=boundaryPenetration(demoBoundsPoints(scene,draft,o.id),b);
+      if(depth<=allowed+.0001)continue;
+      const length=b.normal.x*b.normal.x+b.normal.z*b.normal.z;
+      if(length<.0001)return null;
+      const root=supportOf(scene,o.id)??o.id,amount=(depth-allowed+.001)/length;
+      for(const target of scene.objects.filter(v=>v.id===root||supportOf(scene,v.id)===root)){
+        draft.items[target.id].x+=b.normal.x*amount;draft.items[target.id].z+=b.normal.z*amount;
+      }
+      moved=true;
+    }
+    if(!moved)break;
+  }
+  return validateArrangement(scene,original,draft)?null:draft;
+}
+function wallClearance(scene: DemoScene, before: Arrangement, after: Arrangement) {
   if (after.background?.preset === "studio") return null;
-  const walls =
-    scene.composition.background?.geometry?.surfaces.filter(
-      (s) => s.role === "wall",
-    ) ?? [];
-  for (const wall of walls) {
-    const [a, b, c] = wall.vertices;
-    if (!a || !b || !c) continue;
-    const nx = (b[1] - a[1]) * (c[2] - a[2]) - (b[2] - a[2]) * (c[1] - a[1]),
-      nz = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]),
-      length = Math.hypot(nx, nz);
-    if (length < 1e-6) continue;
-    const d = nx * a[0] + nz * a[2],
-      target = scene.composition.camera.target,
-      side = Math.sign(nx * target[0] + nz * target[2] - d);
-    if (!side) continue;
-    const penetration = (slot: string, draft: Arrangement) => {
-      const item = draft.items[slot];
-      const model = resolvedDemoObject(scene, draft, slot),
-        cos = Math.cos(item.yaw),
-        sin = Math.sin(item.yaw);
-      return Math.max(
-        0,
-        ...[-1, 1].flatMap((x) =>
-          [-1, 1].map((z) => {
-            const dx = (x * model.placement.size[0]) / 2,
-              dz = (z * model.placement.size[2]) / 2;
-            return (
-              (-side *
-                (nx * (item.x + dx * cos + dz * sin) +
-                  nz * (item.z - dx * sin + dz * cos) -
-                  d)) /
-              length
-            );
-          }),
-        ),
-      );
-    };
-    for (const o of scene.objects)
-      if (
-        penetration(o.id, after) >
-        (before.background?.preset === "studio"
-          ? 0
-          : penetration(o.id, before)) +
-          0.03
-      )
-        return "Keep products inside the observed room walls.";
+  const boundaries=environmentBoundaries(scene.composition).filter(b=>b.role!=="floor"&&b.role!=="surface");
+  const penetration=(id:string,draft:Arrangement,b:typeof boundaries[number])=>boundaryPenetration(demoBoundsPoints(scene,draft,id),b);
+  for(const b of boundaries)for(const o of scene.objects){
+    if(!after.items[o.id].visible)continue;
+    const base=0;
+    if(penetration(o.id,after,b)>base+.001)return "Keep products inside the observed room walls and background.";
   }
   return null;
 }

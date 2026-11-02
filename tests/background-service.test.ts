@@ -2,10 +2,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import sharp from "sharp";
 
 const mocks=vi.hoisted(()=>({
-  db:{generationRun:{findUniqueOrThrow:vi.fn(),findFirst:vi.fn(),updateMany:vi.fn(),update:vi.fn()},generationStep:{count:vi.fn(),updateMany:vi.fn(),upsert:vi.fn(),findFirst:vi.fn(),create:vi.fn(),update:vi.fn()},sceneObject:{findMany:vi.fn()},scene:{updateMany:vi.fn()},asset:{create:vi.fn()},$transaction:vi.fn()},
-  fill:vi.fn(),analyze:vi.fn(),read:vi.fn(),put:vi.fn(),plain:vi.fn(),composite:vi.fn()
+  db:{generationRun:{findUniqueOrThrow:vi.fn(),findFirst:vi.fn(),updateMany:vi.fn(),update:vi.fn()},generationStep:{count:vi.fn(),updateMany:vi.fn(),upsert:vi.fn(),findFirst:vi.fn(),create:vi.fn(),update:vi.fn()},sceneObject:{findMany:vi.fn()},scene:{updateMany:vi.fn(),findUniqueOrThrow:vi.fn()},asset:{create:vi.fn()},$transaction:vi.fn()},
+  clearance:vi.fn(),fill:vi.fn(),analyze:vi.fn(),read:vi.fn(),put:vi.fn(),plain:vi.fn(),composite:vi.fn()
 }));
 vi.mock("@/lib/services/appearance-history",()=>({captureAppearance:async()=>({}),recordAppearance:async()=>{}}));
+vi.mock("@/lib/services/background-clearance",()=>({repairBackgroundClearance:mocks.clearance}));
 vi.mock("server-only",()=>({}));
 vi.mock("@/lib/services/background-understanding",()=>({understandSceneBackground:async()=>({topology:"distant"})}));
 vi.mock("@/lib/db",()=>({getDb:()=>mocks.db}));
@@ -21,7 +22,7 @@ const run=(layout:unknown)=>({id:"run",kind:"RECONSTRUCT",status:"WAITING",input
 
 describe("Background failure preservation and diagnosis",()=>{
   beforeEach(async()=>{
-    vi.resetAllMocks();mocks.db.generationRun.findUniqueOrThrow.mockResolvedValue(run(stage));
+    vi.resetAllMocks();mocks.db.scene.findUniqueOrThrow.mockResolvedValue({id:"scene",ownerId:"owner",revision:3});mocks.clearance.mockResolvedValue({changed:false});mocks.db.generationRun.findUniqueOrThrow.mockResolvedValue(run(stage));
     mocks.db.generationStep.count.mockResolvedValue(0);mocks.db.generationStep.create.mockResolvedValue({id:"edit"});
     mocks.db.sceneObject.findMany.mockResolvedValue([{id:"object",positionY:0,provenance:{surfaceRole:"object",replacementBackup:{modelAssetId:"original"}},mask:{sceneId:"scene",kind:"MASK",status:"READY",storageKey:"mask"}}]);
     const photo=await sharp({create:{width:64,height:64,channels:3,background:"#aabbcc"}}).webp().toBuffer();
@@ -37,6 +38,7 @@ describe("Background failure preservation and diagnosis",()=>{
     const saved=mocks.db.scene.updateMany.mock.calls[0][0];
     expect(saved.data.stage.camera.position).toEqual([5,4,7]);expect(saved.data.stage.background.plainColor).toBe("#aabbcc");
     expect(saved.data.objects).toBeUndefined();expect(saved.data.stage.layoutSource).toBe("manual-stage");expect(saved.data.stage.warnings.join(" ")).toContain("manual-stage camera");
+    expect(mocks.clearance).toHaveBeenCalledWith("scene","owner",3,true,"run");
     expect(mocks.db.generationRun.updateMany).toHaveBeenCalledWith(expect.objectContaining({data:expect.objectContaining({status:"SUCCEEDED"})}));
   });
   it("retains a local preflight failure without implying a provider submission",async()=>{
