@@ -5,7 +5,7 @@
 - [x] Audit all11 collections against full approved meshes; identify wall, studio-sweep, tilted-tabletop and sunken-base problems.
 - [x] Shared rendered-triangle boundaries, support leveling/grounding, connected wall expansion, retained window UVs, exact hulls, default demo/edit/publish guards and safe preset recovery.
 - [x] Repair nine linked owned sources with backups and undo history; full audit of66 arrangements/234 placements has no measured intersections.362 tests/schema/lint/types/build and native targeted checks pass.
-- [ ] One combined PR/release and production verification.
+- [x] PR45/main CI pass; production READY.98-page smoke, native Playtime/Seating/window/rejected wall move and saved-result stylist Workflow/Apply/duplicate/stale/guest replay pass. No inference or unchanged asset downloads.
 
 ## Complete Muse example library — November 2
 
