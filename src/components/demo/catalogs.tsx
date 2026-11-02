@@ -1,5 +1,5 @@
 "use client";
-import {VoiceInput} from "@/components/voice-input";
+import { VoiceInput } from "@/components/voice-input";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -9,21 +9,29 @@ import {
   demoImage,
   collectionInfo,
   collectionProducts,
+  collectionIds,
 } from "@/lib/demo/catalog";
 import { PhotoInspiration } from "./photo-inspiration";
 import { ProductTile } from "./product";
 export function ProductCatalog() {
   const [query, setQuery] = useState(""),
-    [category, setCategory] = useState("All products");
+    [category, setCategory] = useState("All products"),
+    [page, setPage] = useState(0);
   const categories = [
     "All products",
     ...new Set(demoProducts.map((p) => p.category)),
   ];
-  const products = demoProducts.filter(
-    (p) =>
-      (category === "All products" || p.category === category) &&
-      `${p.name} ${p.category}`.toLowerCase().includes(query.toLowerCase()),
-  );
+  const products = demoProducts
+    .filter(
+      (p) =>
+        (category === "All products" || p.category === category) &&
+        `${p.name} ${p.category} ${p.role ?? ""}`
+          .toLowerCase()
+          .includes(query.toLowerCase()),
+    )
+    .sort((a, b) => Number(!!b.imagePath) - Number(!!a.imagePath));
+  const pages = Math.max(1, Math.ceil(products.length / 12)),
+    currentPage = Math.min(page, pages - 1);
   return (
     <main className="demo-main retail-catalog">
       <div className="demo-breadcrumb">
@@ -51,17 +59,21 @@ export function ProductCatalog() {
       </div>
       <PhotoInspiration kind="products" />
       <div className="retail-catalog-toolbar">
-        <nav aria-label="Product categories">
-          {categories.map((c) => (
-            <button
-              key={c}
-              aria-pressed={category === c}
-              onClick={() => setCategory(c)}
-            >
-              {c}
-            </button>
-          ))}
-        </nav>
+        <label className="retail-category-select">
+          <span>Category</span>
+          <select
+            aria-label="Product category"
+            value={category}
+            onChange={(e) => {
+              setCategory(e.target.value);
+              setPage(0);
+            }}
+          >
+            {categories.map((c) => (
+              <option key={c}>{c}</option>
+            ))}
+          </select>
+        </label>
         <label>
           <Search size={17} />
           <input
@@ -69,24 +81,60 @@ export function ProductCatalog() {
             placeholder="Find a product"
             aria-label="Search demo products"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setPage(0);
+            }}
           />
         </label>
-        <VoiceInput purpose="search" field="product search" label="Voice search" maxLength={120} replaceOnly onUse={v=>{setQuery(v.text.replace(/[.!?,;:]+$/g,""));setCategory("All products");}}/>
+        <VoiceInput
+          purpose="search"
+          field="product search"
+          label="Voice search"
+          maxLength={120}
+          replaceOnly
+          onUse={(v) => {
+            setQuery(v.text.replace(/[.!?,;:]+$/g, ""));
+            setCategory("All products");
+            setPage(0);
+          }}
+        />
       </div>
       <p className="retail-result-count">
-        {products.length} products · Curated sample collection
+        {products.length} products · Ready to explore · Page {currentPage + 1}{" "}
+        of {pages}
       </p>
       <div className="retail-product-grid">
-        {products.map((p) => (
+        {products.slice(currentPage * 12, currentPage * 12 + 12).map((p) => (
           <div key={p.id} className="retail-catalog-product">
-            {p.id === "corner-chair" && (
+            {p.id === "haven-linen-chair" && (
               <span className="retail-start-badge">Start here</span>
             )}
             <ProductTile id={p.id} />
           </div>
         ))}
       </div>
+      {pages > 1 && (
+        <nav className="retail-pagination" aria-label="Product pages">
+          <button
+            className="d-button"
+            disabled={currentPage === 0}
+            onClick={() => setPage(currentPage - 1)}
+          >
+            Previous
+          </button>
+          <span>
+            {currentPage + 1} / {pages}
+          </span>
+          <button
+            className="d-button"
+            disabled={currentPage === pages - 1}
+            onClick={() => setPage(currentPage + 1)}
+          >
+            Next
+          </button>
+        </nav>
+      )}
       {!products.length && (
         <div className="demo-empty">
           <h2>No matching products</h2>
@@ -105,8 +153,13 @@ export function ProductCatalog() {
   );
 }
 export function SceneCatalog({ mode }: { mode: "build" | "shop" }) {
-  const ids =
-    mode === "build" ? ["corner", "space"] : ["living", "corner", "space"];
+  const featured = mode === "build" ? "corner" : "living",
+    legacy = ["corner", "space", "living"];
+  const ids = [
+    featured,
+    ...collectionIds.filter((id) => !legacy.includes(id)),
+    ...collectionIds.filter((id) => legacy.includes(id) && id !== featured),
+  ];
   return (
     <main className="demo-main retail-catalog">
       <div className="demo-breadcrumb">
@@ -117,9 +170,7 @@ export function SceneCatalog({ mode }: { mode: "build" | "shop" }) {
       <div className="retail-catalog-intro">
         <div>
           <span className="d-kicker">
-            {mode === "build"
-              ? "Build your space"
-              : "Shop the scene"}
+            {mode === "build" ? "Build your space" : "Shop the scene"}
           </span>
           <h1>
             {mode === "build"
@@ -128,8 +179,8 @@ export function SceneCatalog({ mode }: { mode: "build" | "shop" }) {
           </h1>
           <p>
             {mode === "build"
-              ? "Choose a collection, try six layouts and explore finishes and light."
-              : "Explore a styled room, discover its pieces and bring your favorites into one shopping list."}
+              ? "Choose a collection. Arrange products, try finishes and ask the AI stylist for combinations within your budget."
+              : "Explore a scene, discover its products and bring your favorites into one shopping list."}
           </p>
         </div>
       </div>
@@ -162,35 +213,13 @@ export function SceneCatalog({ mode }: { mode: "build" | "shop" }) {
                 <span className="d-text">
                   {mode === "build"
                     ? "Arrange this collection"
-                    : "Shop this room"}
+                    : "Shop this scene"}
                   <ArrowRight size={16} />
                 </span>
               </section>
             </Link>
           );
         })}
-        <article className="retail-scene-card retail-coming-soon">
-          <div className="retail-coming-art">
-            <Image
-              src="/samples/v3/graphite-desk-wide.webp"
-              alt="Workspace setting preview"
-              width={240}
-              height={160}
-              sizes="240px"
-            />
-            <span>Preview collection</span>
-          </div>
-          <section>
-            <span className="d-kicker">Coming next</span>
-            <h2>The Workspace</h2>
-            <p>
-              A future collection of desks, lighting and everyday essentials.
-            </p>
-            <span className="retail-unavailable">
-              Coming soon · Not interactive
-            </span>
-          </section>
-        </article>
       </div>
     </main>
   );

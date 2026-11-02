@@ -194,6 +194,35 @@ describe("Reference environment geometry", () => {
     expect(result.report.walls).toBeLessThan(3);
     expect(result.report.warnings.join(" ")).toContain("observed walls");
   });
+  it("anchors a confirmed plain wall to its visible support seam when wall depth is missing", () => {
+    const plan: EnvironmentObservation = {
+      ...room(),
+      surfaces: [
+        face("back", "wall", [p(0, 0), p(1, 0), p(1, 0.7), p(0, 0.7)]),
+        face("floor", "floor", [p(0, 0.7), p(1, 0.7), p(1, 1), p(0, 1)]),
+      ],
+      openings: [],
+      expectedWallCount: 1,
+    };
+    const g = grid(plan);
+    for (let y = 0; y < Math.floor(294 * 0.7); y++)
+      for (let x = 0; x < 518; x++) g.data[(y + 112) * 518 + x] = 0;
+    const result = buildEnvironmentGeometry(plan, stage(), g);
+    expect(result.report.walls).toBe(1);
+    expect(result.report.seamAnchoredWalls).toBe(1);
+    expect(result.report.coverage).toBeGreaterThan(0.99);
+    expect(result.report.projectionError).toBeLessThan(0.005);
+    plan.surfaces[0].finish = "textured";
+    plan.surfaces[0].appearance = "microtexture";
+    plan.surfaces[0].material = "Fine plaster paint";
+    expect(buildEnvironmentGeometry(plan, stage(), g).report.walls).toBe(1);
+    plan.surfaces[0].confidence = 0.6;
+    const uncertain = buildEnvironmentGeometry(plan, stage(), g);
+    expect(uncertain.report.walls).toBe(0);
+    plan.surfaces[0].confidence = 1;
+    plan.surfaces[0].material = "blurred shadow boundary";
+    expect(buildEnvironmentGeometry(plan, stage(), g).report.walls).toBe(0);
+  });
   it("rejects private data, invalid openings and unsafe geometry in render contracts", () => {
     const plan = room();
     expect(

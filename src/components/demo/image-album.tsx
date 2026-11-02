@@ -62,6 +62,7 @@ export function ImageAlbum({
         <button
           className="album-arrow previous"
           aria-label="Previous image"
+          disabled={images.length < 2}
           onClick={() => move(-1)}
         >
           <ChevronLeft size={21} />
@@ -69,6 +70,7 @@ export function ImageAlbum({
         <button
           className="album-arrow next"
           aria-label="Next image"
+          disabled={images.length < 2}
           onClick={() => move(1)}
         >
           <ChevronRight size={21} />

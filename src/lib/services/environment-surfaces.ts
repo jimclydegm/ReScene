@@ -9,6 +9,7 @@ import {getSam3dClient} from "@/lib/ai/sam3d";
 import {environmentObservationSchema} from "@/lib/scene/environment-plan";
 import {compositionSchema,modelPlacementSchema,manualBackgroundComposition} from "@/lib/scene/composition";
 import {buildEnvironmentGeometry} from "@/lib/scene/environment-geometry";
+import {chooseEnvironmentDepth,usableEnvironment} from "@/lib/scene/environment-selection";
 import {backgroundFootprint} from "@/lib/appearance/background";
 import {decodeEnvironmentDepth} from "@/lib/appearance/environment-depth";
 import {alignCleanDepth} from "@/lib/appearance/clean-depth";
@@ -72,11 +73,17 @@ export async function referenceGeometryContext(runId:string){
   if(record(step.input).plateAssetId!==c.plateAssetId)throw new Error("ENVIRONMENT_CLEAN_DEPTH_SOURCE_CHANGED");
   try{const prediction=decodeEnvironmentDepth(JSON.parse((await readLimited(step.response.storageKey,8*1024*1024)).toString()));grid=alignCleanDepth(original,prediction,c.masks,c.plan).grid;clean=true;}catch{depthWarning="Empty-background depth did not align with the original gauge; original shared depth was retained.";}
  }
- const parsed=compositionSchema.safeParse(c.scene.stage),fallback=parsed.success?null:await sceneEnvironment(c.scene),composition=parsed.success?parsed.data:manualBackgroundComposition({width:c.photo.width!,height:c.photo.height!},fallback!.environment,fallback!.environmentSource,0),anchors=c.objects.flatMap((o,i)=>{const p=modelPlacementSchema.safeParse(o.initialTransform);return p.success?[{mask:c.masks[i],position:[o.positionX,o.positionY,o.positionZ] as [number,number,number],size:p.data.size}]:[];}),built=buildEnvironmentGeometry(c.plan,composition,grid,clean?[]:c.masks,anchors,original);
- if(depthWarning)built.report.warnings.push(depthWarning);
+ const parsed=compositionSchema.safeParse(c.scene.stage),fallback=parsed.success?null:await sceneEnvironment(c.scene),composition=parsed.success?parsed.data:manualBackgroundComposition({width:c.photo.width!,height:c.photo.height!},fallback!.environment,fallback!.environmentSource,0),anchors=c.objects.flatMap((o,i)=>{const p=modelPlacementSchema.safeParse(o.initialTransform);return p.success?[{mask:c.masks[i],position:[o.positionX,o.positionY,o.positionZ] as [number,number,number],size:p.data.size}]:[];});
+ let sourceBuilt:ReturnType<typeof buildEnvironmentGeometry>|null=null;
+ try{sourceBuilt=buildEnvironmentGeometry(c.plan,composition,original,c.masks,anchors,original);}catch{/* A usable clean candidate may still recover this environment. */}
+ let cleanBuilt:ReturnType<typeof buildEnvironmentGeometry>|null=null;
+ if(clean)try{cleanBuilt=buildEnvironmentGeometry(c.plan,composition,grid,[],anchors,original);}catch{depthWarning="Empty-background geometry could not be fitted; original shared depth was retained.";}
+ const selected=chooseEnvironmentDepth(sourceBuilt,cleanBuilt),built=selected.built;
+ clean=selected.source==="clean";
+ if(depthWarning&&!usableEnvironment(built.report))built.report.warnings.push(depthWarning);
  for(const surface of built.geometry.surfaces){const observation=surface.materialIndex===undefined?null:c.plan.surfaces[surface.materialIndex],patch=c.materialPatches.find(p=>p.id===observation?.id);if(!observation||surface.role==="window"||surface.role==="opening")continue;if(surface.textured&&patch)surface.tile=tileFromEvidence(surface,patch,composition);if(observation.appearance==="microtexture"&&surface.tile)surface.relief=Math.min(.02,Math.min(Math.hypot(...surface.tile.u),Math.hypot(...surface.tile.v))*.002);}
  if(built.report.walls<c.plan.expectedWallCount||built.report.coverage<.8||built.report.projectionError>.08)throw new Error("ENVIRONMENT_STRUCTURE_INCOMPLETE");
- return {...c,composition,built,cleanDepth:clean};
+ return {...c,composition,built,cleanDepth:clean,depthSelection:{source:selected.source,reason:depthWarning??"Compared visible coverage, observed walls and corner disagreement."}};
 }
 export async function environmentMaterialTargets(runId:string){
  const {run}=await environmentContext(runId),mode=record(record(run.input).background).mode;if(mode==="materials"||mode==="photo")return [];

@@ -12,7 +12,7 @@ import {
   type ShoppingOption,
   type StylistInput,
 } from "@/lib/shopping/contracts";
-import { purchaseLines } from "@/lib/shopping/engine";
+import { merchandiseTotal, purchaseLines } from "@/lib/shopping/engine";
 import type { Arrangement } from "@/lib/demo/state";
 import models from "@/lib/demo/catalog-models.json";
 import { canonicalJson } from "@/lib/shopping/canonical";
@@ -38,7 +38,13 @@ export function StylistPanel({
       "Make this space warmer and coordinate the finishes.",
     ),
     [budget, setBudget] = useState(
-      sceneId === "corner" ? "500" : sceneId === "space" ? "800" : "1000",
+      sceneId === "corner"
+        ? "500"
+        : sceneId === "space"
+          ? "800"
+          : String(
+              Math.max(100, Math.ceil(merchandiseTotal(draft) / 10000) * 100),
+            ),
     ),
     [keep, setKeep] = useState<string[]>(selected ? [selected] : []),
     [voice, setVoice] = useState<string | undefined>(),

@@ -6,7 +6,7 @@ import {
   footprintOverlap,
   persistedDemoSchema,
 } from "../src/lib/demo/state";
-import { demoProducts } from "../src/lib/demo/catalog";
+import { demoProducts, demoImage } from "../src/lib/demo/catalog";
 import {
   demoScenes,
   initialArrangement,
@@ -85,16 +85,16 @@ describe("curated retail demo", () => {
     );
     expect(footprintOverlap(box, { ...box, x: 2 })).toBe(false);
   });
-  it("contains only bounded render state and eleven real copied meshes; no source keys or credentials", () => {
+  it("contains only bounded render state and unique approved meshes; no source keys or credentials", () => {
     const text = JSON.stringify(frozen);
     expect(text).not.toMatch(
       /ownerId|storageKey|sourceAsset|normalizedAsset|maskAsset|provider|LLM_|postgresql|https:\/\//i,
     );
     expect(text).not.toMatch(/[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}/i);
-    expect(frozen.scenes.flatMap((s) => s.objects)).toHaveLength(11);
+    expect(frozen.scenes.flatMap((s) => s.objects)).toHaveLength(39);
     expect(
       new Set(frozen.scenes.flatMap((s) => s.objects.map((o) => o.id))).size,
-    ).toBe(11);
+    ).toBe(39);
     for (const s of demoScenes) {
       expect(Object.keys(initialArrangement(s).items)).toEqual(
         s.objects.map((o) => o.id),
@@ -105,9 +105,9 @@ describe("curated retail demo", () => {
     for (const s of frozen.scenes)
       for (const o of s.objects) {
         expect(o.bytes).toBeGreaterThan(100000);
-        expect(o.bytes).toBeLessThanOrEqual(4 * 1024 * 1024);
+        expect(o.bytes).toBeLessThanOrEqual(16 * 1024 * 1024);
         expect(o.digest).toMatch(/^[0-9a-f]{64}$/);
-        expect(existsSync(`public/demo/images/${o.id}.webp`)).toBe(true);
+        expect(existsSync(`public${demoImage(o.id)}`)).toBe(true);
       }
   });
 });

@@ -1,5 +1,5 @@
 "use client";
-import {VoiceInput} from "@/components/voice-input";
+import { VoiceInput } from "@/components/voice-input";
 import Image from "next/image";
 import { useState } from "react";
 import { ArrowRightLeft, Check, Search } from "lucide-react";
@@ -36,7 +36,9 @@ export function ReplacementPicker({
     items = demoProducts.filter(
       (p) =>
         (category === "All" || p.category === category) &&
-        `${p.name} ${p.category}`.toLowerCase().includes(query.toLowerCase()),
+        `${p.name} ${p.category} ${p.role ?? ""}`
+          .toLowerCase()
+          .includes(query.toLowerCase()),
     );
   return (
     <DemoDialog title={`Replace ${old.name}`} onClose={onClose} wide>
@@ -51,7 +53,17 @@ export function ReplacementPicker({
             onChange={(e) => setQuery(e.target.value)}
           />
         </label>
-        <VoiceInput purpose="search" field="product search" label="Voice search" maxLength={120} replaceOnly onUse={v=>{setQuery(v.text.replace(/[.!?,;:]+$/g,""));setCategory("All");}}/>
+        <VoiceInput
+          purpose="search"
+          field="product search"
+          label="Voice search"
+          maxLength={120}
+          replaceOnly
+          onUse={(v) => {
+            setQuery(v.text.replace(/[.!?,;:]+$/g, ""));
+            setCategory("All");
+          }}
+        />
         <select
           aria-label="Replacement category"
           value={category}

@@ -1,0 +1,932 @@
+{
+  "version": 1,
+  "model": "muse-image-1.0",
+  "products": {
+    "haven-linen-chair": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/haven-linen-chair.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "55c929411505d59841c84a14fa2dfa83bdfd52482e7668cf8d97723a0facf147",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "line-oak-chair": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/line-oak-chair.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "4976162f540566b9c52acec4fc10f84aa46eb236e6256233e1bcf740d8c4ecdc",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "form-sage-chair": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/form-sage-chair.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "d2e933e77af7438fb312161644ef24553423076a4b82ade79ca761701a8b667f",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "cove-terracotta-chair": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/cove-terracotta-chair.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "78f9044b7894093fbd8ef035fed90cdf6e721d95a426fe056f54d49c5bf6fb35",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "nord-walnut-chair": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/nord-walnut-chair.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "f2a0f04722e815843a2280c3ff0401ba4058cf88b6f029ffd09571db48d940f9",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "forma-oak-drawers": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/forma-oak-drawers.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "57ce74ef441aa755b24c8b76f716ffb84d6d3d93cd7ab75ed48eab1db2c55dba",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "arc-white-drawers": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/arc-white-drawers.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "c5410a96e21eb037cba027218a8f2f11dad96a9af289813c16c4dfd031256a57",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "line-walnut-drawers": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/line-walnut-drawers.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "2629e9f02f1359acf43a3de52fe065bc8c6388a5c824f0b8314a1248625d7721",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "studio-sage-drawers": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/studio-sage-drawers.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "b1a00b249653847d2787295e12b300faef7e0bb7d5ef3a053e40a384d184fd22",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "ridge-ash-drawers": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/ridge-ash-drawers.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "ccf22008670c536308ad7c3b5ed1f05235e02d84fef808c8340a8b1c9e12dbd4",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "pebble-ivory-mouse": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/pebble-ivory-mouse.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "576b25cede77a03c1653a5b7a2b6c3bfb2004827ac2a8da01807495e9047c716",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "arc-graphite-mouse": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/arc-graphite-mouse.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "217951a1cb7e6c3428e1a83e4ba5ea50669c9b4822ec2126c38a38153c369438",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "slim-silver-mouse": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/slim-silver-mouse.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "6162ae62eae4a9477db6843f47baff32dcdcc71351c6f9ce1ae232e89aef183d",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "studio-sage-mouse": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/studio-sage-mouse.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "ab6fd7cb39ab91c512715f2f551d8221acb84c82e1ba4d1a57ed403ba0be3261",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "precision-black-mouse": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/precision-black-mouse.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "2eaf1d8f7f2bae8c8923e15812e0a6085891d43ce13608c1f03565354839e941",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "cloud-ivory-sofa": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/cloud-ivory-sofa.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "6a7fb251bc42066edc3db77992f480b0e9f75fe47061c65a8b466faf3999c935",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "cove-sage-sofa": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/cove-sage-sofa.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "3378cbfcb2b0921bbc0bec44433e4af92be39a6b6aac23275b952d1b2e69896b",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "line-caramel-sofa": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/line-caramel-sofa.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "2f8d4ab30414f9f566a8dcdb1a5d2250cd4b8dbcd8c82358d7a863ce158f8b9a",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "haven-blue-sofa": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/haven-blue-sofa.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "7be2664183953d966bede29a827a2d1c91acb4318e678d999cafac3e9bbf264d",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "studio-charcoal-sofa": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/studio-charcoal-sofa.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "9829ba1af74e6025762618e507fd17e8509d4b6e846e212b229a711efc2ce9e4",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "court-white-sneaker": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/court-white-sneaker.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "3da5d33a28c239154b7c77bdad497ca03963db525d493d193b0ee18bd0c92577",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "trail-sage-sneaker": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/trail-sage-sneaker.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "9b3f7c269bc1b96da7d6e35918d5ef504abfb95873cf5fc3ac43f6896f053453",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "derby-brown-shoe": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/derby-brown-shoe.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "631a0e2f395c03646a9025f5b50108510df7def3de64bcc63200b265a3949fcf",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "soft-sand-loafer": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/soft-sand-loafer.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "188fec4c3bc4c0320be3c4a57b68fdb2f8935349de3ee69bb97f882e1ed63ee8",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "canvas-navy-shoe": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/canvas-navy-shoe.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "8808ca33b36e31dc915f8fd57dfc0a6b06ea818b91e65a28985dd5c1dd915ed2",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "everyday-ivory-mug": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/everyday-ivory-mug.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "7572baf85f76ef6c31772b0fd9e4bbb2168e628b12f5460e8dca453191a4817c",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "terra-clay-mug": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/terra-clay-mug.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "4a425658ca3b2eddddb0f93533e9199d7d1aba1204af0969f8f10862af694418",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "forest-sage-mug": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/forest-sage-mug.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "52849f2dce16afb11d8a8f0cd9c895e0a0590d63ea18d074295ef13343457d58",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "coast-blue-mug": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/coast-blue-mug.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "4ab002639e735d9a22c0584b890d84873ee2d5e8cd5c39bc8baf638dd0541f8d",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "playtime-bear-mug": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/playtime-bear-mug.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "c710f1376f5eec50a091f3657b62d3e1b7c35011a7408cbb45ffa3ced0e5cc60",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "chair-studio-item-1": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/chair-studio-item-1.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "5b66e2517ea1b5c1b33b5f22e385bfed2962b81d9c6a91c1cd3c604f6f96e2d1",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "chair-studio-item-2": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/chair-studio-item-2.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "07be599fbbbc068e8da5ad45a32a3e1fa0a78bc8ae739a7d64292f65bf6e48a0",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "chair-studio-item-3": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/chair-studio-item-3.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "038e7d9f6624f627d3901e0fab1ddc056d55492ba72f11c16d551ce940988667",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "chair-studio-item-4": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/chair-studio-item-4.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "180bca9842d5fb2b50e9b6a09a21648960323283f32af44c58c486ea7fd200f7",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "appliances-item-1": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/appliances-item-1.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "07e15bae0d20683fefef48e8c2abe5da866c5a1c9f89a35d63857268e8cb5096",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "appliances-item-2": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/appliances-item-2.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "a93f59cbf33e67bce4f4c0360ce208d5fba1f3adfe4a66b88dca4f16f233e596",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "appliances-item-3": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/appliances-item-3.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "5e46fabe9beb5b64c2aa44964d46d24d39621394c0813f29c28290ff85b44fd0",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "fragrance-item-1": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/fragrance-item-1.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "eb0adc0010593b42ee83e4d42a5c36a9ff8be76ae0e6796c49831226c4a704c4",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "fragrance-item-2": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/fragrance-item-2.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "b4b35554eed91648eb373c3f210ba1669abec17f437a1a8cf9c4f136d0095a48",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "fragrance-item-3": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/fragrance-item-3.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "d873f4b305861d643302c633e99d8723c90e0a3643acdfda9ac01a220410758b",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "home-essentials-item-1": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/home-essentials-item-1.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "19fbd3210f2d50c0e455191e6c92842c9a3fe5f9d324254bbc7597b2b4074307",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "home-essentials-item-2": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/home-essentials-item-2.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "1d7a7139b5f87c8b60f98adb878e6bbbd69128fb31b812d141ea79b30e4d59e7",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "home-essentials-item-3": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/home-essentials-item-3.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "774eb958a4db92ca9b4cad2ca817154c116dc1912e9ac7315ad9e4b5248d1b4d",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "workspace-item-1": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/workspace-item-1.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "4c8c1f4151a76f7cf7a7a3d64a932f76f6037e8315c99f008bc4e3803383dd1a",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "workspace-item-2": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/workspace-item-2.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "27bd9d37675ccee868b4fdbaa5b74be56bf1f9cc8a9d39650632d91599cbb2fb",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "workspace-item-3": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/workspace-item-3.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "1196b2ffacb27058644679ccf76cc26434a016b4ad906a784a47ef969e438db6",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "workspace-item-4": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/workspace-item-4.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "1e99054de49a60d3c6a6894541935c62d307f94d6a77e03538ee52912c45bbf0",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "daily-carry-item-1": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/daily-carry-item-1.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "d734fe3f9263dfafc40e6d46f416a98bab77133dd10f3bf2acf169ffaa35ecff",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "daily-carry-item-2": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/daily-carry-item-2.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "a912c0fd23f1dbb5b175e6899205818a609ca7e9584b4c73b5a8342c6ea3e20b",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "daily-carry-item-3": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/daily-carry-item-3.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "fb35ddac8504fbe264006d417c06e82e7e3330afd6b28eeb7aede7e3e6842364",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "city-style-item-1": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/city-style-item-1.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "78112139028d4433ced72bc8dfd6c24ad1830d15616183c2e01d5b616ac72f53",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "city-style-item-2": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/city-style-item-2.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "f5b7d452c6216f8bf4b5b543c87e92a640cceb23f9a6f71bac301c823d4f2fd6",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "city-style-item-3": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/city-style-item-3.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "281466f55e30b8319f16c0b468e70204de23bcadec0cc6381b2e4a4d474edb2e",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "playtime-item-1": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/playtime-item-1.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "8f146a011ad2360cb50c439b17e887eeb94cb38a49f92e11e594ad139cfc9585",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "playtime-item-2": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/playtime-item-2.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "4089b40936ba3cedb185160a7aad85a48b8b019fbb56336868879e16ba97db3b",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "playtime-item-3": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/playtime-item-3.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "8175380701a877b621815c623a8168b2e95f920fbea686a55cbbff8f33d33ff2",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "playtime-item-4": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/playtime-item-4.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "aa2e2d1f73032baa076992729c42248554951384fbee2c2fad9986bacae28055",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "playtime-item-5": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/expansion/playtime-item-5.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "76ce55b51f9dfa08b57642dc5fe499d4c848572b5ed4a8c749ad0891761ef33e",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ]
+  },
+  "scenes": {
+    "chair-studio": [
+      {
+        "id": "reference",
+        "title": "Reference scene photograph",
+        "path": "/demo/expansion/chair-studio.webp",
+        "kind": "generated",
+        "color": null,
+        "setting": "reference",
+        "sha256": "33a5f13dd3178bad20d1add15cab5c7bb4606d1db45825d98a4686b942e51882",
+        "width": 1920,
+        "height": 1280,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "appliances": [
+      {
+        "id": "reference",
+        "title": "Reference scene photograph",
+        "path": "/demo/expansion/appliances.webp",
+        "kind": "generated",
+        "color": null,
+        "setting": "reference",
+        "sha256": "4bd2fb61c512c04d94b23ecd376629d761dfd1ed95672c35fdaeaa46084f8803",
+        "width": 1920,
+        "height": 1280,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "fragrance": [
+      {
+        "id": "reference",
+        "title": "Reference scene photograph",
+        "path": "/demo/expansion/fragrance.webp",
+        "kind": "generated",
+        "color": null,
+        "setting": "reference",
+        "sha256": "7d7002eeddbf43dcbfa456dedbfd588f6b62ec3b0da6a34ddb17accabb966b92",
+        "width": 1920,
+        "height": 1280,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "home-essentials": [
+      {
+        "id": "reference",
+        "title": "Reference scene photograph",
+        "path": "/demo/expansion/home-essentials.webp",
+        "kind": "generated",
+        "color": null,
+        "setting": "reference",
+        "sha256": "886a17d5dbf81c826c9dc29db40223e13f22522a177c1cd37fca74004cdfc848",
+        "width": 1920,
+        "height": 1280,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "workspace": [
+      {
+        "id": "reference",
+        "title": "Reference scene photograph",
+        "path": "/demo/expansion/workspace.webp",
+        "kind": "generated",
+        "color": null,
+        "setting": "reference",
+        "sha256": "ef24ad8f61216d789a12e3485e7ea3a80ea933483db8f07ca5d4db86994ed259",
+        "width": 1920,
+        "height": 1280,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "daily-carry": [
+      {
+        "id": "reference",
+        "title": "Reference scene photograph",
+        "path": "/demo/expansion/daily-carry.webp",
+        "kind": "generated",
+        "color": null,
+        "setting": "reference",
+        "sha256": "a7bdd4fb97b82db4007c8fdc2d8fa272a3e0ef58cc51145d83e9ed237354c028",
+        "width": 1920,
+        "height": 1280,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "city-style": [
+      {
+        "id": "reference",
+        "title": "Reference scene photograph",
+        "path": "/demo/expansion/city-style.webp",
+        "kind": "generated",
+        "color": null,
+        "setting": "reference",
+        "sha256": "db92ea61681383d34985f407b4622a137b7fa0ae6350b01495aab0f62a5aa3c9",
+        "width": 1920,
+        "height": 1280,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "playtime": [
+      {
+        "id": "reference",
+        "title": "Reference scene photograph",
+        "path": "/demo/expansion/playtime.webp",
+        "kind": "generated",
+        "color": null,
+        "setting": "reference",
+        "sha256": "3faa467656240a5acadcecf28097613b645296d7c71812ca13efa9f88b9ffd65",
+        "width": 1920,
+        "height": 1280,
+        "model": "muse-image-1.0"
+      }
+    ]
+  }
+}

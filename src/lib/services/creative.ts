@@ -15,6 +15,7 @@ import {sampleImagePath,settingImagePath} from "@/lib/ai/sample-products";
 import type {Prisma} from "@/generated/prisma/client";
 const json=(v:unknown)=>JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 const active=["QUEUED","RUNNING","WAITING"] as const;
+const activeSceneLimit=200;
 async function workspace(id:string,ownerId:string){const s=await ownedScene(id,ownerId);if(s.status!=="DRAFT"||record(s.settings).creative!==true)throw new AppError(409,"CREATIVE_WORKSPACE","Choose a creative workspace.");return s;}
 async function saveImage(sceneId:string,bytes:Buffer,kind:"PRODUCT_IMAGE"|"SOURCE_IMAGE"|"NORMALIZED_IMAGE",provenance:Prisma.InputJsonValue){
  const out=await sharp(bytes,{limitInputPixels:24_000_000,animated:false}).rotate().resize({width:1600,height:1600,fit:"inside",withoutEnlargement:true}).webp({quality:92}).toBuffer({resolveWithObject:true});
@@ -45,7 +46,7 @@ async function persistDraft(tx:Prisma.TransactionClient,ownerId:string,input:Ret
 }
 export async function saveCreativeDraft(ownerId:string,raw:unknown){const input=creativeDraftInput.parse(raw);await workspace(input.sceneId,ownerId);return getDb().$transaction(async tx=>{await tx.$executeRaw`SELECT pg_advisory_xact_lock(839172640)`;if(await tx.generationRun.count({where:{sceneId:input.sceneId,status:{in:[...active]}}}))throw new AppError(409,"RUN_ACTIVE","Wait for generation to finish.");return persistDraft(tx,ownerId,input);});}
 export async function createCreative(ownerId:string){
- if(await getDb().scene.count({where:{ownerId,archivedAt:null}})>=50)throw new AppError(429,"SCENE_LIMIT","Archive an old project before creating another.");
+ if(await getDb().scene.count({where:{ownerId,archivedAt:null}})>=activeSceneLimit)throw new AppError(429,"SCENE_LIMIT","Archive an old project before creating another.");
  return getDb().scene.create({data:{ownerId,title:"Product scene creator",settings:{creative:true}}});
 }
 export async function creativeUpload(ownerId:string,sceneId:string,type:string,bytes:number){
@@ -115,9 +116,9 @@ export async function composeCreative(runId:string){
  await db.generationRun.updateMany({where:{id:runId,status:"RUNNING"},data:{status:"FAILED",errorCode:uncertain?"SUBMISSION_UNCERTAIN":"CREATIVE_FAILED",errorMessage:uncertain?"The request was interrupted and may have been charged. It will not retry automatically. Saved images remain available.":"The image could not be created. Your references and saved images are kept. Start a new variation when ready.",completedAt:new Date()}});}
 }
 export async function adoptCreative(ownerId:string,id:string,title:string){
- const db=getDb();if(!await db.contentItem.findFirst({where:{id,ownerId,kind:"GENERATED",archivedAt:null}}))throw new AppError(404,"IMAGE_UNAVAILABLE","Restore this image before using it.");const a=await db.asset.findFirst({where:{id,kind:"SOURCE_IMAGE",status:"READY",scene:{ownerId,archivedAt:null},provenance:{path:["source"],equals:"muse-scene-composition"}}});if(!a)throw new AppError(404,"IMAGE_UNAVAILABLE","Image unavailable.");
- if(await db.scene.count({where:{ownerId,archivedAt:null}})>=50)throw new AppError(429,"SCENE_LIMIT","Archive an old project first.");
+ const db=getDb(),item=await db.contentItem.findFirst({where:{id,ownerId,kind:"GENERATED",archivedAt:null}});if(!item?.assetId)throw new AppError(404,"IMAGE_UNAVAILABLE","Restore this image before using it.");const a=await db.asset.findFirst({where:{id:item.assetId,kind:"SOURCE_IMAGE",status:"READY",scene:{ownerId,archivedAt:null}}});if(!a||!["muse-scene-composition","curated-muse-photograph"].includes(String(record(a.provenance).source)))throw new AppError(404,"IMAGE_UNAVAILABLE","Image unavailable.");
+ if(await db.scene.count({where:{ownerId,archivedAt:null}})>=activeSceneLimit)throw new AppError(429,"SCENE_LIMIT","Archive an old project first.");
  const s=await db.scene.create({data:{ownerId,title,settings:{source:"creative-result",approximateProductLikeness:true}}});
  const bytes=await readLimited(a.storageKey,4*1024*1024),source=await saveImage(s.id,bytes,"SOURCE_IMAGE",{source:"accepted-creative-image"}),normalized=await saveImage(s.id,bytes,"NORMALIZED_IMAGE",{source:"image-normalization",exifRemoved:true});
- await db.$transaction([db.scene.update({where:{id:s.id},data:{sourceAssetId:source.id,normalizedAssetId:normalized.id,revision:1}}),db.contentAdoption.create({data:{sceneId:s.id,contentItemId:a.id}})]);return s.id;
+ await db.$transaction([db.scene.update({where:{id:s.id},data:{sourceAssetId:source.id,normalizedAssetId:normalized.id,revision:1}}),db.contentAdoption.create({data:{sceneId:s.id,contentItemId:item.id}})]);return s.id;
 }

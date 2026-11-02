@@ -171,6 +171,7 @@ export function buildEnvironmentGeometry(
       : [];
   const planes = new Map<string, Plane>(),
     metrics: { role: string; inlierRatio: number; residual: number }[] = [];
+  const seamFallbacks=new Set<string>();
   for (const surface of observation.surfaces) {
     const points: Vector3[] = [];
     for (let y = 0.01; y < 1; y += 0.018)
@@ -199,6 +200,14 @@ export function buildEnvironmentGeometry(
       surface.role === "wall" || surface.role === "trim",
     );
     if (!fit) {
+      // Featureless paint can have unusable neural depth. A high-confidence
+      // photographed wall/support seam still determines a vertical plane in
+      // the existing camera frame; never infer one from a light/shadow edge.
+      if(surface.role==="wall"&&(surface.finish==="plain"||surface.appearance==="microtexture")&&surface.confidence>=.85&&floor&&floor.confidence>=.85&&scales.length>=12&&!/shadow|blur|void|uncertain/i.test(surface.material)){
+        const shared=surface.polygon.filter(p=>floor.polygon.some(q=>Math.hypot(p.x-q.x,p.y-q.y)<.015));
+        const hits=shared.map(p=>new Ray(origin,ray(p)).intersectPlane(new Plane(new Vector3(0,1,0),-floorY),new Vector3())).filter((p):p is Vector3=>!!p&&p.distanceTo(origin)<100);
+        if(hits.length>=2){const a=hits[0],b=hits[hits.length-1],n=new Vector3(b.z-a.z,0,a.x-b.x);if(a.distanceTo(b)>.05&&n.length()>.001){n.normalize();const plane=new Plane(n,-n.dot(a));if(plane.distanceToPoint(origin)<0)plane.negate();planes.set(surface.id,plane);seamFallbacks.add(surface.id);continue;}}
+      }
       if (surface.role !== "trim")
         warnings.push(
           `${surface.role}: insufficient depth evidence; surface omitted.`,
@@ -635,6 +644,7 @@ export function buildEnvironmentGeometry(
       projectionError,
       depthScale: scale,
       scaleAnchors:foreground?.anchors??0,
+      seamAnchoredWalls:seamFallbacks.size,
       metrics,
       warnings,
     },

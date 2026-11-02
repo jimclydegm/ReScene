@@ -431,6 +431,10 @@ dialog::backdrop { background: #101713a3; backdrop-filter: blur(4px); }
 .demo-store .retail-catalog-toolbar nav button[aria-pressed=true] { background: var(--shop-selected); color: var(--shop-link); }
 .demo-store .retail-catalog-toolbar > label { background: var(--shop-surface); border-color: var(--line-strong); border-radius: 8px; padding: 8px 12px; }
 .demo-store .retail-catalog-toolbar input { font-size: 13px; color: var(--shop-ink); }
+.demo-store .retail-category-select { flex-shrink: 0; margin-left: 0 !important; }
+.demo-store .retail-category-select > span { color: var(--shop-muted); font-size: 12px; }
+.demo-store .retail-category-select select { max-width: 190px; border: 0; background: var(--shop-surface); color: var(--shop-ink); font: inherit; outline-offset: 4px; }
+.demo-store .retail-pagination { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 20px; font-size: 13px; color: var(--shop-muted); }
 .demo-store .retail-result-count { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
 .demo-store .retail-product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .demo-store .retail-catalog-product { padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--shop-surface); }

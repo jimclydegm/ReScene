@@ -1,0 +1,118 @@
+[
+  {
+    "id": "space",
+    "name": "The Everyday Collection",
+    "caption": "Four pieces. Plenty of ways to make them yours.",
+    "products": [
+      "oak-dresser",
+      "sage-chair",
+      "round-table",
+      "dining-chair"
+    ]
+  },
+  {
+    "id": "living",
+    "name": "The Sunday Living Room",
+    "caption": "A cream sofa, warm wood and a quiet place to slow down.",
+    "products": [
+      "cloud-sofa",
+      "coffee-table",
+      "wood-stool",
+      "ceramic-vase"
+    ]
+  },
+  {
+    "id": "corner",
+    "name": "The Reading Corner",
+    "caption": "A lounge chair, oak cabinet and terracotta vase.",
+    "products": [
+      "corner-chair",
+      "corner-cabinet",
+      "corner-vase"
+    ]
+  },
+  {
+    "id": "chair-studio",
+    "name": "Seating collection",
+    "caption": "Four seating styles with tactile materials.",
+    "products": [
+      "chair-studio-item-1",
+      "chair-studio-item-2",
+      "chair-studio-item-3",
+      "chair-studio-item-4"
+    ]
+  },
+  {
+    "id": "appliances",
+    "name": "Appliance collection",
+    "caption": "Three refrigerators in a clean tiled setting.",
+    "products": [
+      "appliances-item-1",
+      "appliances-item-2",
+      "appliances-item-3"
+    ]
+  },
+  {
+    "id": "fragrance",
+    "name": "Fragrance collection",
+    "caption": "Glass and metal on a warm studio backdrop.",
+    "products": [
+      "fragrance-item-1",
+      "fragrance-item-2",
+      "fragrance-item-3"
+    ]
+  },
+  {
+    "id": "home-essentials",
+    "name": "Home essentials",
+    "caption": "Appliance, chair and drawers.",
+    "products": [
+      "home-essentials-item-1",
+      "home-essentials-item-2",
+      "home-essentials-item-3"
+    ]
+  },
+  {
+    "id": "workspace",
+    "name": "Quiet workspace",
+    "caption": "Laptop, mouse, notebook and tumbler.",
+    "products": [
+      "workspace-item-1",
+      "workspace-item-2",
+      "workspace-item-3",
+      "workspace-item-4"
+    ]
+  },
+  {
+    "id": "daily-carry",
+    "name": "Everyday carry",
+    "caption": "Leather, canvas and cotton details.",
+    "products": [
+      "daily-carry-item-1",
+      "daily-carry-item-2",
+      "daily-carry-item-3"
+    ]
+  },
+  {
+    "id": "city-style",
+    "name": "City essentials",
+    "caption": "Handbag and two distinct single shoes.",
+    "products": [
+      "city-style-item-1",
+      "city-style-item-2",
+      "city-style-item-3"
+    ]
+  },
+  {
+    "id": "playtime",
+    "name": "Playtime desk",
+    "caption": "Colorful everyday objects on a wooden surface.",
+    "products": [
+      "playtime-item-1",
+      "playtime-item-2",
+      "playtime-item-3",
+      "playtime-item-4",
+      "playtime-item-5"
+    ]
+  }
+]

@@ -44,17 +44,52 @@ export function productRole(category: string) {
   if (/lighting/i.test(category)) return "lighting";
   return category.toLowerCase();
 }
+function roleOf(p: DemoProduct) {
+  return (
+    p.role ??
+    (/sofa/i.test(p.category)
+      ? "sofa"
+      : /chair/i.test(p.category)
+        ? "chair"
+        : /stool/i.test(p.category)
+          ? "stool"
+          : productRole(p.category))
+  );
+}
 export function stylistCompatible(
   scene: DemoScene,
   slot: string,
   p: DemoProduct,
-  intent: ShoppingIntent,
+  intent: Pick<ShoppingIntent, "requireStorage">,
 ) {
   const original = findDemoProduct(slot)!;
+  if (original.role) return roleOf(original) === roleOf(p);
   if (supportOf(scene, slot)) return p.category === "Home accessories";
   if (intent.requireStorage && original.category === "Storage")
     return p.category === "Storage";
-  return productRole(original.category) === productRole(p.category);
+  return (
+    roleOf(original) === roleOf(p) ||
+    (productRole(original.category) === "surface" &&
+      productRole(p.category) === "surface")
+  );
+}
+/** Send only products that can occupy the current slots, including kept items. */
+export function shoppingCatalogContext(input: StylistInput) {
+  const scene = demoScenes.find((s) => s.id === input.sceneId)!;
+  return demoProducts.flatMap((p) => {
+    const slots = Object.entries(input.draft.items)
+      .filter(([slot, item]) =>
+        input.keep.includes(slot) || item.owned
+          ? itemProductId(slot, item) === p.id
+          : stylistCompatible(scene, slot, p, { requireStorage: false }),
+      )
+      .map(([slot]) => slot);
+    return slots.length
+      ? [{ id: p.id, name: p.name, category: p.category, role: roleOf(p),
+          priceCents: p.price, materials: p.materials,
+          finishes: p.colors.map((c) => c.name), slots }]
+      : [];
+  });
 }
 export function checkContext(input: StylistInput) {
   const scene = demoScenes.find((s) => s.id === input.sceneId);
@@ -106,7 +141,9 @@ export function checkCombination(
   }
   if (intent.keep.some((id) => !Object.hasOwn(draft.items, id)))
     return "The requested kept product was not found.";
-  const error = validateArrangement(scene, input.draft, draft,{roomBounds:true});
+  const error = validateArrangement(scene, input.draft, draft, {
+    roomBounds: true,
+  });
   if (error) return error;
   const budget =
     Math.min(input.budgetCents, intent.budgetCents ?? input.budgetCents) -
@@ -163,6 +200,7 @@ export function candidateChanges(before: Arrangement, after: Arrangement) {
 }
 /** Small catalog search with exact budget pruning. Models only rank valid final states. */
 export function buildCandidates(input: StylistInput, intent: ShoppingIntent) {
+  const seen = new Set<string>();
   const scene = demoScenes.find((s) => s.id === input.sceneId)!,
     slots = scene.objects.map((o) => o.id),
     keep = new Set([...input.keep, ...intent.keep]),
@@ -250,8 +288,8 @@ export function buildCandidates(input: StylistInput, intent: ShoppingIntent) {
           };
         if (checkCombination(input, intent, draft)) continue;
         const signature = JSON.stringify(draft);
-        if (candidates.some((c) => JSON.stringify(c.draft) === signature))
-          continue;
+        if (seen.has(signature)) continue;
+        seen.add(signature);
         const changes = candidateChanges(input.draft, draft);
         if (!changes.length) continue;
         candidates.push({

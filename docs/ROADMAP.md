@@ -1,5 +1,14 @@
 # ReScene — one release pass
 
+## Complete Muse example library — November 2
+
+- [x] Generate and visually review eight scene examples,30 distinct product variations and28 separate studio product photographs with Muse Image. Repair the misidentified black-cap perfume shot using a separate preserved paid receipt.
+- [x] Finish all38 saved Meta analysis/mask/SAM3D/environment builds; inspect actual meshes and recover any interrupted jobs without blind paid resubmission.
+- [x] Persist approved R2 model/photo copies and complete priced Product listings; export72 approved products and11 interactive collections with dynamic voice/stylist routes.
+- [ ] Verify role-compatible replacements, budgets, layouts, albums/privacy and full checks; one PR/release and bounded production smoke. Native browser checks deferred.
+
+Implementation/readiness: [DEMO_EXAMPLES.md](DEMO_EXAMPLES.md).
+
 ## Budget-aware shopping stylist — November 1
 
 Plan: [SHOPPING_STYLIST_PLAN.md](SHOPPING_STYLIST_PLAN.md). Implementation/evidence: [SHOPPING_STYLIST.md](SHOPPING_STYLIST.md). Jim authorized the focused end-to-end implementation and complete ordinary catalog details, deferring enterprise inventory/library administration.
