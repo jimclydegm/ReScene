@@ -23,6 +23,8 @@ import type { SegmentationOptions } from "@/lib/ai/controls";
 import { UploadForm } from "@/components/upload-form";
 import {subjectVisibility} from "@/lib/editor/visibility";
 import {editHistory,recordEdit,finishEdit,undoEdit,redoEdit} from "@/lib/editor/history";
+import {emptyReplacementHistory,recordReplacement,undoReplacement,redoReplacement,type ReplacementHistory} from "@/lib/editor/replacement-history";
+import {ColorField} from "@/components/ui/color-field";
 import type { RestartTarget } from "@/lib/validation/generation";
 
 type Panel = "objects" | "scene" | "textures" | "lighting" | "products";
@@ -61,6 +63,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   const [chosen, setChosen] = useState<string[]>(initial.objects.filter(o=>o.maskUrl).map(o=>o.id));
   const [busy, setBusy] = useState(false);
   const [assetsLoading, setAssetsLoading] = useState(false);
+  const [replacementHistory,setReplacementHistory]=useState<ReplacementHistory>(()=>emptyReplacementHistory());
   const dirty=JSON.stringify(draft)!==JSON.stringify(data.objects),lightDirty=JSON.stringify(lights)!==JSON.stringify(data.lighting);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -117,13 +120,47 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   }, [base, panel]);
   async function catalogAction(action: "SEED" | "REPLACE" | "RESTORE", productId?: string) {
     setBusy(true); setError(""); setMessage("");
+    const beforeProductId = data.objects.find(o=>o.id===selected)?.replacementProductId ?? null;
     try {
       await apiJson(`${base}/${action === "SEED" ? "catalog" : "replacement"}`, {method:"POST", body:JSON.stringify({expectedRevision:data.revision,...(action === "SEED" ? {} : {action,objectId:selected,...(productId ? {productId} : {})})})});
       await reload();
       setCatalogItems((await apiJson<{products:CatalogItem[]}>(`${base}/catalog`)).products);
+      if (action === "REPLACE" && productId) {
+        setReplacementHistory(prev=>recordReplacement(prev,{objectId:selected,from:{productId:beforeProductId},to:{productId}}));
+      } else if (action === "RESTORE") {
+        setReplacementHistory(prev=>recordReplacement(prev,{objectId:selected,from:{productId:beforeProductId},to:{productId:null}}));
+      }
       setMessage(action === "SEED" ? "Demo catalog added." : action === "RESTORE" ? "Original object and product card restored." : "Object and product card replaced and saved.");
     } catch(e) { setError(e instanceof Error ? e.message : "Could not update the object."); }
     finally { setBusy(false); }
+  }
+  async function performReplacementInverse(direction: "undo" | "redo") {
+    const step = direction === "undo" ? undoReplacement(replacementHistory) : redoReplacement(replacementHistory);
+    if (!step.inverse || busy || running) return;
+    setBusy(true); setError(""); setMessage("");
+    try {
+      if (step.inverse.productId) {
+        await apiJson(`${base}/replacement`, {method:"POST", body:JSON.stringify({expectedRevision:data.revision,action:"REPLACE",objectId:step.inverse.objectId,productId:step.inverse.productId})});
+      } else {
+        await apiJson(`${base}/replacement`, {method:"POST", body:JSON.stringify({expectedRevision:data.revision,action:"RESTORE",objectId:step.inverse.objectId})});
+      }
+      await reload();
+      setCatalogItems((await apiJson<{products:CatalogItem[]}>(`${base}/catalog`)).products);
+      setReplacementHistory(step.history);
+      setMessage(direction === "undo" ? "Replacement undone." : "Replacement redone.");
+    } catch(e) {
+      setError(e instanceof Error ? e.message : direction === "undo" ? "Could not undo the replacement." : "Could not redo the replacement.");
+    } finally { setBusy(false); }
+  }
+  function undoTop() {
+    interaction.current = null;
+    if (history.length) setEditor(undoEdit);
+    else if (replacementHistory.past.length) void performReplacementInverse("undo");
+  }
+  function redoTop() {
+    interaction.current = null;
+    if (future.length) setEditor(redoEdit);
+    else if (replacementHistory.future.length) void performReplacementInverse("redo");
   }
   async function action(kind: "ANALYZE" | "RECONSTRUCT" | "SEGMENT_OBJECT" | "IMAGE_EDIT", segmentation?:SegmentationOptions,backgroundMode?:"reference"|"materials"|"photo",reanalyze=false) {
     setBusy(true); setError(""); setMessage("");
@@ -151,6 +188,12 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     catch (e) { setError(e instanceof Error ? e.message : "Could not resume."); }
     finally { setBusy(false); }
   }
+  const undoTopRef = useRef(undoTop);
+  const redoTopRef = useRef(redoTop);
+  useEffect(() => {
+    undoTopRef.current = undoTop;
+    redoTopRef.current = redoTop;
+  });
   function endInteraction(){interaction.current=null;interactionKind.current=null;setEditor(finishEdit);}
   function beginInteraction(event:FocusEvent<HTMLElement>|PointerEvent<HTMLElement>){
     const target=event.target;
@@ -162,14 +205,14 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
     const key=(event:globalThis.KeyboardEvent)=>{
       if(busy||running)return;
       const target=event.target;if(target instanceof HTMLElement&&(target.isContentEditable||target.closest('textarea,select,input:not([type="range"])')))return;
-      if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="z"){event.preventDefault();interaction.current=null;setEditor(event.shiftKey?redoEdit:undoEdit);}
-      else if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="y"){event.preventDefault();interaction.current=null;setEditor(redoEdit);}
+      if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="z")return event.preventDefault(),event.shiftKey?redoTopRef.current():undoTopRef.current();
+      if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="y")return event.preventDefault(),redoTopRef.current();
     };
     window.addEventListener("pointerup",finish);window.addEventListener("pointercancel",finish);window.addEventListener("keydown",key);
     return ()=>{window.removeEventListener("pointerup",finish);window.removeEventListener("pointercancel",finish);window.removeEventListener("keydown",key);};
   },[busy,running]);
   function edit(id: string, fields: Partial<SceneObjectView>) {
-    if(running||busy)return;
+    if(running||busy)return;invalidateReplacementRedo();
     const group=interaction.current;
     setEditor(prev=>recordEdit(prev,{...prev.present,objects:prev.present.objects.map(o=>{
       if(o.id===id)return {...o,...fields};
@@ -177,8 +220,9 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
       return o;
     })},group));setMessage("");
   }
+  function invalidateReplacementRedo(){setReplacementHistory(prev=>prev.future.length?{...prev,future:[]}:prev);}
   function isolate(id:string|null){
-    if(busy||running)return;endInteraction();
+    if(busy||running)return;invalidateReplacementRedo();endInteraction();
     setEditor(prev=>recordEdit(prev,{...prev.present,objects:subjectVisibility(prev.present.objects,id)}));
   }
   async function save() {
@@ -247,7 +291,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
   }
   async function reloadSaved(){setBusy(true);setError("");try{await reload();setViewerRetry(v=>v+1);discardDialog.current?.close();setMessage("Saved scene reloaded.");}catch(e){setError(e instanceof Error?e.message:"Could not reload.");}finally{setBusy(false);}}
   function requestReload(){if(dirty||lightDirty)discardDialog.current?.showModal();else void reloadSaved();}
-  function editLights(value: Lighting) { if(running||busy)return;const group=interaction.current;setEditor(prev=>recordEdit(prev,{...prev.present,lighting:value},group)); }
+  function editLights(value: Lighting) { if(running||busy)return;invalidateReplacementRedo();const group=interaction.current;setEditor(prev=>recordEdit(prev,{...prev.present,lighting:value},group)); }
   function askRestart(target: RestartTarget) {
     setRestartTarget(target);
     restartDialog.current?.showModal();
@@ -354,7 +398,7 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
               <div className="panel-heading"><h3>Selected</h3><button className="text-link panel-link" type="button" disabled={!dirty} onClick={() => resetPlacement(current.id)}><RotateCcw size={12}/>Reset</button></div>
               <label className="field">Name<input value={current.label} maxLength={120} onChange={e => edit(current.id, { label: e.target.value })}/></label>
               {transformGroups.map(([group, fields]) => <div className="field-group" key={group}><span className="group-label">{group}</span>{fields.map(([field, label, min, max, step]) => {const angle=["yaw","pitch","roll"].includes(field),factor=angle?180/Math.PI:1;return <RangeField key={field} label={angle?`${label} (°)`:label} min={min*factor} max={max*factor} step={angle?1:step} value={(current[field]??0)*factor} precision={angle?0:2} onChange={value => edit(current.id, { [field]: value/factor })}/>;})}</div>)}
-              <div className="panel-block"><label className="field-label">Object color<input aria-label="Object color" type="color" value={current.tint??"#ffffff"} onChange={e=>edit(current.id,{tint:e.target.value})}/></label><button className="text-link" onClick={()=>edit(current.id,{tint:null})}>Restore original color</button><p className="panel-note">Color tints the existing texture and preserves surface detail. Dark textures may limit bright colors.</p></div><label className="visibility-toggle"><span><Eye size={14}/>Visible</span><input className="switch-input" role="switch" type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/></label>
+              <div className="panel-block"><ColorField resetLabel="Original" label="Object color" value={current.tint??"#ffffff"} disabled={locked} onChange={color=>edit(current.id,{tint:color==="#ffffff"?null:color})}/><button className="text-link" disabled={!current.tint} onClick={()=>edit(current.id,{tint:null})}>Restore original color</button><p className="panel-note">Color tints the existing texture and preserves surface detail. Dark textures may limit bright colors.</p></div><label className="visibility-toggle"><span><Eye size={14}/>Visible</span><input className="switch-input" role="switch" type="checkbox" checked={current.visible} onChange={e => edit(current.id, { visible: e.target.checked })}/></label>
             </fieldset>}
           </div>
           : value === "scene" ? <SceneLayoutControls onRetry={retryObjects} onMask={chooseMask} data={data} locked={locked} unsaved={unsaved} blocked={hasReplacements} onMatch={() => matchLayout("MATCH_PHOTO")} onReview={() => matchLayout("REVIEW_PHOTO")} onRestore={() => matchLayout("RESTORE")} onBackdrop={changeBackdrop} onRestoreBackground={()=>matchLayout("RESTORE_BACKGROUND")} onBackground={mode => action("IMAGE_EDIT",undefined,mode)} onGenerateVariant={generateVariant} onSelectVariant={selectVariant} onDeleteVariant={deleteVariant} onQuality={()=>quality("IMPROVE")} onQualityRestore={()=>quality("RESTORE")} onQualityPaid={paidQuality}/>
@@ -362,8 +406,8 @@ export function SceneStudio({ initial }: { initial: SceneWorkspace }) {
           : <>{value==="textures"&&<TextureControls data={data} disabled={locked||unsaved||hasReplacements} onGenerate={paidQuality} onHistory={textureHistory} onBackground={reanalyze=>action("IMAGE_EDIT",undefined,"reference",reanalyze)}/>}<AppearanceControls coordinated={Boolean(data.quality)} panel={value} lighting={lights} setLighting={editLights} dirty={lightDirty} objectDirty={dirty} busy={locked} texturesBlocked={hasReplacements} relightableBackground={Boolean(data.composition?.background?.surfaceMode)} applied={data.appearance.applied} onRefresh={()=>appearance("APPLY")} onTexture={() => appearance(data.appearance.applied ? "RESTORE" : "APPLY")} onReset={() => editLights(defaultLighting(data.composition))}/></>}
         </div>)}
         <div className="inspector-footer">
-          <button className="icon-button" title="Undo (Ctrl/⌘ Z)" aria-label="Undo edit" disabled={!history.length || locked} onClick={() => {interaction.current=null;setEditor(undoEdit);}}><Undo2 size={15}/></button>
-          <button className="icon-button" title="Redo (Ctrl/⌘ Shift Z)" aria-label="Redo edit" disabled={!future.length || locked} onClick={() => {interaction.current=null;setEditor(redoEdit);}}><Redo2 size={15}/></button>
+          <button className="icon-button" title="Undo (Ctrl/⌘ Z)" aria-label="Undo edit" disabled={(!history.length && !replacementHistory.past.length) || locked} onClick={undoTop}><Undo2 size={15}/></button>
+          <button className="icon-button" title="Redo (Ctrl/⌘ Shift Z)" aria-label="Redo edit" disabled={(!future.length && !replacementHistory.future.length) || locked} onClick={redoTop}><Redo2 size={15}/></button>
           <button className="button button-dark" disabled={!unsaved || locked} onClick={save}><Save size={14}/>{busy ? "Saving…" : unsaved ? "Save changes" : "Saved"}</button>
         </div>
       </aside></div> : <ObjectReview key={data.objects.map(o=>o.id).join(":")} data={data} busy={locked} running={running} chosen={chosen} setChosen={setChosen} analysis={analysisOptions} setAnalysis={setAnalysisOptions} reconstruction={reconstructionOptions} setReconstruction={setReconstructionOptions} onAnalyze={()=>data.status==="DRAFT"?void action("ANALYZE"):askRestart("ANALYSIS")} onSegment={value=>action("SEGMENT_OBJECT",value)} onMask={chooseMask} onBuild={()=>action("RECONSTRUCT")} onReview={()=>askRestart("RECONSTRUCTION")}/>}

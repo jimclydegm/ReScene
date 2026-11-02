@@ -6,7 +6,7 @@ export type SceneObjectView = { id: string; label: string; status: string; error
   parentObjectId:string|null;assemblyRootId:string|null;
   concept:string;confidence:number|null;bounds:SegmentationOptions["box"]|null;segmentation:SegmentationOptions|null;
   maskAlternatives:{assetId:string;confidence:number|null;bounds:NonNullable<SegmentationOptions["box"]>;area:number;url:string;selected:boolean}[];
-  canRestoreOriginal: boolean; product: (ProductFields & { imageUrl: string | null }) | null; maskUrl: string | null; modelUrl: string | null; positionX: number; positionY: number; positionZ: number;
+  canRestoreOriginal: boolean; replacementProductId?: string | null; product: (ProductFields & { imageUrl: string | null }) | null; maskUrl: string | null; modelUrl: string | null; positionX: number; positionY: number; positionZ: number;
   tint?:string|null; yaw: number;pitch?:number;roll?:number; scale: number; visible: boolean; placement: ModelPlacement | null };
 export type BackgroundVariantView = { id: string; name: string; prompt: string | null; textureAssetId: string | null; previewUrl: string | null; createdAt: string; active: boolean };
 export type SceneWorkspace = { id: string; title: string; description: string | null; status: string; revision: number; generationEnabled: boolean;

@@ -606,7 +606,7 @@ dialog::backdrop { background: #101713a3; backdrop-filter: blur(4px); }
 .demo-store .showroom-finish-preview { display: grid; height: 34px; border-radius: 3px; overflow: hidden; margin-bottom: 4px; grid-template-rows: 2fr 1fr; }
 .demo-store .showroom-color-inputs { display: grid; gap: 6px; margin-top: 12px; }
 .demo-store .showroom-color-inputs label { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-.demo-store .showroom-color-inputs input { width: 30px; height: 26px; border: 1px solid var(--line); padding: 2px; background: var(--shop-surface); border-radius: 4px; }
+.demo-store .showroom-color-inputs input:not(.cf-hex):not(.cf-native) { width: 30px; height: 26px; border: 1px solid var(--line); padding: 2px; background: var(--shop-surface); border-radius: 4px; }
 .demo-store .showroom-color-inputs span { margin-left: auto; font-size: 11px; font-family: var(--font-mono), monospace; color: var(--muted); }
 .demo-store .showroom-check { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--shop-muted); margin-top: 10px; }
 .demo-store .showroom-check input { accent-color: var(--shop-link); }
@@ -775,5 +775,29 @@ dialog::backdrop { background: #101713a3; backdrop-filter: blur(4px); }
 .voice-change-list li { display: flex; align-items: flex-start; gap: 8px; color: var(--ink); font-size: 13px; line-height: 1.4; }
 .voice-change-list svg { flex: 0 0 auto; margin-top: 2px; color: var(--green); }
 .demo-store .retail-catalog-toolbar > label { margin-left: auto; }
+.cf { display: grid; gap: 8px; min-width: 0; }
+.cf-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.cf-label { font-size: 12px; font-weight: 500; color: var(--ink-2); }
+.cf-value { font-family: var(--font-mono), monospace; font-size: 11px; color: var(--muted); }
+.cf-row { position: relative; display: flex; align-items: center; gap: 8px; }
+.cf-swatch { width: 30px; height: 30px; flex: 0 0 30px; padding: 0; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); cursor: pointer; overflow: hidden; }
+.cf-swatch[aria-pressed="true"], .cf-swatch:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; }
+.cf-swatch:disabled { opacity: .45; cursor: not-allowed; }
+.cf-swatch-preset { border-radius: 50%; }
+.cf-swatch-none { width: auto; flex: 0 0 auto; padding: 0 8px; height: 28px; font-size: 11px; color: var(--ink-2); }
+.cf-hex { flex: 1 1 auto; min-width: 0; min-height: 36px; padding: 6px 8px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--ink); font-family: var(--font-mono), monospace; font-size: 13px; }
+.cf-hex:focus-visible { outline: 2px solid var(--green); outline-offset: 0; }
+.cf-native { position: absolute; left: 0; top: 0; width: 30px; height: 30px; margin: 0; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+.cf-swatches { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 0; margin: 0; border: 0; }
+.cf-more { justify-self: start; padding: 0; border: 0; background: transparent; color: var(--green); font-size: 12px; cursor: pointer; }
+.cf-more:disabled { opacity: .45; cursor: not-allowed; }
+.cf-hint { color: var(--muted); font-size: 11px; }
+.atlas-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.atlas-option { display: grid; gap: 2px; padding: 8px 10px; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
+.atlas-option strong { font-size: 13px; font-weight: 500; }
+.atlas-option small { color: var(--muted); font-size: 11px; line-height: 1.4; }
+.atlas-option[aria-checked="true"] { border-color: var(--green); background: var(--green-pale); }
+.atlas-option:focus-visible { outline: 2px solid var(--green); outline-offset: 1px; }
+.atlas-option:disabled { opacity: .45; cursor: not-allowed; }
 .demo-store .showroom-replace-toolbar .voice-trigger { width: auto; padding: 6px 9px; }
 .demo-store .demo-room-topbar > div { gap: 6px; }

@@ -2,7 +2,7 @@
 import { config } from "dotenv";
 config({ path: ".env.local", quiet: true });
 import { mkdir, writeFile, readFile } from "node:fs/promises";
-import { createHash, randomUUID } from "node:crypto";
+import { createHash } from "node:crypto";
 import { Box3, Matrix4, Quaternion, Vector3 } from "three";
 import { getDb } from "../src/lib/db";
 import { syncSceneProducts } from "../src/lib/services/product-library";

@@ -1,6 +1,15 @@
 # ReScene — one release pass
 
+## Final desktop and judge polish — November 2
+
+- [x] Audit public shopping flows and local bootstrap; fix color-state recovery, replacement discovery, saved browser data, request limits/timeouts and reviewer cache isolation.
+- [x]380 tests/schema/lint/build/types,72 approved local mesh hashes and98 keyless shopping pages pass; targeted native light/dark shopping/color/Undo/checkout checks pass.
+- [ ] Complete clean-checkout/PR/deployment verification and record the final handoff.
+
 ## Submission preparation — November 2
+
+- [x] Revise the 2:55 video outline around merchant upload/product persistence, product-reference composition, editing/model roles and all three shopping workflows; verify gallery choice and budget feasibility without inference. Add explicit 30/25/20/25 judging evidence, visible live-call chain and brief validation-code view.
+- [x] Align the revised narration to Jim’s actual2:25.633 ElevenLabs recording (about438words). VIDEO_TIMELINE.md specifies16sections, real app actions and seven pause inserts totaling29seconds for a2:55 edit; VIDEO_TIMING.csv gives source/video clocks. VIDEO_SCRIPT/STRUCTURE/VISUALS are synchronized. FFmpeg duration/silence analysis and Muse transcription confirm approximate phrase cues. Native microphone rehearsal, actual demo capture, graphics rendering and final export/submission remain pending.
 
 - [x] Add Jim Clyde Monge credit and a five-image README showcase covering furniture, personal items, space building and product inspection; retain separate attribution.
 - [x] PR47 merged atcab87a1; docs CI, five-image/local-link checks and native GitHub gallery verification pass. All five images load on public main.

@@ -20,10 +20,24 @@ export async function readJson(request: Request): Promise<unknown> {
   if (Number(request.headers.get("content-length") ?? 0) > 128 * 1024) {
     throw new AppError(413, "BODY_TOO_LARGE", "This request is too large.");
   }
-  const text = await request.text();
-  if (Buffer.byteLength(text) > 128 * 1024) {
-    throw new AppError(413, "BODY_TOO_LARGE", "This request is too large.");
-  }
+  // Content-Length is optional. Stop oversized chunked requests before buffering
+  // their entire body, rather than enforcing the limit after allocation.
+  const reader = request.body?.getReader();
+  const parts: Uint8Array[] = [];
+  let bytes = 0;
+  if (reader) try {
+    while (true) {
+      const next = await reader.read();
+      if (next.done) break;
+      bytes += next.value.byteLength;
+      if (bytes > 128 * 1024) {
+        await reader.cancel().catch(() => {});
+        throw new AppError(413, "BODY_TOO_LARGE", "This request is too large.");
+      }
+      parts.push(next.value);
+    }
+  } finally { reader.releaseLock(); }
+  const text = Buffer.concat(parts).toString("utf8");
   try { return JSON.parse(text); }
   catch { throw new AppError(400, "INVALID_JSON", "Send a valid JSON request."); }
 }

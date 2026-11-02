@@ -29,17 +29,19 @@ export function ReplacementPicker({
   const current = itemProductId(id, draft.items[id]),
     [choice, setChoice] = useState(current),
     [query, setQuery] = useState(""),
-    [category, setCategory] = useState("All"),
+    [category, setCategory] = useState(findDemoProduct(current)?.category ?? "All"),
+    [showUnavailable, setShowUnavailable] = useState(false),
     [error, setError] = useState("");
   const product = findDemoProduct(choice)!,
     old = findDemoProduct(current)!,
-    items = demoProducts.filter(
+    matches = demoProducts.filter(
       (p) =>
         (category === "All" || p.category === category) &&
         `${p.name} ${p.category} ${p.role ?? ""}`
           .toLowerCase()
           .includes(query.toLowerCase()),
-    );
+    ).map(p=>({product:p, reason:changeArrangement(scene,draft,id,{productId:p.id}).error})),
+    items = matches.filter(({reason})=>showUnavailable || !reason);
   return (
     <DemoDialog title={`Replace ${old.name}`} onClose={onClose} wide>
       <div className="showroom-replace-toolbar">
@@ -74,11 +76,12 @@ export function ReplacementPicker({
           ))}
         </select>
       </div>
+      <div className="showroom-replace-results">
+        <span role="status">{items.length} {items.length===1?"product":"products"}{!showUnavailable?" fit this position":" found"}</span>
+        <label><input type="checkbox" checked={showUnavailable} onChange={e=>setShowUnavailable(e.target.checked)}/>Show unavailable</label>
+      </div>
       <div className="showroom-replacement-grid">
-        {items.map((p) => {
-          const reason = changeArrangement(scene, draft, id, {
-            productId: p.id,
-          }).error;
+        {items.map(({product:p,reason}) => {
           return (
             <button
               key={p.id}

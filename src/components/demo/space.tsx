@@ -89,7 +89,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
         scene.objects[0].id,
     ),
     [panel, setPanel] = useState<"products" | "room" | "layouts" | "stylist">(
-      "stylist",
+      process.env.NEXT_PUBLIC_JUDGE_SAMPLES === "true" ? "products" : "stylist",
     ),
     [preview, setPreview] = useState<Arrangement | null>(null),
     [replacing, setReplacing] = useState(false),

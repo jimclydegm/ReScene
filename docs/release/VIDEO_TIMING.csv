@@ -1,0 +1,17 @@
+scene,title,source_start_seconds,source_end_seconds,video_start_seconds,video_end_seconds,hold_after_seconds
+1,Shopping problem,0,17.5,0,17.5,0
+2,Introduce ReScene,17.5,25.2,17.5,25.2,0
+3,Upload photo,25.2,31.1,25.2,31.1,0
+4,Spark SAM and SAM3D,31.1,49.1,31.1,49.1,0
+5,Complete environment,49.1,52.6,49.1,57.6,5
+6,Editing and textures,52.6,61.65,57.6,66.65,0
+7,Product Save and reload,61.65,69.65,66.65,78.65,4
+8,Product-photo scene generation,69.65,80.95,78.65,93.95,4
+9,Shopping transition,80.95,83.55,93.95,96.55,0
+10,Explore a Product,83.55,98.7,96.55,114.7,3
+11,Build Your Space,98.7,108.05,114.7,124.05,0
+12,Spoken request,108.05,113,124.05,129,0
+13,Transcript and two proposals,113,121.22,129,143.22,6
+14,Preview Apply Undo and bag,121.22,127.42,143.22,153.42,4
+15,Shop the Scene,127.42,136.7,153.42,165.7,3
+16,Final result,136.7,145.632625,165.7,174.632625,0

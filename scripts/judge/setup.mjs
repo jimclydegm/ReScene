@@ -16,6 +16,8 @@ const models = JSON.parse(
   await readFile("src/lib/demo/catalog-models.json", "utf8"),
 );
 const version = "judge-assets-v1";
+console.log(`Preparing ${models.length} approved sample models (about 134 MiB on the first run)…`);
+let verified = 0;
 for (const m of models) {
   const key = `judge/demo/store-v1/${m.digest}.glb`,
     path = `.judge/objects/${key}`;
@@ -40,6 +42,8 @@ for (const m of models) {
     await writeFile(path, bytes, { mode: 0o600 });
   }
   await writeFile(`${path}.mime`, "model/gltf-binary", { mode: 0o600 });
+  verified++;
+  if (verified % 12 === 0 || verified === models.length) console.log(`Verified ${verified}/${models.length} models`);
 }
 console.log(
   `Verified ${models.length} approved models. No inference was submitted.`,

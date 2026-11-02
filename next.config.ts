@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 import { withWorkflow } from "workflow/next";
 
 const nextConfig: NextConfig = {
+  // Reviewer playback can run beside the authoring server without sharing locks
+  // or letting a production build remove its development cache.
+  distDir: ["samples", "live"].includes(process.env.RESCENE_JUDGE_MODE ?? "") ? ".judge/next" : ".next",
   poweredByHeader: false,
   outputFileTracingIncludes: { "/*": ["./public/samples/**/*.webp"] },
   async headers() {
