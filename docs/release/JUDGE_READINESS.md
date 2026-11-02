@@ -2,6 +2,10 @@
 
 ReScene is a fresh Indie Developer hackathon build. Jim confirmed the fresh-start baseline; GitHub records public repository creation on October 28, 2026. This file separates working verification from remaining submission actions.
 
+## Final verification November 2
+
+PR48 merged at `84b7099` with green PR/main CI and READY Vercel production. The current app passes380tests/68files, schema validation, lint, typecheck and build. A fresh checkout without cloud credentials passes installation, approved-model bootstrap and code checks; all98 shopping pages pass locally and in production. Native desktop checks now cover product/color/bag/checkout, room Undo, hide/show, lighting, price sorting, dark mode and compact toolbar/CTA. Private editor Objects/Textures were inspected without edits. See [FINAL_POLISH.md](FINAL_POLISH.md). The earlier365-test release evidence below remains historical. Low/moderate transitive dependency advisories remain documented; no high/critical advisories were reported.
+
 ## Repository and reproducibility
 
 - Public source: https://github.com/jimclydegm/ReScene

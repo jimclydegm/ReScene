@@ -29,4 +29,4 @@ The video, participant submission, input rights and exact hosted auxiliary-model
 
 ## Release
 
-PR48 is open. Its first CI and Vercel preview passed; the final compact-toolbar adjustment is being rechecked before merge/production verification. No fresh image, mesh, transcription or stylist inference was submitted during this pass. Existing saved scenes and approved media were not regenerated.
+PR [48](https://github.com/jimclydegm/ReScene/pull/48) merged at `84b7099`. Final PR CI and main CI passed; Vercel production `rescene-3ecxazc3y-jimclydegms-projects.vercel.app` is READY and aliased to `rescene-eta.vercel.app`. All98 deployed shopping pages and invalid collection/asset checks pass. Production rejects local judge files (404), unauthenticated scene creation (401) and redirects private authoring to sign-in (307). Native production confirms the featured chair/sorting controls and approved photographs. The actual private editor’s Objects/Textures panels were also inspected without edits or generation. No fresh image, mesh, transcription or stylist inference was submitted during this pass. Existing saved scenes and approved media were not regenerated.

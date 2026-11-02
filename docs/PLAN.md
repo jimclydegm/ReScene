@@ -180,3 +180,5 @@ Use Jim’s supplied2:25.633 ElevenLabs narration unchanged instead of the earli
 ## November 2 — final desktop and judge polish
 
 Complete the existing presentation changes and prioritize failures that affect the judging path: controlled color entry/Undo, replacement source identity, usable catalog discovery, resilient saved browser state and bounded HTTP requests. Add subtle reduced-motion-aware transitions and compact short-desktop controls. Keep Meta models, reconstruction, production auth and media boundaries unchanged. Isolate judge Next output in .judge/next, independent of durable workflows/media and authoring output; exclude local generated artifacts from lint/types. No schema migration or new inference. See release/FINAL_POLISH.md for checks and release status.
+
+Final polish released through PR48 at84b7099. Exact PR/main CI and production pass; fresh-checkout code checks and all98 local/production pages verified. Temporary review services are removed after verification, preserving the existing authoring server and all saved scene data. Video recording/submission and external provider/rights confirmations remain separate from app implementation.

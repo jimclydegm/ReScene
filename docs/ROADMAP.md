@@ -4,7 +4,7 @@
 
 - [x] Audit public shopping flows and local bootstrap; fix color-state recovery, replacement discovery, saved browser data, request limits/timeouts and reviewer cache isolation.
 - [x]380 tests/schema/lint/build/types,72 approved local mesh hashes and98 keyless shopping pages pass; targeted native light/dark shopping/color/Undo/checkout checks pass.
-- [ ] Complete clean-checkout/PR/deployment verification and record the final handoff.
+- [x] Fresh-checkout installation/setup/code checks, all98 production pages and auth/local-mode guards pass. PR48 merged84b7099; PR/main CI green; automatic production deployment READY. Native production catalog verified; final handoff recorded.
 
 ## Submission preparation — November 2
 
