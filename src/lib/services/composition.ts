@@ -118,6 +118,14 @@ export async function matchPhotoLayout(sceneId: string, ownerId: string, input: 
     if(result.composition.background?.surfaceMode==="reference"&&input.action==="MATCH_PHOTO"){
       const {reframeSceneEnvironment}=await import("./background-environment");const rebuilt=await reframeSceneEnvironment(scene,result.composition);result.composition.background.geometry=rebuilt.geometry;
     }
+    // The final environment and final object poses must be checked together.
+    const {readMesh}=await import("@/lib/quality/mesh"),{placementMatrix}=await import("@/lib/quality/placement"),
+      {levelBackgroundSupports,backgroundSupportLift,fitBackgroundClearance,backgroundPenetration}=await import("@/lib/scene/environment-clearance");
+    const physical=result.objects.map((o,i)=>({id:o.id,support:String(record(roots[i].provenance).support??"unknown"),points:readMesh(meshBytes[i],placementMatrix(o)).primitives.flatMap(p=>Array.from({length:p.positions.length/3},(_,k)=>new Vector3().fromArray(p.positions,k*3)))}));
+    result.composition=levelBackgroundSupports(result.composition,physical).composition;
+    for(const object of physical){const lift=backgroundSupportLift(object.points,result.composition,object.support);if(lift){result.objects.find(o=>o.id===object.id)!.position[1]+=lift;for(const p of object.points)p.y+=lift;}}
+    result.composition=fitBackgroundClearance(result.composition,physical).composition;
+    if(physical.some(o=>backgroundPenetration(o.points,result.composition).some(p=>p.depth>.001)))throw new Error("ENVIRONMENT_CLEARANCE_UNRESOLVED");
   } catch {
     throw new AppError(422, "LAYOUT_UNAVAILABLE", "The saved reconstruction has no reliable room layout. Your current layout is unchanged.");
   }

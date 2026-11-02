@@ -149,7 +149,7 @@ it("keeps the vase on its cabinet while moving/rotating the parent and rejects u
     vase = "corner-vase",
     cabinet = "corner-cabinet";
   expect(supportOf(scene, vase)).toBe(cabinet);
-  const result = changeArrangement(scene, initial, cabinet, { x: 3, yaw: 0.4 });
+  const result = changeArrangement(scene, initial, cabinet, { x: 3, z: 0.4, yaw: 0.4 });
   expect(result.error).toBeNull();
   expect(result.draft.items[vase].x).not.toBe(initial.items[vase].x);
   expect(result.draft.items[vase].yaw).toBeCloseTo(0.4);

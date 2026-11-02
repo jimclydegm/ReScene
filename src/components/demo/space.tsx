@@ -78,10 +78,8 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
     scene = demoScenes.find((s) => s.id === sceneId)!;
   const [timeline, setTimeline] = useState(() =>
       editHistory(
-        store.collections[scene.id]?.A ??
-          (scene.id === "space" && store.layouts
-            ? store.layouts.A
-            : collectionLayouts(scene).A),
+        resolveCollectionLayouts(scene,store.collections[scene.id] ??
+          (scene.id === "space" && store.layouts ? {...collectionLayouts(scene),...store.layouts} : undefined)).A,
       ),
     ),
     [slot, setSlot] = useState<LayoutName>("A"),

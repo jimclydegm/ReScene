@@ -1,4 +1,4 @@
-import type { DemoScene } from "./scenes";
+import {resolvedDemoObject,type DemoScene} from "./scenes";
 import type { Arrangement } from "./state";
 import { findDemoProduct, itemProductId } from "./catalog";
 import type { SceneComposition } from "@/lib/scene/composition";
@@ -50,7 +50,7 @@ export const continuousBackdrop = (
   scene.composition.background?.transition === "curve";
 export function demoRoomAppearance(
   scene: DemoScene,
-  draft: Pick<Arrangement, "background">,
+  draft: Pick<Arrangement, "background"> & Partial<Pick<Arrangement,"items">>,
 ) {
   const settings = draft.background;
   if (
@@ -74,14 +74,16 @@ export function demoRoomAppearance(
     },
   };
   if (settings.preset === "studio") {
+    const dx=original.camera.target[0]-original.camera.position[0],dz=original.camera.target[2]-original.camera.position[2],length=Math.hypot(dx,dz)||1,forward=[dx/length,dz/length];
     const height = Math.max(...scene.objects.map((o) => o.placement.size[1])),
       rear =
         Math.max(
           0.5,
           ...scene.objects.map(
             (o) =>
-              Math.abs(o.position[2] - original.camera.target[2]) +
-              o.placement.size[2] / 2,
+              ((draft.items?.[o.id]?.x??o.position[0])-original.camera.target[0])*forward[0]+
+              ((draft.items?.[o.id]?.z??o.position[2])-original.camera.target[2])*forward[1]+
+              (draft.items?Math.max(...resolvedDemoObject(scene,draft as Arrangement,o.id).placement.size):Math.max(...o.placement.size)),
           ),
         ) +
         height * 0.6;

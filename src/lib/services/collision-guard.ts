@@ -5,12 +5,15 @@ import { geometry } from "@/lib/appearance/bake";
 import { flattenTransform } from "@/lib/scene/manifest";
 import { glbBounds } from "@/lib/scene/composition";
 import { readLimited } from "@/lib/storage/r2";
+import {backgroundPenetration} from "@/lib/scene/environment-clearance";
+import type {SceneComposition} from "@/lib/scene/composition";
 import { AppError } from "@/lib/http";
 import { record } from "./composition";
 import type { SceneObject, Asset } from "@/generated/prisma/client";
 export async function guardCollisions(
   objects: (SceneObject & { model: Asset | null })[],
   next?: SceneObject[],
+  composition?: SceneComposition,
 ) {
   const files = await Promise.all(
     objects.map(async (o) =>
@@ -39,6 +42,14 @@ export async function guardCollisions(
         },
       ];
     });
+  }
+  if(composition){
+    const previous=meshes(objects),proposed=next?meshes(next):previous;
+    for(const m of proposed){
+      const depths=backgroundPenetration(m.points.flat(),composition),old=next?backgroundPenetration(previous.find(o=>o.id===m.id)?.points.flat()??[],composition):[];
+      if(depths.some(d=>d.depth>Math.max(.003,(old.find(p=>p.index===d.index)?.depth??0)+.00001)))
+        throw new AppError(422,"BACKGROUND_COLLISION","An object intersects the background. Keep its base on the support and its geometry inside the room before saving or publishing.");
+    }
   }
   const before = collisionPairs(meshes(objects)),
     after = next ? collisionPairs(meshes(next)) : before;

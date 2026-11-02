@@ -1,5 +1,12 @@
 # ReScene — one release pass
 
+## Background clearance — November2
+
+- [x] Audit all11 collections against full approved meshes; identify wall, studio-sweep, tilted-tabletop and sunken-base problems.
+- [x] Shared rendered-triangle boundaries, support leveling/grounding, connected wall expansion, retained window UVs, exact hulls, default demo/edit/publish guards and safe preset recovery.
+- [x] Repair nine linked owned sources with backups and undo history; full audit of66 arrangements/234 placements has no measured intersections.362 tests/schema/lint/types/build and native targeted checks pass.
+- [ ] One combined PR/release and production verification.
+
 ## Complete Muse example library — November 2
 
 - [x] Generate and visually review eight scene examples,30 distinct product variations and28 separate studio product photographs with Muse Image. Repair the misidentified black-cap perfume shot using a separate preserved paid receipt.

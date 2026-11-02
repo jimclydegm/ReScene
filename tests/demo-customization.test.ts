@@ -74,7 +74,7 @@ describe("Customizable shopping showroom", () => {
       corner,
       replacement.draft,
       "corner-cabinet",
-      { x: 2.5, yaw: 0.25 },
+      { x: 2.5, z: 0.3, yaw: 0.25 },
     );
     expect(moved.error).toBeNull();
     expect(moved.draft.items["corner-vase"].x).not.toBe(

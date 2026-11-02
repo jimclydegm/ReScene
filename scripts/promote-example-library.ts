@@ -29,6 +29,7 @@ import { defaultLighting, lightingSchema } from "../src/lib/scene/lighting";
 import { inspectGlb } from "../src/lib/ai/glb";
 import { record } from "../src/lib/services/composition";
 import { referenceView } from "../src/lib/quality/pipeline";
+import {makeClearanceHull} from "../src/lib/quality/clearance-hull";
 import { readMesh } from "../src/lib/quality/mesh";
 import type { DemoProduct } from "../src/lib/demo/catalog";
 const db = getDb(),
@@ -36,6 +37,7 @@ const db = getDb(),
   partial = process.argv.includes("--partial"),
   json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 type Model = {
+  clearanceHull?: [number,number,number][];
   id: string;
   digest: string;
   bytes: number;
@@ -156,6 +158,7 @@ function placement(o: ObjectRow, bytes: Buffer, id: string): Model {
     size = world.getSize(new Vector3());
   return {
     id,
+    clearanceHull:makeClearanceHull(bytes),
     digest: hash(bytes),
     bytes: bytes.length,
     position: [center.x, world.min.y, center.z],

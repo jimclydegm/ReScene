@@ -1,3 +1,4 @@
+import {environmentBoundaries,boundaryPenetration} from "@/lib/scene/environment-clearance";
 import { Euler, Matrix4, Quaternion, Vector3 } from "three";
 import { z } from "zod";
 import { readMesh } from "./mesh";
@@ -52,37 +53,17 @@ function hullContains(points: { x: number; z: number }[], q: { x: number; z: num
   return hull.every((a, i) => cross(a, hull[(i + 1) % hull.length], q) >= -1e-9);
 }
 
-type Wall = { normal: Vector3; origin: Vector3; polygon: [number, number][]; holes: [number, number][][]; u: Vector3; v: Vector3 };
-// Observed walls from the reference environment. Openings are holes: an
-// object may pass through a window/door gap, never through the wall itself.
-export function environmentWalls(composition: SceneComposition): Wall[] {
-  const surfaces = composition.background?.geometry?.surfaces ?? [], eye = new Vector3(...composition.camera.position), walls: Wall[] = [];
-  for (const s of surfaces.filter(s => s.role === "wall")) {
-    const vertices = s.vertices.map(v => new Vector3(...v)), origin = vertices.reduce((a, b) => a.add(b), new Vector3()).multiplyScalar(1 / vertices.length), normal = new Vector3();
-    for (let i = 0; i < vertices.length; i++) { const a = vertices[i], b = vertices[(i + 1) % vertices.length]; normal.x += (a.y - b.y) * (a.z + b.z); normal.y += (a.z - b.z) * (a.x + b.x); normal.z += (a.x - b.x) * (a.y + b.y); }
-    if (normal.lengthSq() < 1e-12) continue;
-    normal.normalize(); if (normal.dot(eye.clone().sub(origin)) < 0) normal.negate();
-    const u = Math.abs(normal.y) < .9 ? new Vector3(0, 1, 0).cross(normal).normalize() : new Vector3(1, 0, 0), v = normal.clone().cross(u);
-    const flat = (p: Vector3) => [p.clone().sub(origin).dot(u), p.clone().sub(origin).dot(v)] as [number, number];
-    const holes = surfaces.filter(o => o.role === "window" || o.role === "opening").map(o => o.vertices.map(p => new Vector3(...p))).filter(o => o.every(p => Math.abs(p.clone().sub(origin).dot(normal)) < .08)).map(o => o.map(flat));
-    walls.push({ normal, origin, polygon: vertices.map(flat), holes, u, v });
-  }
-  return walls;
+// Opaque photographed window/opening backings are rendered surfaces too.
+export function environmentWalls(composition: SceneComposition) {
+  return environmentBoundaries(composition).filter(b => !["floor", "surface"].includes(b.role));
 }
-const inside = (p: [number, number], polygon: [number, number][]) => { let r = false; for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) { const [xi, yi] = polygon[i], [xj, yj] = polygon[j]; if ((yi > p[1]) !== (yj > p[1]) && p[0] < (xj - xi) * (p[1] - yi) / (yj - yi || 1e-12) + xi) r = !r; } return r; };
-export function wallPenetration(points: Vector3[], walls: Wall[]) {
-  let worst = 0, push = new Vector3();
+export function wallPenetration(points: Vector3[], walls: ReturnType<typeof environmentWalls>) {
+  let depth = 0, push = new Vector3();
   for (const wall of walls) {
-    let depth = 0;
-    for (const p of points) {
-      const d = p.clone().sub(wall.origin).dot(wall.normal); if (d >= 0) continue;
-      const q = p.clone().sub(wall.origin), flat: [number, number] = [q.dot(wall.u), q.dot(wall.v)];
-      if (!inside(flat, wall.polygon) || wall.holes.some(h => inside(flat, h))) continue;
-      depth = Math.max(depth, -d);
-    }
-    if (depth > worst) { worst = depth; push = wall.normal.clone().multiplyScalar(depth); }
+    const amount = boundaryPenetration(points,wall);
+    if (amount > depth) { depth=amount;push=wall.normal.clone().multiplyScalar(amount); }
   }
-  return { depth: worst, push };
+  return {depth,push};
 }
 
 function silhouetteIoU(doc: ReturnType<typeof readMesh>, o: Placed, mask: Uint8Array, composition: SceneComposition, size: { width: number; height: number }) {
