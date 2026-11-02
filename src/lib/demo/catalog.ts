@@ -1,4 +1,5 @@
 import products from "./catalog-data.json";
+import collections from "./collections-data.json";
 export type DemoProduct = {
   id: string;
   name: string;
@@ -9,30 +10,20 @@ export type DemoProduct = {
   materials: string;
   dimensions: string;
   care: string;
+  role?: string;
+  imagePath?: string;
   colors: { name: string; value: string | null; swatch: string }[];
 };
 // Approved catalog snapshot exported from Neon. Prices are integer USD cents.
 export const demoProducts: DemoProduct[] = products;
-export const collectionProducts: Record<string, string[]> = {
-  corner: ["corner-chair", "corner-cabinet", "corner-vase"],
-  space: ["oak-dresser", "sage-chair", "round-table", "dining-chair"],
-  living: ["cloud-sofa", "coffee-table", "wood-stool", "ceramic-vase"],
-};
+export const collectionProducts: Record<string, string[]> = Object.fromEntries(
+  collections.map((c) => [c.id, c.products]),
+);
 export const collectionInfo: Record<string, { name: string; caption: string }> =
-  {
-    corner: {
-      name: "The Reading Corner",
-      caption: "A lounge chair, oak cabinet and terracotta vase.",
-    },
-    space: {
-      name: "The Everyday Collection",
-      caption: "Four pieces. Plenty of ways to make them yours.",
-    },
-    living: {
-      name: "The Sunday Living Room",
-      caption: "A cream sofa, warm wood and a quiet place to slow down.",
-    },
-  };
+  Object.fromEntries(
+    collections.map((c) => [c.id, { name: c.name, caption: c.caption }]),
+  );
+export const collectionIds = collections.map((c) => c.id);
 export const findDemoProduct = (id: string) =>
   demoProducts.find((p) => p.id === id);
 export const itemProductId = (id: string, item: { productId?: string }) =>
@@ -47,4 +38,5 @@ export const money = (cents: number) =>
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(cents / 100);
-export const demoImage = (id: string) => `/demo/images/${id}.webp`;
+export const demoImage = (id: string) =>
+  findDemoProduct(id)?.imagePath ?? `/demo/images/${id}.webp`;

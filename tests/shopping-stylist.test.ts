@@ -18,6 +18,7 @@ import {
   merchandiseTotal,
   purchaseLines,
   stylistCompatible,
+  shoppingCatalogContext,
 } from "../src/lib/shopping/engine";
 import { decimalToCents, listingProfile } from "../src/lib/shopping/listing";
 import {
@@ -57,6 +58,18 @@ const intent = (): ShoppingIntent => ({
   clarification: null,
 });
 describe("Budget-aware shopping combinations", () => {
+  it("limits model context to compatible replacements and preserves kept/owned context", () => {
+    const scene = demoScenes.find((s) => s.id === "workspace")!,
+      draft = initialArrangement(scene);
+    draft.items["workspace-item-2"].owned = true;
+    draft.items["workspace-item-3"].owned = true;
+    const context = shoppingCatalogContext({ ...input(), sceneId: scene.id, draft, keep: ["workspace-item-1"] });
+    expect(context.length).toBeLessThan(demoProducts.length / 2);
+    expect(context.filter((p) => p.slots.includes("workspace-item-1")).map((p) => p.id)).toEqual(["workspace-item-1"]);
+    expect(context.filter((p) => p.slots.includes("workspace-item-4")).length).toBeGreaterThanOrEqual(5);
+    expect(context.every((p) => p.slots.every((s) => Object.hasOwn(draft.items, s)))).toBe(true);
+    expect(context.some((p) => p.role === "sofa")).toBe(false);
+  });
   it("uses exact minor units and displays cents without rounding a quote", () => {
     expect(decimalToCents("249.01")).toBe(24901);
     expect(decimalToCents("0.09")).toBe(9);

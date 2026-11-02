@@ -16,7 +16,11 @@ import {
   Truck,
 } from "lucide-react";
 import { findDemoProduct, money, type DemoProduct } from "@/lib/demo/catalog";
-import { demoProductScene, initialArrangement } from "@/lib/demo/scenes";
+import {
+  demoProductScene,
+  initialArrangement,
+  productCollection,
+} from "@/lib/demo/scenes";
 import { productAlbum, productCover } from "@/lib/demo/albums";
 import { ImageAlbum } from "./image-album";
 import { DemoViewer } from "./viewer";
@@ -88,8 +92,8 @@ const reviews = [
     initials: "AM",
     color: "#d7b7a1",
     rating: 5,
-    title: "An easy addition to my reading corner",
-    text: "Being able to see the chair next to the cabinet made choosing the combination much easier.",
+    title: "A closer look made choosing easier",
+    text: "The clear photos and the option to inspect the shape in 3D made it easier to compare products.",
   },
   {
     name: "Jamie Lee",
@@ -305,9 +309,9 @@ export function ProductPage({ id }: { id: string }) {
             </button>
             <Link
               className="d-text"
-              href={`/demo/space?collection=${scene.id === "living" ? "corner" : scene.id}`}
+              href={`/demo/space?collection=${productCollection(id)}`}
             >
-              Style it in a room
+              Explore the matching collection
               <ArrowRight size={14} />
             </Link>
           </div>

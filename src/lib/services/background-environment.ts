@@ -343,7 +343,7 @@ export async function draftReferenceEnvironment(runId: string) {
   return {
     sceneId:scene.id,revision:scene.revision,photoId:photo.id,
     stage:{...composition,background:{kind:plan.topology==="room"?"planes" as const:"seamless" as const,groundVisible:plan.surfaces.some(s=>s.role==="floor"||s.role==="surface"),boundary:null,description:plan.explanation,surfaceMode:"reference" as const,geometry:atlas.geometry}},
-    settings:{...settings,environmentObservation:{version:"environment-observation-v1",photoId:photo.id,analysis:plan},backgroundPlan:undefined,backgroundBackup:{background:settings.background??null,backgroundPlan:composition.background??null},background:{version:"reference-environment-v1",materialMethod:"muse-per-surface-atlas-v3",observation:plan,assetId,photoId:photo.id,warnings:built.report.warnings,report:built.report,atlas:{width:atlas.width,height:atlas.height,cleanPlateAssetId:c.plateAssetId,cleanDepth:c.cleanDepth}}},report:built.report,
+    settings:{...settings,environmentObservation:{version:"environment-observation-v1",photoId:photo.id,analysis:plan},backgroundPlan:undefined,backgroundBackup:{background:settings.background??null,backgroundPlan:composition.background??null},background:{version:"reference-environment-v1",materialMethod:"muse-per-surface-atlas-v3",observation:plan,assetId,photoId:photo.id,warnings:built.report.warnings,report:built.report,depthSelection:c.depthSelection,atlas:{width:atlas.width,height:atlas.height,cleanPlateAssetId:c.plateAssetId,cleanDepth:c.cleanDepth}}},report:built.report,
   };
 }
 export async function buildReferenceEnvironment(runId: string) {

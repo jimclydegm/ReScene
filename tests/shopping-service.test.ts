@@ -35,6 +35,7 @@ import { demoProducts } from "../src/lib/demo/catalog";
 import models from "../src/lib/demo/catalog-models.json";
 import { demoScenes, initialArrangement } from "../src/lib/demo/scenes";
 import type { StylistInput } from "../src/lib/shopping/contracts";
+import { ShoppingResponseError } from "../src/lib/ai/shopping-response";
 const actor = { actorHash: "actor", networkHash: "network" },
   request = (): StylistInput => ({
     key: crypto.randomUUID(),
@@ -205,6 +206,17 @@ describe("Durable shopping stylist", () => {
     await executeShopping(r.id);
     await executeShopping(r.id);
     expect(row!.status).toBe("SUBMISSION_UNCERTAIN");
+    expect(m.intent).toHaveBeenCalledTimes(1);
+    expect(m.rank).not.toHaveBeenCalled();
+  });
+  it("records a known truncated response separately from an uncertain submission without retrying", async () => {
+    const r = await reserveShopping(actor, request());
+    m.intent.mockRejectedValueOnce(new ShoppingResponseError("SHOPPING_RESPONSE_LENGTH", { finishReason: "length", usage: { completion_tokens: 3000 } }));
+    await executeShopping(r.id);
+    await executeShopping(r.id);
+    expect(row!.status).toBe("FAILED");
+    expect(row!.errorCode).toBe("SHOPPING_RESPONSE_LENGTH");
+    expect(row!.usage).toMatchObject({ failure: { finishReason: "length", usage: { completion_tokens: 3000 } } });
     expect(m.intent).toHaveBeenCalledTimes(1);
     expect(m.rank).not.toHaveBeenCalled();
   });

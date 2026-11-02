@@ -45,6 +45,7 @@ assert.equal(
   (await call(root + "/00000000-0000-4000-8000-000000000001")).status,
   404,
 );
+if (!process.argv.includes("--replay-only")) {
 for (const p of demoProducts) {
   const response = await call(`/demo/product/${p.id}`);
   assert.equal(response.status, 200);
@@ -64,11 +65,12 @@ for (const id of [
   assert.equal(bytes.length, m.bytes);
 }
 console.log(
-  "Fourteen product pages, three newly curated model hashes and stylist origin/input/guest guards pass.",
+  `${demoProducts.length} product pages, three curated model hashes and stylist origin/input/guest guards pass.`,
 );
+}
 if (process.argv.includes("--replay")) {
   const saved = JSON.parse(
-    await readFile("test-results/stylist/live-http.json", "utf8"),
+    await readFile(process.env.STYLIST_SAVED_PROOF ?? "test-results/stylist/live-http.json", "utf8"),
   );
   const input = { ...saved.input, key: crypto.randomUUID() };
   // Exercise deployed workflow dispatch with an impossible kept budget: zero model calls.
@@ -76,7 +78,7 @@ if (process.argv.includes("--replay")) {
     ...input,
     key: crypto.randomUUID(),
     budgetCents: 1,
-    text: "Keep the selected chair within a one-cent budget.",
+    text: "Keep the selected products within a one-cent budget.",
   });
   const reservation = await r.json();
   assert.equal(r.status, 202, JSON.stringify(reservation));
@@ -148,7 +150,7 @@ if (process.argv.includes("--replay")) {
       assert.equal(merchandiseTotal(body.draft), option.subtotalCents);
     }
     const altered = structuredClone(input.draft);
-    altered.items["corner-chair"].color = 1;
+    altered.items[input.selected].color = (altered.items[input.selected].color + 1) % 5;
     assert.equal(
       (
         await post(`${root}/${row.id}`, {

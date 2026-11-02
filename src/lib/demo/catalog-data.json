@@ -655,5 +655,2615 @@
         "swatch": "#737d78"
       }
     ]
+  },
+  {
+    "id": "haven-linen-chair",
+    "name": "Haven Linen Armchair",
+    "subtitle": "Lounge chairs",
+    "price": 22900,
+    "category": "Lounge chairs",
+    "role": "chair",
+    "description": "A rounded ivory linen armchair with four walnut legs and one thick fitted seat cushion. An easy-to-coordinate silhouette with a carefully finished frame.",
+    "materials": "Linen upholstery, foam and walnut frame",
+    "dimensions": "W76 × D78 × H82 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eee8de"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/haven-linen-chair.webp"
+  },
+  {
+    "id": "line-oak-chair",
+    "name": "Line Oak Dining Chair",
+    "subtitle": "Dining chairs",
+    "price": 11900,
+    "category": "Dining chairs",
+    "role": "chair",
+    "description": "A straight solid oak dining chair with a slatted back and a pale woven seat pad. An easy-to-coordinate silhouette with a carefully finished frame.",
+    "materials": "Solid oak and woven cotton cushion",
+    "dimensions": "W46 × D51 × H82 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#b98d60"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/line-oak-chair.webp"
+  },
+  {
+    "id": "form-sage-chair",
+    "name": "Form Sage Chair",
+    "subtitle": "Dining chairs",
+    "price": 9900,
+    "category": "Dining chairs",
+    "role": "chair",
+    "description": "A sage green molded shell chair with four slender matte black metal legs. An easy-to-coordinate silhouette with a carefully finished frame.",
+    "materials": "Molded polymer and steel",
+    "dimensions": "W48 × D52 × H80 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#80977d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/form-sage-chair.webp"
+  },
+  {
+    "id": "cove-terracotta-chair",
+    "name": "Cove Terracotta Armchair",
+    "subtitle": "Lounge chairs",
+    "price": 25900,
+    "category": "Lounge chairs",
+    "role": "chair",
+    "description": "A terracotta textured fabric barrel armchair with a curved back and tapered oak legs. An easy-to-coordinate silhouette with a carefully finished frame.",
+    "materials": "Textured woven upholstery and oak",
+    "dimensions": "W78 × D79 × H81 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#ad6952"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/cove-terracotta-chair.webp"
+  },
+  {
+    "id": "nord-walnut-chair",
+    "name": "Nord Walnut Chair",
+    "subtitle": "Dining chairs",
+    "price": 14900,
+    "category": "Dining chairs",
+    "role": "chair",
+    "description": "A walnut dining chair with a simple curved back rail and a dark brown upholstered flat seat. An easy-to-coordinate silhouette with a carefully finished frame.",
+    "materials": "Solid walnut and textile upholstery",
+    "dimensions": "W48 × D52 × H79 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#754c35"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/nord-walnut-chair.webp"
+  },
+  {
+    "id": "forma-oak-drawers",
+    "name": "Forma Oak Drawers",
+    "subtitle": "Storage",
+    "price": 27900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "A compact natural oak four-drawer chest with straight legs and discreet dark handles. Keep everyday essentials organized in practical storage with a compact footprint.",
+    "materials": "Oak veneer and solid oak legs",
+    "dimensions": "W80 × D42 × H88 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#d6c8af"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/forma-oak-drawers.webp"
+  },
+  {
+    "id": "arc-white-drawers",
+    "name": "Arc White Drawers",
+    "subtitle": "Storage",
+    "price": 19900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "A matte warm-white three-drawer chest with oak feet and small circular wooden pulls. Keep everyday essentials organized in practical storage with a compact footprint.",
+    "materials": "Painted engineered wood and oak",
+    "dimensions": "W75 × D40 × H78 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eeeae4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/arc-white-drawers.webp"
+  },
+  {
+    "id": "line-walnut-drawers",
+    "name": "Line Walnut Drawers",
+    "subtitle": "Storage",
+    "price": 32900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "A dark walnut three-drawer chest with flush fronts and simple brass bar handles. Keep everyday essentials organized in practical storage with a compact footprint.",
+    "materials": "Walnut veneer and brass hardware",
+    "dimensions": "W85 × D43 × H80 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#754c35"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/line-walnut-drawers.webp"
+  },
+  {
+    "id": "studio-sage-drawers",
+    "name": "Studio Sage Drawers",
+    "subtitle": "Storage",
+    "price": 23900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "A muted sage painted four-drawer chest on short natural wood legs with minimal black handles. Keep everyday essentials organized in practical storage with a compact footprint.",
+    "materials": "Painted wood and steel hardware",
+    "dimensions": "W78 × D42 × H86 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#80977d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/studio-sage-drawers.webp"
+  },
+  {
+    "id": "ridge-ash-drawers",
+    "name": "Ridge Ash Drawers",
+    "subtitle": "Storage",
+    "price": 17900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "A light ash two-drawer wide chest with flat fronts and simple inset horizontal pulls. Keep everyday essentials organized in practical storage with a compact footprint.",
+    "materials": "Ash veneer and solid wood",
+    "dimensions": "W90 × D42 × H68 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#c7ad86"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/ridge-ash-drawers.webp"
+  },
+  {
+    "id": "pebble-ivory-mouse",
+    "name": "Pebble Ivory Mouse",
+    "subtitle": "Computer mice",
+    "price": 2900,
+    "category": "Computer mice",
+    "role": "mouse",
+    "description": "A compact warm ivory oval wireless computer mouse with two top buttons and one black scroll wheel. An everyday workspace essential with a clean finish and a useful scroll wheel.",
+    "materials": "Matte polymer and rubber scroll wheel",
+    "dimensions": "W6 × D10 × H3 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eee8de"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/pebble-ivory-mouse.webp"
+  },
+  {
+    "id": "arc-graphite-mouse",
+    "name": "Arc Graphite Mouse",
+    "subtitle": "Computer mice",
+    "price": 4900,
+    "category": "Computer mice",
+    "role": "mouse",
+    "description": "A graphite ergonomic wireless mouse with a gently arched body, two buttons and a rubber scroll wheel. An everyday workspace essential with a clean finish and a useful scroll wheel.",
+    "materials": "Textured polymer and rubber",
+    "dimensions": "W7 × D12 × H4 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#3b4144"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/arc-graphite-mouse.webp"
+  },
+  {
+    "id": "slim-silver-mouse",
+    "name": "Slim Silver Mouse",
+    "subtitle": "Computer mice",
+    "price": 5900,
+    "category": "Computer mice",
+    "role": "mouse",
+    "description": "A slim brushed silver wireless mouse with a white top panel and a small central scroll wheel. An everyday workspace essential with a clean finish and a useful scroll wheel.",
+    "materials": "Aluminum and matte polymer",
+    "dimensions": "W6 × D11 × H2.5 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#b5b9bc"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/slim-silver-mouse.webp"
+  },
+  {
+    "id": "studio-sage-mouse",
+    "name": "Studio Sage Mouse",
+    "subtitle": "Computer mice",
+    "price": 3900,
+    "category": "Computer mice",
+    "role": "mouse",
+    "description": "A soft sage green compact wireless mouse with a smooth rounded two-button shell and dark scroll wheel. An everyday workspace essential with a clean finish and a useful scroll wheel.",
+    "materials": "Soft-touch polymer and rubber",
+    "dimensions": "W6 × D10.5 × H3.5 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#80977d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/studio-sage-mouse.webp"
+  },
+  {
+    "id": "precision-black-mouse",
+    "name": "Precision Black Mouse",
+    "subtitle": "Computer mice",
+    "price": 6900,
+    "category": "Computer mice",
+    "role": "mouse",
+    "description": "A matte black wireless performance mouse with a subtle ergonomic contour, two side buttons and one scroll wheel. An everyday workspace essential with a clean finish and a useful scroll wheel.",
+    "materials": "Matte polymer and rubber grips",
+    "dimensions": "W7 × D12.5 × H4.5 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#303638"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/precision-black-mouse.webp"
+  },
+  {
+    "id": "cloud-ivory-sofa",
+    "name": "Cloud Ivory Sofa",
+    "subtitle": "Sofas",
+    "price": 59900,
+    "category": "Sofas",
+    "role": "sofa",
+    "description": "An ivory boucle two-seat sofa with two fitted seat cushions, a continuous rounded back and four short oak legs. Comfortable cushioning and a compact shape that coordinates easily with your space.",
+    "materials": "Boucle upholstery, foam and timber frame",
+    "dimensions": "W175 × D88 × H80 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eee8de"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/cloud-ivory-sofa.webp"
+  },
+  {
+    "id": "cove-sage-sofa",
+    "name": "Cove Sage Sofa",
+    "subtitle": "Sofas",
+    "price": 64900,
+    "category": "Sofas",
+    "role": "sofa",
+    "description": "A muted sage woven-fabric two-seat sofa with slim rounded arms and tapered walnut legs. Comfortable cushioning and a compact shape that coordinates easily with your space.",
+    "materials": "Woven polyester and walnut legs",
+    "dimensions": "W180 × D88 × H82 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#80977d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/cove-sage-sofa.webp"
+  },
+  {
+    "id": "line-caramel-sofa",
+    "name": "Line Caramel Sofa",
+    "subtitle": "Sofas",
+    "price": 79900,
+    "category": "Sofas",
+    "role": "sofa",
+    "description": "A caramel leather two-seat sofa with straight padded arms, two seat cushions and dark wood feet. Comfortable cushioning and a compact shape that coordinates easily with your space.",
+    "materials": "Leather upholstery and timber frame",
+    "dimensions": "W178 × D86 × H79 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#ae7651"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/line-caramel-sofa.webp"
+  },
+  {
+    "id": "haven-blue-sofa",
+    "name": "Haven Blue Sofa",
+    "subtitle": "Sofas",
+    "price": 54900,
+    "category": "Sofas",
+    "role": "sofa",
+    "description": "A dusty blue textured-fabric compact sofa with a softly curved back and slender oak legs. Comfortable cushioning and a compact shape that coordinates easily with your space.",
+    "materials": "Textured upholstery and oak legs",
+    "dimensions": "W170 × D85 × H80 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#77a8bd"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/haven-blue-sofa.webp"
+  },
+  {
+    "id": "studio-charcoal-sofa",
+    "name": "Studio Charcoal Sofa",
+    "subtitle": "Sofas",
+    "price": 49900,
+    "category": "Sofas",
+    "role": "sofa",
+    "description": "A charcoal gray linen two-seat sofa with clean rectangular cushions and matte black short legs. Comfortable cushioning and a compact shape that coordinates easily with your space.",
+    "materials": "Linen blend upholstery and steel feet",
+    "dimensions": "W172 × D86 × H78 cm",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#3b4144"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/studio-charcoal-sofa.webp"
+  },
+  {
+    "id": "court-white-sneaker",
+    "name": "Court White Sneaker",
+    "subtitle": "Footwear",
+    "price": 8900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "A white low-top leather lace-up sneaker with subtle gray heel panel and a clean white rubber cup sole. A versatile everyday style with a neatly finished upper and a rubber sole.",
+    "materials": "Leather upper and rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eeeae4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/court-white-sneaker.webp"
+  },
+  {
+    "id": "trail-sage-sneaker",
+    "name": "Trail Sage Sneaker",
+    "subtitle": "Footwear",
+    "price": 10900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "A sage and cream mesh running sneaker with neat laces and a continuous solid off-white foam sole. A versatile everyday style with a neatly finished upper and a rubber sole.",
+    "materials": "Mesh textile and foam rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#80977d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/trail-sage-sneaker.webp"
+  },
+  {
+    "id": "derby-brown-shoe",
+    "name": "Derby Brown Shoe",
+    "subtitle": "Footwear",
+    "price": 12900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "A rich brown leather lace-up derby shoe with neat stitching, a rounded toe and a low dark sole. A versatile everyday style with a neatly finished upper and a rubber sole.",
+    "materials": "Leather upper and rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#805537"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/derby-brown-shoe.webp"
+  },
+  {
+    "id": "soft-sand-loafer",
+    "name": "Soft Sand Loafer",
+    "subtitle": "Footwear",
+    "price": 7900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "A sand suede slip-on loafer with a rounded moccasin toe and thin textured rubber sole. A versatile everyday style with a neatly finished upper and a rubber sole.",
+    "materials": "Suede upper and rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#cfbfa4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/soft-sand-loafer.webp"
+  },
+  {
+    "id": "canvas-navy-shoe",
+    "name": "Canvas Navy Shoe",
+    "subtitle": "Footwear",
+    "price": 5900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "A navy canvas low-top lace-up sneaker with white stitching and a simple white rubber sole. A versatile everyday style with a neatly finished upper and a rubber sole.",
+    "materials": "Cotton canvas and rubber",
+    "dimensions": "Size EU 42",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#304c68"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/canvas-navy-shoe.webp"
+  },
+  {
+    "id": "everyday-ivory-mug",
+    "name": "Everyday Ivory Mug",
+    "subtitle": "Mugs",
+    "price": 1900,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "A warm ivory ceramic mug with a gently rounded body and one generous C-shaped handle. An everyday cup for tea or coffee, with a comfortable handle and a glazed interior.",
+    "materials": "Glazed ceramic",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eee8de"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/everyday-ivory-mug.webp"
+  },
+  {
+    "id": "terra-clay-mug",
+    "name": "Terra Clay Mug",
+    "subtitle": "Mugs",
+    "price": 2400,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "A terracotta ceramic mug with a matte exterior, cream glazed interior and one rounded handle. An everyday cup for tea or coffee, with a comfortable handle and a glazed interior.",
+    "materials": "Glazed stoneware",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#ad6952"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/terra-clay-mug.webp"
+  },
+  {
+    "id": "forest-sage-mug",
+    "name": "Forest Sage Mug",
+    "subtitle": "Mugs",
+    "price": 2200,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "A sage green glazed ceramic mug with a subtly ribbed body and one smooth handle. An everyday cup for tea or coffee, with a comfortable handle and a glazed interior.",
+    "materials": "Glazed ceramic",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#80977d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/forest-sage-mug.webp"
+  },
+  {
+    "id": "coast-blue-mug",
+    "name": "Coast Blue Mug",
+    "subtitle": "Mugs",
+    "price": 2100,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "A powder blue ceramic mug with a glossy white interior and one large curved handle. An everyday cup for tea or coffee, with a comfortable handle and a glazed interior.",
+    "materials": "Glazed ceramic",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#77a8bd"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/coast-blue-mug.webp"
+  },
+  {
+    "id": "playtime-bear-mug",
+    "name": "Playtime Bear Mug",
+    "subtitle": "Mugs",
+    "price": 2900,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "A sky-blue ceramic mug with one blue handle, a simple charming original brown bear illustration and small yellow stars, white interior. An everyday cup for tea or coffee, with a comfortable handle and a glazed interior.",
+    "materials": "Printed glazed ceramic",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Clean gently with a soft cloth and follow material-specific care instructions.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#77a8bd"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/playtime-bear-mug.webp"
+  },
+  {
+    "id": "chair-studio-item-1",
+    "name": "Haven Oat Armchair",
+    "subtitle": "Lounge chairs",
+    "price": 22900,
+    "category": "Lounge chairs",
+    "role": "chair",
+    "description": "Haven Oat Armchair brings woven upholstery, foam and walnut legs and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Woven upholstery, foam and walnut legs",
+    "dimensions": "W76 × D78 × H82 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#d7c9b2"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/chair-studio-item-1.webp"
+  },
+  {
+    "id": "chair-studio-item-2",
+    "name": "Line Classic Oak Chair",
+    "subtitle": "Dining chairs",
+    "price": 11900,
+    "category": "Dining chairs",
+    "role": "chair",
+    "description": "Line Classic Oak Chair brings solid oak and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Solid oak",
+    "dimensions": "W46 × D51 × H82 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#9a734f"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/chair-studio-item-2.webp"
+  },
+  {
+    "id": "chair-studio-item-3",
+    "name": "Form Gray Dining Chair",
+    "subtitle": "Dining chairs",
+    "price": 9900,
+    "category": "Dining chairs",
+    "role": "chair",
+    "description": "Form Gray Dining Chair brings molded polymer and powder-coated steel and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Molded polymer and powder-coated steel",
+    "dimensions": "W48 × D52 × H80 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#999d9d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/chair-studio-item-3.webp"
+  },
+  {
+    "id": "chair-studio-item-4",
+    "name": "Everyday Oak Stool",
+    "subtitle": "Stools",
+    "price": 7900,
+    "category": "Stools",
+    "role": "stool",
+    "description": "Everyday Oak Stool brings solid oak and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Solid oak",
+    "dimensions": "W36 × D36 × H45 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#9a734f"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/chair-studio-item-4.webp"
+  },
+  {
+    "id": "appliances-item-1",
+    "name": "Alto White Two-Door Refrigerator",
+    "subtitle": "Appliances",
+    "price": 59900,
+    "category": "Appliances",
+    "role": "fridge",
+    "description": "Alto White Two-Door Refrigerator brings painted steel and glass shelving and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Painted steel and glass shelving",
+    "dimensions": "W60 × D62 × H160 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eae7e1"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/appliances-item-1.webp"
+  },
+  {
+    "id": "appliances-item-2",
+    "name": "Retro Cream Refrigerator",
+    "subtitle": "Appliances",
+    "price": 64900,
+    "category": "Appliances",
+    "role": "fridge",
+    "description": "Retro Cream Refrigerator brings cream painted steel and metal handle and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Cream painted steel and metal handle",
+    "dimensions": "W58 × D62 × H155 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#e2d7b8"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/appliances-item-2.webp"
+  },
+  {
+    "id": "appliances-item-3",
+    "name": "Compact White Refrigerator",
+    "subtitle": "Appliances",
+    "price": 49900,
+    "category": "Appliances",
+    "role": "fridge",
+    "description": "Compact White Refrigerator brings painted steel and glass shelving and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Painted steel and glass shelving",
+    "dimensions": "W55 × D58 × H145 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eae7e1"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/appliances-item-3.webp"
+  },
+  {
+    "id": "fragrance-item-1",
+    "name": "Pure No. 01 Eau de Parfum",
+    "subtitle": "Fragrances",
+    "price": 8900,
+    "category": "Fragrances",
+    "role": "perfume",
+    "description": "Pure No. 01 Eau de Parfum brings glass bottle and brushed metal cap and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Glass bottle and brushed metal cap",
+    "dimensions": "W7 × D4 × H14 cm · 100 ml",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#d7d5ce"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/fragrance-item-1.webp"
+  },
+  {
+    "id": "fragrance-item-2",
+    "name": "Amber No. 02 Eau de Parfum",
+    "subtitle": "Fragrances",
+    "price": 10900,
+    "category": "Fragrances",
+    "role": "perfume",
+    "description": "Amber No. 02 Eau de Parfum brings clear glass and gold-tone metal cap and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Clear glass and gold-tone metal cap",
+    "dimensions": "W10 × D4 × H12 cm · 80 ml",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#cbb08a"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/fragrance-item-2.webp"
+  },
+  {
+    "id": "fragrance-item-3",
+    "name": "Night No. 03 Eau de Parfum",
+    "subtitle": "Fragrances",
+    "price": 7900,
+    "category": "Fragrances",
+    "role": "perfume",
+    "description": "Night No. 03 Eau de Parfum brings clear glass and matte black cap and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Clear glass and matte black cap",
+    "dimensions": "W4 × D4 × H17 cm · 50 ml",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#303638"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/fragrance-item-3.webp"
+  },
+  {
+    "id": "home-essentials-item-1",
+    "name": "Alto White Refrigerator",
+    "subtitle": "Appliances",
+    "price": 59900,
+    "category": "Appliances",
+    "role": "fridge",
+    "description": "Alto White Refrigerator brings painted steel, glass shelves and polymer trim and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Painted steel, glass shelves and polymer trim",
+    "dimensions": "W60 × D62 × H155 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eeeae4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/home-essentials-item-1.webp"
+  },
+  {
+    "id": "home-essentials-item-2",
+    "name": "Line Padded Oak Chair",
+    "subtitle": "Dining chairs",
+    "price": 12900,
+    "category": "Dining chairs",
+    "role": "chair",
+    "description": "Line Padded Oak Chair brings oak frame and woven cotton seat and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Oak frame and woven cotton seat",
+    "dimensions": "W46 × D51 × H82 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#aa8054"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/home-essentials-item-2.webp"
+  },
+  {
+    "id": "home-essentials-item-3",
+    "name": "Forma Classic Four-Drawer Chest",
+    "subtitle": "Storage",
+    "price": 28900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "Forma Classic Four-Drawer Chest brings oak veneer, timber legs and metal handles and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Oak veneer, timber legs and metal handles",
+    "dimensions": "W80 × D42 × H88 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#aa8054"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/home-essentials-item-3.webp"
+  },
+  {
+    "id": "workspace-item-1",
+    "name": "Everyday Steel Tumbler",
+    "subtitle": "Drinkware",
+    "price": 1900,
+    "category": "Drinkware",
+    "role": "tumbler",
+    "description": "Everyday Steel Tumbler brings brushed stainless steel and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Brushed stainless steel",
+    "dimensions": "W8 × D8 × H13 cm · 400 ml",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#b5b9bc"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/workspace-item-1.webp"
+  },
+  {
+    "id": "workspace-item-2",
+    "name": "Slate Silver Notebook Computer",
+    "subtitle": "Computers",
+    "price": 89900,
+    "category": "Computers",
+    "role": "laptop",
+    "description": "Slate Silver Notebook Computer brings aluminum chassis and glass display and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Aluminum chassis and glass display",
+    "dimensions": "W32 × D22 × H2 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#b5b9bc"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/workspace-item-2.webp"
+  },
+  {
+    "id": "workspace-item-3",
+    "name": "Studio Charcoal Notebook",
+    "subtitle": "Stationery",
+    "price": 1900,
+    "category": "Stationery",
+    "role": "notebook",
+    "description": "Studio Charcoal Notebook brings cloth-bound board and paper and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Cloth-bound board and paper",
+    "dimensions": "W15 × D21 × H2 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#303638"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/workspace-item-3.webp"
+  },
+  {
+    "id": "workspace-item-4",
+    "name": "Quiet Graphite Wireless Mouse",
+    "subtitle": "Computer mice",
+    "price": 4900,
+    "category": "Computer mice",
+    "role": "mouse",
+    "description": "Quiet Graphite Wireless Mouse brings matte polymer and rubber wheel and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Matte polymer and rubber wheel",
+    "dimensions": "W7 × D12 × H4 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#303638"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/workspace-item-4.webp"
+  },
+  {
+    "id": "daily-carry-item-1",
+    "name": "Heritage Brown Lace-Up",
+    "subtitle": "Footwear",
+    "price": 12900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "Heritage Brown Lace-Up brings leather upper and rubber sole and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Leather upper and rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#805537"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/daily-carry-item-1.webp"
+  },
+  {
+    "id": "daily-carry-item-2",
+    "name": "Everyday Natural Tote",
+    "subtitle": "Bags",
+    "price": 3900,
+    "category": "Bags",
+    "role": "tote",
+    "description": "Everyday Natural Tote brings heavy cotton canvas and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Heavy cotton canvas",
+    "dimensions": "W38 × D10 × H40 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#d6c8af"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/daily-carry-item-2.webp"
+  },
+  {
+    "id": "daily-carry-item-3",
+    "name": "Studio Sand Cap",
+    "subtitle": "Accessories",
+    "price": 2400,
+    "category": "Accessories",
+    "role": "cap",
+    "description": "Studio Sand Cap brings cotton twill and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Cotton twill",
+    "dimensions": "Adjustable adult size",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#cfbfa4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/daily-carry-item-3.webp"
+  },
+  {
+    "id": "city-style-item-1",
+    "name": "Quilt Taupe Top-Handle Bag",
+    "subtitle": "Bags",
+    "price": 14900,
+    "category": "Bags",
+    "role": "handbag",
+    "description": "Quilt Taupe Top-Handle Bag brings quilted leather and gold-tone hardware and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Quilted leather and gold-tone hardware",
+    "dimensions": "W26 × D10 × H22 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#afa092"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/city-style-item-1.webp"
+  },
+  {
+    "id": "city-style-item-2",
+    "name": "Everyday Gray Runner",
+    "subtitle": "Footwear",
+    "price": 10900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "Everyday Gray Runner brings mesh, suede panels and rubber sole and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Mesh, suede panels and rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#a6a8a8"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/city-style-item-2.webp"
+  },
+  {
+    "id": "city-style-item-3",
+    "name": "Soft Oat Suede Loafer",
+    "subtitle": "Footwear",
+    "price": 7900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "Soft Oat Suede Loafer brings suede upper and rubber sole and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Suede upper and rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#d7c9b2"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/city-style-item-3.webp"
+  },
+  {
+    "id": "playtime-item-1",
+    "name": "Playtime Color Ball",
+    "subtitle": "Toys",
+    "price": 1900,
+    "category": "Toys",
+    "role": "ball",
+    "description": "Playtime Color Ball brings textured soft-touch polymer and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Textured soft-touch polymer",
+    "dimensions": "W18 × D18 × H18 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#dbb532"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/playtime-item-1.webp"
+  },
+  {
+    "id": "playtime-item-2",
+    "name": "Playtime Friends Mug",
+    "subtitle": "Mugs",
+    "price": 2900,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "Playtime Friends Mug brings illustrated glazed ceramic and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Illustrated glazed ceramic",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#5ca2bb"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/playtime-item-2.webp"
+  },
+  {
+    "id": "playtime-item-3",
+    "name": "Dino Lunch Box",
+    "subtitle": "Containers",
+    "price": 2400,
+    "category": "Containers",
+    "role": "lunchbox",
+    "description": "Dino Lunch Box brings molded polymer with illustrated lid and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Molded polymer with illustrated lid",
+    "dimensions": "W22 × D16 × H7 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#5ca2bb"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/playtime-item-3.webp"
+  },
+  {
+    "id": "playtime-item-4",
+    "name": "Little Red Play Car",
+    "subtitle": "Toys",
+    "price": 1400,
+    "category": "Toys",
+    "role": "toycar",
+    "description": "Little Red Play Car brings soft-touch molded polymer and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Soft-touch molded polymer",
+    "dimensions": "W8 × D14 × H7 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#cc3530"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/playtime-item-4.webp"
+  },
+  {
+    "id": "playtime-item-5",
+    "name": "Rainbow Crayon Set",
+    "subtitle": "Stationery",
+    "price": 1200,
+    "category": "Stationery",
+    "role": "crayons",
+    "description": "Rainbow Crayon Set brings wax crayons and printed card box and a carefully finished silhouette to the collection. Explore the details in 3D and coordinate it with your everyday essentials.",
+    "materials": "Wax crayons and printed card box",
+    "dimensions": "W14 × D10 × H3 cm",
+    "care": "Clean gently with a soft cloth. Follow the material care instructions supplied with the product.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#efc447"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/expansion/playtime-item-5.webp"
   }
 ]

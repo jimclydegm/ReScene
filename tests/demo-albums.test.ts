@@ -10,6 +10,7 @@ import {
   resolveCollectionLayouts,
 } from "../src/lib/demo/scenes";
 import albumData from "../src/lib/demo/photography.json";
+import exampleMedia from "../src/lib/demo/example-media.json";
 import { demoProducts } from "../src/lib/demo/catalog";
 import { productAlbum, sceneAlbum } from "../src/lib/demo/albums";
 import { demoRenderObjects } from "../src/lib/demo/render-objects";
@@ -20,7 +21,9 @@ describe("shopping albums and scene controls", () => {
     for (const p of demoProducts) {
       const album = productAlbum(p.id);
       if (!Object.hasOwn(albumData.products, p.id)) {
-        expect(album[0].kind).toBe("photo");
+        expect(album[0].kind).toBe(
+          Object.hasOwn(exampleMedia.products, p.id) ? "generated" : "photo",
+        );
         expect(
           (await sharp(readFileSync(`public${album[0].path}`)).metadata())
             .width,
@@ -56,9 +59,12 @@ describe("shopping albums and scene controls", () => {
     }
     for (const scene of demoScenes) {
       const album = sceneAlbum(scene.id);
-      expect(album[0].kind).toBe("photo");
-      expect(album).toHaveLength(3);
-      expect(album.filter((i) => i.kind === "generated")).toHaveLength(2);
+      const fresh = Object.hasOwn(exampleMedia.scenes, scene.id);
+      expect(album[0].kind).toBe(fresh ? "generated" : "photo");
+      expect(album).toHaveLength(fresh ? 1 : 3);
+      expect(album.filter((i) => i.kind === "generated")).toHaveLength(
+        fresh ? 1 : 2,
+      );
     }
   });
   it("offers six safe front-facing presets, preserves custom layouts and repairs the old auto back view", () => {
@@ -124,6 +130,14 @@ describe("shopping albums and scene controls", () => {
           });
           expect(shown.error, `${scene.id}/${o.id}`).toBeNull();
         }
+  });
+  it("rejects restoring a hidden item moved deeper into another product", () => {
+    const scene = demoScenes.find((s) => s.id === "workspace")!,
+      draft = initialArrangement(scene),
+      hidden = changeArrangement(scene, draft, "workspace-item-2", { visible: false }).draft;
+    hidden.items["workspace-item-2"].x = hidden.items["workspace-item-3"].x;
+    hidden.items["workspace-item-2"].z = hidden.items["workspace-item-3"].z;
+    expect(changeArrangement(scene, hidden, "workspace-item-2", { visible: true }).error).toContain("overlaps");
   });
   it("round-trips the expanded finishes and six layout slots without changing earlier variant indices", () => {
     for (const p of demoProducts) {

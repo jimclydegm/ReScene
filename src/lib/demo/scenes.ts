@@ -5,7 +5,7 @@ import {
   modelPlacementSchema,
 } from "@/lib/scene/composition";
 import { lightingSchema } from "@/lib/scene/lighting";
-import { footprintOverlap, type Arrangement, type ItemDraft } from "./state";
+import { footprintOverlap, footprintPenetration, type Arrangement, type ItemDraft } from "./state";
 import { findDemoProduct, itemProductId, demoListingHeight } from "./catalog";
 export const demoScenes = frozen.scenes.map((s) => ({
   id: s.id,
@@ -20,6 +20,32 @@ export const demoScenes = frozen.scenes.map((s) => ({
   })),
 }));
 export type DemoScene = (typeof demoScenes)[number];
+export function productCollection(id: string) {
+  const existing = demoScenes.find((s) => s.objects.some((o) => o.id === id));
+  if (existing) return existing.id;
+  const product = findDemoProduct(id);
+  const preferred: Record<string, string> = {
+    chair: "chair-studio",
+    drawer: "home-essentials",
+    mouse: "workspace",
+    sofa: "living",
+    shoes: "city-style",
+    mug: "playtime",
+  };
+  const target = product?.role ? preferred[product.role] : "corner";
+  return demoScenes.find((s) => s.id === target)?.id ?? "corner";
+}
+const catalogSources = new Map(
+  catalogModels.map((o) => [
+    o.id,
+    {
+      ...o,
+      modelVersion: o.digest.slice(0, 12),
+      position: o.position as [number, number, number],
+      placement: modelPlacementSchema.parse(o.placement),
+    },
+  ]),
+);
 export function demoProductScene(id: string): DemoScene {
   const existing = demoScenes.find((s) => s.objects.some((o) => o.id === id));
   if (existing) return existing;
@@ -44,14 +70,7 @@ export function resolvedDemoObject(
 ): DemoScene["objects"][number] & { productId: string } {
   const slot = scene.objects.find((o) => o.id === id)!;
   const productId = itemProductId(id, draft.items[id]);
-  const source = catalogModels
-    .map((o) => ({
-      ...o,
-      modelVersion: o.digest.slice(0, 12),
-      position: o.position as [number, number, number],
-      placement: modelPlacementSchema.parse(o.placement),
-    }))
-    .find((o) => o.id === productId);
+  const source = catalogSources.get(productId);
   if (!source) throw new Error("The selected product model is unavailable.");
   // Single-photo scales differ. Use the existing fictional listing heights to
   // keep demo proportions, then check the new footprint. Never squash a sofa
@@ -111,7 +130,16 @@ export function replacementError(
   const slot = scene.objects.find((o) => o.id === id),
     product = findDemoProduct(productId);
   if (!slot || !product) return "Choose an available product.";
-  if (supportOf(scene, id) && product.category !== "Home accessories")
+  if (
+    supportOf(scene, id) &&
+    ![
+      "Home accessories",
+      "Mugs",
+      "Computer mice",
+      "Fragrances",
+      "Drinkware",
+    ].includes(product.category)
+  )
     return "Choose an accessory that fits on this supporting surface.";
   if (
     scene.objects.some((o) => supportOf(scene, o.id) === id) &&
@@ -216,6 +244,52 @@ export function collectionLayouts(
       return { ...draft, lighting };
     };
   const roots = scene.objects.filter((o) => !supportOf(scene, o.id));
+  if (!["corner", "space", "living"].includes(scene.id)) {
+    const variant = (
+      spread: number,
+      turn: number,
+      lighting: Arrangement["lighting"] = "Original",
+    ) => {
+      const draft = structuredClone(A),
+        center = {
+          x: roots.reduce((n, o) => n + o.position[0], 0) / roots.length,
+          z: roots.reduce((n, o) => n + o.position[2], 0) / roots.length,
+        };
+      for (const root of roots) {
+        const item = draft.items[root.id];
+        item.x = center.x + (item.x - center.x) * spread;
+        item.z = center.z + (item.z - center.z) * spread;
+        item.yaw = turn;
+      }
+      for (const child of scene.objects) {
+        const parentId = supportOf(scene, child.id);
+        if (!parentId) continue;
+        const old = A.items[parentId],
+          p = draft.items[parentId],
+          c = A.items[child.id],
+          dx = c.x - old.x,
+          dz = c.z - old.z;
+        draft.items[child.id] = {
+          ...c,
+          x: p.x + dx * Math.cos(turn) + dz * Math.sin(turn),
+          z: p.z - dx * Math.sin(turn) + dz * Math.cos(turn),
+          yaw: turn,
+        };
+      }
+      draft.lighting = lighting;
+      return validateArrangement(scene, A, draft)
+        ? { ...structuredClone(A), lighting }
+        : draft;
+    };
+    return {
+      A,
+      B: variant(1.03, 0),
+      C: variant(1.06, 0),
+      D: variant(1.1, 0),
+      E: variant(1.04, 0.05),
+      F: variant(1, 0, "Dusk"),
+    };
+  }
   const original = Object.fromEntries(
     roots.map((o) => [
       o.id,
@@ -423,7 +497,7 @@ export function validateArrangement(
   scene: DemoScene,
   before: Arrangement,
   after: Arrangement,
-  options:{roomBounds?:boolean}={},
+  options: { roomBounds?: boolean } = {},
 ): string | null {
   if (
     JSON.stringify(Object.keys(after.items).sort()) !==
@@ -467,7 +541,10 @@ export function validateArrangement(
         return "Keep the accessory within its supporting surface.";
     }
   }
-  if(options.roomBounds){const wallError=wallClearance(scene,before,after);if(wallError)return wallError;}
+  if (options.roomBounds) {
+    const wallError = wallClearance(scene, before, after);
+    if (wallError) return wallError;
+  }
   return newCollision(scene, before, after)
     ? "That arrangement overlaps another product. Try a different placement."
     : null;
@@ -598,8 +675,16 @@ function newCollision(
           Math.abs(aa.z - bb.z - (oa.z - ob.z)) < 0.00001 &&
           Math.abs(aa.yaw - oa.yaw) < 0.00001 &&
           Math.abs(bb.yaw - ob.yaw) < 0.00001;
+        const penetration = (draft: Arrangement) =>
+          footprintPenetration(
+            { ...draft.items[a.id], width: a.placement.size[0], depth: a.placement.size[2] },
+            { ...draft.items[b.id], width: b.placement.size[0], depth: b.placement.size[2] },
+          );
+        // Spreading an accepted layout can reduce its conservative box overlap.
+        // Restore that pose, but reject a hidden item moved deeper into another.
+        const noDeeper = penetration(after) <= penetration(original) + 0.00001;
         if (
-          !sameRelative ||
+          (!sameRelative && !noDeeper) ||
           itemProductId(a.id, aa) !== a.id ||
           itemProductId(b.id, bb) !== b.id ||
           !overlaps(a, b, original)

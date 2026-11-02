@@ -19,6 +19,7 @@ import {
 } from "@/lib/shopping/engine";
 import { decimalToCents } from "@/lib/shopping/listing";
 import { shoppingIntent, rankShopping } from "@/lib/ai/shopping-stylist";
+import { ShoppingResponseError } from "@/lib/ai/shopping-response";
 import { arrangementSchema } from "@/lib/demo/state";
 import { canonicalJson } from "@/lib/shopping/canonical";
 
@@ -370,12 +371,15 @@ async function markShoppingFailure(
   submitted: boolean,
 ) {
   const known = error instanceof AppError;
+  const responded = error instanceof ShoppingResponseError;
+  const prior = responded ? await getDb().shoppingStylistRequest.findUniqueOrThrow({ where: { id } }) : null;
   await getDb().shoppingStylistRequest.update({
     where: { id },
     data: {
-      status: submitted ? "SUBMISSION_UNCERTAIN" : "FAILED",
+      status: submitted && !responded ? "SUBMISSION_UNCERTAIN" : "FAILED",
       phase: "FINISHED",
-      errorCode: known ? error.code : "STYLIST_UNAVAILABLE",
+      errorCode: known || responded ? error.code : "STYLIST_UNAVAILABLE",
+      ...(responded ? { usage: json({ ...(prior!.usage as Record<string, unknown>), failure: error.diagnostic }) } : {}),
       errorMessage: known
         ? error.message
         : "The stylist could not finish these looks. Your scene is unchanged; no automatic paid retry was submitted.",

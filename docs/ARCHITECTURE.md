@@ -1,5 +1,9 @@
 # ReScene system architecture
 
+## Muse example library — November 2
+
+Eight new scene collections and30 distinct replacement products reuse existing owned generation services and Neon Product/Asset/ContentItem records.66 independent Muse photos and58 new approved textured meshes expand the snapshot to72 listings/11 collections. Dynamic collection allowlists serve demo, voice and shopping routes. Compatibility-scoped Spark context, exact code budgets, safe no-retry response diagnostics and inherited-footprint restore checks support the larger catalog. See [DEMO_EXAMPLES.md](DEMO_EXAMPLES.md). No SQL migration or new runtime service.
+
 ## Shopping stylist addition — November 1
 
 The showroom uses approved listing/model snapshots exported from Neon Product records, including newly curated successful reconstructions. Typed/reviewed voice → durable two-step Spark Workflow → deterministic budget/support/collision/observed-wall validation → preview → explicit one-history-entry Apply, then the existing local bag. /api/voice/stylist shares the signed voice identity; no shopping-time image/mesh generation or payment service. Source catalog reuse retains same-scene asset guards by copying target-scoped instance assets. See [SHOPPING_STYLIST.md](SHOPPING_STYLIST.md) for lifecycle, evidence and limits.

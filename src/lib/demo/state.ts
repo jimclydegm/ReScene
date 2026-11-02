@@ -172,6 +172,13 @@ export function footprintOverlap(
   a: { x: number; z: number; yaw: number; width: number; depth: number },
   b: { x: number; z: number; yaw: number; width: number; depth: number },
 ) {
+  return footprintPenetration(a, b) > 0.015;
+}
+/** Minimum separating translation of the same rotated conservative boxes. */
+export function footprintPenetration(
+  a: { x: number; z: number; yaw: number; width: number; depth: number },
+  b: { x: number; z: number; yaw: number; width: number; depth: number },
+) {
   const corners = (r: typeof a) =>
     [-1, 1].flatMap((x) =>
       [-1, 1].map((z) => [
@@ -185,6 +192,7 @@ export function footprintOverlap(
     );
   const aa = corners(a),
     bb = corners(b);
+  let penetration = Infinity;
   for (const yaw of [a.yaw, b.yaw])
     for (const [x, z] of [
       [Math.cos(yaw), -Math.sin(yaw)],
@@ -192,11 +200,11 @@ export function footprintOverlap(
     ]) {
       const ap = aa.map((p) => p[0] * x + p[1] * z),
         bp = bb.map((p) => p[0] * x + p[1] * z);
-      if (
-        Math.max(...ap) <= Math.min(...bp) + 0.015 ||
-        Math.max(...bp) <= Math.min(...ap) + 0.015
-      )
-        return false;
+      penetration = Math.min(
+        penetration,
+        Math.max(...ap) - Math.min(...bp),
+        Math.max(...bp) - Math.min(...ap),
+      );
     }
-  return true;
+  return Math.max(0, penetration);
 }

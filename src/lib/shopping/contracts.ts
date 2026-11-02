@@ -1,9 +1,15 @@
 import { z } from "zod";
 import { arrangementSchema } from "@/lib/demo/state";
+import { collectionIds } from "@/lib/demo/catalog";
 export const stylistInputSchema = z
   .object({
     key: z.uuid(),
-    sceneId: z.enum(["corner", "space", "living"]),
+    sceneId: z
+      .string()
+      .refine(
+        (id) => collectionIds.includes(id),
+        "Choose an available collection.",
+      ),
     text: z.string().trim().min(3).max(1000),
     budgetCents: z.number().int().min(1).max(100_000_000),
     selected: z.string().max(80),

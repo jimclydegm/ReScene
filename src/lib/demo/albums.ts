@@ -1,4 +1,5 @@
 import data from "./photography.json";
+import examples from "./example-media.json";
 import { demoScenes } from "./scenes";
 import { demoImage } from "./catalog";
 export type AlbumImage = {
@@ -21,17 +22,22 @@ export function productAlbum(id: string): AlbumImage[] {
   const order = ["studio", "profile", "finish", "blue", "lifestyle"];
   const generated = [
     ...((data.products as Record<string, AlbumImage[]>)[id] ?? []),
+    ...((examples.products as Record<string, AlbumImage[]>)[id] ?? []),
   ].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
   return [
     ...generated,
-    {
-      id: "source",
-      title: "Original reference photo",
-      path: demoImage(id),
-      kind: "photo",
-      color: 0,
-      setting: "reference",
-    },
+    ...(Object.hasOwn(examples.products, id)
+      ? []
+      : [
+          {
+            id: "source",
+            title: "Original reference photo",
+            path: demoImage(id),
+            kind: "photo",
+            color: 0,
+            setting: "reference",
+          } as AlbumImage,
+        ]),
     ...(scene
       ? [
           {
@@ -47,6 +53,8 @@ export function productAlbum(id: string): AlbumImage[] {
   ];
 }
 export function sceneAlbum(id: string): AlbumImage[] {
+  const example = (examples.scenes as Record<string, AlbumImage[]>)[id];
+  if (example) return example;
   return [
     {
       id: "reference",
@@ -63,6 +71,8 @@ export function productCover(id: string) {
   return (
     (data.products as Record<string, AlbumImage[]>)[id]?.find(
       (i) => i.id === "studio",
-    )?.path ?? demoImage(id)
+    )?.path ??
+    (examples.products as Record<string, AlbumImage[]>)[id]?.[0]?.path ??
+    demoImage(id)
   );
 }
