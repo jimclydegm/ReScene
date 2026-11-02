@@ -1,5 +1,14 @@
 # ReScene — one release pass
 
+## Submission preparation — November 2
+
+- [x] Review current code/setup/public repo metadata and participant guide; record confirmed fresh-start baseline.
+- [x] Save repository/judge-access plan and2:55 video structure without narration or runtime changes. See release/REPOSITORY_PLAN.md and release/VIDEO_STRUCTURE.md.
+- [x] Implement/test keyless samples and two-external-key local live setup; update README/model inventory/attribution. Fresh local analysis/masks/two meshes/background/save/reload and live Spark stylist pass; 72 approved release GLBs and clean-checkout setup verified.
+- [ ] Merge/release repository bundle and verify production auth/local-route guards.
+- [ ] Confirm hosted auxiliary model/checkpoint terms, reference rights and final participant fields; these remain external submission gates.
+- [ ] Rehearse, record actual working calls, edit/upload/verify video, then complete the participant submission with Jim.
+
 ## Background clearance — November2
 
 - [x] Audit all11 collections against full approved meshes; identify wall, studio-sweep, tilted-tabletop and sunken-base problems.

@@ -13,11 +13,12 @@ export function SignOut() {
   async function signOut(){
     setPending(true); setFailed(false);
     try {
+      if(process.env.NEXT_PUBLIC_LOCAL_JUDGE==="true"){router.replace("/demo");return;}
       const result = await authClient.signOut();
       if (result.error) { setFailed(true); setPending(false); return; }
       router.replace("/");
       router.refresh();
     } catch { setFailed(true); setPending(false); }
   }
-  return <button className="signout-button" disabled={pending} onClick={()=>requestNavigation(()=>{void signOut();})}><LogOut size={15}/>{failed ? "Retry sign out" : pending ? "Signing out…" : "Sign out"}</button>;
+  return <button className="signout-button" disabled={pending} onClick={()=>requestNavigation(()=>{void signOut();})}><LogOut size={15}/>{process.env.NEXT_PUBLIC_LOCAL_JUDGE==="true"?"Back to showroom":failed ? "Retry sign out" : pending ? "Signing out…" : "Sign out"}</button>;
 }

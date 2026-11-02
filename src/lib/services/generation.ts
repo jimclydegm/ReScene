@@ -105,7 +105,7 @@ async function loadRun(runId: string) {
   if (run.status === "CANCELED" || run.scene.archivedAt || run.scene.revision !== run.inputRevision || run.expiresAt < new Date()) throw new Error("RUN_STALE_OR_EXPIRED");
   return run;
 }
-async function providerInput(asset: { storageKey: string }) { return getSignedUrl(getR2(), new GetObjectCommand({ Bucket: bucket(), Key: asset.storageKey }), { expiresIn: 3600 }); }
+async function providerInput(asset: { storageKey: string }) { if((await import("@/lib/judge/config")).judgeMode()){const bytes=await readLimited(asset.storageKey,12*1024*1024);return (await import("@/lib/ai/sam3d")).getSam3dClient().client.storage.upload(new File([new Uint8Array(bytes)],"input.webp",{type:"image/webp"}));}return getSignedUrl(getR2(), new GetObjectCommand({ Bucket: bucket(), Key: asset.storageKey }), { expiresIn: 3600 }); }
 // Inline bounded normalized bytes for Meta; avoids intermittent remote media-fetch rejection.
 async function metaInput(asset: { storageKey: string }) {
   return `data:image/webp;base64,${(await readLimited(asset.storageKey, 4 * 1024 * 1024)).toString("base64")}`;

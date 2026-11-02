@@ -1,5 +1,7 @@
 # ReScene foundation setup
 
+For local review without cloud accounts, use [JUDGE_SETUP.md](JUDGE_SETUP.md). The instructions below cover the original hosted production setup; local judge launchers isolate their configuration from these credentials.
+
 Updated October 29, 2026. The private upload→Meta analysis/review→3D generation→saved editor is implemented. Product editing and publication remain later phases.
 
 ## Deployment and account setup

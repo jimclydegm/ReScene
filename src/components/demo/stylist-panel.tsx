@@ -301,6 +301,8 @@ export function StylistPanel({
     selected && draft.items[selected]
       ? findDemoProduct(itemProductId(selected, draft.items[selected]))
       : null;
+  if(process.env.NEXT_PUBLIC_JUDGE_SAMPLES==="true")return <section className="demo-empty"><h3>AI stylist</h3><p>Sample mode uses saved models. Start local live mode with your Meta key for real suggestions.</p></section>;
+
   return (
     <section className="stylist-panel" aria-label="AI shopping stylist">
       <div className="stylist-heading">

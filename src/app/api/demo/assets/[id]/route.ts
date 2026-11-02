@@ -1,3 +1,4 @@
+import {judgeMode} from "@/lib/judge/config";
 import { api, AppError } from "@/lib/http";
 import { readLimited, storagePrefix, getR2, bucket } from "@/lib/storage/r2";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
@@ -16,7 +17,8 @@ export const GET = async (
     const key = `${storagePrefix()}/demo/store-v1/${asset.digest}.glb`;
     let body: BodyInit;
     let contentLength: string | undefined;
-    if (asset.bytes > 4 * 1024 * 1024) {
+    if (judgeMode()){const bytes=await readLimited(key,16*1024*1024);body=new Uint8Array(bytes);contentLength=String(bytes.length);}
+    else if (asset.bytes > 4 * 1024 * 1024) {
       if (asset.bytes > 16 * 1024 * 1024)
         throw new AppError(
           413,

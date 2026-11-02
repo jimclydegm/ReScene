@@ -43,3 +43,6 @@ next-env.d.ts
 /playwright-report/
 .env*
 /.swc
+
+# Isolated local judge data and downloaded approved assets
+/.judge/

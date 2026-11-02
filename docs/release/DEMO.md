@@ -1,5 +1,7 @@
 # ReScene demo and submission draft
 
+Historical draft: the current recording outline is [VIDEO_STRUCTURE.md](VIDEO_STRUCTURE.md); current model inventory is [../MODEL_USAGE.md](../MODEL_USAGE.md). The video link is not ready and no submission has been made. The90-second sequence and model/catalog counts below are retained as earlier planning, not current recording instructions.
+
 Status: release preparation, not a submitted entry. Product demo freeze stays November 2, 2026, Asia/Manila. The public event page currently lists November 4 at 9 PM ET for submissions; verify the participant portal for changes and track-specific fields. [Official event page](https://cerebralvalley.ai/e/meta-ai-developer-hackathon). The details URL returns a client-side loading shell to public retrieval, so required video length and private submission fields remain unverified. [Participant details](https://cerebralvalley.ai/e/meta-ai-developer-hackathon/details).
 
 ## Description draft

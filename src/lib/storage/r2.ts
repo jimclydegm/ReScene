@@ -1,4 +1,6 @@
 import "server-only";
+import {judgeMode} from "@/lib/judge/config";
+import {localUrl,localRead,localPut,localHead,localRemove} from "@/lib/judge/files";
 import {
   S3Client, PutObjectCommand, GetObjectCommand, HeadObjectCommand, DeleteObjectCommand
 } from "@aws-sdk/client-s3";
@@ -21,7 +23,7 @@ export function getR2(): S3Client {
   return client;
 }
 
-export function bucket(): string { return requiredEnv("R2_BUCKET"); }
+export function bucket(): string { if(judgeMode())return "local-judge";return requiredEnv("R2_BUCKET"); }
 export function storagePrefix(): string {
   const value = process.env.R2_PREFIX ?? "development";
   if (!/^[a-z0-9-]+$/i.test(value)) throw new Error("Invalid storage environment prefix.");
@@ -29,6 +31,7 @@ export function storagePrefix(): string {
 }
 
 export async function signUpload(key: string, contentType: string): Promise<string> {
+  if(judgeMode())return localUrl(key,"PUT");
   return getSignedUrl(getR2(), new PutObjectCommand({ Bucket: bucket(), Key: key, ContentType: contentType }), { expiresIn: 300 });
 }
 
@@ -36,14 +39,17 @@ export async function signRead(asset: { bucket: string; storageKey: string; stat
   if (asset.status !== "READY" || asset.bucket !== bucket() || !asset.storageKey.startsWith(`${storagePrefix()}/`)) {
     throw new AppError(404, "ASSET_UNAVAILABLE", "This image is unavailable.");
   }
+  if(judgeMode())return localUrl(asset.storageKey);
   return getSignedUrl(getR2(), new GetObjectCommand({ Bucket: asset.bucket, Key: asset.storageKey }), { expiresIn: 900 });
 }
 
 export async function headObject(key: string) {
+  if(judgeMode())return localHead(key);
   return getR2().send(new HeadObjectCommand({ Bucket: bucket(), Key: key }));
 }
 
 export async function readLimited(key: string, limit: number): Promise<Buffer> {
+  if(judgeMode())return localRead(key,limit);
   const result = await getR2().send(new GetObjectCommand({ Bucket: bucket(), Key: key }));
   if (!result.Body) throw new AppError(400, "EMPTY_UPLOAD", "The uploaded file is empty.");
   const chunks: Buffer[] = [];
@@ -57,6 +63,7 @@ export async function readLimited(key: string, limit: number): Promise<Buffer> {
 }
 
 export async function putObject(key: string, bytes: Buffer, contentType: string) {
+  if(judgeMode()){await localPut(key,bytes,contentType);return;}
   await getR2().send(new PutObjectCommand({
     Bucket: bucket(), Key: key, Body: bytes, ContentType: contentType,
     CacheControl: "private, max-age=900"
@@ -65,5 +72,6 @@ export async function putObject(key: string, bytes: Buffer, contentType: string)
 
 export async function removeStagingObject(key: string) {
   if (!key.startsWith(`${storagePrefix()}/staging/`)) throw new Error("Only staging objects can be removed here.");
+  if(judgeMode()){await localRemove(key);return;}
   await getR2().send(new DeleteObjectCommand({ Bucket: bucket(), Key: key }));
 }
