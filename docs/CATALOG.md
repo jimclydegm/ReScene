@@ -1,5 +1,7 @@
 # ReScene demo catalog
 
+This page describes the three procedural replacement templates only. The larger shopping showroom now contains72 approved generated listings and11 collections. Its photographs/meshes are covered separately in [ATTRIBUTION.md](ATTRIBUTION.md) and [MODEL_USAGE.md](MODEL_USAGE.md); the CC0 dedication below does not extend to them.
+
 The three catalog models and SVG illustrations are original procedural works authored for ReScene in src/lib/scene/catalog.ts. These generated demo assets are dedicated to the public domain under CC0 1.0. They contain no external textures/models, brand replicas, commercial listings or invented prices. This dedication applies to the generated demo assets, not uploaded source photos or the entire application.
 
 Seed one authorized READY scene with:

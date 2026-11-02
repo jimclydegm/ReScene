@@ -1,5 +1,7 @@
 # ReScene system architecture
 
+Local evaluation adds an explicit loopback-only adapter layer: `RESCENE_JUDGE_MODE=samples` reads approved filesystem copies without a database; `live` uses PrismaPg/local Postgres, a local developer identity and signed private files. Meta receives inline images; fal receives uploaded input files using the same fal key. The isolated launcher supplies configuration before Next loads environment files and stores durable workflows under `.judge/workflows/`. Production retains the Neon/Auth/R2 adapters. See [JUDGE_SETUP.md](JUDGE_SETUP.md).
+
 ## Muse example library — November 2
 
 Eight new scene collections and30 distinct replacement products reuse existing owned generation services and Neon Product/Asset/ContentItem records.66 independent Muse photos and58 new approved textured meshes expand the snapshot to72 listings/11 collections. Dynamic collection allowlists serve demo, voice and shopping routes. Compatibility-scoped Spark context, exact code budgets, safe no-retry response diagnostics and inherited-footprint restore checks support the larger catalog. See [DEMO_EXAMPLES.md](DEMO_EXAMPLES.md). No SQL migration or new runtime service.

@@ -1,5 +1,7 @@
 import "server-only";
 import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { judgeMode } from "@/lib/judge/config";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { requiredEnv } from "@/lib/env";
 
@@ -8,7 +10,10 @@ const globalForDb = globalThis as unknown as { resceneDb?: PrismaClient };
 export function getDb(): PrismaClient {
   if (!globalForDb.resceneDb) {
     globalForDb.resceneDb = new PrismaClient({
-      adapter: new PrismaNeon({ connectionString: requiredEnv("DATABASE_URL") })
+      adapter:
+        judgeMode() === "live"
+          ? new PrismaPg({ connectionString: requiredEnv("DATABASE_URL") })
+          : new PrismaNeon({ connectionString: requiredEnv("DATABASE_URL") }),
     });
   }
   return globalForDb.resceneDb;

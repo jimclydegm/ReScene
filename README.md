@@ -1,72 +1,115 @@
 # ReScene
 
-Turn one product scene photo into an editable, shoppable 3D scene.
+Turn a product photo into an editable, shoppable 3D scene.
 
-ReScene is Jim's prototype for Meta's Global AI Developer Hackathon. Upload a scene, product arrangement, or outfit; identify and refine individual items, reconstruct them, attach product information, edit the layout, and share an interactive viewer. Furniture and home decor are examples, not input restrictions.
+ReScene gives sellers a way to turn product photography into an interactive showroom. Shoppers can inspect individual products, try finishes and layouts, and ask a budget-aware AI stylist for combinations made from the available catalog.
 
-**Build freeze: November 2, 2026, Asia/Manila.** ReScene is deployed at [rescene-eta.vercel.app](https://rescene-eta.vercel.app).
+[Try the live demo](https://rescene-eta.vercel.app/demo) · [Run locally](docs/JUDGE_SETUP.md) · [Meta models](docs/MODEL_USAGE.md)
 
-## Working foundation
+![ReScene interactive shopping showroom](docs/images/showroom.png)
 
-- Landing page with a selectable, movable 3D sample room (illustrated geometry, not AI reconstruction).
-- Neon Managed Better Auth sign-up/sign-in/sign-out and Google sign-in integration.
-- Private scene dashboard, persistence, ownership checks, and revision-aware updates.
-- Private R2 uploads, image validation/normalization, and immutable source/preview storage.
-- General scene/product analysis with automatic complete-subject/product-part detection and optional focus/instructions; independent SAM text/box/include/exclude-point retries, manual candidates, multiple-mask selection and no-inference mask combination.
-- Complete subjects reconstructed once, with selectable product regions sharing geometry, textures and placement. Automatic shoe-pair handling and conservative floor placement.
-- Durable hosted SAM 3D generation with a seed control, fitted portrait previews and an editable mesh viewer.
-- Move, rotate, resize, hide, undo/redo, precise numeric controls, and save/reload generated objects.
-- Merchant product cards, private object thumbnails, an original demo replacement catalog and original-object restore.
-- Photo-detail texture transfer, estimated room composition, editable main/fill/ambient lighting, and room/studio/plain backdrop selection.
-- Confirmed unlisted publication, frozen read-only shopper viewer, revocable links and render-only asset allowlists.
-- Eight-model Prisma schema/migration, server-only Meta/fal adapters, and GitHub CI.
+*The working shopping demo: selectable textured models, product details, finish controls and a shopping bag.*
 
-The local and deployed upload→analysis→masks→three meshes→saved edits API flow passes. Browser controls and rendered appearance still need visual QA because browser access is disabled in Work settings. Product editing, replacements and immutable sharing are implemented. Browser interaction QA, the final demo recording and authenticated participant-portal submission remain release gates. See [testing instructions](docs/TESTING.md) and [setup](docs/SETUP.md).
+## Try it
 
-## Development
+The public shopping demo needs no account or credentials:
+
+- **[Explore a product](https://rescene-eta.vercel.app/demo/products):** browse photographs, switch to 3D inspection and try a finish.
+- **[Build your space](https://rescene-eta.vercel.app/demo/spaces):** arrange products, replace a piece, change lighting and undo the edit.
+- **[Shop the scene](https://rescene-eta.vercel.app/demo/scenes):** select products within an environment and collect them in a demonstration shopping bag.
+
+For the AI stylist, open **Quiet workspace**, mark the laptop and notebook as already owned, keep the tumbler and set a $100 merchandise budget. Ask for two different mouse choices. Spark proposes alternatives from the catalog; code checks the subtotal, kept items, compatibility and placement. Preview a look, apply it, then Undo once. The hosted stylist and voice features make real model calls; prepared photos and meshes do not regenerate when browsed.
+
+The current showroom contains 72 approved products and 11 collections, including five distinct chair, drawer, mouse, sofa, shoe and mug variations. Checkout, reviews, specifications and prices are demonstration content. No payments are processed.
+
+## Run the prepared showroom without keys
+
+Install Node.js 22, then:
 
 ```sh
+git clone https://github.com/jimclydegm/ReScene.git
+cd ReScene
 npm ci
-# Configure .env.local using .env.example; keep it out of Git.
-npm run dev
+npm run setup:judge
+npm run dev:judge
 ```
 
-Run `npm run lint`, `npm run typecheck`, `npm test`, and `npm run build` for local checks. Database and provider verification instructions are in [SETUP.md](docs/SETUP.md).
+Open **http://127.0.0.1:3000/demo**. Setup downloads approved models from the public GitHub sample release and verifies their hashes. This path needs no database, storage or authentication account. It supports the interactive shopping controls using saved results; AI requests are disabled rather than simulated.
 
-## Project context
+## Run live generation with your own keys
 
-Read [the short handoff](docs/CONTEXT.md) first. Open other files only for the task at hand.
+Start Docker, stop the sample server, and run:
 
-| File | Use it for |
-| --- | --- |
-| [Plan](docs/PLAN.md) | Product scope, demo, priorities, decisions, and definition of done |
-| [Meta model research](docs/META_MODELS.md) | Verified capabilities, API integration, reconstruction risks, and source links |
-| [Architecture](docs/ARCHITECTURE.md) | Frontend, backend, generation pipeline, storage, API routes, and deployment |
-| [Data model](docs/DATA_MODEL.md) | Entity relationships, ownership, invariants, JSON contracts, and migrations |
-| [Prisma schema](prisma/schema.prisma) | Applied eight-model application database schema |
-| [SQL constraints](prisma/constraints.sql) | Reference for constraints included in the initial migration |
-| [Scene manifest v2 schema](contracts/scene-manifest-v2.schema.json) | Implemented frozen viewer/publication contract (v1 retained as historical design) |
-| [Example manifest](contracts/examples/scene-manifest.json) | Synthetic contract example; not a generated scene |
-| [Roadmap](docs/ROADMAP.md) | Single implementation/release checklist and current corrections |
-| [Next steps](docs/NEXT_STEPS.md) | Consolidated delivery policy and remaining external gates |
-| [Private Meta spike](docs/SPIKE.md) | Prepared runner commands, checkpoints, budget guards, and live-test gaps |
-| [Environment template](.env.example) | Configuration names; contains no credentials |
-| [Implemented setup](docs/SETUP.md) | Deployment, migration, provider access, local commands, and current limits |
+```sh
+npm run setup:judge -- --live
+```
 
-## Stack
+Add only these two external keys to the generated, ignored `.judge/keys.env`:
 
-Next.js / TypeScript on Vercel; React Three Fiber / Three.js for the viewer; Neon Postgres with Prisma; Neon Auth (Managed Better Auth); Cloudflare R2 for media; Meta Model API for Muse Spark and SAM 3.1; hosted Meta SAM 3D Objects for reconstruction. GitHub holds code, CI, and planning context.
+```dotenv
+MODEL_API_KEY=your_meta_model_api_key
+FAL_KEY=your_fal_key
+```
 
-The live fal test returned independent textured GLBs from Meta SAM 3D Objects. Saved SAM poses provide approximate relative placement and room framing. Visible source texture detail can be baked onto the meshes, while hidden surfaces remain inferred. This is not a dimensionally accurate scan.
+```sh
+npm run dev:judge:live
+```
 
-## Publish and test
+Open **http://127.0.0.1:3000/dashboard**. Local Postgres, private file storage and an isolated reviewer identity replace cloud provisioning. No Neon, Cloudflare, Google OAuth or Vercel credentials are needed. Use your own permitted photo to run analysis, review masks, reconstruct objects, edit and save. Live inference uses your provider balances. A lost response may have been charged; unknown paid submissions are not retried automatically.
 
-Save a ready scene, scroll to **Publish snapshot**, and review the confirmation. Anyone with the unlisted link can view/download the approved meshes, scene textures, product thumbnails and merchant fields. The full source photo, masks and provider records stay private. Subsequent draft edits do not change the snapshot; publish again to share a new saved revision. Revoke stops new viewer access, while previously signed asset links can work for up to 15 minutes and downloaded copies cannot be recalled.
+The local server binds to loopback and must not be exposed publicly. [Complete setup, persistence and troubleshooting](docs/JUDGE_SETUP.md). A hosted production deployment uses the original [Neon/Auth/R2 setup](docs/SETUP.md).
 
-Tests: `npm test` (52 focused cases), plus the explicit QA runners in TESTING.md. `scripts/smoke-release.mjs prepare` and `reconstruct` submit paid inference and require explicit use; status/report commands do not. Release/demo preparation is in [DEMO.md](docs/release/DEMO.md).
+## How the models work together
 
-## Completing and maintaining the release
+```mermaid
+flowchart LR
+  Photo[Photo or Muse Image scene] --> Spark[Spark analysis]
+  Spark --> SAM[SAM 3.1 masks]
+  SAM --> Mesh[SAM 3D Objects meshes]
+  Photo --> Room[Muse Image materials and VGGT depth]
+  Mesh --> Editor[Editable 3D scene]
+  Room --> Editor
+  Editor --> Shop[Interactive shopping]
+  Voice[Voice Transcribe or typed goal] --> Stylist[Spark intent and ranking]
+  Catalog[Catalog and code budget checks] --> Stylist
+  Stylist --> Shop
+```
 
-The remaining work is tracked as one release bundle in [ROADMAP.md](docs/ROADMAP.md), rather than small approval phases. Run `npm run check` once after a bundle and the reusable saved-data `npm run check:release` with an authorized disposable fixture; append `-- --smoke` for a read-only post-deploy check. Historical paid inference runners are opt-in tools for a specific generation regression. Documentation-only commits skip full CI installation/build and Vercel deployment when a valid comparison base is available; unknown comparisons always run.
+- **Muse Spark 1.3:** scene/material understanding, review, voice interpretation and shopping intent/ranking.
+- **SAM 3.1:** object segmentation and mask refinement.
+- **Muse Image 1.0:** scene/product photography, empty-background plates and material samples.
+- **Muse Voice Transcribe 1.0:** prompt dictation, product search and reviewed scene commands.
+- **Meta SAM 3D Objects, hosted by fal:** textured object reconstruction and approximate poses.
+- **VGGT1B, Oxford/Meta research hosted by fal:** camera/depth evidence for background construction.
 
-The dashboard supports project search/status filters, live-share counts and reversible archive/restore. Archiving retains saved assets and revokes share links; restoring does not revive old links. Project details can be changed from Scene Studio, and existing public snapshots retain their original metadata. Unsaved object/light/product edits are protected on navigation/sign-out, and Discard and reload provides recovery from stale saves.
+The first four use Meta Model API directly. The `openai` npm dependency is a compatible SDK configured for Meta's API, not an OpenAI runtime model. [Exact model IDs, implementation links and hosted-component transparency](docs/MODEL_USAGE.md).
+
+## Engineering
+
+The application is Next.js/TypeScript with React Three Fiber/Three.js. Production uses Vercel Workflow for durable operations, Neon Postgres/Prisma for scenes and receipts, Managed Better Auth for identity, and private Cloudflare R2 for media.
+
+ReScene validates model output, matches masks, fits a shared scene frame, seats objects on supports and checks background clearance. Materials combine observed detail with generated samples; unseen surfaces remain inferred. The shopping engine enumerates compatible combinations and calculates prices in integer cents before Spark ranks them. Applying a combination creates one undo entry.
+
+Publication produces a frozen, read-only snapshot with approved render assets and product fields. Full source photographs, masks and raw provider records stay private. Later draft edits do not modify an existing publication.
+
+[Architecture](docs/ARCHITECTURE.md) · [Data model](docs/DATA_MODEL.md) · [Background clearance](docs/BACKGROUND_CLEARANCE.md) · [Shopping stylist](docs/SHOPPING_STYLIST.md)
+
+## Checks
+
+```sh
+npm test
+npm run typecheck
+npm run build
+# Schema validation, lint, tests and production build together:
+npm run check
+```
+
+The suite covers input and ownership boundaries, durable-request recovery, budget/keep/placement constraints, undo history, scene contracts and graphics operations. Tests use mocked providers or pure computations; they do not submit paid inference. Targeted browser and saved-scene checks complement the suite. [Testing details](docs/TESTING.md).
+
+## Scope and credits
+
+ReScene was started from scratch during the 2026 Meta Global AI Developer Hackathon; the public repository was created October 28. The entry is in the Indie Developer track. Pretrained models and existing open-source libraries are dependencies, not original ReScene inventions.
+
+A single photograph does not establish exact product identity, dimensions, unseen geometry, garment fit or physical material properties. Reconstructions and finish previews are approximate. The showroom is a working demonstration, not a merchant inventory or payment system.
+
+Original application code is currently unlicensed, at the author's choice. Generated media, procedural assets and third-party components have separate terms. [Assets, provenance and attribution](docs/ATTRIBUTION.md), including Unslop by Damir Sokolovsky.
