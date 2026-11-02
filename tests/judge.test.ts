@@ -38,6 +38,18 @@ describe("Isolated local reviewer mode", () => {
         }),
       ),
     ).toThrow();
+    expect(() =>
+      assertJudgeRequest(
+        new Request("http://127.0.0.1:3000", {
+          headers: { host: "[2001:db8::1]:3000" },
+        }),
+      ),
+    ).toThrow();
+    expect(() =>
+      assertJudgeRequest(
+        new Request("http://[::1]:3000", { headers: { host: "[::1]:3000" } }),
+      ),
+    ).not.toThrow();
     for (const p of [
       "../secret",
       "judge/../secret",

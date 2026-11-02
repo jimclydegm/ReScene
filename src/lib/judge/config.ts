@@ -25,7 +25,7 @@ export function assertJudgeRequest(request: Request) {
     !["localhost", "127.0.0.1", "[::1]"].includes(new URL(request.url).hostname)
   )
     throw new Error("Local request required.");
-  const host = request.headers.get("host")?.split(":")[0];
-  if (host && !["localhost", "127.0.0.1", "["].includes(host))
+  const host = request.headers.get("host");
+  if (host && !/^(localhost|127\.0\.0\.1|\[::1\])(?::[0-9]{1,5})?$/i.test(host))
     throw new Error("Local request required.");
 }
