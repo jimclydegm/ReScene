@@ -13,13 +13,18 @@ const additions = [];
 for (const m of models) {
   if (!/^[a-f0-9]{64}$/.test(m.digest)) throw new Error("Invalid model digest");
   const candidates = [
+    `test-results/demo-polish-nov3/approved/${m.id}.glb`,
     `test-results/catalog-prices-v2/approved/${m.id}.glb`,
     `test-results/demo-expansion-v1/approved/${m.id}.glb`,
     `.judge/objects/judge/demo/store-v1/${m.digest}.glb`,
   ];
   let path, bytes;
   for (const candidate of candidates) {
-    try { bytes = await readFile(candidate); path = candidate; break; } catch {}
+    try {
+      const data=await readFile(candidate);
+      if(data.length!==m.bytes || createHash("sha256").update(data).digest("hex")!==m.digest)continue;
+      bytes=data;path=candidate;break;
+    } catch {}
   }
   if (!bytes || bytes.length !== m.bytes || createHash("sha256").update(bytes).digest("hex") !== m.digest)
     throw new Error(`Missing or changed approved model: ${m.id}`);

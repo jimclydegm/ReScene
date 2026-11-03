@@ -49,6 +49,14 @@ describe("Independent background surface maps",()=>{
   const plan:EnvironmentObservation={version:"environment-observation-v1",topology:"room",surfaces:[{id:"wall",role:"wall",polygon:[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}],finish:"plain",appearance:"uniform",color:"#ffffff",roughness:.8,material:"uniform paint",confidence:1}],openings:[{surfaceId:"wall",kind:"window",polygon:[{x:0,y:0},{x:.3,y:0},{x:.3,y:1},{x:0,y:1}]}],expectedWallCount:1,lightingEffects:[],explanation:"Window at the edge"};
   const out=await environmentAlbedo(await solid("#2255dd",32,16),await solid("#bb4422",128,64),new Uint8Array(32*16),plan,{preserveResolution:true,delight:false}),decoded=await sharp(out).raw().toBuffer({resolveWithObject:true});expect(decoded.info.width).toBe(128);expect(decoded.info.height).toBe(64);expect(decoded.data[2]).toBeGreaterThan(200);expect(decoded.data[(32*128+100)*3]).toBeGreaterThan(150);
  });
+ it("maps independently generated window images without reusing the full-room plate",async()=>{
+  const geometry=environmentGeometrySchema.parse({version:"reference-environment-v1",surfaces:[0,1].map(x=>({role:"window",vertices:[[x,0,0],[x+1,0,0],[x,1,0]],triangles:[0,1,2],color:"#ffffff",roughness:1,textured:true,photoUv:[[0,0],[1,0],[0,1]]}))});
+  const result=await packEnvironmentAtlas(await solid("#0000ff"),geometry,new Map(),new Map([[0,await solid("#dd2211")],[1,await solid("#11cc22")]]));
+  const {data,info}=await sharp(result.bytes).removeAlpha().raw().toBuffer({resolveWithObject:true});
+  for(const [i,color]of [[0,[221,34,17]],[1,[17,204,34]]] as const){const r=result.geometry.surfaces[i].atlas!.rect,x=Math.floor((r[0]+r[2])/2*info.width),y=Math.floor((1-(r[1]+r[3])/2)*info.height);for(let c=0;c<3;c++)expect(Math.abs(data[(y*info.width+x)*3+c]-color[c])).toBeLessThan(8);}
+  expect(result.geometry.surfaces[0].atlas!.rect).not.toEqual(result.geometry.surfaces[1].atlas!.rect);
+  expect(geometry.surfaces[0].atlas).toBeUndefined();
+ });
  it("orthogonalizes sampling axes and reconciles borders without reducing native tile size",async()=>{
   const t=orthogonalTile({origin:[0,0,0],u:[2,0,0],v:[1,0,3]});expect(new Vector3(...t.u).dot(new Vector3(...t.v))).toBeCloseTo(0);expect(new Vector3(...t.v).length()).toBeCloseTo(Math.sqrt(10));const out=await prepareSurfaceTile(await solid("#aa8866",128,128));expect((await sharp(out).metadata()).width).toBe(128);
  });

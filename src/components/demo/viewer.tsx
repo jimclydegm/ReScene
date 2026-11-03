@@ -4,12 +4,14 @@ import Image from "next/image";
 import { Component, type ReactNode, useMemo } from "react";
 import { ReferenceFrame } from "./reference-frame";
 import { LoaderCircle } from "lucide-react";
+import { productCover } from "@/lib/demo/albums";
 import { demoImage } from "@/lib/demo/catalog";
 import { resolvedDemoObject, type DemoScene } from "@/lib/demo/scenes";
 import { demoRoomAppearance } from "@/lib/demo/room-appearance";
 import type { Arrangement } from "@/lib/demo/state";
 import { lightingPresets } from "@/lib/scene/lighting";
 import { demoRenderObjects } from "@/lib/demo/render-objects";
+import { productCamera } from "@/lib/demo/product-camera";
 const ModelCanvas = dynamic(() => import("@/components/scene/model-canvas"), {
   ssr: false,
   loading: () => (
@@ -71,8 +73,7 @@ export function DemoViewer({
   const inspected = individual
       ? resolvedDemoObject(scene, draft, individual)
       : null,
-    extent = inspected ? Math.max(...inspected.placement.size) : 0,
-    height = inspected?.placement.size[1] ?? 0;
+    productSize = inspected?.placement.size;
   const composition = useMemo(() => {
     if (!individual) return room.composition;
 
@@ -93,18 +94,9 @@ export function DemoViewer({
         wallColor: "#f1efe8",
         lightWarmth: "neutral" as const,
       },
-      camera: {
-        position: [extent * 0.9, height * 0.75, extent * 2.3] as [
-          number,
-          number,
-          number,
-        ],
-        target: [0, height * 0.48, 0] as [number, number, number],
-        fov: 38,
-        aspect: 1.12,
-      },
+      camera: productCamera(productSize!),
     };
-  }, [scene, individual, extent, height, room.composition]);
+  }, [scene, individual, productSize, room.composition]);
   const appearance = individual
     ? { applied: false, floorUrl: null, wallUrl: null, backgroundUrl: null }
     : room.appearance;
@@ -113,7 +105,7 @@ export function DemoViewer({
       key={`${individual ?? scene.id}:${individual ? inspected?.productId : "room"}`}
       image={
         individual
-          ? demoImage(resolvedDemoObject(scene, draft, individual).productId)
+          ? productCover(resolvedDemoObject(scene, draft, individual).productId)
           : demoImage(scene.id)
       }
     >

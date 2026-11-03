@@ -32,3 +32,5 @@ The three original procedural catalog meshes and SVG illustrations in `src/lib/s
 ## Libraries and model services
 
 Next.js/React, Three.js/React Three Fiber/Drei, Prisma, PostgreSQL adapters, the Neon Auth SDK, AWS S3 SDK, fal client and other npm dependencies retain their own licenses. See package-lock.json and the packages' distributions. Meta models and hosted inference remain subject to their respective model/service terms. This repository does not redistribute pretrained weights. Model roles and source links are in [MODEL_USAGE.md](MODEL_USAGE.md).
+
+The November 3 demo refinement uses Muse Image material swatches and floor/window images, reviewed with Muse Spark, on existing Meta SAM 3D Objects geometry. Atlases under `public/demo/refined/` are derived demo media. Original reference photographs and SAM masks remain unchanged. See [DEMO_SAMPLE_REFINEMENT.md](DEMO_SAMPLE_REFINEMENT.md) for provenance and limitations.

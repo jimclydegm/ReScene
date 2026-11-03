@@ -156,9 +156,9 @@ export function fitBackgroundClearance(composition: SceneComposition, objects: C
   const parents = new Map<number, number>();
   for (const [i,s] of surfaces.entries()) {
     if (s.role !== "trim" && s.role !== "window" && s.role !== "opening") continue;
-    const parent = boundaries.find(b => b.role === "wall" &&
-      (s.materialIndex === undefined || surfaces[b.index].materialIndex === s.materialIndex) &&
-      s.vertices.every(v => Math.abs(b.normal.dot(new Vector3(...v)) - b.constant) < .08));
+    // Material indices identify paint/wood/image samples, not architectural
+    // ownership. A differently painted baseboard still moves with its wall.
+    const parent = boundaries.filter(b=>b.role==="wall").map(b=>({b,distance:Math.max(...s.vertices.map(v=>Math.abs(b.normal.dot(new Vector3(...v))-b.constant)))})).filter(x=>x.distance<(s.role==="trim"?.18:.08)).sort((a,b)=>a.distance-b.distance)[0]?.b;
     if (parent) { parents.set(i,parent.index); shifts.set(parent.index, Math.max(shifts.get(parent.index) ?? 0, shifts.get(i) ?? 0)); shifts.delete(i); }
   }
   for (const a of boundaries.filter(b => b.role === "wall"))

@@ -1,4 +1,5 @@
 "use client";
+import { productCover } from "@/lib/demo/albums";
 import { StylistPanel } from "./stylist-panel";
 import { merchandiseTotal, purchaseLines } from "@/lib/shopping/engine";
 import type { Arrangement } from "@/lib/demo/state";
@@ -25,7 +26,6 @@ import {
   X,
 } from "lucide-react";
 import {
-  demoImage,
   findDemoProduct,
   money,
   collectionInfo,
@@ -151,7 +151,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
             Arrange the collection, explore colors and find your favorite light.
           </p>
         </div>
-        <Link href="/demo/shop-the-scene" className="d-text">
+        <Link href={`/demo/shop-the-scene?collection=${scene.id}`} className="d-text">
           Shop a styled room
           <ArrowRight size={15} />
         </Link>
@@ -350,7 +350,7 @@ function SpaceEditor({ sceneId }: { sceneId: string }) {
                             }}
                           >
                             <Image
-                              src={demoImage(p.id)}
+                              src={productCover(p.id)}
                               alt=""
                               width={56}
                               height={56}

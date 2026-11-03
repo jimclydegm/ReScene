@@ -284,3 +284,7 @@ The first corrected live schema request returned `finish_reason=length`: 4,094 o
 ## Environment fidelity verification — November1
 
 Hosted SAM3D Objects exposes no quality/polygon-resolution setting; ReScene sends masks, seed and export_textured_glb=true and performs no decimation. The reported22,446-triangle lamp lacks normals; crease-aware import/viewer normals address flat shading while preserving geometry/UVs. Meta VGGT now also estimates an empty Muse plate, aligned against the original depth gauge. Spark rechecks exposed surfaces/windows and uniform-vs-patterned appearance; Muse generates independent patterned-material samples. Native generator resolution is retained rather than promised from the size field. See ENVIRONMENT_FIDELITY.md for primary links, paid receipt behavior and measured limits.
+
+## November 3 demo refinement
+
+The corner/living/chair-studio curation uses ten Spark material plans, twenty Muse Image material swatches, three floor maps and two window maps, with separate Spark acceptance reviews. Existing Meta SAM 3D Objects geometry is retained after vertex/index/UV equality checks. Muse supplies flat material images; ReScene computes the UV atlas and maps each environment surface independently. Window completion is an inferred extension of the approved reference, not exact recovery of unseen architecture. See [DEMO_SAMPLE_REFINEMENT.md](DEMO_SAMPLE_REFINEMENT.md). No shopper-time model call is added.

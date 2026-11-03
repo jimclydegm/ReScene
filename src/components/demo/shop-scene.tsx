@@ -120,7 +120,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
     setMessage("");
   }
   return (
-    <main className={`demo-main demo-room-main${shopping2d ? " shopping-photo-mode" : ""}`} data-shopping-mode={shopping2d ? "2d" : "3d"}>
+    <main className={`demo-main demo-room-main demo-shop-main${shopping2d ? " shopping-photo-mode" : ""}`} data-shopping-mode={shopping2d ? "2d" : "3d"}>
       <div className="demo-breadcrumb">
         <Link href="/demo/scenes">Choose a scene</Link>
         <span>/</span>
@@ -368,6 +368,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                       <PhotoProductGallery key={product.id} id={product.id}/>
                     </>}
                     {!shopping2d && <>
+                    <div className="demo-shop-quick-actions">
                     <details className="demo-product-description">
                       <summary>About this piece</summary>
                       <p>{product.description}</p>
@@ -379,6 +380,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                       <ArrowRightLeft size={14} />
                       Replace item
                     </button>
+                    </div>
                     <ColorSwatches
                       product={product}
                       value={item.color}
@@ -558,7 +560,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                       )
                     }
                   />
-                  <Image src={demoImage(p.id)} alt="" width={65} height={65} />
+                  <Image src={productCover(p.id)} alt="" width={65} height={65} />
                   <span>
                     {p.name}
                     <small>{p.colors[shoppingDraft.items[o.id].color].name}</small>
