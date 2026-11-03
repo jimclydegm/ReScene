@@ -20,7 +20,7 @@ describe("shopping albums and scene controls", () => {
     expect(albumData.model).toMatch(/^muse-image-/);
     for (const p of demoProducts) {
       const album = productAlbum(p.id);
-      if (!Object.hasOwn(albumData.products, p.id)) {
+      if (!Object.hasOwn(albumData.products, p.id) || Object.hasOwn(exampleMedia.products, p.id)) {
         expect(album[0].kind).toBe(
           Object.hasOwn(exampleMedia.products, p.id) ? "generated" : "photo",
         );
@@ -142,7 +142,7 @@ describe("shopping albums and scene controls", () => {
   it("round-trips the expanded finishes and six layout slots without changing earlier variant indices", () => {
     for (const p of demoProducts) {
       expect(p.colors.length).toBeGreaterThanOrEqual(
-        Object.hasOwn(albumData.products, p.id) ? 7 : 5,
+        Object.hasOwn(albumData.products, p.id) && !Object.hasOwn(exampleMedia.products, p.id) ? 7 : 5,
       );
       expect(p.colors[0].value).toBeNull();
     }

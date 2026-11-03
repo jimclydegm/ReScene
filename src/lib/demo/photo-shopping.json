@@ -1,0 +1,783 @@
+{
+  "version": 1,
+  "scenes": [
+    {
+      "id": "space",
+      "photo": {
+        "path": "/demo/images/space.webp",
+        "sha256": "57c7ea31f62dec16226cc9844f1c68f9e12ca882de7f2f9796188129dbc5c970",
+        "width": 1400,
+        "height": 788
+      },
+      "width": 1400,
+      "height": 788,
+      "model": "sam-3.1",
+      "products": [
+        {
+          "id": "oak-dresser",
+          "maskPath": "/demo/photo-shopping/oak-dresser-c2b62a01ea9d.png",
+          "sha256": "c2b62a01ea9d40fd8e0df167e91cd475dd10a8a8c76d658b74a9c0ddbf2b2046",
+          "bounds": [
+            77,
+            440,
+            301,
+            248
+          ],
+          "anchor": [
+            201,
+            552
+          ],
+          "area": 63075
+        },
+        {
+          "id": "sage-chair",
+          "maskPath": "/demo/photo-shopping/sage-chair-823ec08f72bc.png",
+          "sha256": "823ec08f72bc0e7d9b5bbd69e2620cae4bd1c07f50ba5f09ae123d18a8217b11",
+          "bounds": [
+            438,
+            381,
+            361,
+            334
+          ],
+          "anchor": [
+            576,
+            516
+          ],
+          "area": 86359
+        },
+        {
+          "id": "round-table",
+          "maskPath": "/demo/photo-shopping/round-table-fa57cd84f2a7.png",
+          "sha256": "fa57cd84f2a7538679d4a152d189651b53b1451ed56d3cfad8789e9e2894b8a9",
+          "bounds": [
+            849,
+            517,
+            202,
+            178
+          ],
+          "anchor": [
+            971,
+            540
+          ],
+          "area": 12388
+        },
+        {
+          "id": "dining-chair",
+          "maskPath": "/demo/photo-shopping/dining-chair-7aa5d8d558d4.png",
+          "sha256": "7aa5d8d558d4afdd0f0f83f57df51d59177eb3e5b0ad2e5c047913ac4166bb2f",
+          "bounds": [
+            1090,
+            371,
+            211,
+            325
+          ],
+          "anchor": [
+            1242,
+            411
+          ],
+          "area": 29640
+        }
+      ]
+    },
+    {
+      "id": "living",
+      "photo": {
+        "path": "/demo/images/living.webp",
+        "sha256": "943dc62d32b567a19d3c55f7bb0aa20afced8ab2194cd2b2fd968154efa2b95f",
+        "width": 1400,
+        "height": 788
+      },
+      "width": 1400,
+      "height": 788,
+      "model": "sam-3.1",
+      "products": [
+        {
+          "id": "cloud-sofa",
+          "maskPath": "/demo/photo-shopping/cloud-sofa-87a2d36be8d5.png",
+          "sha256": "87a2d36be8d557c4b30d1f19b7948292b54efc150e81cc6e2c24d515946b7c0d",
+          "bounds": [
+            385,
+            369,
+            629,
+            282
+          ],
+          "anchor": [
+            879,
+            491
+          ],
+          "area": 127521
+        },
+        {
+          "id": "coffee-table",
+          "maskPath": "/demo/photo-shopping/coffee-table-fdce34593e1e.png",
+          "sha256": "fdce34593e1ea4c1af9b8457413e21b9f63b14f6c422a2701f25b98db34af2b3",
+          "bounds": [
+            481,
+            556,
+            240,
+            172
+          ],
+          "anchor": [
+            517,
+            589
+          ],
+          "area": 16988
+        },
+        {
+          "id": "wood-stool",
+          "maskPath": "/demo/photo-shopping/wood-stool-337fe35b78e4.png",
+          "sha256": "337fe35b78e452183f4ec61b738869059c9b2579cb97e131eae0c49921bb4fca",
+          "bounds": [
+            1025,
+            538,
+            142,
+            169
+          ],
+          "anchor": [
+            1100,
+            562
+          ],
+          "area": 11309
+        },
+        {
+          "id": "ceramic-vase",
+          "maskPath": "/demo/photo-shopping/ceramic-vase-883663c64b27.png",
+          "sha256": "883663c64b27f922e70afaa1e4057767347db6c7b777699a7b4396e12a4d946d",
+          "bounds": [
+            291,
+            568,
+            72,
+            103
+          ],
+          "anchor": [
+            326,
+            628
+          ],
+          "area": 5756
+        }
+      ]
+    },
+    {
+      "id": "corner",
+      "photo": {
+        "path": "/demo/images/corner.webp",
+        "sha256": "2933ad213c9be11af6fe5d5fade5cadf84ccc08d478c140ae56a449db8214efb",
+        "width": 1400,
+        "height": 933
+      },
+      "width": 1400,
+      "height": 933,
+      "model": "sam-3.1",
+      "products": [
+        {
+          "id": "corner-chair",
+          "maskPath": "/demo/photo-shopping/corner-chair-f1c4d235e2fc.png",
+          "sha256": "f1c4d235e2fc9b8e2cf6e4e8dd197d33791a9eb10b48caf31a191a8c95a49810",
+          "bounds": [
+            179,
+            250,
+            527,
+            517
+          ],
+          "anchor": [
+            389,
+            452
+          ],
+          "area": 175907
+        },
+        {
+          "id": "corner-cabinet",
+          "maskPath": "/demo/photo-shopping/corner-cabinet-62cf56a6596c.png",
+          "sha256": "62cf56a6596c12a1039bf35ef6c2a729ef38f315da962b932d016dd04355b209",
+          "bounds": [
+            808,
+            312,
+            451,
+            389
+          ],
+          "anchor": [
+            1100,
+            470
+          ],
+          "area": 143556
+        },
+        {
+          "id": "corner-vase",
+          "maskPath": "/demo/photo-shopping/corner-vase-8a4311741925.png",
+          "sha256": "8a43117419257c934b70271b36f32461b05dd252b7fdb655bb4385763fbf8761",
+          "bounds": [
+            977,
+            180,
+            121,
+            142
+          ],
+          "anchor": [
+            1037,
+            258
+          ],
+          "area": 13348
+        }
+      ]
+    },
+    {
+      "id": "chair-studio",
+      "photo": {
+        "path": "/demo/expansion/chair-studio.webp",
+        "sha256": "33a5f13dd3178bad20d1add15cab5c7bb4606d1db45825d98a4686b942e51882",
+        "width": 1920,
+        "height": 1280
+      },
+      "width": 1400,
+      "height": 933,
+      "model": "sam-3.1",
+      "products": [
+        {
+          "id": "chair-studio-item-1",
+          "maskPath": "/demo/photo-shopping/chair-studio-item-1-8b2f89d254f7.png",
+          "sha256": "8b2f89d254f7481ffaa8fe7a36bfddd51d2e7c82d323c656bb129eb0a67a2c4e",
+          "bounds": [
+            28,
+            308,
+            394,
+            417
+          ],
+          "anchor": [
+            251,
+            468
+          ],
+          "area": 107678
+        },
+        {
+          "id": "chair-studio-item-2",
+          "maskPath": "/demo/photo-shopping/chair-studio-item-2-4ee0386a511f.png",
+          "sha256": "4ee0386a511f4efd3c5a974cc0884db56b97f3c8ce8b1dafb17c4d6f8e21a226",
+          "bounds": [
+            437,
+            294,
+            286,
+            450
+          ],
+          "anchor": [
+            546,
+            517
+          ],
+          "area": 49404
+        },
+        {
+          "id": "chair-studio-item-3",
+          "maskPath": "/demo/photo-shopping/chair-studio-item-3-13c6c76193e6.png",
+          "sha256": "13c6c76193e6327172243aea4f62ca73db7a147b21631d82860d403cce29b757",
+          "bounds": [
+            736,
+            310,
+            323,
+            457
+          ],
+          "anchor": [
+            933,
+            443
+          ],
+          "area": 49055
+        },
+        {
+          "id": "chair-studio-item-4",
+          "maskPath": "/demo/photo-shopping/chair-studio-item-4-a4eeeb63ae9f.png",
+          "sha256": "a4eeeb63ae9fb6aebd399901b90a2aec7eaaef66beb2d5d19ec948377d4f70e1",
+          "bounds": [
+            1098,
+            466,
+            260,
+            306
+          ],
+          "anchor": [
+            1257,
+            504
+          ],
+          "area": 36505
+        }
+      ]
+    },
+    {
+      "id": "appliances",
+      "photo": {
+        "path": "/demo/expansion/appliances.webp",
+        "sha256": "4bd2fb61c512c04d94b23ecd376629d761dfd1ed95672c35fdaeaa46084f8803",
+        "width": 1920,
+        "height": 1280
+      },
+      "width": 1400,
+      "height": 933,
+      "model": "sam-3.1",
+      "products": [
+        {
+          "id": "appliances-item-1",
+          "maskPath": "/demo/photo-shopping/appliances-item-1-1f353f86ad9d.png",
+          "sha256": "1f353f86ad9d0b2ec358ab123c0b7baf986eeb80478b6a7efd441028472171be",
+          "bounds": [
+            129,
+            181,
+            345,
+            632
+          ],
+          "anchor": [
+            301,
+            369
+          ],
+          "area": 210649
+        },
+        {
+          "id": "appliances-item-2",
+          "maskPath": "/demo/photo-shopping/appliances-item-2-4bc00fa5568e.png",
+          "sha256": "4bc00fa5568e9b2594b7b3d30865c771798c841ad78a88588c1dfd68b9fc4912",
+          "bounds": [
+            548,
+            190,
+            310,
+            625
+          ],
+          "anchor": [
+            703,
+            651
+          ],
+          "area": 190259
+        },
+        {
+          "id": "appliances-item-3",
+          "maskPath": "/demo/photo-shopping/appliances-item-3-082a502a770d.png",
+          "sha256": "082a502a770daeb483357ea09178900b700919f09f14834eaead1d9ca5dc4eb0",
+          "bounds": [
+            935,
+            227,
+            329,
+            587
+          ],
+          "anchor": [
+            1099,
+            634
+          ],
+          "area": 187232
+        }
+      ]
+    },
+    {
+      "id": "fragrance",
+      "photo": {
+        "path": "/demo/expansion/fragrance.webp",
+        "sha256": "7d7002eeddbf43dcbfa456dedbfd588f6b62ec3b0da6a34ddb17accabb966b92",
+        "width": 1920,
+        "height": 1280
+      },
+      "width": 1400,
+      "height": 933,
+      "model": "sam-3.1",
+      "products": [
+        {
+          "id": "fragrance-item-1",
+          "maskPath": "/demo/photo-shopping/fragrance-item-1-ffcc870a5e7c.png",
+          "sha256": "ffcc870a5e7cc128737dd4f2b471312aa5684ab8ae5a35354bef4bd740e9f0fc",
+          "bounds": [
+            250,
+            252,
+            208,
+            494
+          ],
+          "anchor": [
+            352,
+            453
+          ],
+          "area": 85841
+        },
+        {
+          "id": "fragrance-item-2",
+          "maskPath": "/demo/photo-shopping/fragrance-item-2-73679e75ed06.png",
+          "sha256": "73679e75ed06e9383d241a8b643a5b74f7384cce62254d6403bee510c9ea2b91",
+          "bounds": [
+            575,
+            349,
+            268,
+            401
+          ],
+          "anchor": [
+            709,
+            616
+          ],
+          "area": 74687
+        },
+        {
+          "id": "fragrance-item-3",
+          "maskPath": "/demo/photo-shopping/fragrance-item-3-d5ccf8b3f398.png",
+          "sha256": "d5ccf8b3f398b21fa7e2f345c9227828f9f42d35d65cf87454282c7511abec63",
+          "bounds": [
+            998,
+            185,
+            121,
+            564
+          ],
+          "anchor": [
+            1058,
+            688
+          ],
+          "area": 63453
+        }
+      ]
+    },
+    {
+      "id": "home-essentials",
+      "photo": {
+        "path": "/demo/expansion/home-essentials.webp",
+        "sha256": "886a17d5dbf81c826c9dc29db40223e13f22522a177c1cd37fca74004cdfc848",
+        "width": 1920,
+        "height": 1280
+      },
+      "width": 1400,
+      "height": 933,
+      "model": "sam-3.1",
+      "products": [
+        {
+          "id": "home-essentials-item-1",
+          "maskPath": "/demo/photo-shopping/home-essentials-item-1-f7fbd190cb7f.png",
+          "sha256": "f7fbd190cb7f3f6823c84fb12dc4496bc469851267bff5ff172a2054317f52b6",
+          "bounds": [
+            118,
+            162,
+            350,
+            616
+          ],
+          "anchor": [
+            292,
+            365
+          ],
+          "area": 209782
+        },
+        {
+          "id": "home-essentials-item-2",
+          "maskPath": "/demo/photo-shopping/home-essentials-item-2-d2304bacd7f2.png",
+          "sha256": "d2304bacd7f20f626a597e2f47d767ba3cffe1d90244affd00d1dc9d00986753",
+          "bounds": [
+            542,
+            306,
+            295,
+            495
+          ],
+          "anchor": [
+            786,
+            542
+          ],
+          "area": 71665
+        },
+        {
+          "id": "home-essentials-item-3",
+          "maskPath": "/demo/photo-shopping/home-essentials-item-3-5b079befa889.png",
+          "sha256": "5b079befa88975b8b8fa9313675c7a314ccd8422a52dec6d222cb991a0de85fe",
+          "bounds": [
+            904,
+            324,
+            409,
+            461
+          ],
+          "anchor": [
+            1104,
+            542
+          ],
+          "area": 164064
+        }
+      ]
+    },
+    {
+      "id": "workspace",
+      "photo": {
+        "path": "/demo/expansion/workspace.webp",
+        "sha256": "ef24ad8f61216d789a12e3485e7ea3a80ea933483db8f07ca5d4db86994ed259",
+        "width": 1920,
+        "height": 1280
+      },
+      "width": 1400,
+      "height": 933,
+      "model": "sam-3.1",
+      "products": [
+        {
+          "id": "workspace-item-1",
+          "maskPath": "/demo/photo-shopping/workspace-item-1-cff84ba8fe7b.png",
+          "sha256": "cff84ba8fe7b8247f4540ff409b16496f26fda2f0f8821ad5a4dbb58ce7f8288",
+          "bounds": [
+            385,
+            57,
+            186,
+            297
+          ],
+          "anchor": [
+            479,
+            148
+          ],
+          "area": 46429
+        },
+        {
+          "id": "workspace-item-2",
+          "maskPath": "/demo/photo-shopping/workspace-item-2-018d8bda5aac.png",
+          "sha256": "018d8bda5aac7b82d3875c3104f66a6e0600734cb84c6e4ed628872545063529",
+          "bounds": [
+            609,
+            158,
+            752,
+            399
+          ],
+          "anchor": [
+            1164,
+            388
+          ],
+          "area": 182615
+        },
+        {
+          "id": "workspace-item-3",
+          "maskPath": "/demo/photo-shopping/workspace-item-3-edeb2a48fe0b.png",
+          "sha256": "edeb2a48fe0b796eb827fd5bc6d13819a9b0623ccd2b21c646540c95cc705230",
+          "bounds": [
+            60,
+            348,
+            523,
+            427
+          ],
+          "anchor": [
+            310,
+            557
+          ],
+          "area": 131509
+        },
+        {
+          "id": "workspace-item-4",
+          "maskPath": "/demo/photo-shopping/workspace-item-4-0447aa2ee498.png",
+          "sha256": "0447aa2ee498de612d5555409cbc36dd8d1ee39474f1835fc73f8c0c14d2dec9",
+          "bounds": [
+            877,
+            552,
+            244,
+            215
+          ],
+          "anchor": [
+            1009,
+            662
+          ],
+          "area": 34392
+        }
+      ]
+    },
+    {
+      "id": "daily-carry",
+      "photo": {
+        "path": "/demo/expansion/daily-carry.webp",
+        "sha256": "a7bdd4fb97b82db4007c8fdc2d8fa272a3e0ef58cc51145d83e9ed237354c028",
+        "width": 1920,
+        "height": 1280
+      },
+      "width": 1400,
+      "height": 933,
+      "model": "sam-3.1",
+      "products": [
+        {
+          "id": "daily-carry-item-1",
+          "maskPath": "/demo/photo-shopping/daily-carry-item-1-d06e1e77de6e.png",
+          "sha256": "d06e1e77de6ebf1975244e51e9ff71d6510d439c004022a3aa70f75992fbcde8",
+          "bounds": [
+            97,
+            485,
+            391,
+            284
+          ],
+          "anchor": [
+            263,
+            625
+          ],
+          "area": 75507
+        },
+        {
+          "id": "daily-carry-item-2",
+          "maskPath": "/demo/photo-shopping/daily-carry-item-2-4f6dc51b5ea6.png",
+          "sha256": "4f6dc51b5ea6f11ec997793719729f73c637ea8f17f79bc2873fd67db4d0f614",
+          "bounds": [
+            479,
+            84,
+            450,
+            637
+          ],
+          "anchor": [
+            711,
+            509
+          ],
+          "area": 197917
+        },
+        {
+          "id": "daily-carry-item-3",
+          "maskPath": "/demo/photo-shopping/daily-carry-item-3-cfb7abe5a1df.png",
+          "sha256": "cfb7abe5a1df3de2eeca1945f4010a7b5c3b062564af18c3c6a8e2cd6103bbf1",
+          "bounds": [
+            920,
+            470,
+            366,
+            327
+          ],
+          "anchor": [
+            1130,
+            642
+          ],
+          "area": 79370
+        }
+      ]
+    },
+    {
+      "id": "city-style",
+      "photo": {
+        "path": "/demo/expansion/city-style.webp",
+        "sha256": "db92ea61681383d34985f407b4622a137b7fa0ae6350b01495aab0f62a5aa3c9",
+        "width": 1920,
+        "height": 1280
+      },
+      "width": 1400,
+      "height": 933,
+      "model": "sam-3.1",
+      "products": [
+        {
+          "id": "city-style-item-1",
+          "maskPath": "/demo/photo-shopping/city-style-item-1-e4e2883d20ba.png",
+          "sha256": "e4e2883d20ba84167c554830ab62582f251d8e404580cafc9b8642611e3361fb",
+          "bounds": [
+            88,
+            225,
+            379,
+            420
+          ],
+          "anchor": [
+            242,
+            485
+          ],
+          "area": 109631
+        },
+        {
+          "id": "city-style-item-2",
+          "maskPath": "/demo/photo-shopping/city-style-item-2-eae82a74bd78.png",
+          "sha256": "eae82a74bd78dcfee5ee6b75d59d1490cbfa081a34a6f57b753e6f536f1324a9",
+          "bounds": [
+            555,
+            325,
+            348,
+            335
+          ],
+          "anchor": [
+            697,
+            508
+          ],
+          "area": 73682
+        },
+        {
+          "id": "city-style-item-3",
+          "maskPath": "/demo/photo-shopping/city-style-item-3-556adfa4d5b9.png",
+          "sha256": "556adfa4d5b927d56a1d0bc70fa8bd3dc36a1f72bca95de9a3abdfce0b808865",
+          "bounds": [
+            984,
+            389,
+            339,
+            280
+          ],
+          "anchor": [
+            1124,
+            529
+          ],
+          "area": 60766
+        }
+      ]
+    },
+    {
+      "id": "playtime",
+      "photo": {
+        "path": "/demo/expansion/playtime.webp",
+        "sha256": "3faa467656240a5acadcecf28097613b645296d7c71812ca13efa9f88b9ffd65",
+        "width": 1920,
+        "height": 1280
+      },
+      "width": 1400,
+      "height": 933,
+      "model": "sam-3.1",
+      "products": [
+        {
+          "id": "playtime-item-1",
+          "maskPath": "/demo/photo-shopping/playtime-item-1-70b7a83c5560.png",
+          "sha256": "70b7a83c556085fa5728513f1aea462b106f6126540c3e9dbc7d46e6f2f674c8",
+          "bounds": [
+            168,
+            145,
+            249,
+            253
+          ],
+          "anchor": [
+            292,
+            273
+          ],
+          "area": 49605
+        },
+        {
+          "id": "playtime-item-2",
+          "maskPath": "/demo/photo-shopping/playtime-item-2-b5262f5f1d9a.png",
+          "sha256": "b5262f5f1d9afa62a759f3e84fe0895c7bb18c1604cd4547801ccd9a7fa43926",
+          "bounds": [
+            506,
+            122,
+            282,
+            295
+          ],
+          "anchor": [
+            620,
+            309
+          ],
+          "area": 59733
+        },
+        {
+          "id": "playtime-item-3",
+          "maskPath": "/demo/photo-shopping/playtime-item-3-41cf9417bfe7.png",
+          "sha256": "41cf9417bfe7b251239ef634f6bc82dce1ef9c3c2d69b1bdfe7ad5fc6a608fe9",
+          "bounds": [
+            827,
+            152,
+            430,
+            314
+          ],
+          "anchor": [
+            1110,
+            327
+          ],
+          "area": 97573
+        },
+        {
+          "id": "playtime-item-4",
+          "maskPath": "/demo/photo-shopping/playtime-item-4-fccfba0251d1.png",
+          "sha256": "fccfba0251d168ac27a925232f3146b8e0827de60549a88587bd9352622e1cdb",
+          "bounds": [
+            247,
+            499,
+            295,
+            213
+          ],
+          "anchor": [
+            475,
+            626
+          ],
+          "area": 42963
+        },
+        {
+          "id": "playtime-item-5",
+          "maskPath": "/demo/photo-shopping/playtime-item-5-19fbff4bcb9a.png",
+          "sha256": "19fbff4bcb9aa9a5256228691902cf90c9b5bd651cf6c9277b877dfe9d41b13a",
+          "bounds": [
+            739,
+            511,
+            429,
+            292
+          ],
+          "anchor": [
+            1067,
+            658
+          ],
+          "area": 81371
+        }
+      ]
+    }
+  ]
+}

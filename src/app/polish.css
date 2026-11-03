@@ -64,3 +64,39 @@
   .demo-store .demo-experience:hover .demo-experience-image img, .demo-store .retail-scene-card:hover img { transform: scale(1.025); }
 }
 @keyframes rescene-enter { from { opacity: 0; translate: 0 4px; } to { opacity: 1; translate: 0 0; } }
+
+/* Original-photo shopping uses the same stage and a smaller read-only panel. */
+.demo-store .photo-mode-toggle[aria-pressed=true] { background: var(--shop-selected); color: var(--shop-link); border-radius: 5px; }
+.demo-store .photo-shop { background: var(--shop-stage); }
+.demo-store .photo-shop-tools { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--shop-surface); color: var(--shop-ink); font-size: 12px; }
+.demo-store .photo-shop-tools > span, .demo-store .photo-shop-tools label { display: inline-flex; align-items: center; gap: 7px; }
+.demo-store .photo-shop-tools input { width: 100px; accent-color: var(--shop-link); }
+.demo-store .photo-shop-tools output { width: 32px; font-variant-numeric: tabular-nums; }
+.demo-store .photo-shop-image { display: block; width: 100%; height: auto; max-height: clamp(300px, calc(100dvh - 400px), 640px); }
+.demo-store .photo-product-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.demo-store .photo-product-actions .d-button { flex: 1; min-height: 32px; padding: 6px 10px; font-size: 12px; }
+.demo-store .photo-product-actions .d-text { font-size: 12px; }
+.demo-store .photo-shop-image.has-hover { cursor: pointer; }
+.demo-store .photo-shop-pin { cursor: pointer; outline: none; }
+.demo-store .photo-shop-pin circle { fill: #fff; stroke: #263b35; stroke-width: 2; }
+.demo-store .photo-shop-pin text { fill: #263b35; font-size: 18px; font-weight: 600; font-family: var(--font-sans), sans-serif; pointer-events: none; }
+.demo-store .photo-shop-pin[aria-pressed=true] circle { fill: #184d3f; stroke: #fff; stroke-width: 3; }
+.demo-store .photo-shop-pin[aria-pressed=true] text { fill: #fff; }
+.demo-store .photo-shop-pin:focus-visible circle { stroke: #187de0; stroke-width: 5; }
+.demo-store .photo-shop-caption { min-height: 30px; padding: 7px 12px; background: var(--shop-surface); color: var(--shop-muted); font-size: 12px; }
+.demo-store .shopping-photo-mode .showroom-tabs { grid-template-columns: 1fr 1fr; }
+.demo-store .shopping-photo-mode .showroom-tabs button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+.demo-store .shopping-photo-mode .showroom-tabs button:disabled { opacity: .5; cursor: not-allowed; }
+.demo-store .photo-product-note { display: flex; align-items: center; gap: 5px; color: var(--shop-muted); font-size: 11px; margin-block: 10px 8px; }
+.demo-store .photo-product-description { font-size: 13px; line-height: 1.55; color: var(--shop-ink); margin-block: 8px 10px; }
+.demo-store .photo-product-specs { display: grid; gap: 8px; margin: 0 0 12px; font-size: 12px; line-height: 1.4; }
+.demo-store .photo-product-specs div { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 8px; }
+.demo-store .photo-product-specs dt { color: var(--shop-muted); }
+.demo-store .photo-product-specs dd { margin: 0; color: var(--shop-ink); }
+.demo-store .photo-product-gallery { border-top: 1px solid var(--line); padding-top: 10px; margin-top: 10px; }
+.demo-store .photo-product-gallery > div:first-child { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 11px; color: var(--shop-muted); margin-bottom: 8px; }
+.demo-store .photo-product-gallery strong { display: inline-flex; align-items: center; gap: 5px; color: var(--shop-ink); font-size: 12px; }
+.demo-store .photo-product-thumbs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.demo-store .photo-product-thumbs button { min-width: 0; padding: 3px; border: 1px solid var(--line); border-radius: 6px; background: var(--shop-surface); text-align: left; }
+.demo-store .photo-product-thumbs img { width: 100%; height: 64px; object-fit: cover; border-radius: 3px; }
+.demo-store .photo-product-thumbs span { display: block; padding: 4px 2px 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--shop-ink); font-size: 10px; }

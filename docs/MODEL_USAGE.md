@@ -13,6 +13,8 @@ ReScene calls Meta Model API directly for scene understanding, segmentation, ima
 
 The `openai` npm package is an OpenAI-compatible SDK configured with `https://api.meta.ai/v1`; ReScene does not use it to call an OpenAI model. WorldGen, SAM 3D Body/Align, Muse Glimmer and Muse Spark Open are not runtime integrations. Development assistance is separate from runtime model use; no claim that the application implements those agents is made.
 
+**Shop in 2D** reuses saved SAM3.1 segmentation for39 products across11 approved reference photographs. Browsing does not call segmentation again. Twenty-eight additional Muse Image alternate-angle photographs complete the pictured products' galleries; these are generated photographic concepts, not mesh screenshots or verified unseen views. [Photo-shopping workflow](PHOTO_SHOPPING.md).
+
 ## What application code contributes
 
 Model outputs are validated before use. Deterministic code handles source privacy, mask matching, durable job receipts, shared coordinate transforms, support/wall clearance, conservative mesh repair, material baking, scene editing and immutable publication. The stylist does not invent merchandise or calculate prices: code enumerates compatible, budget-valid combinations and checks kept/owned products and placement; Spark ranks only the accepted candidates. Applying a look creates one undo entry.
@@ -21,7 +23,7 @@ Model outputs are validated before use. Deterministic code handles source privac
 
 ## Reproducibility and scope
 
-The committed showroom records names, specifications, prices, immutable model digests, model placement and approved photo provenance. The local sample release contains only the same public derived GLBs. Full source photographs, masks, prompts and raw provider receipts remain private. Sample playback is not represented as fresh inference. [Assets and attribution](ATTRIBUTION.md).
+The committed showroom records names, specifications, prices, immutable model digests, model placement and approved photo provenance. The local sample release contains only the same public derived GLBs. Full private source photographs, original masks and raw provider receipts remain private; the 2D showroom publishes only approved photos and bounded derived selection overlays. Sample playback is not represented as fresh inference. [Assets and attribution](ATTRIBUTION.md).
 
 Single-view reconstruction is approximate. Hidden geometry/material detail is inferred; it is not a measurement, identity match or physical-fit guarantee. Color controls are preview tints, not proof of manufacturer variants. Generated image resolution and atlas dimensions are different quantities.
 

@@ -18,7 +18,7 @@ The public shopping demo needs no account or credentials:
 
 - **[Explore a product](https://rescene-eta.vercel.app/demo/products):** browse photographs, switch to 3D inspection and try a finish.
 - **[Build your space](https://rescene-eta.vercel.app/demo/spaces):** arrange products, replace a piece, change lighting and undo the edit.
-- **[Shop the scene](https://rescene-eta.vercel.app/demo/scenes):** select products within an environment and collect them in a demonstration shopping bag.
+- **[Shop the scene](https://rescene-eta.vercel.app/demo/scenes):** select products in 3D, or choose **Shop in 2D** to shop the original photograph with adjustable product highlights, details and photo previews.
 
 For the AI stylist, open **Quiet workspace**, mark the laptop and notebook as already owned, keep the tumbler and set a $100 merchandise budget. Ask for two different mouse choices. Spark proposes alternatives from the catalog; code checks the subtotal, kept items, compatibility and placement. Preview a look, apply it, then Undo once. The hosted stylist and voice features make real model calls; prepared photos and meshes do not regenerate when browsed.
 
@@ -123,7 +123,7 @@ The application is Next.js/TypeScript with React Three Fiber/Three.js. Productio
 
 ReScene validates model output, matches masks, fits a shared scene frame, seats objects on supports and checks background clearance. Materials combine observed detail with generated samples; unseen surfaces remain inferred. The shopping engine enumerates compatible combinations and calculates prices in integer cents before Spark ranks them. Applying a combination creates one undo entry.
 
-Publication produces a frozen, read-only snapshot with approved render assets and product fields. Full source photographs, masks and raw provider records stay private. Later draft edits do not modify an existing publication.
+Publication produces a frozen, read-only snapshot with approved render assets and product fields. Full source photographs, private masks and raw provider records stay private. The prepared 2D showroom uses separately approved reference photos and cropped selection overlays derived from saved SAM masks. Later draft edits do not modify an existing publication.
 
 [Architecture](docs/ARCHITECTURE.md) · [Data model](docs/DATA_MODEL.md) · [Background clearance](docs/BACKGROUND_CLEARANCE.md) · [Shopping stylist](docs/SHOPPING_STYLIST.md)
 

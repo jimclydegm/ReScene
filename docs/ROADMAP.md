@@ -1,11 +1,19 @@
 # ReScene — one release pass
 
-## November3 — catalog price and replacement range (active)
+## November3 — Shop in2D (release checks)
+
+- [x] Curate39 saved Meta masks aligned to all11 approved collection reference photos.
+- [x] Add alpha picking, numbered keyboard selectors, opacity, original product details and compact galleries; generate/review/register28 missing alternate-angle Muse photos. Keep2D product/bag identity separate from edited3D state.
+- [x] Disable2D physical controls/stylist;395 tests/schema/lint/types/build and local photo/asset checks pass. Initial native photo/highlight/disabled-control inspection passes; final native gestures interrupted by control timeouts.
+- [ ] Complete PR/main CI and production page/mask/photo verification. See PHOTO_SHOPPING.md.
+
+
+## November3 — catalog price and replacement range
 
 - [x] Author64 distinct products across eight requested groups and budget/midrange/premium prices.
 - [x] Generate and review64 independent Muse Image studio photographs.
 - [x] Finish and review64 Meta SAM3D textured meshes; synchronize approved Neon/R2 listings.
-- [ ] Export full catalog, distribute judge assets, verify price/fit/stylist/Undo coverage and release.
+- [x] Export136 listings, distribute/hash-verify judge assets, verify389 tests/162 pages/64 photo-model hashes, real$98/$168 stylist/Undo, PR49/main CI and READY production.
 
 One bundled release; existing authoring concurrency, paid receipts and placement guards remain.
 

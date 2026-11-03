@@ -19,6 +19,9 @@ import {
   Redo2,
   RotateCcw,
   Sun,
+  ScanLine,
+  Box,
+  LockKeyhole,
 } from "lucide-react";
 import {
   demoImage,
@@ -48,6 +51,9 @@ import { ColorSwatches } from "./product";
 import { RoomControls } from "./room-controls";
 import { ReplacementPicker } from "./replacement-picker";
 import { PositionControls } from "./position-controls";
+import { PhotoShop, PhotoProductGallery } from "./photo-shop";
+import { photoShoppingScene, photoPurchaseDraft } from "@/lib/demo/photo-shopping";
+import { productCover } from "@/lib/demo/albums";
 export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
   const scene = demoScenes.find((s) => s.id === sceneId)!,
     info = collectionInfo[scene.id],
@@ -55,23 +61,30 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
   const [timeline, setTimeline] = useState(() =>
       editHistory(initialArrangement(scene)),
     ),
-    [selected, setSelected] = useState(scene.objects[0].id),
+    [selected3d, setSelected] = useState(scene.objects[0].id),
+    [selected2d, setSelected2d] = useState(scene.objects[0].id),
     [isolated, setIsolated] = useState<string | null>(null),
     [look, setLook] = useState(false),
     [panel, setPanel] = useState<"products" | "stylist">("products"),
     [preview, setPreview] = useState<Arrangement | null>(null),
     [photo, setPhoto] = useState(false),
+    [shopping2d, setShopping2d] = useState(false),
+    [photoIncluded, setPhotoIncluded] = useState<string[]>(scene.objects.map(o => o.id)),
     [reset, setReset] = useState(false),
     [replacing, setReplacing] = useState(false),
     [message, setMessage] = useState("");
   const draft = timeline.present,
-    item = draft.items[selected],
+    selected = shopping2d ? selected2d : selected3d,
+    shoppingDraft = shopping2d ? photoPurchaseDraft(scene, photoIncluded) : draft,
+    item = shoppingDraft.items[selected],
     product = findDemoProduct(item ? itemProductId(selected, item) : selected),
     included = scene.objects
-      .filter((o) => purchasing(draft.items[o.id]))
+      .filter((o) => purchasing(shoppingDraft.items[o.id]))
       .map((o) => o.id),
-    total = merchandiseTotal(draft);
+    total = merchandiseTotal(shoppingDraft),
+    photoScene = photoShoppingScene(scene.id);
   function update(patch: Partial<ItemDraft>, group: string | null = null) {
+    if (shopping2d) return "Return to 3D to edit the scene.";
     setPreview(null);
     const result = changeArrangement(scene, draft, selected, patch);
     setMessage(result.error ?? "");
@@ -86,6 +99,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
     setTimeline((t) => finishEdit(t));
   }
   function select(id: string) {
+    if (shopping2d) { setSelected2d(id); return; }
     setSelected(id);
     if (isolated) setIsolated(id || null);
   }
@@ -106,7 +120,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
     setMessage("");
   }
   return (
-    <main className="demo-main demo-room-main">
+    <main className={`demo-main demo-room-main${shopping2d ? " shopping-photo-mode" : ""}`} data-shopping-mode={shopping2d ? "2d" : "3d"}>
       <div className="demo-breadcrumb">
         <Link href="/demo/scenes">Choose a scene</Link>
         <span>/</span>
@@ -117,8 +131,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
           <span className="d-kicker">Shop the scene</span>
           <h1>{info.name}</h1>
           <p>
-            Discover each piece. Move it, try a finish, or add the whole look to
-            your bag.
+            {shopping2d ? "Select a product in the original photo, explore its details, or shop the whole look." : "Discover each piece. Move it, try a finish, or add the whole look to your bag."}
           </p>
         </div>
         <button className="d-button primary" onClick={() => setLook(true)}>
@@ -139,14 +152,14 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
           <div className="demo-room-topbar">
             <span>
               <span className="demo-live-dot" />
-              {photo
+              {shopping2d ? "Shop the original photo" : photo
                 ? "Sample photography"
                 : isolated
                   ? "Inspecting a product"
                   : "Interactive room"}
             </span>
             <div>
-              <DemoVoiceControls
+              {!shopping2d && <DemoVoiceControls
                 sceneId={scene.id}
                 draft={draft}
                 selected={selected}
@@ -160,8 +173,15 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                     "Voice changes applied. Undo restores the previous scene.",
                   );
                 }}
-              />
+              />}
               <SceneAlbumButton sceneId={scene.id} name={info.name} />
+              <button className="d-text photo-mode-toggle" aria-pressed={shopping2d} onClick={() => {
+                if (!shopping2d) setSelected2d(selected3d);
+                setShopping2d(v => !v); setPanel("products"); setPreview(null); setPhoto(false); setReplacing(false); setLook(false);
+              }}>
+                {shopping2d ? <Box size={15}/> : <ScanLine size={15}/>}{shopping2d ? "Back to 3D" : "Shop in 2D"}
+              </button>
+              {!shopping2d && <>
               <button
                 className="d-icon"
                 aria-label="Undo scene edit"
@@ -197,9 +217,10 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
               <button className="d-text" onClick={showAll}>
                 Show all
               </button>
+              </>}
             </div>
           </div>
-          {photo ? (
+          {shopping2d ? <PhotoShop scene={photoScene} selected={selected} onSelect={select}/> : photo ? (
             <div className="demo-scene-photo">
               <Image
                 src={demoImage(scene.id)}
@@ -220,7 +241,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
           <div className="demo-scene-product-strip">
             {scene.objects.map((o) => {
               const p = findDemoProduct(
-                itemProductId(o.id, draft.items[o.id]),
+                itemProductId(o.id, shoppingDraft.items[o.id]),
               )!;
               return (
                 <button
@@ -229,7 +250,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                   onClick={() => select(selected === o.id ? "" : o.id)}
                 >
                   <Image
-                    src={demoImage(p.id)}
+                    src={productCover(p.id)}
                     alt=""
                     width={100}
                     height={100}
@@ -238,7 +259,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                     {p.name}
                     <strong>{money(p.price)}</strong>
                   </span>
-                  {!draft.items[o.id].visible && <EyeOff size={13} />}
+                  {!shoppingDraft.items[o.id].visible && <EyeOff size={13} />}
                 </button>
               );
             })}
@@ -255,17 +276,19 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                 key={tab}
                 role="tab"
                 aria-selected={panel === tab}
+                disabled={shopping2d && tab === "stylist"}
+                title={shopping2d && tab === "stylist" ? "The stylist is available in 3D mode" : undefined}
                 onClick={() => {
                   setPreview(null);
                   setPanel(tab);
                 }}
               >
-                {tab === "stylist" ? "AI stylist" : "Product & room"}
+                {tab === "stylist" ? <>{shopping2d && <LockKeyhole size={12}/>}AI stylist</> : shopping2d ? "Product details" : "Product & room"}
               </button>
             ))}
           </div>
           <div className="showroom-panel-body">
-            <div hidden={panel !== "stylist"}>
+            {!shopping2d && <div hidden={panel !== "stylist"}>
               <StylistPanel
                 sceneId={scene.id}
                 draft={draft}
@@ -300,10 +323,10 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                   );
                 }}
               />
-            </div>
+            </div>}
             <div hidden={panel !== "products"}>
               <section className="demo-panel demo-shop-card">
-                {message && (
+                {!shopping2d && message && (
                   <p className="demo-feedback visibility-feedback" role="alert">
                     {message}
                   </p>
@@ -323,7 +346,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                     <div className="retail-shop-product-head">
                       <Link href={`/demo/product/${product.id}`}>
                         <Image
-                          src={demoImage(product.id)}
+                          src={productCover(product.id)}
                           alt={product.name}
                           width={150}
                           height={150}
@@ -337,6 +360,14 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                         </strong>
                       </div>
                     </div>
+                    {shopping2d && <>
+                      <div className="photo-product-actions"><button className="d-button primary" onClick={() => store.add(product.id, 0)}><ShoppingBag size={14}/>Add item</button><Link className="d-text" href={`/demo/product/${product.id}`}>Full details<ArrowRight size={13}/></Link></div>
+                      <p className="photo-product-note"><LockKeyhole size={12}/>As photographed · edits available in 3D</p>
+                      <p className="photo-product-description">{product.description}</p>
+                      <dl className="photo-product-specs"><div><dt>Materials</dt><dd>{product.materials}</dd></div><div><dt>Dimensions</dt><dd>{product.dimensions}</dd></div></dl>
+                      <PhotoProductGallery key={product.id} id={product.id}/>
+                    </>}
+                    {!shopping2d && <>
                     <details className="demo-product-description">
                       <summary>About this piece</summary>
                       <p>{product.description}</p>
@@ -388,7 +419,8 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                         {isolated ? "Back to room" : "Inspect alone"}
                       </button>
                     </div>
-                    <button
+                    </>}
+                    {!shopping2d && <><button
                       className="d-button primary full"
                       onClick={() => store.add(product.id, item.color)}
                     >
@@ -402,19 +434,19 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                       Photos & product details
                       <ArrowRight size={14} />
                     </Link>
+                    </>}
                   </>
                 ) : (
                   <div className="demo-empty">
                     <Focus size={28} />
                     <h2>Select a product</h2>
                     <p>
-                      Select a product in the scene to view its details and
-                      adjust it.
+                      {shopping2d ? "Select a product in the photo or use its numbered selector." : "Select a product in the scene to view its details and adjust it."}
                     </p>
                   </div>
                 )}
               </section>
-              <section className="demo-panel demo-light-panel">
+              {!shopping2d && <><section className="demo-panel demo-light-panel">
                 <h2>Set the mood</h2>
                 <div className="demo-lighting">
                   {(
@@ -447,7 +479,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                   }}
                   onFinish={finish}
                 />
-              </details>
+              </details></>}
             </div>
           </div>
           <div className="demo-room-purchase">
@@ -466,7 +498,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
           </div>
         </aside>
       </div>
-      {replacing && selected && (
+      {!shopping2d && replacing && selected && (
         <ReplacementPicker
           scene={scene}
           draft={draft}
@@ -475,7 +507,7 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
           onClose={() => setReplacing(false)}
         />
       )}
-      {reset && (
+      {!shopping2d && reset && (
         <DemoDialog title="Reset this room?" onClose={() => setReset(false)}>
           <p>
             This restores its original arrangement, colors and lighting. You can
@@ -496,13 +528,12 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
       {look && (
         <DemoDialog title={`Shop ${info.name}`} onClose={() => setLook(false)}>
           <p>
-            Choose the pieces for your demo shopping list. Current color
-            selections are included.
+            {shopping2d ? "Choose products from the original photograph. Original finishes are included." : "Choose the pieces for your demo shopping list. Current color selections are included."}
           </p>
           <div className="demo-look-list">
             {scene.objects.map((o) => {
               const p = findDemoProduct(
-                  itemProductId(o.id, draft.items[o.id]),
+                  itemProductId(o.id, shoppingDraft.items[o.id]),
                 )!,
                 checked = included.includes(o.id);
               return (
@@ -510,9 +541,10 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                   <input
                     type="checkbox"
                     checked={checked}
-                    disabled={!!draft.items[o.id].owned}
-                    onChange={() =>
-                      setTimeline((t) =>
+                    disabled={!!shoppingDraft.items[o.id].owned}
+                    onChange={() => shopping2d
+                      ? setPhotoIncluded(ids => checked ? ids.filter(id => id !== o.id) : [...ids, o.id])
+                      : setTimeline((t) =>
                         recordEdit(t, {
                           ...t.present,
                           items: {
@@ -529,10 +561,10 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
                   <Image src={demoImage(p.id)} alt="" width={65} height={65} />
                   <span>
                     {p.name}
-                    <small>{p.colors[draft.items[o.id].color].name}</small>
+                    <small>{p.colors[shoppingDraft.items[o.id].color].name}</small>
                   </span>
                   <strong>
-                    {draft.items[o.id].owned ? "Owned" : money(p.price)}
+                    {shoppingDraft.items[o.id].owned ? "Owned" : money(p.price)}
                   </strong>
                 </label>
               );
@@ -549,8 +581,8 @@ export function ShopScenePage({ sceneId = "living" }: { sceneId?: string }) {
               setLook(false);
               store.addMany(
                 included.map((id) => ({
-                  id: itemProductId(id, draft.items[id]),
-                  color: draft.items[id].color,
+                  id: itemProductId(id, shoppingDraft.items[id]),
+                  color: shoppingDraft.items[id].color,
                 })),
               );
             }}
