@@ -37,6 +37,13 @@ describe('Shared foreground/background clearance',()=>{
   expect(backgroundSupportLift(box(0,1,0),composition)).toBe(0);
   expect(backgroundSupportLift(box(0,-.02,0),composition,'hanging')).toBe(0);
  });
+ it('moves a differently painted baseboard with its structural wall',()=>{
+  const wall=back(),trim=face('trim',[[-3,0,-.996],[3,0,-.996],[3,.2,-.996],[-3,.2,-.996]],{materialIndex:7,textured:false});
+  const fitted=fitBackgroundClearance(stage([wall,trim]),[{id:'object',points:box()}]);
+  const after=fitted.composition.background!.geometry!.surfaces;
+  expect(fitted.changes).toHaveLength(1);expect(after[1].vertices[0][2]-after[0].vertices[0][2]).toBeCloseTo(.004);
+  expect(after[1].materialIndex).toBe(7);expect(trim.vertices[0][2]).toBe(-.996);
+ });
  it('levels a misfitted dominant tabletop only with independently coplanar bases and intersections',()=>{
   const table=face('surface',[[-3,-1,2],[3,-1,2],[3,2,-2],[-3,2,-2]]),composition=stage([table]),objects=[-1,0,1].map(x=>({id:String(x),points:box(x,-.01,-.8),support:'tabletop'}));
   const leveled=levelBackgroundSupports(composition,objects);expect(leveled.changes).toEqual([0]);expect(environmentBoundaries(leveled.composition)[0].normal.y).toBeCloseTo(1);

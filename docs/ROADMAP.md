@@ -1,5 +1,12 @@
 # ReScene — one release pass
 
+## November 3 — demo sample refinement
+
+- [x] Review ten products from three requested collections; generate/review Muse material swatches, floor maps and complete window images.
+- [x] Repair shared UV seam contamination and trim attachment; curate full-surface bakes and separate floor/window maps while retaining source data and geometry.
+- [x] Closer product framing, contained thumbnails, taller/compact shopping controls and collection-preserving navigation;403 tests and local asset/page checks pass.
+- [ ] Finish immutable Neon/R2/judge asset sync, PR/production checks and final handoff.
+
 ## November 3 — Shop in 2D
 
 - [x] Curate39 saved Meta masks aligned to all11 approved collection reference photos.
@@ -25,6 +32,7 @@ One bundled release; existing authoring concurrency, paid receipts and placement
 - [x] Fresh-checkout installation/setup/code checks, all98 production pages and auth/local-mode guards pass. PR48 merged84b7099; PR/main CI green; automatic production deployment READY. Native production catalog verified; final handoff recorded.
 
 ## Submission preparation — November 2
+
 
 - [x] Revise the 2:55 video outline around merchant upload/product persistence, product-reference composition, editing/model roles and all three shopping workflows; verify gallery choice and budget feasibility without inference. Add explicit 30/25/20/25 judging evidence, visible live-call chain and brief validation-code view.
 - [x] Align the revised narration to Jim’s actual2:25.633 ElevenLabs recording (about438words). VIDEO_TIMELINE.md specifies16sections, real app actions and seven pause inserts totaling29seconds for a2:55 edit; VIDEO_TIMING.csv gives source/video clocks. VIDEO_SCRIPT/STRUCTURE/VISUALS are synchronized. FFmpeg duration/silence analysis and Muse transcription confirm approximate phrase cues. Native microphone rehearsal, actual demo capture, graphics rendering and final export/submission remain pending.

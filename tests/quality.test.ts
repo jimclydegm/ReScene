@@ -130,6 +130,30 @@ describe("Full-surface material bake", () => {
   it("counts protected source details separately", async () => {
     expect((await scene([], [[0, 0, 1, 1]])).coverage.protected).toBeGreaterThan(.1);
   });
+  it("never paints unused black atlas pixels into a generated material at UV seams", async () => {
+    const provider=solid(96,64,[0,0,0]),doc=readMesh(buildGlb(atlasBox(),{png:await png(provider)})),cam=camera(),size=64;
+    const visible=render([renderMesh(doc,new Matrix4(),0)],cam,size,size,"depth");
+    const result=bakeMaterials({doc,textures:new Map([[0,provider]]),object:0,photo:{data:new Uint8Array(size*size*3),width:size,height:size,channels:3},mask:new Uint8Array(size*size),camera:cam,visible,protectedBoxes:[],regions:[{id:"cloth",color:[220,220,220],sample:solid(16,16,[220,220,220]),tileScale:.5,grain:"none",repeating:true,preserveProviderDetail:false}]});
+    const texture=result.textures.get(0)!,codes=result.provenance.get(0)!;
+    for(let i=0;i<codes.length;i++)if(codes[i]===provenanceCodes.generated)expect(texture.data[i*4]).toBeGreaterThanOrEqual(219);
+  });
+  it("keeps two reviewed materials apart even when a triangle crosses their part boundary", async () => {
+    const result = await scene([
+      { id: "upper", color: [230, 225, 210], sample: solid(16, 16, [230, 225, 210]), tileScale: .3, grain: "none", repeating: true, preserveProviderDetail: false, bounds3d: [-2, .5, -2, 2, 2, 2] },
+      { id: "lower", color: [65, 35, 15], sample: solid(16, 16, [65, 35, 15]), tileScale: .3, grain: "along-part", grainAxis: [0, 1, 0], repeating: true, preserveProviderDetail: false, bounds3d: [-2, -1, -2, 2, .5, 2] },
+    ]);
+    const out = result.textures.get(0)!;
+    // Front face occupies atlas cell (1,0). Its two large triangles cross
+    // y=.5; the upper/lower samples must not follow the triangle centroid.
+    const pixel = (v: number) => {
+      const x = Math.floor(1.5 / 3 * out.width), y = Math.floor((.1 + .8 * v) / 2 * out.height);
+      return out.data[(y * out.width + x) * 4];
+    };
+    expect(pixel(.8)).toBeGreaterThan(180);
+    expect(pixel(.2)).toBeLessThan(160);
+    expect(pixel(.8) - pixel(.2)).toBeGreaterThan(60);
+    expect(result.coverage.unmapped).toBe(0);
+  });
   it("uses source material evidence to keep shaded cloth separate from wood on hidden faces",async()=>{
     const provider=solid(96,64,[122,112,83]),doc=readMesh(buildGlb(atlasBox(),{png:await png(provider)})),cam=camera(),size=128;
     const visible=render([renderMesh(doc,new Matrix4(),0)],cam,size,size,"depth"),mask=Uint8Array.from(visible.owners,v=>v===0?255:0),data=new Uint8Array(size*size*3);

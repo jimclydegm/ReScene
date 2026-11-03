@@ -7,7 +7,7 @@ import type { PixelImage4 } from "./render";
 // Muse material sample mapped through grain-aligned triplanar coordinates) and
 // inferred (the provider's own atlas). Muse never produces the atlas itself;
 // it only supplies flat material swatches sampled here into validated UVs.
-export type MaterialRegion = { id: string; color: [number, number, number]; sample: PixelImage4 | null; tileScale: number; grain: "none" | "along-part" | "across-part"; repeating: boolean;evidence?:[number,number,number,number];preserveProviderDetail?:boolean };
+export type MaterialRegion = { id: string; color: [number, number, number]; sample: PixelImage4 | null; tileScale: number; grain: "none" | "along-part" | "across-part"; repeating: boolean;evidence?:[number,number,number,number];preserveProviderDetail?:boolean; bounds3d?:[number,number,number,number,number,number]; grainAxis?:[number,number,number] };
 export type Photo = { data: Uint8Array; width: number; height: number; channels: 3 | 4 };
 export type BakeInput = {
   doc: MeshDocument; textures: Map<number, PixelImage4>; object: number;
@@ -95,6 +95,7 @@ export function bakeMaterials(input: BakeInput): BakeResult {
   if (doc.issues.some(i => i.startsWith("TEXTURE_TRANSFORM"))) throw new Error("BAKE_TEXTURE_TRANSFORM_UNSUPPORTED");
   if (mask.length !== photo.width * photo.height || input.visible.width !== photo.width || input.visible.height !== photo.height) throw new Error("BAKE_FRAME");
   for (const r of input.regions) if (r.sample && (r.sample.width > 2048 || r.sample.height > 2048)) throw new Error("BAKE_SAMPLE_SIZE");
+  for (const r of input.regions) if (r.bounds3d && (r.bounds3d.some(v=>!Number.isFinite(v)) || [0,1,2].some(k=>r.bounds3d![k]>r.bounds3d![k+3]))) throw new Error("BAKE_REGION_BOUNDS");
   camera.updateMatrixWorld();
   const clip = new Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse).elements, view = camera.matrixWorldInverse.elements, eye = camera.position;
   const delit = delightPhoto(photo, mask), bg = backgroundColor(photo, mask), { width: W, height: H } = photo;
@@ -153,10 +154,13 @@ export function bakeMaterials(input: BakeInput): BakeResult {
     if(coverage>.7&&coverage<1.4&&area(projected)>0)for(let i=0;i<spatialBoxes.length;i++){const b=spatialBoxes[i]!;spatialBoxes[i]=[projected[0]+(b[0]-source[0])/(source[2]-source[0])*(projected[2]-projected[0]),projected[1]+(b[1]-source[1])/(source[3]-source[1])*(projected[3]-projected[1]),projected[0]+(b[2]-source[0])/(source[2]-source[0])*(projected[2]-projected[0]),projected[1]+(b[3]-source[1])/(source[3]-source[1])*(projected[3]-projected[1])];}
   }
   const centroid = (p: number, t: number) => { const prim = doc.primitives[p], i = prim.indices; return [0, 1, 2].map(k => (prim.positions[i[t * 3] * 3 + k] + prim.positions[i[t * 3 + 1] * 3 + k] + prim.positions[i[t * 3 + 2] * 3 + k]) / 3); };
+  const allowed = (r:number, point:number[]) => { const b=input.regions[r]?.bounds3d; return !b || point.every((v,k)=>v>=b[k]-1e-6&&v<=b[k+3]+1e-6); };
   const uvCentroid = (p: number, t: number) => { const prim = doc.primitives[p], i = prim.indices, uv = prim.uv!; return [(uv[i[t * 3] * 2] + uv[i[t * 3 + 1] * 2] + uv[i[t * 3 + 2] * 2]) / 3, (uv[i[t * 3] * 2 + 1] + uv[i[t * 3 + 1] * 2 + 1] + uv[i[t * 3 + 2] * 2 + 1]) / 3]; };
   if (input.regions.length) {
     doc.primitives.forEach((prim, p) => { const image = prim.image === null ? undefined : input.textures.get(prim.image); for (let t = 0; t < labels[p].length; t++) {
       const [x, y, z] = centroid(p, t);
+      const eligible=input.regions.map((_,r)=>r).filter(r=>allowed(r,[x,y,z]));
+      if(eligible.length===1){labels[p][t]=eligible[0];continue;}
       // Color classification tolerates silhouette proximity; copying detailed
       // pixels still uses the strict band. Otherwise thin parts and dark
       // upholstery inherit the provider's incorrect material labels.
@@ -170,7 +174,8 @@ export function bakeMaterials(input: BakeInput): BakeResult {
       // A binary inside/outside penalty left uncovered areas assigned by tiny
       // color differences, painting one part with its neighbor's material.
       const score=(r:number)=>{const b=spatialBoxes[r];let spatial=0;if(b&&w>0){const dx=Math.max(b[0]-sx,0,sx-b[2])/Math.max(.01,b[2]-b[0]),dy=Math.max(b[1]-sy,0,sy-b[3])/Math.max(.01,b[3]-b[1]);spatial=Math.min(60,Math.hypot(dx,dy)*20);}return materialDistance(c,regionLab[r])+spatial+(single&&!evidence[r]?18:0);};
-      let best = 0; regionLab.forEach((_, i) => { if (score(i)<score(best)) best = i; }); labels[p][t] = best;
+      const choices=eligible.length?eligible:input.regions.map((_,r)=>r);
+      let best = choices[0]; for(const i of choices) { if (score(i)<score(best)) best = i; } labels[p][t] = best;
     } });
     const neighbors = new Map<string, number[]>();
     topology.welded.forEach((w, p) => { for (let t = 0; t < w.length; t += 3) for (let k = 0; k < 3; k++) { const a = w[t + k], b = w[t + (k + 1) % 3], key = a < b ? `${a},${b}` : `${b},${a}`; neighbors.set(key, [...(neighbors.get(key) ?? []), p, t / 3]); } });
@@ -179,7 +184,7 @@ export function bakeMaterials(input: BakeInput): BakeResult {
       topology.welded.forEach((w, p) => { for (let t = 0; t < w.length; t += 3) {
         const votes = new Map<number, number>();
         for (let k = 0; k < 3; k++) { const a = w[t + k], b = w[t + (k + 1) % 3], list = neighbors.get(a < b ? `${a},${b}` : `${b},${a}`) ?? []; for (let i = 0; i < list.length; i += 2) if (list[i] !== p || list[i + 1] !== t / 3) { const l = labels[list[i]][list[i + 1]]; votes.set(l, (votes.get(l) ?? 0) + 1); } }
-        for (const [label, count] of votes) if (count >= 2 && label !== labels[p][t / 3]) next[p][t / 3] = label;
+        for (const [label, count] of votes) if (count >= 2 && label !== labels[p][t / 3] && allowed(label,centroid(p,t/3))) next[p][t / 3] = label;
       } });
       next.forEach((l, p) => labels[p].set(l));
     }
@@ -187,6 +192,9 @@ export function bakeMaterials(input: BakeInput): BakeResult {
 
   // Grain frame per region: dominant axis of that region's surface.
   const frames = input.regions.map((region, r) => {
+    if(region.grainAxis&&region.grain!=="none"){
+      const axis=new Vector3(...region.grainAxis);if(!axis.toArray().every(Number.isFinite)||axis.lengthSq()<1e-10)throw new Error("BAKE_GRAIN_AXIS");return axis.normalize();
+    }
     const points: number[][] = [], weights: number[] = [];
     doc.primitives.forEach((_, p) => labels[p].forEach((l, t) => { if (l === r) { points.push(centroid(p, t)); weights.push(topology.areas[p][t]); } }));
     const total = weights.reduce((a, b) => a + b, 0) || 1, mean = [0, 1, 2].map(k => points.reduce((s, q, i) => s + q[k] * weights[i], 0) / total);
@@ -262,6 +270,13 @@ export function bakeMaterials(input: BakeInput): BakeResult {
       const counts = [0, 0, 0, 0, 0]; let hits = 0, protectedHits = 0;
       const write = (x: number, y: number, a: number, b: number, c: number) => {
         const px = P[0][0] * a + P[1][0] * b + P[2][0] * c, py = P[0][1] * a + P[1][1] * b + P[2][1] * c, pz = P[0][2] * a + P[1][2] * b + P[2][2] * c, at = y * out.width + x;
+        // A large triangle can cross a reviewed part boundary. Classify its
+        // actual surface texel instead of painting the entire face as a leg.
+        let label=labels[p][t];
+        if(!allowed(label,[px,py,pz])){
+          const eligible=input.regions.map((_,r)=>r).filter(r=>allowed(r,[px,py,pz]));
+          if(eligible.length)label=eligible[0];
+        }
         let weight = 0, isProtected = false;
         if (facing > .1 && observe(px, py, pz, obs)) {
           isProtected = input.protectedBoxes.some(b => obs[3] >= b[0] && obs[3] <= b[2] && obs[4] >= b[1] && obs[4] <= b[3]);
@@ -325,12 +340,26 @@ function stitchMaterialSeams(doc:MeshDocument,textures:Map<number,PixelImage4>,l
  const topology=weld(doc),edges=new Map<string,{p:number;t:number;a:number;b:number}[]>();
  doc.primitives.forEach((prim,p)=>{if(!prim.uv||prim.image===null)return;for(let t=0;t<prim.indices.length/3;t++)for(let k=0;k<3;k++){let a=prim.indices[t*3+k],b=prim.indices[t*3+(k+1)%3],wa=topology.welded[p][t*3+k],wb=topology.welded[p][t*3+(k+1)%3];if(wa>wb){[a,b]=[b,a];[wa,wb]=[wb,wa];}const key=`${wa},${wb}`;edges.set(key,[...(edges.get(key)??[]),{p,t,a,b}]);}});
  const changes=new Map<number,Map<number,number[]>>(),color=[0,0,0],other=[0,0,0];
+ // UV border filtering must use painted pixels from the owning triangle.
+ // Sampling an island edge against unused provider pixels creates dark seams.
+ const surfaceSample=(p:MeshDocument["primitives"][number],t:number,image:PixelImage4,u:number,v:number,out:number[])=>{
+  const codes=provenance.get(p.image!)!,center=uvCentroidForSeam(p,t,image),x=u*image.width,y=v*image.height,dx=center[0]-x,dy=center[1]-y,length=Math.hypot(dx,dy)||1;
+  for(const inset of [0,.75,1.5,3,5]){
+   const sx=x+dx/length*Math.min(inset,length),sy=y+dy/length*Math.min(inset,length),x0=Math.floor(sx-.5),y0=Math.floor(sy-.5),fx=sx-.5-x0,fy=sy-.5-y0;out.fill(0);let weight=0;
+   for(let j=0;j<2;j++)for(let i=0;i<2;i++){
+    const xx=x0+i,yy=y0+j;if(xx<0||yy<0||xx>=image.width||yy>=image.height||!codes[yy*image.width+xx]||!insideUvTriangle(p,t,(xx+.5)/image.width,(yy+.5)/image.height))continue;
+    const w=(i?fx:1-fx)*(j?fy:1-fy);for(let c=0;c<3;c++)out[c]+=image.data[(yy*image.width+xx)*4+c]*w;weight+=w;
+   }
+   if(weight>1e-6){for(let c=0;c<3;c++)out[c]/=weight;return true;}
+  }
+  return false;
+ };
  for(const list of edges.values()){
   if(list.length!==2)continue;const [a,b]=list,pa=doc.primitives[a.p],pb=doc.primitives[b.p],ia=textures.get(pa.image!),ib=textures.get(pb.image!);if(!ia||!ib||labels[a.p][a.t]<0||labels[a.p][a.t]!==labels[b.p][b.t])continue;
   const uv=(p:typeof pa,i:number)=>[p.uv![i*2],p.uv![i*2+1]],a0=uv(pa,a.a),a1=uv(pa,a.b),b0=uv(pb,b.a),b1=uv(pb,b.b);
   if(Math.hypot(a0[0]-b0[0],a0[1]-b0[1])+Math.hypot(a1[0]-b1[0],a1[1]-b1[1])<1e-6)continue;
   const steps=Math.min(256,Math.max(2,Math.ceil(Math.max(Math.hypot((a1[0]-a0[0])*ia.width,(a1[1]-a0[1])*ia.height),Math.hypot((b1[0]-b0[0])*ib.width,(b1[1]-b0[1])*ib.height)))));
-  for(let n=1;n<steps;n++){const f=n/steps;texel(ia,a0[0]*(1-f)+a1[0]*f,a0[1]*(1-f)+a1[1]*f,color);texel(ib,b0[0]*(1-f)+b1[0]*f,b0[1]*(1-f)+b1[1]*f,other);const mean=color.map((v,k)=>(v+other[k])/2);
+  for(let n=1;n<steps;n++){const f=n/steps;if(!surfaceSample(pa,a.t,ia,a0[0]*(1-f)+a1[0]*f,a0[1]*(1-f)+a1[1]*f,color)||!surfaceSample(pb,b.t,ib,b0[0]*(1-f)+b1[0]*f,b0[1]*(1-f)+b1[1]*f,other))continue;const mean=color.map((v,k)=>(v+other[k])/2);
    for(const [e,p,image,v0,v1]of [[a,pa,ia,a0,a1],[b,pb,ib,b0,b1]] as const){const x=(v0[0]*(1-f)+v1[0]*f)*image.width,y=(v0[1]*(1-f)+v1[1]*f)*image.height,c=uvCentroidForSeam(p,e.t,image),dx=c[0]-x,dy=c[1]-y,len=Math.hypot(dx,dy)||1,updates=changes.get(p.image!)??new Map<number,number[]>();changes.set(p.image!,updates);
     for(let d=0;d<4;d++){const xx=Math.floor(x+dx/len*(d+.5)),yy=Math.floor(y+dy/len*(d+.5));if(xx<0||yy<0||xx>=image.width||yy>=image.height||!insideUvTriangle(p,e.t,(xx+.5)/image.width,(yy+.5)/image.height))continue;const at=yy*image.width+xx;if(!provenance.get(p.image!)?.[at])continue;const w=(1-d/4)*.8,entry=updates.get(at)??[0,0,0,0];for(let k=0;k<3;k++)entry[k]+=mean[k]*w;entry[3]+=w;updates.set(at,entry);}
    }

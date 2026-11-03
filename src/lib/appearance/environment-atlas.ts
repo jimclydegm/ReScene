@@ -41,16 +41,16 @@ export async function prepareSurfaceTile(bytes:Buffer,relief=false){
 }
 /** One approved derived atlas preserves the existing publication allowlist.
  * Rectangles use bottom-left UV coordinates with mip-safe gutters. */
-export async function packEnvironmentAtlas(plate:Buffer,geometry:EnvironmentGeometry,tiles:Map<number,Buffer>){
- const count=tiles.size+1,columns=Math.ceil(Math.sqrt(count)),cell=Math.min(2048,Math.floor(4096/columns)),side=cell*columns,gutter=8,regions=new Map<number,[number,number,number,number]>(),composites:{input:Buffer;left:number;top:number}[]=[];
- const entries:[number,Buffer][]=[[-1,plate],...tiles];
+export async function packEnvironmentAtlas(plate:Buffer,geometry:EnvironmentGeometry,tiles:Map<number,Buffer>,openingImages:Map<number,Buffer>=new Map()){
+ const count=tiles.size+openingImages.size+1,columns=Math.ceil(Math.sqrt(count)),cell=Math.min(2048,Math.floor(4096/columns)),side=cell*columns,gutter=8,regions=new Map<number,[number,number,number,number]>(),composites:{input:Buffer;left:number;top:number}[]=[];
+ const entries:[number,Buffer][]=[[-1,plate],...tiles,...[...openingImages].map(([index,bytes])=>[-10-index,bytes] as [number,Buffer])];
  for(const [i,[key,bytes]]of entries.entries()){
   const image=await sharp(bytes).resize(cell-gutter*2,cell-gutter*2,{fit:"inside",withoutEnlargement:true}).png().toBuffer({resolveWithObject:true}),left=(i%columns)*cell+gutter,top=Math.floor(i/columns)*cell+gutter,w=image.info.width,h=image.info.height;
   const padded=await sharp(image.data).extend({top:gutter,bottom:gutter,left:gutter,right:gutter,extendWith:"copy"}).png().toBuffer();composites.push({input:padded,left:left-gutter,top:top-gutter});regions.set(key,[(left+.5)/side,1-(top+h-.5)/side,(left+w-.5)/side,1-(top+.5)/side]);
  }
  const mapped=structuredClone(geometry);
- for(const s of mapped.surfaces){
-  if(!s.textured)continue;const opening=s.role==="window"||s.role==="opening",rect=regions.get(opening?-1:s.materialIndex??-2);
+ for(const [index,s] of mapped.surfaces.entries()){
+  if(!s.textured)continue;const opening=s.role==="window"||s.role==="opening",rect=regions.get(opening?(openingImages.has(index)?-10-index:-1):s.materialIndex??-2);
   if(!rect){s.textured=false;delete s.tile;delete s.relief;continue;}
   s.atlas={mode:opening?"photo":"tile",rect};if(s.tile)s.tile=orthogonalTile(s.tile);s.materialOnly=!opening;
  }

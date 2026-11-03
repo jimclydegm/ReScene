@@ -100,3 +100,11 @@
 .demo-store .photo-product-thumbs button { min-width: 0; padding: 3px; border: 1px solid var(--line); border-radius: 6px; background: var(--shop-surface); text-align: left; }
 .demo-store .photo-product-thumbs img { width: 100%; height: 64px; object-fit: cover; border-radius: 3px; }
 .demo-store .photo-product-thumbs span { display: block; padding: 4px 2px 2px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--shop-ink); font-size: 10px; }
+
+/* Product silhouettes must fit in thumbnails, including tall handles and legs. */
+.demo-store :is(.demo-product-tile, .album-filmstrip, .demo-scene-product-strip, .retail-shop-product-head, .demo-cart-line, .demo-look-list, .photo-product-thumbs) img { object-fit: contain; background: var(--shop-photo); }
+.demo-store .demo-shop-main .showroom-sidebar { height: max(480px, min(calc(var(--shop-scene-height) + 170px), calc(100dvh - 205px))); }
+.demo-store .demo-shop-main .showroom-panel-body { overscroll-behavior: contain; }
+.demo-store .demo-shop-quick-actions { display: flex; align-items: start; gap: 10px; margin-block: 8px; }
+.demo-store .demo-shop-quick-actions .demo-product-description { flex: 1; margin: 0; min-width: 0; }
+.demo-store .demo-shop-quick-actions .showroom-swap-button { width: auto; flex-shrink: 0; margin: 0; }
