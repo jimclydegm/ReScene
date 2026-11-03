@@ -813,6 +813,902 @@
         "height": 1600,
         "model": "muse-image-1.0"
       }
+    ],
+    "pin-pine-side-table": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/pin-pine-side-table.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "19286d3928fa09a142dc5dff6ce98ba0a854eb82b020a28c3f52cffd2f6ea738",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "loop-white-side-table": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/loop-white-side-table.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "b1c0518469aef9a9ad126207c084cb18401313c21780140480e3d442ed256397",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "ember-walnut-side-table": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/ember-walnut-side-table.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "9db05e89d08b16bc62c64ea3a3d7f5fa028b01d8fbcd0a103ee94ad593c4d1c5",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "column-oak-side-table": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/column-oak-side-table.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "69266d7d6de30cfd6805b03ff404d921bdaf44aa920692a3cb86286782172859",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "plain-birch-coffee-table": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/plain-birch-coffee-table.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "abfe4c46be186d787a5f11ab067369fe75ebe51efcd4caeceb433e34ff64977e",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "curve-oak-coffee-table": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/curve-oak-coffee-table.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "64dba5b5d38a124c33641118db846cf7498a9a4b4ad796ed041b88ed8bb4d7aa",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "frame-black-coffee-table": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/frame-black-coffee-table.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "569a49dec0ce7744a6dbb4350fa2a8b71434572e318ddb4115ff8ff049d8ca21",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "stone-cream-coffee-table": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/stone-cream-coffee-table.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "d1e6aaeec6ceaa9d3aafa616da4bad30ea0c3c89816b19685855fcd2876310d7",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "daily-white-dining-chair": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/daily-white-dining-chair.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "6b5936c7c16f1a03fd0c13ec3a55acd5e993cd2455e5e3b46df0450bf50a937a",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "reed-pine-dining-chair": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/reed-pine-dining-chair.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "f2aeb87d1c1bf722a42613b9368bb7e2833fd2d5676e551221bb78c0f0884687",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "weave-oak-dining-chair": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/weave-oak-dining-chair.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "2515fe58c744834d0036f24824e838fd03425ea91393d00cd4a8b0cd6c4d53d3",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "atelier-walnut-dining-chair": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/atelier-walnut-dining-chair.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "c1b08b0e9b23ccca13f759f725f09aeb5170bed0b7655573a269639942239154",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "nest-gray-armchair": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/nest-gray-armchair.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "83665a054b2a0ade8a58fada06bb8446d5eebcd97c84ee34a37c7fe6078e3503",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "alto-mustard-armchair": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/alto-mustard-armchair.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "01377d5a7e397b8b859da0a2a06453cfba3147cd22d381468e015aef546cb33e",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "ribbon-blue-armchair": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/ribbon-blue-armchair.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "1ad8d8ae80c189bedf7675391158ac0b4580f4f78d456088566a7bcf53498000",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "hearth-cognac-armchair": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/hearth-cognac-armchair.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "c095d7d603f8f749493584a3bcb54b38e920d90e3497d2e3b84e97006b7499c1",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "basic-white-drawers": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/basic-white-drawers.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "10870242540e90904e7dcf388bace4c35d16ef7524bc428daa6c16cbc319aa6c",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "simple-pine-drawers": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/simple-pine-drawers.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "9c524c29248c2d4e2d735fe68eb28b577077446f0dab01496b5cd3bf9bb7af7d",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "linen-oat-drawers": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/linen-oat-drawers.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "0bb453d337c6b870bc91d21031a28c7ec33c1a9cc0f96e4198ab5e0ea9c75df3",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "block-blue-drawers": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/block-blue-drawers.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "76ea04fb389a14a00ecd7f5c03fbf7d295531851723fb647b1aa4b85136497fa",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "grove-oak-drawers": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/grove-oak-drawers.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "452ede93d05a2ee8585f037ee64fd3bca157000e3d5608f2cd7dde6a18ce2e55",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "flute-sand-drawers": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/flute-sand-drawers.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "c7da19e393bbba707fb605d4b1de2f769cac06496238de87f83b8c9151d52cef",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "heritage-walnut-drawers": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/heritage-walnut-drawers.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "620d34b2f4d582778bd7f48ff53cc5278e272ccebd4d2713389bb136e2c2678f",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "atelier-ink-drawers": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/atelier-ink-drawers.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "fe70153aeb557fb2f308d70af384023e4b700fa67a43569bfd89d1cc13f44534",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "daily-gray-sofa": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/daily-gray-sofa.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "c71210b0aa44255da0d73051818957f5ad2b3b04896886a349de4485a374e088",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "park-sand-sofa": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/park-sand-sofa.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "9cf05a76e838b2c7cff3fdd5b18b4391ad16789d36537c9f0eb1e142575da816",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "brook-olive-sofa": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/brook-olive-sofa.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "9044af6d1dfb2172a1648da659c19456ea389f93fb25a466ea3bc63e340264e8",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "shore-blue-sofa": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/shore-blue-sofa.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "cec341cf5c68a06e0a3a972bf87b0a9be69667c7d9f2f3635c15a8ac56a0332d",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "arc-cream-sofa": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/arc-cream-sofa.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "7b7e528e800c10451346e342f3430cf2bccb5672af9739e99660207c9285bb29",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "loft-tan-sofa": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/loft-tan-sofa.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "e4272e5b393cdefeed86118adf3ac59a8892f37e9a7e3a6303f94b5bf351332c",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "salon-rust-sofa": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/salon-rust-sofa.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "dae2f9367fc9397c6e6b4824563fb69dd439cfe9091f5bd85bef63705b15d7fc",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "atelier-cocoa-sofa": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/atelier-cocoa-sofa.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "15202daeaddaea1238ef07e1c577fba2c32d52e9268c5bbe842b12cc3af9503a",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "daily-white-mug": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/daily-white-mug.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "3648d8014eda9cef01b6314a7439708304cd34ffc082fe900f978bc5cb35dbf4",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "rise-yellow-mug": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/rise-yellow-mug.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "1a3ce19131b6cb0b9e7a30139e8926f9697d6a483f0a5450ea9c34303176a186",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "dune-speckled-mug": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/dune-speckled-mug.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "e8050709f3484e134b325d908cb53e9343a475c56dedf37d30d9bcb455b415ef",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "rib-olive-mug": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/rib-olive-mug.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "f8fb7b67055bbd8a9545c6863856773d29a98d036bb41ab59cdff0a7a923ec5c",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "tide-cobalt-mug": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/tide-cobalt-mug.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "0c2fe77a653a088eada64476777a63d10ba1d4574e8c0cc03cf2d408928c4865",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "kiln-rust-mug": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/kiln-rust-mug.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "d3aaae555c1d11fdf15aaa0d79bda22c4b4b0b539942406a58c926b96dbffafb",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "porcelain-ink-mug": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/porcelain-ink-mug.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "d6226285692007ec391f8f70f644ce2eac7760309c8ef741990e733a1f413a28",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "studio-satin-mug": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/studio-satin-mug.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "3ac72f096f38dcbe0bc79232c7dce51e3486da9e18adcd0bcecd9e6459c2bcd1",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "bud-white-vase": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/bud-white-vase.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "04d42b9f523b5c746d15e717e52a3b84348339932d4ab1236fe015d51c62483e",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "terra-round-vase": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/terra-round-vase.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "00dd316a2b1e00dd5c759872c7a44aa7d6e79ea37fc67c8676191ddf62e22368",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "tube-sage-vase": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/tube-sage-vase.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "8f90fc23317327f158047891602b81e15644d1dd31c3e08c223e1234020a788a",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "pebble-sand-vase": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/pebble-sand-vase.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "d7146fa42f17a0033e125934f00a23ffb275d8947454e278614eda7469a35ac8",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "flute-ivory-vase": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/flute-ivory-vase.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "236d27756ac0353edd62e5088c4e42c8f060fe5229f456e8cd898fa1ae28a973",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "arc-blue-vase": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/arc-blue-vase.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "b524b787419556eab5abefe459da5c08ebc5b4de5c61ee7992f8fd5c6979778e",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "column-charcoal-vase": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/column-charcoal-vase.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "950e286c94e8ab8d02f27db7a087f886334781dbf4b2ddfbd0599e2db32e5155",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "atelier-chalk-vase": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/atelier-chalk-vase.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "eeca72bc5bbaf1fc8b49bbbc36f19bb4919fc921d4295239e6c8e8c1e2a8e028",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "daily-navy-tote": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/daily-navy-tote.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "0cf0854349ec92dfd8aba9d99e50ccbec4c6127fc59b091aa8f09fd87ac8ddbe",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "market-olive-tote": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/market-olive-tote.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "cef3750f5156a514c11e552f56eb6930f39c4bc788746cedf1034683c468af57",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "commute-black-tote": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/commute-black-tote.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "1842e85a6d5d1ff627f9f9158af876ccba8ad372f40f1c51b82575e20b8076ba",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "studio-tan-tote": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/studio-tan-tote.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "542a12aab1883d627544f5e226f6f4359e99161ecad1ee57cfe38f064a709958",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "pocket-sand-bag": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/pocket-sand-bag.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "fbc23c4dc42fbe079d80eb88dd362445e2c04c82842de274771f90e807efad39",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "curve-burgundy-bag": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/curve-burgundy-bag.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "08ff6b77e92225b6d9ed5f8c5987239d9b84627b9134fb7d4cdd5766dc5769ea",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "frame-caramel-bag": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/frame-caramel-bag.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "73a8759bfddc040fd5d1099603c0441c39e5a79e6f33d82b7f7b474275b66945",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "atelier-black-bag": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/atelier-black-bag.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "4116d799e747332b129337dfca87cd60215e6d84ee9b8dfa7fea7d179133bffc",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "daily-canvas-sneaker": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/daily-canvas-sneaker.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "917a776fb4fe149f0f98746b631953b622f54e20e8da9508fc49b3dcb50b820a",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "pace-gray-sneaker": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/pace-gray-sneaker.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "757416e805d572731a63dbd3ea901bf932fd37422ceee31bb2467ef9aea2c33c",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "weekend-olive-slip-on": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/weekend-olive-slip-on.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "1ad11f169a1d9eb7b40fb9bc124a3838b08cc280d025fdca7240d033b076f928",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "court-black-sneaker": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/court-black-sneaker.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "c21dbe9291a513366c90abc00ba0bf17c81a4922f004fdf654a25cd8b0f3d51e",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "stride-sand-runner": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/stride-sand-runner.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "e2231e332f73272790c877cef63db7afdb054e2ad8846464385dc114dca3a395",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "heritage-chestnut-derby": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/heritage-chestnut-derby.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "eb925327ffd938a118c24f0dce1068361109266030cfaf47e8710ffe9530eaf9",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "soft-navy-loafer": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/soft-navy-loafer.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "5759a5fd2f83f6215142aaef23254c113a528f02000e37cebf0847b9aa3952ff",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
+    ],
+    "atelier-brown-loafer": [
+      {
+        "id": "studio",
+        "title": "Studio photograph",
+        "path": "/demo/catalog-v2/atelier-brown-loafer.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "sha256": "2392b9e1e84c9f812e503eb7ffd787337cd5d07f47ac3ef3ad393e88eb84d11c",
+        "width": 1600,
+        "height": 1600,
+        "model": "muse-image-1.0"
+      }
     ]
   },
   "scenes": {

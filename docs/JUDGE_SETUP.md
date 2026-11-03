@@ -10,7 +10,7 @@ npm run setup:judge
 npm run dev:judge
 ```
 
-Open http://127.0.0.1:3000/demo. Setup downloads approximately 134 MiB of approved GLBs from the public [sample release](https://github.com/jimclydegm/ReScene/releases/tag/judge-assets-v1), checks every SHA-256 and byte length against the committed catalog, and saves them under ignored `.judge/objects`. Photos and scene backgrounds are included in the repository. Re-running setup reuses verified files.
+Open http://127.0.0.1:3000/demo. Setup downloads the approved GLBs from the public [sample release](https://github.com/jimclydegm/ReScene/releases/tag/judge-assets-v1), checks every SHA-256 and byte length against the committed catalog, and saves them under ignored `.judge/objects`. Photos and scene backgrounds are included in the repository. Re-running setup reuses verified files.
 
 Try Album/3D, object selection, replacement, colors, lighting, layouts, hide/show, screenshot download, Undo/Redo and the demonstration bag. These are real saved Meta-generated models. Browsing them submits no inference. Voice input and the shopping stylist are disabled in sample mode; they do not return simulated model answers. Studio links return to the showroom.
 
@@ -22,7 +22,7 @@ Install/start Docker Desktop or Docker Engine with Compose. Stop the sample serv
 npm run setup:judge -- --live
 ```
 
-This starts Postgres 17 on 127.0.0.1:55432, applies the repository migrations and seeds the 72 priced catalog listings. Storage is private local files; setup generates a local signing secret. Add your keys to the ignored file `.judge/keys.env`:
+This starts Postgres 17 on 127.0.0.1:55432, applies the repository migrations and seeds the 136 priced catalog listings with linked product photos and full details. Storage is private local files; setup generates a local signing secret. Add your keys to the ignored file `.judge/keys.env`:
 
 ```dotenv
 MODEL_API_KEY=your_meta_model_api_key

@@ -12,7 +12,7 @@ export const exampleFinishes = [
 function finishes(text: string, original?: string) {
   const color = text
     .match(
-      /ivory|oat|white|cream|sage|blue|navy|terracotta|clay|caramel|brown|walnut|oak|ash|silver|steel|gray|grey|graphite|black|charcoal|taupe|sand|natural|amber|night/i,
+      /ivory|oat|white|cream|sage|blue|navy|terracotta|clay|caramel|brown|walnut|oak|ash|silver|steel|gray|grey|graphite|black|charcoal|taupe|sand|natural|amber|night|mustard|yellow|olive|burgundy|cobalt|rust|pine|cognac|birch/i,
     )?.[0]
     .toLowerCase();
   const swatches: Record<string, string> = {
@@ -42,6 +42,9 @@ function finishes(text: string, original?: string) {
     natural: "#d6c8af",
     amber: "#c6924a",
     night: "#303638",
+    mustard: "#c49a3f", yellow: "#e2bd5c", olive: "#777c4d",
+    burgundy: "#783846", cobalt: "#24548d", rust: "#ac5d3d",
+    pine: "#d3b486", cognac: "#a26943", birch: "#d6bd94",
   };
   return [
     {
@@ -307,28 +310,20 @@ const sceneProfiles: Record<
     ],
   ],
 };
+export function variationListing(variation: (typeof exampleProducts)[number], imageFolder = "/demo/expansion"): DemoProduct {
+  const category = variation.kind === "chair" && !/armchair/i.test(variation.name)
+    ? "Dining chairs" : variation.category;
+  return {
+    id: variation.id, name: variation.name, subtitle: category,
+    price: variation.price, category, role: variation.kind,
+    description: variation.description, materials: variation.materials,
+    dimensions: variation.dimensions, care: variation.care,
+    colors: finishes(variation.design), imagePath: `${imageFolder}/${variation.id}.webp`,
+  };
+}
 export function exampleListing(id: string): DemoProduct {
   const variation = exampleProducts.find((p) => p.id === id);
-  if (variation) {
-    const category =
-      variation.kind === "chair" && !/armchair/i.test(variation.name)
-        ? "Dining chairs"
-        : variation.category;
-    return {
-      id,
-      name: variation.name,
-      subtitle: category,
-      price: variation.price,
-      category,
-      role: variation.kind,
-      description: variation.description,
-      materials: variation.materials,
-      dimensions: variation.dimensions,
-      care: variation.care,
-      colors: finishes(variation.design),
-      imagePath: `/demo/expansion/${id}.webp`,
-    };
-  }
+  if (variation) return variationListing(variation);
   const product = exampleSceneProducts.find((p) => p.id === id);
   if (!product) throw new Error("Unknown approved example product");
   const [name, category, role, price, materials, dimensions] =

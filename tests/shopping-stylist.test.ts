@@ -159,6 +159,10 @@ describe("Budget-aware shopping combinations", () => {
     );
   });
   it("keeps seating and storage requirements compatible", () => {
+    expect(stylistCompatible(scene,"corner-chair",findDemoProduct("line-oak-chair")!,intent())).toBe(false);
+    const tableScene=demoScenes.find(s=>s.id==="space")!;
+    expect(stylistCompatible(tableScene,"round-table",findDemoProduct("coffee-table")!,intent())).toBe(false);
+    expect(stylistCompatible(tableScene,"round-table",findDemoProduct("oak-dresser")!,intent())).toBe(false);
     expect(
       stylistCompatible(
         scene,

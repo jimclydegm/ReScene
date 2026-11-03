@@ -73,11 +73,17 @@ if (process.argv.includes("--replay")) {
     await readFile(process.env.STYLIST_SAVED_PROOF ?? "test-results/stylist/live-http.json", "utf8"),
   );
   const input = { ...saved.input, key: crypto.randomUUID() };
+  const purchasedSlot = Object.entries(input.draft.items).find(([, item]) => {
+    const p = item as { owned?: boolean; included?: boolean };
+    return !p.owned && p.included !== false;
+  })?.[0];
+  assert(purchasedSlot, "The preflight fixture needs a purchased item.");
   // Exercise deployed workflow dispatch with an impossible kept budget: zero model calls.
   const r = await post(root, {
     ...input,
     key: crypto.randomUUID(),
     budgetCents: 1,
+    keep: [...new Set([...input.keep, purchasedSlot])],
     text: "Keep the selected products within a one-cent budget.",
   });
   const reservation = await r.json();

@@ -1,3 +1,4 @@
+import { batchId, batchFolder, listingFor } from "./lib/catalog-batch";
 /** Publish only this explicitly approved Muse/Meta batch. No inference and no source-scene edits.
  * Incremental --partial retains unfinished jobs; the final run requires all 38 builds.
  * node --conditions=react-server --import tsx scripts/promote-example-library.ts
@@ -10,8 +11,7 @@ import sharp from "sharp";
 import { Box3, Matrix4, Quaternion, Vector3 } from "three";
 import { getDb } from "../src/lib/db";
 import { Prisma } from "../src/generated/prisma/client";
-import { exampleProducts, exampleScenes } from "../src/lib/demo/example-batch";
-import { exampleListing } from "../src/lib/demo/example-listings";
+import { exampleProducts, exampleScenes } from "./lib/catalog-batch";
 import {
   readLimited,
   putObject,
@@ -33,7 +33,7 @@ import {makeClearanceHull} from "../src/lib/quality/clearance-hull";
 import { readMesh } from "../src/lib/quality/mesh";
 import type { DemoProduct } from "../src/lib/demo/catalog";
 const db = getDb(),
-  folder = "test-results/demo-expansion-v1",
+  folder = batchFolder,
   partial = process.argv.includes("--partial"),
   json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 type Model = {
@@ -129,7 +129,12 @@ async function saveSnapshots() {
     ["example-media.json", media],
   ] as const) {
     const name = `src/lib/demo/${file}`;
-    await writeFile(`${name}.tmp`, JSON.stringify(data, null, 2) + "\n");
+    const serialized = JSON.stringify(data, null, 2);
+    const compact = file === "catalog-models.json"
+      ? serialized.replace(/("clearanceHull": )(\[[\s\S]*?\n    \])/g, (_, key, hull) => key + JSON.stringify(JSON.parse(hull)))
+      : serialized;
+    if (await readFile(name, "utf8").catch(() => null) === compact + "\n") continue;
+    await writeFile(`${name}.tmp`, compact + "\n");
     await rename(`${name}.tmp`, name);
   }
 }
@@ -279,7 +284,7 @@ async function promoteProduct(scene: SceneRow, o: ObjectRow, id: string) {
     throw new Error(`Independent source model required: ${id}`);
   const receiptPath = `${folder}/approved/${id}.json`,
     photo = await photograph(id),
-    listing = exampleListing(id);
+    listing = listingFor(id);
   let model: Model, assetId: string;
   let approved: {
     sourceAssetId: string;
@@ -398,6 +403,7 @@ async function promoteProduct(scene: SceneRow, o: ObjectRow, id: string) {
     sku: `RS-${id.toUpperCase()}`,
     price: (listing.price / 100).toFixed(2),
     currency: "USD",
+    attributes: json({ Material: listing.materials, Dimensions: listing.dimensions, Care: listing.care }),
     modelAssetId: assetId,
     imageAssetId: image.id,
     catalogRole: "SOURCE" as const,
@@ -409,14 +415,14 @@ async function promoteProduct(scene: SceneRow, o: ObjectRow, id: string) {
       publicModelDigest: model.digest,
       independent: true,
       listingOrigin: "authored-catalog",
-      curationBatch: "demo-expansion-v1",
+      curationBatch: batchId,
     }),
   };
   const canonical = await db.product.findUnique({ where: { catalogKey: id } });
   if (
     canonical &&
     (canonical.sceneId !== scene.id ||
-      record(canonical.inferredDetails).curationBatch !== "demo-expansion-v1")
+      record(canonical.inferredDetails).curationBatch !== batchId)
   )
     throw new Error("Catalog key already belongs to another listing");
   await db.product.upsert({
@@ -433,9 +439,11 @@ async function promoteProduct(scene: SceneRow, o: ObjectRow, id: string) {
       brand: data.brand,
       price: data.price,
       currency: "USD",
+      attributes: json({ ...record(o.product?.attributes), Material: listing.materials, Dimensions: listing.dimensions, Care: listing.care }),
       imageAssetId: image.id,
       inferredDetails: json({
         ...record(o.product?.inferredDetails),
+        ...(exampleProducts.find(p=>p.id===id) ? { design: exampleProducts.find(p=>p.id===id)!.design } : {}),
         ...listing,
         independent: true,
         listingOrigin: "authored-catalog",
@@ -616,7 +624,7 @@ try {
       completeBuildsPromoted: complete,
       approvedListings: products.length,
       collections: collections.length,
-      allReady: complete === 38,
+      allReady: complete === exampleProducts.length + exampleScenes.length,
     }),
   );
 } finally {

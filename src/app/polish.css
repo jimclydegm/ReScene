@@ -12,6 +12,11 @@
 .demo-store .showroom-replace-results label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
 .demo-store .showroom-replace-results input { width: 14px; height: 14px; margin: 0; }
 .demo-store .showroom-replacement-grid { scrollbar-gutter: stable; }
+.catalog-filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(90px, .7fr); gap: 6px; }
+.catalog-filters label { display: flex; align-items: center; gap: 5px; padding-left: 7px; border: 1px solid var(--line); border-radius: 6px; }
+.catalog-filters input { width: 100%; min-width: 0; border: 0; padding: 7px 4px; background: transparent; color: inherit; font: inherit; }
+.catalog-filters select { min-width: 0; padding: 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: inherit; font: inherit; }
+.catalog-item strong { display: block; margin-top: 4px; font-size: 12px; color: var(--ink); }
 .demo-store .showroom-replacement-grid > button { min-height: 84px; }
 .demo-store .showroom-replacement-grid strong { overflow-wrap: anywhere; }
 .demo-store .showroom-replace-footer { position: sticky; bottom: 0; background: var(--shop-surface); z-index: 1; }

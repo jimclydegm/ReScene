@@ -1,5 +1,15 @@
 # ReScene — one release pass
 
+## November3 — catalog price and replacement range (active)
+
+- [x] Author64 distinct products across eight requested groups and budget/midrange/premium prices.
+- [x] Generate and review64 independent Muse Image studio photographs.
+- [x] Finish and review64 Meta SAM3D textured meshes; synchronize approved Neon/R2 listings.
+- [ ] Export full catalog, distribute judge assets, verify price/fit/stylist/Undo coverage and release.
+
+One bundled release; existing authoring concurrency, paid receipts and placement guards remain.
+
+
 ## Final desktop and judge polish — November 2
 
 - [x] Audit public shopping flows and local bootstrap; fix color-state recovery, replacement discovery, saved browser data, request limits/timeouts and reviewer cache isolation.
