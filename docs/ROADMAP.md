@@ -5,7 +5,7 @@
 - [x] Review ten products from three requested collections; generate/review Muse material swatches, floor maps and complete window images.
 - [x] Repair shared UV seam contamination and trim attachment; curate full-surface bakes and separate floor/window maps while retaining source data and geometry.
 - [x] Closer product framing, contained thumbnails, taller/compact shopping controls and collection-preserving navigation;403 tests and local asset/page checks pass.
-- [ ] Finish immutable Neon/R2/judge asset sync, PR/production checks and final handoff.
+- [x] Neon/R2/judge sync, PR51/main CI and READY production;162 live pages,ten model hashes/three atlases/all136 public judge-manifest entries verified. Temporary4317 stopped.
 
 ## November 3 — Shop in 2D
 

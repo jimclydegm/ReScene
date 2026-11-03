@@ -28,7 +28,7 @@ Approved model derivatives are immutable R2 assets linked from the ten SOURCE ca
 
 Private receipts, original snapshots, six-view renders and native screenshots live in ignored `test-results/demo-polish-nov3/`. They are not public setup dependencies. Ordinary users and judges load the prepared assets without new inference. Paid curation scripts require the existing Meta credentials and durable receipt files; they are not part of judge setup.
 
-Local checks: 403 tests, schema validation, lint, typecheck and production build; all 162 shopping pages; ten new model hashes and three atlas hashes. Native Chrome checks cover the three collections, window orbit, product framing, contained thumbnails, recolor/Undo and original-photo mask selection. Release/production verification is recorded in CONTEXT.md after deployment.
+Local checks: 403 tests, schema validation, lint, typecheck and production build; all 162 shopping pages; ten new model hashes and three atlas hashes. Native Chrome checks cover the three collections, window orbit, product framing, contained thumbnails, recolor/Undo and original-photo mask selection. PR51 merged at2302388; PR/main CI pass and production is READY at rescene-eta.vercel.app. All162 production shopping pages, ten model hashes, three atlas hashes and136 public judge-manifest entries pass. Native checks were local; final production checks use HTTP and hashes. The temporary4317 review server is stopped.
 
 Read-only release commands:
 
