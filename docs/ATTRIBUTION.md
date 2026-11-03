@@ -13,7 +13,8 @@ Jim has chosen to leave the original application code unlicensed for now. Public
 The showroom uses approved derived 3D models reconstructed with hosted Meta SAM 3D Objects and photographs generated with Muse Image. New sample photographs are AI generations from project references, rather than cropped product cards or screenshots of meshes. Catalog names, prices, measurements, reviews and checkout behavior are authored demonstration content, not verified real-world commercial listings or completed purchases.
 
 - [Generated photo manifest](../src/lib/demo/example-media.json): 130 photographs, including eight scenes and 122 individual product photographs.
-- [Earlier photographic manifest](../src/lib/demo/photography.json): earlier studio/angle/interior generations.
+- [Photographic manifest](../src/lib/demo/photography.json): studio/angle/interior generations, including28 additional Muse alternate-angle product photographs for2D shopping.
+- [Photo-shopping manifest](../src/lib/demo/photo-shopping.json):39 bounded selection overlays derived from saved SAM3.1 masks, aligned to11 already-approved reference photographs. Original private masks are excluded.
 - [Approved model manifest](../src/lib/demo/catalog-models.json): 136 GLBs with SHA-256, byte length, placement and derived collision hulls.
 - [Sample release](https://github.com/jimclydegm/ReScene/releases/tag/judge-assets-v1): deliberately public derived model copies for reproducible evaluation. Source uploads/masks/private model receipts are excluded.
 - [Sample library provenance](../public/samples/v3/provenance.json): settings/products used by Image Studio. Earlier sample manifests remain beside their assets.

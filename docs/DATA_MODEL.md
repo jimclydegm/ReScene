@@ -1,5 +1,7 @@
 # ReScene data model and contracts
 
+November3 photo shopping needs no migration. Existing SceneObject.mask and normalized image references supply39 reviewed demo silhouettes; public overlays are derived approved files with no source keys.28 additional Muse photographs are saved as READY same-scene PRODUCT_IMAGE assets and linked through approved Product.inferredDetails.galleryAssetIds. These links extend catalog metadata without overwriting prices, merchant specifications or source-scene edits.
+
 November3 catalog expansion reuses Product, Asset and ContentItem for64 additional independent Muse photographs and Meta SAM3D reconstructions. Each approved SOURCE listing links its source product, same-scene photo/model assets, USD price, materials, dimensions, care and finishes. Authored specifications are stored in both listing details and the merchant attributes; no SQL migration. The approved snapshot is136 products/11 collections. Local live seeding also copies approved product photographs into private local storage and links their Asset rows. See DEMO_EXAMPLES.md for readiness.
 
 Local judge setup reuses this schema and all migrations without a second data model. It seeds one isolated developer, one catalog source scene and the 136 approved Product/Asset pairs with authored details and prices. Source uploads and new generation receipts remain local; no production users or scene records are copied. See [JUDGE_SETUP.md](JUDGE_SETUP.md).

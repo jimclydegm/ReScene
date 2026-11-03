@@ -548,6 +548,398 @@
         "width": 1200,
         "height": 1200
       }
+    ],
+    "chair-studio-item-1": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/chair-studio-item-1-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "d9f2bb8cdfd3cba08ec86b20cae9cf534107f6b8c7cbf26aae685f1d84dd3c47",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "chair-studio-item-2": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/chair-studio-item-2-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "85673572642decb9ab94db02a90e380e7eb033edbd5f64f161f7f628ecbbdd85",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "chair-studio-item-3": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/chair-studio-item-3-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "72d6654d314a612af2054589c5390c149edda1ecd85a3d19966a9a85ff354822",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "chair-studio-item-4": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/chair-studio-item-4-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "d2eee85420c88864e3bfbb2c7c03308974ead4c72ba17c1c9c2f920b828f4fa3",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "appliances-item-1": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/appliances-item-1-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "43d5fdc66126951c221680407067dde96ad8e5f13bdcba826bfb669fd45a8b05",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "appliances-item-2": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/appliances-item-2-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "41c71e832729f36d67eec063c2cd6e6adafe72ebe95c7800660b46fb15239cf7",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "appliances-item-3": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/appliances-item-3-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "28160de905b33983563af941f929e5c403c9f3044f82198a1f980177abb4363b",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "fragrance-item-1": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/fragrance-item-1-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "a4a1d6a2082657031386203266fb1ab289f6e3d19a0336246601e7bdd897b7fc",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "fragrance-item-2": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/fragrance-item-2-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "a815860272a2ca35290df8053aaf4ba683b2a8a59cf698c85447e81259f38d61",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "fragrance-item-3": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/fragrance-item-3-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "b5b827c3273427b98e349b5ddeb42c768bbef4e884110d6698969ba6f4bc7bfc",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "home-essentials-item-1": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/home-essentials-item-1-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "269dc33117b992ca03f115f926ed68d74b1c5fbaf6b492c22fb2d7b6c90ef4bd",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "home-essentials-item-2": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/home-essentials-item-2-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "9b5b906296a8f439e63ab69ea7850ef98a0bba59fe52ed3673a4dc7275e4a061",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "home-essentials-item-3": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/home-essentials-item-3-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "6b243deae9de5b3427639ab02165e13df4636f98841b7ad2d5d6849833f66074",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "workspace-item-1": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/workspace-item-1-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "e58edc5d7504b6fd4ef8d62c1826c91bb13ac1476b491b6c61d7352838b5c057",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "workspace-item-2": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/workspace-item-2-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "a31df7a39b037041aaf381dc855eab970e26b23e8c8ceb72f4e2228be6cde987",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "workspace-item-3": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/workspace-item-3-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "5ee9fd8ff9e7ebf22bc1aa2c2ba5ddb1674cfc3620d3f7e0c17d04a4a01cea15",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "workspace-item-4": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/workspace-item-4-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "4f868e662c11a65a307125b16d040b155ec727464f080a8cee51cce459002aee",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "daily-carry-item-1": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/daily-carry-item-1-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "f5d1759e99d73386e4dd2374d0e7251a3765c4db4e446eb44f3fd08b940c2d15",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "daily-carry-item-2": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/daily-carry-item-2-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "105d8c173134c4107ea5d0f9bdfa437f60cc5cfc4d2d9eece0002843b9426a9e",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "daily-carry-item-3": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/daily-carry-item-3-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "4c8f850688c58bc8043827d12476e831fee25df559e50c8f94a1708392bb2ed3",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "city-style-item-1": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/city-style-item-1-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "b7566bb16e8fbf72b4d67169a00a58fc9039c7f1ec6bcf5664f1c233fead5d7b",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "city-style-item-2": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/city-style-item-2-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "22ed8b7dd48fb13927159005704e179ce25b83ff4a1ea92aaa83db8598ba3422",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "city-style-item-3": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/city-style-item-3-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "071de1d3a2ff1dc5fe6e3ad8a9d9eef0c2bb880ada4442416d3388066d50a729",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "playtime-item-1": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/playtime-item-1-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "958b6397da09bdae6841599f8a02a6190ef28fe03c72c12239bff406c5370c60",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "playtime-item-2": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/playtime-item-2-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "a8c41316c8fcf44c99daea7484932297e05d5f788d3b62f14072cbf93c0a8ec7",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "playtime-item-3": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/playtime-item-3-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "03e75c8931c17c4d7c591fda7b602c0e88037ecda08325b5a5b87a735e55665d",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "playtime-item-4": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/playtime-item-4-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "8085443aec9e4060e3efd8a3d99a447cb118738ad1a2d334162be4f039ddc591",
+        "width": 1600,
+        "height": 1600
+      }
+    ],
+    "playtime-item-5": [
+      {
+        "id": "profile",
+        "title": "Alternate-angle photograph",
+        "path": "/demo/photo-shopping/albums/playtime-item-5-profile.webp",
+        "kind": "generated",
+        "color": 0,
+        "setting": "studio",
+        "model": "muse-image-1.0",
+        "sha256": "3e62031cff3f1780d140e7ae5b8ee09400289d3e6ccab8eb7192070ff659032c",
+        "width": 1600,
+        "height": 1600
+      }
     ]
   },
   "scenes": {
