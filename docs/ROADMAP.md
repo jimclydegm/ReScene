@@ -1,11 +1,11 @@
 # ReScene — one release pass
 
-## November3 — Shop in2D (release checks)
+## November 3 — Shop in 2D
 
 - [x] Curate39 saved Meta masks aligned to all11 approved collection reference photos.
 - [x] Add alpha picking, numbered keyboard selectors, opacity, original product details and compact galleries; generate/review/register28 missing alternate-angle Muse photos. Keep2D product/bag identity separate from edited3D state.
 - [x] Disable2D physical controls/stylist;395 tests/schema/lint/types/build and local photo/asset checks pass. Initial native photo/highlight/disabled-control inspection passes; final native gestures interrupted by control timeouts.
-- [ ] Complete PR/main CI and production page/mask/photo verification. See PHOTO_SHOPPING.md.
+- [x] PR50 merged9848527; PR/main CI pass and production READY. All162 production shopping pages,39 mask hashes and39 reference/new-gallery photo hashes pass. Temporary local services stopped. See PHOTO_SHOPPING.md.
 
 
 ## November3 — catalog price and replacement range

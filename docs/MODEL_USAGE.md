@@ -13,7 +13,7 @@ ReScene calls Meta Model API directly for scene understanding, segmentation, ima
 
 The `openai` npm package is an OpenAI-compatible SDK configured with `https://api.meta.ai/v1`; ReScene does not use it to call an OpenAI model. WorldGen, SAM 3D Body/Align, Muse Glimmer and Muse Spark Open are not runtime integrations. Development assistance is separate from runtime model use; no claim that the application implements those agents is made.
 
-**Shop in 2D** reuses saved SAM3.1 segmentation for39 products across11 approved reference photographs. Browsing does not call segmentation again. Twenty-eight additional Muse Image alternate-angle photographs complete the pictured products' galleries; these are generated photographic concepts, not mesh screenshots or verified unseen views. [Photo-shopping workflow](PHOTO_SHOPPING.md).
+**Shop in 2D** reuses saved SAM 3.1 segmentation for 39 products across 11 approved reference photographs. Browsing does not call segmentation again. Twenty-eight additional Muse Image alternate-angle photographs complete the pictured products' galleries; these are generated photographic concepts, not mesh screenshots or verified unseen views. [Photo-shopping workflow](PHOTO_SHOPPING.md).
 
 ## What application code contributes
 
