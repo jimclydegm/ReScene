@@ -11,3 +11,5 @@ A new experimental rebake reduced the reference-camera color error for all three
 The existing quality pipeline retains numeric reference comparison, placement checks and per-object rollback. Single-photo unseen materials remain approximate. No new inference, source-project rewrite, migration or model-provider change was used for this correction.
 
 Verification:404 tests; schema/lint/typecheck/build;136 catalog records with only ten model digests/sizes changed; original-vs-recovered geometry/UV equality and approved asset hashes. Local/deployed page and asset checks are recorded in CONTEXT.md. Private comparisons and rejected candidates remain ignored under test-results/texture-fidelity-fix.
+
+Release: PR52 merged618ab75; PR/main CI pass. Production rescene-54x7apb6v-jimclydegms-projects.vercel.app is READY at rescene-eta.vercel.app. All162 production shopping pages, ten recovered model hashes, three unchanged atlas hashes and136 judge-manifest records pass. Local chair/living and live chair views inspected in the browser. Temporary4317 stopped; original recording drafts preserved separately.

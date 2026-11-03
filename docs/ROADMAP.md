@@ -4,7 +4,7 @@
 
 - [x] Diagnose lost source detail; restore ten approved reference textures without geometry/background/UI changes.
 - [x] Honor source blend independently from provider shading suppression; regression coverage and404 tests/static/build pass.
-- [ ] Finish asset sync, CI and production verification. See DEMO_TEXTURE_RECOVERY.md.
+- [x] PR52/main CI, READY production,Neon/R2/judge sync;162 live pages,ten model/three atlas hashes,136 judge entries and live chair visual check pass. See DEMO_TEXTURE_RECOVERY.md.
 
 
 ## November 3 — demo sample refinement
