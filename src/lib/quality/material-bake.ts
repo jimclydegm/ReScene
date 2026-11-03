@@ -283,8 +283,9 @@ export function bakeMaterials(input: BakeInput): BakeResult {
           const provider = [source.data[at * 4], source.data[at * 4 + 1], source.data[at * 4 + 2]];
           // Skip samples that look like backdrop rather than this surface.
           const contaminated = !isProtected && bg[0] >= 0 && distance(obs, bg) < 20 && distance(obs, provider) > 45;
-          const cleanMaterial=input.regions[label]?.sample&&input.regions[label].preserveProviderDetail===false;
-          weight = contaminated ? 0 : isProtected ? 1 : cleanMaterial?0:(input.regions[label]?.sample?(input.photoStrength??1):1) * Math.min(1, Math.max(0, (facing - .18) / .1)) * obs[5];
+          // Provider-detail suppression removes the old generated atlas's
+          // shading. It must not also discard observed source-photo detail.
+          weight = contaminated ? 0 : isProtected ? 1 : (input.regions[label]?.sample?(input.photoStrength??1):1) * Math.min(1, Math.max(0, (facing - .18) / .1)) * obs[5];
         }
         let code: number = provenanceCodes.inferred;
         if (label >= 0 && input.regions[label].sample) {

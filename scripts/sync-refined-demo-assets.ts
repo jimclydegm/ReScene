@@ -172,9 +172,13 @@ try {
               originalRows.find((p) => p.id === row.id)?.modelAssetId ??
               row.modelAssetId,
             provenance: json({
-              source: "reviewed-demo-materials-nov3",
+              source: r.referenceRecovery
+                ? "reference-demo-material-recovery-nov3"
+                : "reviewed-demo-materials-nov3",
               geometry: "Meta SAM 3D Objects",
-              materials: "muse-image-1.0",
+              materials: r.referenceRecovery
+                ? "previous-approved-reference-texture"
+                : "muse-image-1.0",
               analysis: "muse-spark-1.3",
               sourceDigest: r.sourceDigest,
               geometryPreserved: true,
@@ -204,7 +208,9 @@ try {
               ...(row.inferredDetails as object),
               publicModelDigest: m.digest,
               materialRefinement: {
-                version: "demo-materials-nov3",
+                version: r.referenceRecovery
+                  ? "reference-material-recovery-nov3"
+                  : "demo-materials-nov3",
                 geometryPreserved: true,
                 coverage: r.coverage,
               },
