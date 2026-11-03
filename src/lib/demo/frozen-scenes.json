@@ -1216,8 +1216,8 @@
       "objects": [
         {
           "id": "cloud-sofa",
-          "digest": "ee8ff42943b1c9fc946e3ba93d5dfd88be7ff909c5c61bffef7b58fc8e21ea81",
-          "bytes": 2380692,
+          "digest": "7ec10b72940c5519344f9352ce7a6e7e2758e3bdff4daa46703661d127ef6c88",
+          "bytes": 2001876,
           "position": [
             -0.08037653494315733,
             -0.003913899436464918,
@@ -1250,8 +1250,8 @@
         },
         {
           "id": "coffee-table",
-          "digest": "3a9270fc9a78c1b4a53d4d0ba2f03b1cd3f55cf4a94f658619e84f54539efeaa",
-          "bytes": 2024816,
+          "digest": "f1b5a9e2ad37b010c97be38499b299e2204708de2ff8d910903b849b8fc89092",
+          "bytes": 1937984,
           "position": [
             -0.5719024782449793,
             -0.0034880132865062197,
@@ -1284,8 +1284,8 @@
         },
         {
           "id": "wood-stool",
-          "digest": "a151ebd554678d888c01a08bb43b6815e4ba415891c7b1f6a6642853db740f1d",
-          "bytes": 2281840,
+          "digest": "d877b5203dd2e50fb3a8b2bde179bd59353983cb8c58f8ef3e0615d49784f88b",
+          "bytes": 1830156,
           "position": [
             2.1579470292158316,
             -0.0027804277575866343,
@@ -1318,8 +1318,8 @@
         },
         {
           "id": "ceramic-vase",
-          "digest": "3a4df454797aff1f216525dfc3cd88e4d814d1006bdd267afeb5b3c9e3c911b4",
-          "bytes": 1407412,
+          "digest": "c91fdefd21416755d137dd45d722ac6c0cc437f26b51db596dd8742c2ad81723",
+          "bytes": 2191476,
           "position": [
             -2.301133499382923,
             -0.003942104610258401,
@@ -1569,8 +1569,8 @@
       "objects": [
         {
           "id": "corner-chair",
-          "digest": "028dadd0e2245b3ff5e841b94b10c437e3b8d62b1b0ac5c18d865f2c4dedd752",
-          "bytes": 1904748,
+          "digest": "c8e7723343ad837c1680a5ef8f9bfa73cba154da4321568c99030b09e2ce7492",
+          "bytes": 1677696,
           "position": [
             -1.2651043977351781,
             -0.003535831214905638,
@@ -1603,8 +1603,8 @@
         },
         {
           "id": "corner-cabinet",
-          "digest": "186cece7a3cdfb7fd57fd666072c69a977247b834419fe468a9909bce5942cef",
-          "bytes": 1964092,
+          "digest": "3eb8fbbc8d712e72964f889193e8c7170ab6dacc33a33e607cc63775d5b4652c",
+          "bytes": 1489204,
           "position": [
             1.475923694997494,
             -0.007888707433363562,
@@ -1637,8 +1637,8 @@
         },
         {
           "id": "corner-vase",
-          "digest": "754a4d7191ddc2c54382ecc1e1956ad517211ae84807a43425d5fa81dbf4ea5e",
-          "bytes": 1893108,
+          "digest": "f51b97f3c9bfc8fad761e59ef64f656a23667673596783d422ec017b45543fc4",
+          "bytes": 2106996,
           "position": [
             1.590394254317892,
             1.7205432276047914,
@@ -2453,8 +2453,8 @@
       "objects": [
         {
           "id": "chair-studio-item-1",
-          "digest": "acbd52f7a8d79922b21bc7f4d877ee700db2f062e3c6d8af1199732e32451a94",
-          "bytes": 4205320,
+          "digest": "3fbc16c79614f16d42c1bed9c06e43c62e243b7c1f89b827d31a26a4f57a1d2d",
+          "bytes": 2332876,
           "position": [
             -1.9579445123672485,
             0,
@@ -2487,8 +2487,8 @@
         },
         {
           "id": "chair-studio-item-2",
-          "digest": "02826f506b57faf12b04b52bbf7121bbfb73ab2b7cc2f59053e84f5622b3ebbe",
-          "bytes": 3194832,
+          "digest": "a124bd816108408765165cdcd4d41f356fe4c94058e71198e785246d9a165a52",
+          "bytes": 1567228,
           "position": [
             -0.36282067000865936,
             0,
@@ -2555,8 +2555,8 @@
         },
         {
           "id": "chair-studio-item-4",
-          "digest": "ba195acadd48b8d232705c3b26ea246b52712aa0a2bbcfe629cf36c5a3ac7862",
-          "bytes": 3038140,
+          "digest": "05d3bb28809739e28564cee0fd95a8644a3d0c50a0ecea04913ea26952993b38",
+          "bytes": 1709336,
           "position": [
             2.1570472717285156,
             0,

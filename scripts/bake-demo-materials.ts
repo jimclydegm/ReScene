@@ -88,7 +88,7 @@ for (const scene of scenes.scenes.filter((s) =>
         )
           throw Error("Not reviewed");
         const size = /fabric|cloth|linen|upholster/i.test(m.material)
-          ? 512
+          ? 1024
           : 2048;
         const r = await sharp(data)
           .resize({
@@ -203,7 +203,7 @@ for (const scene of scenes.scenes.filter((s) =>
       mask,
       camera,
       visible,
-      photoStrength: 0.2,
+      photoStrength: 0.85,
       regions,
       protectedBoxes: plan.protectedDetails
         .filter((d) => d.kind !== "stitching")

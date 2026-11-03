@@ -95,13 +95,13 @@ describe("Geometry diagnostics and conservative repair", () => {
 });
 
 describe("Full-surface material bake", () => {
-  async function scene(regions: Parameters<typeof bakeMaterials>[0]["regions"], protectedBoxes: [number, number, number, number][] = []) {
+  async function scene(regions: Parameters<typeof bakeMaterials>[0]["regions"], protectedBoxes: [number, number, number, number][] = [], photoStrength?:number) {
     const provider = solid(96, 64, [20, 160, 20]), bytes = buildGlb(atlasBox(), { png: await png(provider), dataMap: await png(solid(4, 4, [0, 90, 0])) });
     const matrix = new Matrix4().makeTranslation(0, .5, 0).multiply(new Matrix4().makeRotationY(.6)), doc = readMesh(bytes, matrix), cam = camera(), size = 128;
     const visible = render([renderMesh(doc, new Matrix4(), 0)], cam, size, size, "depth"), mask = Uint8Array.from(visible.owners, v => v >= 0 ? 255 : 0);
     const photo = { data: new Uint8Array(size * size * 3), width: size, height: size, channels: 3 as const };
     for (let i = 0; i < size * size; i++) photo.data.set(mask[i] ? [200, 40, 40] : [230, 230, 230], i * 3);
-    return bakeMaterials({ doc, textures: new Map([[0, provider], [1, solid(4, 4, [0, 90, 0])]]), object: 0, photo, mask, camera: cam, visible: { ...visible, width: size, height: size }, regions, protectedBoxes });
+    return bakeMaterials({ doc, textures: new Map([[0, provider], [1, solid(4, 4, [0, 90, 0])]]), object: 0, photo, mask, camera: cam, visible: { ...visible, width: size, height: size }, regions, protectedBoxes, photoStrength });
   }
   it("covers every mapped surface: observed where visible, generated or provider elsewhere", async () => {
     const result = await scene([{ id: "paint", color: [200, 40, 40], sample: solid(16, 16, [40, 40, 200]), tileScale: .25, grain: "none", repeating: true }]);
@@ -127,6 +127,13 @@ describe("Full-surface material bake", () => {
     // Unused atlas outside islands and padding stays untouched.
     expect(codes[0]).toBe(0); expect(Array.from(out.data.slice(0, 3))).toEqual([20, 160, 20]);
   });
+  it("retains observed photo detail when old provider detail is suppressed", async () => {
+    const result=await scene([{id:"cloth",color:[200,40,40],sample:solid(16,16,[200,40,40]),tileScale:.25,grain:"none",repeating:true,preserveProviderDetail:false}],[],.85);
+    expect(result.coverage.observed).toBeGreaterThan(.08);
+    expect(result.coverage.generated).toBeGreaterThan(.3);
+    const zero=await scene([{id:"cloth",color:[200,40,40],sample:solid(16,16,[200,40,40]),tileScale:.25,grain:"none",repeating:true,preserveProviderDetail:false}],[],0);
+    expect(zero.coverage.observed).toBe(0);
+  });
   it("counts protected source details separately", async () => {
     expect((await scene([], [[0, 0, 1, 1]])).coverage.protected).toBeGreaterThan(.1);
   });
@@ -141,7 +148,7 @@ describe("Full-surface material bake", () => {
     const result = await scene([
       { id: "upper", color: [230, 225, 210], sample: solid(16, 16, [230, 225, 210]), tileScale: .3, grain: "none", repeating: true, preserveProviderDetail: false, bounds3d: [-2, .5, -2, 2, 2, 2] },
       { id: "lower", color: [65, 35, 15], sample: solid(16, 16, [65, 35, 15]), tileScale: .3, grain: "along-part", grainAxis: [0, 1, 0], repeating: true, preserveProviderDetail: false, bounds3d: [-2, -1, -2, 2, .5, 2] },
-    ]);
+    ], [], 0);
     const out = result.textures.get(0)!;
     // Front face occupies atlas cell (1,0). Its two large triangles cross
     // y=.5; the upper/lower samples must not follow the triangle centroid.

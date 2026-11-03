@@ -1,5 +1,7 @@
 # Demo material and environment refinement
 
+**Material correction November3:** The ten new object bakes described below were subsequently reverted after Jim reported lost reference detail and color. The environment/UI changes remain. [DEMO_TEXTURE_RECOVERY.md](DEMO_TEXTURE_RECOVERY.md) describes the current object textures and shared baker fix.
+
 November 3, 2026. This pass updates the Reading Corner, Sunday Living Room and Seating Collection. Their source photographs, saved SAM selections, prices, product identities, mesh vertices, UV coordinates and placement transforms remain unchanged.
 
 ## Materials

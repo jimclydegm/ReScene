@@ -1,5 +1,12 @@
 # ReScene — one release pass
 
+## November3 reference texture correction
+
+- [x] Diagnose lost source detail; restore ten approved reference textures without geometry/background/UI changes.
+- [x] Honor source blend independently from provider shading suppression; regression coverage and404 tests/static/build pass.
+- [ ] Finish asset sync, CI and production verification. See DEMO_TEXTURE_RECOVERY.md.
+
+
 ## November 3 — demo sample refinement
 
 - [x] Review ten products from three requested collections; generate/review Muse material swatches, floor maps and complete window images.
