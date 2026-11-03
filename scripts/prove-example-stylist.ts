@@ -20,7 +20,11 @@ import {
 import { merchandiseTotal } from "../src/lib/shopping/engine";
 import { editHistory, recordEdit, undoEdit } from "../src/lib/editor/history";
 const db = getDb(),
-  file = "test-results/demo-expansion-v1/stylist-live.json";
+  prices = process.env.STYLIST_PROOF === "catalog-prices-v2",
+  folder = prices ? "test-results/catalog-prices-v2" : "test-results/demo-expansion-v1",
+  file = `${folder}/stylist-live.json`,
+  varyingSlot = prices ? "home-essentials-item-3" : "workspace-item-4",
+  expectedRole = prices ? "drawer" : "mouse";
 type Proof = {
   actor: { actorHash: string; networkHash: string };
   input: StylistInput;
@@ -30,10 +34,13 @@ let proof: Proof;
 try {
   proof = JSON.parse(await readFile(file, "utf8"));
 } catch {
-  const scene = demoScenes.find((s) => s.id === "workspace")!,
+  const scene = demoScenes.find((s) => s.id === (prices ? "home-essentials" : "workspace"))!,
     draft = initialArrangement(scene);
-  draft.items["workspace-item-2"].owned = true;
-  draft.items["workspace-item-3"].owned = true;
+  if (prices) draft.items["home-essentials-item-1"].owned = true;
+  else {
+    draft.items["workspace-item-2"].owned = true;
+    draft.items["workspace-item-3"].owned = true;
+  }
   proof = {
     actor: {
       actorHash: createHash("sha256").update(randomUUID()).digest("hex"),
@@ -44,10 +51,12 @@ try {
     input: {
       key: randomUUID(),
       sceneId: scene.id,
-      selected: "workspace-item-4",
-      keep: ["workspace-item-1"],
-      budgetCents: 10000,
-      text: "Keep the tumbler. Suggest two different wireless mice that coordinate with a warm natural wood desk. Keep the merchandise subtotal at or below $100. The laptop and notebook are already owned.",
+      selected: varyingSlot,
+      keep: prices ? ["home-essentials-item-1"] : ["workspace-item-1"],
+      budgetCents: prices ? 20000 : 10000,
+      text: prices
+        ? "The refrigerator is already owned; keep it. Suggest two different coordinated chair and drawer-chest combinations in warm wood or cream, with different drawer products in the two options. Merchandise subtotal at or below $200. Keep the drawer storage function and current layout."
+        : "Keep the tumbler. Suggest two different wireless mice that coordinate with a warm natural wood desk. Keep the merchandise subtotal at or below $100. The laptop and notebook are already owned.",
       draft,
     },
   };
@@ -66,12 +75,12 @@ try {
   assert.equal(result.options.length, 2);
   const mouseIds = new Set<string>();
   for (const option of result.options) {
-    assert(option.subtotalCents <= 10000);
+    assert(option.subtotalCents <= proof.input.budgetCents);
     assert.equal(option.subtotalCents, merchandiseTotal(option.draft));
-    const mouse = option.draft.items["workspace-item-4"].productId!;
+    const mouse = option.draft.items[varyingSlot].productId!;
     mouseIds.add(mouse);
-    assert.equal(findDemoProduct(mouse)?.role, "mouse");
-    for (const id of [
+    assert.equal(findDemoProduct(mouse)?.role, expectedRole);
+    for (const id of prices ? ["home-essentials-item-1"] : [
       "workspace-item-1",
       "workspace-item-2",
       "workspace-item-3",
@@ -97,12 +106,12 @@ try {
   assert.equal(
     mouseIds.size,
     2,
-    "The shopper asked for different mice, not only different tints.",
+    "The shopper asked for different products, not only different tints.",
   );
   const duplicate = await reserveShopping(proof.actor, proof.input);
   assert.equal(duplicate.id, proof.id);
   await writeFile(
-    "test-results/demo-expansion-v1/stylist-readiness.json",
+    `${folder}/stylist-readiness.json`,
     JSON.stringify(
       {
         checkedAt: new Date().toISOString(),
@@ -121,7 +130,7 @@ try {
       options: result.options.map((o) => ({
         title: o.title,
         subtotalCents: o.subtotalCents,
-        mouse: findDemoProduct(o.draft.items["workspace-item-4"].productId!)!
+        product: findDemoProduct(o.draft.items[varyingSlot].productId!)!
           .name,
       })),
       checks:

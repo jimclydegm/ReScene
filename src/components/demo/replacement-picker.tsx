@@ -30,6 +30,7 @@ export function ReplacementPicker({
     [choice, setChoice] = useState(current),
     [query, setQuery] = useState(""),
     [category, setCategory] = useState(findDemoProduct(current)?.category ?? "All"),
+    [sort, setSort] = useState("price-up"),
     [showUnavailable, setShowUnavailable] = useState(false),
     [error, setError] = useState("");
   const product = findDemoProduct(choice)!,
@@ -41,7 +42,9 @@ export function ReplacementPicker({
           .toLowerCase()
           .includes(query.toLowerCase()),
     ).map(p=>({product:p, reason:changeArrangement(scene,draft,id,{productId:p.id}).error})),
-    items = matches.filter(({reason})=>showUnavailable || !reason);
+    items = matches.filter(({reason})=>showUnavailable || !reason).sort((a,b)=>
+      sort === "price-up" ? a.product.price-b.product.price :
+      sort === "price-down" ? b.product.price-a.product.price : a.product.name.localeCompare(b.product.name));
   return (
     <DemoDialog title={`Replace ${old.name}`} onClose={onClose} wide>
       <div className="showroom-replace-toolbar">
@@ -74,6 +77,11 @@ export function ReplacementPicker({
           {["All", ...new Set(demoProducts.map((p) => p.category))].map((c) => (
             <option key={c}>{c}</option>
           ))}
+        </select>
+        <select aria-label="Sort replacements" value={sort} onChange={e=>setSort(e.target.value)}>
+          <option value="price-up">Price: low to high</option>
+          <option value="price-down">Price: high to low</option>
+          <option value="name">Name: A–Z</option>
         </select>
       </div>
       <div className="showroom-replace-results">

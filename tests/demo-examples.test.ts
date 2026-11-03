@@ -14,6 +14,7 @@ import {
 } from "../src/lib/demo/catalog";
 import models from "../src/lib/demo/catalog-models.json";
 import media from "../src/lib/demo/example-media.json";
+import { catalogExpansion } from "../src/lib/demo/catalog-expansion";
 import {
   demoScenes,
   initialArrangement,
@@ -92,15 +93,15 @@ describe("Muse-generated example library", () => {
         ).toBeNull();
     }
     expect(demoScenes).toHaveLength(11);
-    expect(demoProducts).toHaveLength(72);
-    expect(models).toHaveLength(72);
+    expect(demoProducts).toHaveLength(72 + catalogExpansion.length);
+    expect(models).toHaveLength(demoProducts.length);
   });
   it("publishes only approved render data and product fields", () => {
     const text = JSON.stringify(media);
     expect(text).not.toMatch(
       /ownerId|storageKey|\/Users\/|referencePath|providerRequest|api.key|LLM_|postgresql|https:\/\//i,
     );
-    expect(Object.keys(media.products)).toHaveLength(58);
+    expect(Object.keys(media.products)).toHaveLength(58 + catalogExpansion.length);
     expect(Object.keys(media.scenes)).toHaveLength(8);
     for (const p of [...exampleProducts, ...exampleSceneProducts])
       expect(models.some((m) => m.id === p.id)).toBe(true);

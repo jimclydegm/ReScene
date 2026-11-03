@@ -55,12 +55,15 @@ export async function catalog(sceneId: string, ownerId: string) {
     },
     include: { imageAsset: true, modelAsset: true },
     orderBy: { name: "asc" },
-    take: 150,
+    take: 1000,
   });
+  // Prefer the curated listing when its source object is also in this library.
+  const curatedSources = new Set(products.filter(p => p.modelAsset?.sceneId === p.sceneId && p.modelAsset.status === "READY" && p.modelAsset.kind === "MODEL_GLB").map(p => p.sourceProductId).filter(Boolean));
   return Promise.all(
     products
       .filter(
         (p) =>
+          !curatedSources.has(p.id) &&
           p.modelAsset?.sceneId === p.sceneId &&
           p.modelAsset.status === "READY" &&
           p.modelAsset.kind === "MODEL_GLB",
@@ -68,6 +71,9 @@ export async function catalog(sceneId: string, ownerId: string) {
       .map(async (p) => ({
         id: p.id,
         name: p.name,
+        category: typeof record(p.inferredDetails).category === "string" ? String(record(p.inferredDetails).category) : null,
+        price: p.price?.toFixed(2) ?? null,
+        currency: p.currency ?? null,
         imageUrl:
           p.imageAsset?.sceneId === p.sceneId && p.imageAsset.status === "READY"
             ? await signRead(p.imageAsset)

@@ -9,6 +9,7 @@ import {
 import { lightingSchema } from "@/lib/scene/lighting";
 import { footprintOverlap, footprintPenetration, type Arrangement, type ItemDraft } from "./state";
 import { findDemoProduct, itemProductId, demoListingHeight } from "./catalog";
+import { alignReplacementFrame } from "./replacement-frame";
 export const demoScenes = frozen.scenes.map((s) => ({
   id: s.id,
   composition: compositionSchema.parse(s.composition),
@@ -33,6 +34,10 @@ export function productCollection(id: string) {
     sofa: "living",
     shoes: "city-style",
     mug: "playtime",
+    table: "living",
+    vase: "living",
+    tote: "daily-carry",
+    handbag: "city-style",
   };
   const target = product?.role ? preferred[product.role] : "corner";
   return demoScenes.find((s) => s.id === target)?.id ?? "corner";
@@ -74,6 +79,10 @@ export function resolvedDemoObject(
   const productId = itemProductId(id, draft.items[id]);
   const source = catalogSources.get(productId);
   if (!source) throw new Error("The selected product model is unavailable.");
+  const aligned = source.id === slot.id ? source.placement : alignReplacementFrame(
+    { placement: source.placement, hull: source.clearanceHull as [number,number,number][], dimensions: findDemoProduct(source.id)!.dimensions },
+    { placement: slot.placement, hull: catalogSources.get(slot.id)?.clearanceHull as [number,number,number][] | undefined, dimensions: findDemoProduct(slot.id)!.dimensions },
+  );
   // Single-photo scales differ. Use the existing fictional listing heights to
   // keep demo proportions, then check the new footprint. Never squash a sofa
   // into a vase-sized box or stretch the replacement geometry.
@@ -82,23 +91,23 @@ export function resolvedDemoObject(
   const factor =
     source.id === slot.id
       ? 1
-      : (slot.placement.size[1] * heightRatio) / source.placement.size[1];
+      : (slot.placement.size[1] * heightRatio) / aligned.size[1];
   const placement =
     source.id === slot.id
       ? slot.placement
       : {
-          ...source.placement,
-          scale: source.placement.scale.map((v) => v * factor) as [
+          ...aligned,
+          scale: aligned.scale.map((v) => v * factor) as [
             number,
             number,
             number,
           ],
-          offset: source.placement.offset.map((v) => v * factor) as [
+          offset: aligned.offset.map((v) => v * factor) as [
             number,
             number,
             number,
           ],
-          size: source.placement.size.map((v) => v * factor) as [
+          size: aligned.size.map((v) => v * factor) as [
             number,
             number,
             number,

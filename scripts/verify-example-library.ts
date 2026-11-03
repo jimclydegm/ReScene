@@ -1,3 +1,4 @@
+import { batchId, batchFolder } from "./lib/catalog-batch";
 /** Read-only verification of the generated batch against Neon and approved local copies. No inference. */
 import { config } from "dotenv";
 config({ path: ".env.local", quiet: true });
@@ -9,7 +10,7 @@ import {
   exampleProducts,
   exampleSceneProducts,
   exampleScenes,
-} from "../src/lib/demo/example-batch";
+} from "./lib/catalog-batch";
 import { demoProducts } from "../src/lib/demo/catalog";
 import models from "../src/lib/demo/catalog-models.json";
 import { record } from "../src/lib/services/composition";
@@ -17,7 +18,7 @@ import { readGlb } from "../src/lib/appearance/bake";
 import { inspectGlb } from "../src/lib/ai/glb";
 import { decimalToCents } from "../src/lib/shopping/listing";
 const db = getDb(),
-  folder = "test-results/demo-expansion-v1";
+  folder = batchFolder;
 try {
   const owner = (
     await db.scene.findUniqueOrThrow({
@@ -70,6 +71,11 @@ try {
     assert.equal(row.imageAsset!.sceneId, row.sceneId);
     assert.equal(record(row.imageAsset!.provenance).source, "muse-image-1.0");
     assert.equal(row.sourceProductId === null, false);
+    if (batchId === "catalog-prices-v2") assert.deepEqual(record(row.attributes), {
+      Material: record(row.inferredDetails).materials,
+      Dimensions: record(row.inferredDetails).dimensions,
+      Care: record(row.inferredDetails).care,
+    });
     inspectGlb(bytes);
     assert.equal(
       createHash("sha256").update(bytes).digest("hex"),
@@ -147,7 +153,7 @@ try {
         verifiedAt: new Date().toISOString(),
         listings: rows.length,
         newModels: stats.length,
-        readyBuilds: 38,
+        readyBuilds: exampleProducts.length + exampleScenes.length,
         stats,
       },
       null,
@@ -157,7 +163,7 @@ try {
   );
   console.log(
     JSON.stringify({
-      readyBuilds: 38,
+      readyBuilds: exampleProducts.length + exampleScenes.length,
       approvedDatabaseListings: rows.length,
       newTexturedModels: stats.length,
       minimumTriangles: Math.min(...stats.map((s) => s.triangles)),

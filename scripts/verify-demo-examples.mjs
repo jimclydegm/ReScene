@@ -1,9 +1,11 @@
-// Bounded read-only release smoke. --ui omits image/model downloads. No inference.
+// Bounded read-only release smoke. --ui omits image/model downloads;
+// --new downloads only catalog-v2 additions while checking every page. No inference.
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
 const base = process.env.DEMO_BASE_URL ?? "http://localhost:4317",
-  ui = process.argv.includes("--ui");
+  ui = process.argv.includes("--ui"),
+  newOnly = process.argv.includes("--new");
 const load = async (file) =>
   JSON.parse(
     await readFile(new URL(`../src/lib/demo/${file}`, import.meta.url), "utf8"),
@@ -14,7 +16,9 @@ const [products, collections, models, media] = await Promise.all([
   load("catalog-models.json"),
   load("example-media.json"),
 ]);
-assert.equal(products.length, 72);
+assert(products.length >= 72);
+assert.equal(models.length, products.length);
+assert.equal(new Set(products.map(p=>p.id)).size, products.length);
 assert.equal(collections.length, 11);
 const get = (path) =>
   fetch(new URL(path, base), {
@@ -68,6 +72,11 @@ if (!ui) {
       .flat()
       .concat(Object.values(media.scenes).flat()),
     approved = models.filter((m) => Object.hasOwn(media.products, m.id));
+  if (newOnly) {
+    const ids = new Set(products.filter(p=>p.imagePath?.startsWith("/demo/catalog-v2/")).map(p=>p.id));
+    photos.splice(0,photos.length,...photos.filter(p=>p.path.startsWith("/demo/catalog-v2/")));
+    approved.splice(0,approved.length,...approved.filter(m=>ids.has(m.id)));
+  }
   for (let i = 0; i < photos.length; i += 2)
     await Promise.all(
       photos.slice(i, i + 2).map(async (p) => {

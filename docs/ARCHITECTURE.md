@@ -1,5 +1,7 @@
 # ReScene system architecture
 
+November3 catalog bundle adds64 independently generated products through the existing curation, Neon and R2 path. The shopper search uses bounded price/product coverage, one candidate per merchandise kit when multiple kits fit, preserved suitable original finishes and compatible chair/table subtypes. Approved hulls align elongated replacements to the selected slot's footprint; geometry proportions, support contact, frozen originals and collision/wall guards stay intact. Local judge seeding includes linked photographs and full product fields. No new runtime model, service or SQL migration. See DEMO_EXAMPLES.md for the current release checks.
+
 Local evaluation adds an explicit loopback-only adapter layer: `RESCENE_JUDGE_MODE=samples` reads approved filesystem copies without a database; `live` uses PrismaPg/local Postgres, a local developer identity and signed private files. Meta receives inline images; fal receives uploaded input files using the same fal key. The isolated launcher supplies configuration before Next loads environment files and stores durable workflows under `.judge/workflows/`. Reviewer development uses `.judge/next/`, separate from authoring/build output and private data. Production retains the Neon/Auth/R2 adapters. See [JUDGE_SETUP.md](JUDGE_SETUP.md).
 
 ## Muse example library — November 2

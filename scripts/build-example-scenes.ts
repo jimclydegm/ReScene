@@ -1,3 +1,4 @@
+import { batchId, batchFolder } from "./lib/catalog-batch";
 /** Resumable, one-active-user-run curation batch. Uses the application's paid receipts and storage. */
 import { config } from "dotenv";
 config({ path: ".env.local", quiet: true });
@@ -6,7 +7,7 @@ import { createHash, randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { getDb } from "../src/lib/db";
 import { Prisma } from "../src/generated/prisma/client";
-import { exampleScenes, exampleProducts } from "../src/lib/demo/example-batch";
+import { exampleScenes, exampleProducts } from "./lib/catalog-batch";
 import {
   reserveRun,
   claimRun,
@@ -23,7 +24,7 @@ import { putObject, storagePrefix, bucket } from "../src/lib/storage/r2";
 import { syncSceneProducts } from "../src/lib/services/product-library";
 import { record } from "../src/lib/services/composition";
 const db = getDb(),
-  folder = "test-results/demo-expansion-v1",
+  folder = batchFolder,
   json = (v: unknown) => JSON.parse(JSON.stringify(v)) as Prisma.InputJsonValue;
 await mkdir(folder, { recursive: true });
 type State = {
@@ -76,7 +77,7 @@ async function prepare(job: (typeof jobs)[number], state: State) {
         ownerId: owner,
         title: job.title,
         description: job.product?.description ?? job.scene!.caption,
-        settings: { curationBatch: "demo-expansion-v1", exampleKey: job.id },
+        settings: { curationBatch: batchId, exampleKey: job.id },
       },
     });
   }
@@ -328,6 +329,10 @@ async function processJob(job: (typeof jobs)[number], state: State) {
               mouse: "electronics",
               shoes: "footwear",
               mug: "decor",
+              vase: "decor",
+              table: "furniture",
+              tote: "accessories",
+              handbag: "accessories",
             } as Record<string, string>
           )[job.product.kind],
           provenance: json({
@@ -492,6 +497,20 @@ async function processJob(job: (typeof jobs)[number], state: State) {
 }
 try {
   for (const job of jobs) {
+    // The photo producer can run ahead of this sequential, owner-scoped builder.
+    // Waiting for a receipt never submits or retries an image request.
+    if (batchId === "catalog-prices-v2") {
+      let ready = false;
+      for (let i = 0; i < 180; i++) {
+        let photo: { status?: string } = {};
+        try { photo = JSON.parse(await readFile(`${folder}/${job.id}-image.json`, "utf8")); } catch {}
+        if (photo.status === "SUCCEEDED") { ready = true; break; }
+        if (photo.status === "FAILED_OR_UNCERTAIN") break;
+        if (i % 12 === 0) console.log(`${job.id}: waiting for saved Muse photograph`);
+        await delay(5000);
+      }
+      if (!ready) { console.log(`${job.id}: photo requires review; no model request submitted`); continue; }
+    }
     let state: State;
     try {
       state = JSON.parse(

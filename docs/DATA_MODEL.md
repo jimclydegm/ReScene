@@ -1,6 +1,8 @@
 # ReScene data model and contracts
 
-Local judge setup reuses this schema and all migrations without a second data model. It seeds one isolated developer, one catalog source scene and the 72 approved Product/Asset pairs with authored details and prices. Source uploads and new generation receipts remain local; no production users or scene records are copied. See [JUDGE_SETUP.md](JUDGE_SETUP.md).
+November3 catalog expansion reuses Product, Asset and ContentItem for64 additional independent Muse photographs and Meta SAM3D reconstructions. Each approved SOURCE listing links its source product, same-scene photo/model assets, USD price, materials, dimensions, care and finishes. Authored specifications are stored in both listing details and the merchant attributes; no SQL migration. The approved snapshot is136 products/11 collections. Local live seeding also copies approved product photographs into private local storage and links their Asset rows. See DEMO_EXAMPLES.md for readiness.
+
+Local judge setup reuses this schema and all migrations without a second data model. It seeds one isolated developer, one catalog source scene and the 136 approved Product/Asset pairs with authored details and prices. Source uploads and new generation receipts remain local; no production users or scene records are copied. See [JUDGE_SETUP.md](JUDGE_SETUP.md).
 
 November2 example library:38 owned generated scenes (eight collections and30 individual variants) reuse Product/Asset/ContentItem;58 new textured models and66 Muse photographs are saved. Approved SOURCE listings carry catalogKey, price/currency, authored product specifications/finishes/role, sourceProductId and same-scene model/image assets. Approved snapshot is72 products/11 collections. ContentItem.assetId and ContentItem.id are distinct; source adoption follows the former and saves the latter. No SQL migration. See DEMO_EXAMPLES.md.
 

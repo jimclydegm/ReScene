@@ -22,7 +22,7 @@ The public shopping demo needs no account or credentials:
 
 For the AI stylist, open **Quiet workspace**, mark the laptop and notebook as already owned, keep the tumbler and set a $100 merchandise budget. Ask for two different mouse choices. Spark proposes alternatives from the catalog; code checks the subtotal, kept items, compatibility and placement. Preview a look, apply it, then Undo once. The hosted stylist and voice features make real model calls; prepared photos and meshes do not regenerate when browsed.
 
-The current showroom contains 72 approved products and 11 collections, including five distinct chair, drawer, mouse, sofa, shoe and mug variations. Checkout, reviews, specifications and prices are demonstration content. No payments are processed.
+The showroom contains 136 approved products and 11 collections. An additional 64 designs cover tables, dining and lounge chairs, drawers, sofas, mugs, vases, bags and footwear, with prices across budget, midrange and premium options. Each has a Muse-generated product photograph and a separate textured Meta reconstruction. Checkout, reviews, specifications and prices are demonstration content. No payments are processed.
 
 ## See it in action
 

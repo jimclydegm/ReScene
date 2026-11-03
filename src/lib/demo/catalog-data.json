@@ -3265,5 +3265,2885 @@
       }
     ],
     "imagePath": "/demo/expansion/playtime-item-5.webp"
+  },
+  {
+    "id": "pin-pine-side-table",
+    "name": "Pin Pine Side Table",
+    "subtitle": "Side tables",
+    "price": 2900,
+    "category": "Side tables",
+    "role": "table",
+    "description": "Pin Pine Side Table combines solid pine with a practical, carefully finished design. A small square natural pine side table with four straight legs and a flat empty top.",
+    "materials": "Solid pine",
+    "dimensions": "W38 × D38 × H48 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#d6c8af"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/pin-pine-side-table.webp"
+  },
+  {
+    "id": "loop-white-side-table",
+    "name": "Loop White Side Table",
+    "subtitle": "Side tables",
+    "price": 4900,
+    "category": "Side tables",
+    "role": "table",
+    "description": "Loop White Side Table combines powder-coated steel with a practical, carefully finished design. A white powder-coated steel round side table with three straight legs and a shallow round tray top.",
+    "materials": "Powder-coated steel",
+    "dimensions": "W40 × D40 × H48 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eeeae4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/loop-white-side-table.webp"
+  },
+  {
+    "id": "ember-walnut-side-table",
+    "name": "Ember Walnut Side Table",
+    "subtitle": "Side tables",
+    "price": 13900,
+    "category": "Side tables",
+    "role": "table",
+    "description": "Ember Walnut Side Table combines walnut veneer and solid timber legs with a practical, carefully finished design. A walnut round side table with a thick circular top and three tapered wooden legs.",
+    "materials": "Walnut veneer and solid timber legs",
+    "dimensions": "W44 × D44 × H50 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#754c35"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/ember-walnut-side-table.webp"
+  },
+  {
+    "id": "column-oak-side-table",
+    "name": "Column Oak Side Table",
+    "subtitle": "Side tables",
+    "price": 24900,
+    "category": "Side tables",
+    "role": "table",
+    "description": "Column Oak Side Table combines solid oak and oak veneer with a practical, carefully finished design. A sculptural natural oak side table with a round flat top on a wide solid cylindrical pedestal.",
+    "materials": "Solid oak and oak veneer",
+    "dimensions": "W42 × D42 × H50 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#d6c8af"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/column-oak-side-table.webp"
+  },
+  {
+    "id": "plain-birch-coffee-table",
+    "name": "Plain Birch Coffee Table",
+    "subtitle": "Coffee tables",
+    "price": 6900,
+    "category": "Coffee tables",
+    "role": "table",
+    "description": "Plain Birch Coffee Table combines birch veneer and solid timber legs with a practical, carefully finished design. A compact rectangular birch coffee table with four straight legs and a thin flat empty top.",
+    "materials": "Birch veneer and solid timber legs",
+    "dimensions": "W85 × D48 × H40 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#d6bd94"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/plain-birch-coffee-table.webp"
+  },
+  {
+    "id": "curve-oak-coffee-table",
+    "name": "Curve Oak Coffee Table",
+    "subtitle": "Coffee tables",
+    "price": 14900,
+    "category": "Coffee tables",
+    "role": "table",
+    "description": "Curve Oak Coffee Table combines oak veneer and solid oak with a practical, carefully finished design. A low oval light oak coffee table with a flat thick top and four short tapered legs.",
+    "materials": "Oak veneer and solid oak",
+    "dimensions": "W90 × D50 × H40 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#b98d60"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/curve-oak-coffee-table.webp"
+  },
+  {
+    "id": "frame-black-coffee-table",
+    "name": "Frame Black Coffee Table",
+    "subtitle": "Coffee tables",
+    "price": 22900,
+    "category": "Coffee tables",
+    "role": "table",
+    "description": "Frame Black Coffee Table combines walnut veneer and powder-coated steel with a practical, carefully finished design. A rectangular walnut coffee table with a flat wood top and two simple black steel rectangular end frames.",
+    "materials": "Walnut veneer and powder-coated steel",
+    "dimensions": "W90 × D50 × H40 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#754c35"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/frame-black-coffee-table.webp"
+  },
+  {
+    "id": "stone-cream-coffee-table",
+    "name": "Stone Cream Coffee Table",
+    "subtitle": "Coffee tables",
+    "price": 44900,
+    "category": "Coffee tables",
+    "role": "table",
+    "description": "Stone Cream Coffee Table combines honed travertine with a practical, carefully finished design. A low rounded rectangular cream travertine coffee table with a solid stone slab top and two broad stone pedestal legs.",
+    "materials": "Honed travertine",
+    "dimensions": "W90 × D50 × H38 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#e8dec5"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/stone-cream-coffee-table.webp"
+  },
+  {
+    "id": "daily-white-dining-chair",
+    "name": "Daily White Dining Chair",
+    "subtitle": "Dining chairs",
+    "price": 3900,
+    "category": "Dining chairs",
+    "role": "chair",
+    "description": "Daily White Dining Chair combines molded polymer and steel with a practical, carefully finished design. A white molded dining chair with a smooth curved back and four straight black steel legs.",
+    "materials": "Molded polymer and steel",
+    "dimensions": "W46 × D49 × H80 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eeeae4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/daily-white-dining-chair.webp"
+  },
+  {
+    "id": "reed-pine-dining-chair",
+    "name": "Reed Pine Dining Chair",
+    "subtitle": "Dining chairs",
+    "price": 6900,
+    "category": "Dining chairs",
+    "role": "chair",
+    "description": "Reed Pine Dining Chair combines solid pine with a practical, carefully finished design. A simple natural pine dining chair with four straight legs, a solid flat seat and three vertical back slats.",
+    "materials": "Solid pine",
+    "dimensions": "W45 × D49 × H80 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#d6c8af"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/reed-pine-dining-chair.webp"
+  },
+  {
+    "id": "weave-oak-dining-chair",
+    "name": "Weave Oak Dining Chair",
+    "subtitle": "Dining chairs",
+    "price": 18900,
+    "category": "Dining chairs",
+    "role": "chair",
+    "description": "Weave Oak Dining Chair combines solid oak and woven paper cord with a practical, carefully finished design. A oak dining chair with a gently curved solid back rail, four tapered legs and a tightly woven natural paper cord seat.",
+    "materials": "Solid oak and woven paper cord",
+    "dimensions": "W48 × D51 × H80 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#b98d60"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/weave-oak-dining-chair.webp"
+  },
+  {
+    "id": "atelier-walnut-dining-chair",
+    "name": "Atelier Walnut Dining Chair",
+    "subtitle": "Dining chairs",
+    "price": 34900,
+    "category": "Dining chairs",
+    "role": "chair",
+    "description": "Atelier Walnut Dining Chair combines solid walnut and leather with a practical, carefully finished design. A elegant walnut dining chair with a curved continuous back rail, four tapered walnut legs and a fitted cognac leather seat.",
+    "materials": "Solid walnut and leather",
+    "dimensions": "W49 × D52 × H80 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#754c35"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/atelier-walnut-dining-chair.webp"
+  },
+  {
+    "id": "nest-gray-armchair",
+    "name": "Nest Gray Armchair",
+    "subtitle": "Lounge chairs",
+    "price": 12900,
+    "category": "Lounge chairs",
+    "role": "chair",
+    "description": "Nest Gray Armchair combines woven polyester, foam and timber with a practical, carefully finished design. A compact light gray upholstered armchair with a simple padded back, low padded arms and four short black wood legs.",
+    "materials": "Woven polyester, foam and timber",
+    "dimensions": "W70 × D72 × H80 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#92999b"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/nest-gray-armchair.webp"
+  },
+  {
+    "id": "alto-mustard-armchair",
+    "name": "Alto Mustard Armchair",
+    "subtitle": "Lounge chairs",
+    "price": 24900,
+    "category": "Lounge chairs",
+    "role": "chair",
+    "description": "Alto Mustard Armchair combines textured upholstery and oak legs with a practical, carefully finished design. A mustard yellow textured fabric armchair with a rounded back, fitted seat cushion and four tapered oak legs.",
+    "materials": "Textured upholstery and oak legs",
+    "dimensions": "W74 × D74 × H81 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#c49a3f"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/alto-mustard-armchair.webp"
+  },
+  {
+    "id": "ribbon-blue-armchair",
+    "name": "Ribbon Blue Armchair",
+    "subtitle": "Lounge chairs",
+    "price": 42900,
+    "category": "Lounge chairs",
+    "role": "chair",
+    "description": "Ribbon Blue Armchair combines velvet, foam and walnut with a practical, carefully finished design. A dusty blue velvet armchair with a continuous curved back and arms, fitted cushion and four short walnut legs.",
+    "materials": "Velvet, foam and walnut",
+    "dimensions": "W76 × D76 × H82 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#77a8bd"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/ribbon-blue-armchair.webp"
+  },
+  {
+    "id": "hearth-cognac-armchair",
+    "name": "Hearth Cognac Armchair",
+    "subtitle": "Lounge chairs",
+    "price": 69900,
+    "category": "Lounge chairs",
+    "role": "chair",
+    "description": "Hearth Cognac Armchair combines leather, high-density foam and walnut with a practical, carefully finished design. A compact cognac leather armchair with tailored square arms, a fitted thick seat cushion and four walnut feet.",
+    "materials": "Leather, high-density foam and walnut",
+    "dimensions": "W77 × D77 × H82 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#a26943"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/hearth-cognac-armchair.webp"
+  },
+  {
+    "id": "basic-white-drawers",
+    "name": "Basic White Drawers",
+    "subtitle": "Storage",
+    "price": 5900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "Basic White Drawers combines painted engineered wood and steel knobs with a practical, carefully finished design. A compact white three-drawer chest with flat straight fronts, small black knob handles and a short solid plinth base.",
+    "materials": "Painted engineered wood and steel knobs",
+    "dimensions": "W68 × D38 × H74 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eeeae4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/basic-white-drawers.webp"
+  },
+  {
+    "id": "simple-pine-drawers",
+    "name": "Simple Pine Drawers",
+    "subtitle": "Storage",
+    "price": 9900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "Simple Pine Drawers combines solid pine with a practical, carefully finished design. A compact natural pine three-drawer chest with small round wooden knobs and four short square legs.",
+    "materials": "Solid pine",
+    "dimensions": "W70 × D38 × H76 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#d6c8af"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/simple-pine-drawers.webp"
+  },
+  {
+    "id": "linen-oat-drawers",
+    "name": "Linen Oat Drawers",
+    "subtitle": "Storage",
+    "price": 14900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "Linen Oat Drawers combines painted engineered wood and oak with a practical, carefully finished design. A oatmeal painted three-drawer chest with slim oak handles and four short oak legs.",
+    "materials": "Painted engineered wood and oak",
+    "dimensions": "W72 × D40 × H78 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#ded0b8"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/linen-oat-drawers.webp"
+  },
+  {
+    "id": "block-blue-drawers",
+    "name": "Block Blue Drawers",
+    "subtitle": "Storage",
+    "price": 21900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "Block Blue Drawers combines painted wood and brushed steel with a practical, carefully finished design. A muted navy blue four-drawer chest with clean flat fronts, small brushed steel pulls and short square feet.",
+    "materials": "Painted wood and brushed steel",
+    "dimensions": "W74 × D40 × H82 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#304c68"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/block-blue-drawers.webp"
+  },
+  {
+    "id": "grove-oak-drawers",
+    "name": "Grove Oak Drawers",
+    "subtitle": "Storage",
+    "price": 34900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "Grove Oak Drawers combines oak veneer and solid oak with a practical, carefully finished design. A natural oak four-drawer chest with broad flat fronts, integrated recessed pulls and four tapered oak legs.",
+    "materials": "Oak veneer and solid oak",
+    "dimensions": "W76 × D40 × H80 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#d6c8af"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/grove-oak-drawers.webp"
+  },
+  {
+    "id": "flute-sand-drawers",
+    "name": "Flute Sand Drawers",
+    "subtitle": "Storage",
+    "price": 44900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "Flute Sand Drawers combines ash veneer and solid timber with a practical, carefully finished design. A light ash three-drawer chest with fine vertical fluting on its drawer fronts and a simple short solid wood base.",
+    "materials": "Ash veneer and solid timber",
+    "dimensions": "W76 × D40 × H80 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#c7ad86"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/flute-sand-drawers.webp"
+  },
+  {
+    "id": "heritage-walnut-drawers",
+    "name": "Heritage Walnut Drawers",
+    "subtitle": "Storage",
+    "price": 59900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "Heritage Walnut Drawers combines walnut veneer, timber and brass with a practical, carefully finished design. A walnut three-drawer chest with flush flat fronts, understated antique brass handles and short tapered walnut legs.",
+    "materials": "Walnut veneer, timber and brass",
+    "dimensions": "W78 × D42 × H82 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#754c35"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/heritage-walnut-drawers.webp"
+  },
+  {
+    "id": "atelier-ink-drawers",
+    "name": "Atelier Ink Drawers",
+    "subtitle": "Storage",
+    "price": 79900,
+    "category": "Storage",
+    "role": "drawer",
+    "description": "Atelier Ink Drawers combines solid oak, oak veneer and bronze hardware with a practical, carefully finished design. A charcoal stained oak three-drawer chest with subtle horizontal grain, small bronze bar handles and a recessed plinth base.",
+    "materials": "Solid oak, oak veneer and bronze hardware",
+    "dimensions": "W78 × D42 × H82 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#3b4144"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/atelier-ink-drawers.webp"
+  },
+  {
+    "id": "daily-gray-sofa",
+    "name": "Daily Gray Sofa",
+    "subtitle": "Sofas",
+    "price": 24900,
+    "category": "Sofas",
+    "role": "sofa",
+    "description": "Daily Gray Sofa combines woven polyester, foam and timber with a practical, carefully finished design. A compact light gray two-seat sofa with straight padded arms, two fitted seat cushions and four short black feet.",
+    "materials": "Woven polyester, foam and timber",
+    "dimensions": "W160 × D80 × H78 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#92999b"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/daily-gray-sofa.webp"
+  },
+  {
+    "id": "park-sand-sofa",
+    "name": "Park Sand Sofa",
+    "subtitle": "Sofas",
+    "price": 34900,
+    "category": "Sofas",
+    "role": "sofa",
+    "description": "Park Sand Sofa combines linen blend and timber with a practical, carefully finished design. A compact sand linen two-seat sofa with gently rounded arms, two fitted cushions and four tapered pine legs.",
+    "materials": "Linen blend and timber",
+    "dimensions": "W164 × D82 × H79 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#cfbfa4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/park-sand-sofa.webp"
+  },
+  {
+    "id": "brook-olive-sofa",
+    "name": "Brook Olive Sofa",
+    "subtitle": "Sofas",
+    "price": 44900,
+    "category": "Sofas",
+    "role": "sofa",
+    "description": "Brook Olive Sofa combines textured woven upholstery and walnut with a practical, carefully finished design. A muted olive green two-seat sofa with clean rectangular fitted cushions, narrow upholstered arms and short walnut legs.",
+    "materials": "Textured woven upholstery and walnut",
+    "dimensions": "W168 × D82 × H80 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#777c4d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/brook-olive-sofa.webp"
+  },
+  {
+    "id": "shore-blue-sofa",
+    "name": "Shore Blue Sofa",
+    "subtitle": "Sofas",
+    "price": 69900,
+    "category": "Sofas",
+    "role": "sofa",
+    "description": "Shore Blue Sofa combines cotton blend corduroy and oak with a practical, carefully finished design. A dusty blue corduroy two-seat sofa with broad soft arms, two fitted seat cushions and four oak feet.",
+    "materials": "Cotton blend corduroy and oak",
+    "dimensions": "W170 × D84 × H80 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#77a8bd"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/shore-blue-sofa.webp"
+  },
+  {
+    "id": "arc-cream-sofa",
+    "name": "Arc Cream Sofa",
+    "subtitle": "Sofas",
+    "price": 89900,
+    "category": "Sofas",
+    "role": "sofa",
+    "description": "Arc Cream Sofa combines boucle, high-density foam and oak with a practical, carefully finished design. A cream boucle two-seat sofa with a softly curved continuous padded back, two fitted seat cushions and a short oak plinth base.",
+    "materials": "Boucle, high-density foam and oak",
+    "dimensions": "W172 × D84 × H80 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#e8dec5"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/arc-cream-sofa.webp"
+  },
+  {
+    "id": "loft-tan-sofa",
+    "name": "Loft Tan Sofa",
+    "subtitle": "Sofas",
+    "price": 119900,
+    "category": "Sofas",
+    "role": "sofa",
+    "description": "Loft Tan Sofa combines leather and solid timber with a practical, carefully finished design. A tan leather two-seat sofa with straight padded arms, two tailored fitted seat cushions and four walnut feet.",
+    "materials": "Leather and solid timber",
+    "dimensions": "W172 × D84 × H80 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#754c35"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/loft-tan-sofa.webp"
+  },
+  {
+    "id": "salon-rust-sofa",
+    "name": "Salon Rust Sofa",
+    "subtitle": "Sofas",
+    "price": 149900,
+    "category": "Sofas",
+    "role": "sofa",
+    "description": "Salon Rust Sofa combines cotton velvet and walnut with a practical, carefully finished design. A rust velvet two-seat sofa with a curved padded back, rounded arms and four short dark walnut legs.",
+    "materials": "Cotton velvet and walnut",
+    "dimensions": "W174 × D85 × H81 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#ac5d3d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/salon-rust-sofa.webp"
+  },
+  {
+    "id": "atelier-cocoa-sofa",
+    "name": "Atelier Cocoa Sofa",
+    "subtitle": "Sofas",
+    "price": 189900,
+    "category": "Sofas",
+    "role": "sofa",
+    "description": "Atelier Cocoa Sofa combines leather, resilient foam and solid oak with a practical, carefully finished design. A premium dark cocoa leather two-seat sofa with clean square arms, two deeply padded fitted cushions and short solid oak feet.",
+    "materials": "Leather, resilient foam and solid oak",
+    "dimensions": "W174 × D85 × H81 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#b98d60"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/atelier-cocoa-sofa.webp"
+  },
+  {
+    "id": "daily-white-mug",
+    "name": "Daily White Mug",
+    "subtitle": "Mugs",
+    "price": 600,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "Daily White Mug combines glazed ceramic with a practical, carefully finished design. A simple glossy white ceramic mug with a straight cylinder body and one rounded C-shaped handle.",
+    "materials": "Glazed ceramic",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eeeae4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/daily-white-mug.webp"
+  },
+  {
+    "id": "rise-yellow-mug",
+    "name": "Rise Yellow Mug",
+    "subtitle": "Mugs",
+    "price": 1000,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "Rise Yellow Mug combines glazed ceramic with a practical, carefully finished design. A warm yellow ceramic mug with a gently rounded body, white interior and one curved handle.",
+    "materials": "Glazed ceramic",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#e2bd5c"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/rise-yellow-mug.webp"
+  },
+  {
+    "id": "dune-speckled-mug",
+    "name": "Dune Speckled Mug",
+    "subtitle": "Mugs",
+    "price": 1400,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "Dune Speckled Mug combines speckled stoneware with a practical, carefully finished design. A cream speckled stoneware mug with a tapered base and one thick curved handle.",
+    "materials": "Speckled stoneware",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#e8dec5"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/dune-speckled-mug.webp"
+  },
+  {
+    "id": "rib-olive-mug",
+    "name": "Rib Olive Mug",
+    "subtitle": "Mugs",
+    "price": 2200,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "Rib Olive Mug combines glazed stoneware with a practical, carefully finished design. A olive green ceramic mug with fine vertical ribs, a cream glazed interior and one broad curved handle.",
+    "materials": "Glazed stoneware",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#777c4d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/rib-olive-mug.webp"
+  },
+  {
+    "id": "tide-cobalt-mug",
+    "name": "Tide Cobalt Mug",
+    "subtitle": "Mugs",
+    "price": 2800,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "Tide Cobalt Mug combines glazed stoneware with a practical, carefully finished design. A deep cobalt blue ceramic mug with a glossy rounded body and one large circular handle.",
+    "materials": "Glazed stoneware",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#24548d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/tide-cobalt-mug.webp"
+  },
+  {
+    "id": "kiln-rust-mug",
+    "name": "Kiln Rust Mug",
+    "subtitle": "Mugs",
+    "price": 3600,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "Kiln Rust Mug combines hand-finished stoneware with a practical, carefully finished design. A rust red handmade-look ceramic mug with a slightly tapered body, a smooth cream interior and one thick handle.",
+    "materials": "Hand-finished stoneware",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#ac5d3d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/kiln-rust-mug.webp"
+  },
+  {
+    "id": "porcelain-ink-mug",
+    "name": "Porcelain Ink Mug",
+    "subtitle": "Mugs",
+    "price": 4800,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "Porcelain Ink Mug combines glazed porcelain with a practical, carefully finished design. A elegant white porcelain mug with a fine navy blue rim, a smooth straight body and one slender curved handle.",
+    "materials": "Glazed porcelain",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eeeae4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/porcelain-ink-mug.webp"
+  },
+  {
+    "id": "studio-satin-mug",
+    "name": "Studio Satin Mug",
+    "subtitle": "Mugs",
+    "price": 6500,
+    "category": "Mugs",
+    "role": "mug",
+    "description": "Studio Satin Mug combines hand-finished porcelain with a practical, carefully finished design. A satin charcoal ceramic mug with a subtly faceted body, glossy pale interior and one smoothly rounded handle.",
+    "materials": "Hand-finished porcelain",
+    "dimensions": "W12 × D9 × H10 cm · 350 ml",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#3b4144"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/studio-satin-mug.webp"
+  },
+  {
+    "id": "bud-white-vase",
+    "name": "Bud White Vase",
+    "subtitle": "Home accessories",
+    "price": 900,
+    "category": "Home accessories",
+    "role": "vase",
+    "description": "Bud White Vase combines glazed ceramic with a practical, carefully finished design. A small opaque white ceramic bud vase with a round belly and a short narrow open neck.",
+    "materials": "Glazed ceramic",
+    "dimensions": "W12 × D12 × H20 cm",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eeeae4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/bud-white-vase.webp"
+  },
+  {
+    "id": "terra-round-vase",
+    "name": "Terra Round Vase",
+    "subtitle": "Home accessories",
+    "price": 1600,
+    "category": "Home accessories",
+    "role": "vase",
+    "description": "Terra Round Vase combines unglazed terracotta with a practical, carefully finished design. A terracotta ceramic vase with an oval body, a flat base and a short round open neck.",
+    "materials": "Unglazed terracotta",
+    "dimensions": "W14 × D14 × H22 cm",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#ad6952"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/terra-round-vase.webp"
+  },
+  {
+    "id": "tube-sage-vase",
+    "name": "Tube Sage Vase",
+    "subtitle": "Home accessories",
+    "price": 2400,
+    "category": "Home accessories",
+    "role": "vase",
+    "description": "Tube Sage Vase combines glazed stoneware with a practical, carefully finished design. A sage green ceramic cylindrical vase with straight sides, a flat base and an open round rim.",
+    "materials": "Glazed stoneware",
+    "dimensions": "W12 × D12 × H24 cm",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#80977d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/tube-sage-vase.webp"
+  },
+  {
+    "id": "pebble-sand-vase",
+    "name": "Pebble Sand Vase",
+    "subtitle": "Home accessories",
+    "price": 3900,
+    "category": "Home accessories",
+    "role": "vase",
+    "description": "Pebble Sand Vase combines matte stoneware with a practical, carefully finished design. A matte sand ceramic vase with a softly rounded pebble body and a small upright open neck.",
+    "materials": "Matte stoneware",
+    "dimensions": "W17 × D14 × H25 cm",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#cfbfa4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/pebble-sand-vase.webp"
+  },
+  {
+    "id": "flute-ivory-vase",
+    "name": "Flute Ivory Vase",
+    "subtitle": "Home accessories",
+    "price": 5900,
+    "category": "Home accessories",
+    "role": "vase",
+    "description": "Flute Ivory Vase combines glazed stoneware with a practical, carefully finished design. A ivory ceramic vase with gentle vertical fluting, a broad flat base and a tapered round open neck.",
+    "materials": "Glazed stoneware",
+    "dimensions": "W16 × D16 × H27 cm",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eee8de"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/flute-ivory-vase.webp"
+  },
+  {
+    "id": "arc-blue-vase",
+    "name": "Arc Blue Vase",
+    "subtitle": "Home accessories",
+    "price": 7900,
+    "category": "Home accessories",
+    "role": "vase",
+    "description": "Arc Blue Vase combines glazed stoneware with a practical, carefully finished design. A deep blue opaque ceramic vase with a clean sculptural curved body and a single open circular neck.",
+    "materials": "Glazed stoneware",
+    "dimensions": "W18 × D14 × H28 cm",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#77a8bd"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/arc-blue-vase.webp"
+  },
+  {
+    "id": "column-charcoal-vase",
+    "name": "Column Charcoal Vase",
+    "subtitle": "Home accessories",
+    "price": 10900,
+    "category": "Home accessories",
+    "role": "vase",
+    "description": "Column Charcoal Vase combines hand-finished stoneware with a practical, carefully finished design. A charcoal stoneware vase with a tall straight cylindrical body, subtle horizontal ridges and an open rim.",
+    "materials": "Hand-finished stoneware",
+    "dimensions": "W16 × D16 × H28 cm",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#3b4144"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/column-charcoal-vase.webp"
+  },
+  {
+    "id": "atelier-chalk-vase",
+    "name": "Atelier Chalk Vase",
+    "subtitle": "Home accessories",
+    "price": 15900,
+    "category": "Home accessories",
+    "role": "vase",
+    "description": "Atelier Chalk Vase combines hand-finished porcelain with a practical, carefully finished design. A chalk white sculptural ceramic vase with a smooth asymmetrical oval body, flat stable base and a single short open neck.",
+    "materials": "Hand-finished porcelain",
+    "dimensions": "W19 × D15 × H28 cm",
+    "care": "Wash gently by hand with mild soap. Dry with a soft cloth.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#eeeae4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/atelier-chalk-vase.webp"
+  },
+  {
+    "id": "daily-navy-tote",
+    "name": "Daily Navy Tote",
+    "subtitle": "Bags",
+    "price": 1800,
+    "category": "Bags",
+    "role": "tote",
+    "description": "Daily Navy Tote combines cotton canvas with a practical, carefully finished design. A upright navy cotton canvas tote bag with two complete short loop handles, a flat base and an unmarked plain front.",
+    "materials": "Cotton canvas",
+    "dimensions": "W34 × D10 × H38 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#304c68"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/daily-navy-tote.webp"
+  },
+  {
+    "id": "market-olive-tote",
+    "name": "Market Olive Tote",
+    "subtitle": "Bags",
+    "price": 3900,
+    "category": "Bags",
+    "role": "tote",
+    "description": "Market Olive Tote combines waxed cotton canvas with a practical, carefully finished design. A upright olive waxed canvas tote bag with two short tan canvas loop handles, a flat structured base and one plain front pocket.",
+    "materials": "Waxed cotton canvas",
+    "dimensions": "W35 × D11 × H38 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#777c4d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/market-olive-tote.webp"
+  },
+  {
+    "id": "commute-black-tote",
+    "name": "Commute Black Tote",
+    "subtitle": "Bags",
+    "price": 6900,
+    "category": "Bags",
+    "role": "tote",
+    "description": "Commute Black Tote combines woven nylon and metal zipper with a practical, carefully finished design. A upright structured black nylon tote bag with two short rounded black handles, a closed zip top and a simple unmarked front.",
+    "materials": "Woven nylon and metal zipper",
+    "dimensions": "W35 × D11 × H37 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#303638"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/commute-black-tote.webp"
+  },
+  {
+    "id": "studio-tan-tote",
+    "name": "Studio Tan Tote",
+    "subtitle": "Bags",
+    "price": 16900,
+    "category": "Bags",
+    "role": "tote",
+    "description": "Studio Tan Tote combines leather and woven lining with a practical, carefully finished design. A upright tan leather tote bag with two complete short rounded leather handles, straight sides and a structured flat base.",
+    "materials": "Leather and woven lining",
+    "dimensions": "W34 × D11 × H36 cm",
+    "care": "Dust with a soft cloth. Blot spills promptly and avoid abrasive cleaners.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#aaa291"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/studio-tan-tote.webp"
+  },
+  {
+    "id": "pocket-sand-bag",
+    "name": "Pocket Sand Bag",
+    "subtitle": "Bags",
+    "price": 2900,
+    "category": "Bags",
+    "role": "handbag",
+    "description": "Pocket Sand Bag combines cotton canvas and synthetic trim with a practical, carefully finished design. A small structured sand canvas handbag with two short complete rounded handles, a closed zip top and tan base trim.",
+    "materials": "Cotton canvas and synthetic trim",
+    "dimensions": "W25 × D10 × H22 cm",
+    "care": "Spot clean with a soft cloth. Air dry away from direct heat.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#cfbfa4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/pocket-sand-bag.webp"
+  },
+  {
+    "id": "curve-burgundy-bag",
+    "name": "Curve Burgundy Bag",
+    "subtitle": "Bags",
+    "price": 5900,
+    "category": "Bags",
+    "role": "handbag",
+    "description": "Curve Burgundy Bag combines synthetic leather and brass-tone hardware with a practical, carefully finished design. A small burgundy synthetic leather top-handle handbag with a curved flap, one complete short arch handle and a small brass clasp.",
+    "materials": "Synthetic leather and brass-tone hardware",
+    "dimensions": "W26 × D10 × H22 cm",
+    "care": "Spot clean with a soft cloth. Air dry away from direct heat.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#783846"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/curve-burgundy-bag.webp"
+  },
+  {
+    "id": "frame-caramel-bag",
+    "name": "Frame Caramel Bag",
+    "subtitle": "Bags",
+    "price": 12900,
+    "category": "Bags",
+    "role": "handbag",
+    "description": "Frame Caramel Bag combines leather, woven lining and metal hardware with a practical, carefully finished design. A caramel leather structured handbag with two complete short rounded handles, a clean flat front and a closed top zipper.",
+    "materials": "Leather, woven lining and metal hardware",
+    "dimensions": "W27 × D10 × H22 cm",
+    "care": "Spot clean with a soft cloth. Air dry away from direct heat.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#ae7651"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/frame-caramel-bag.webp"
+  },
+  {
+    "id": "atelier-black-bag",
+    "name": "Atelier Black Bag",
+    "subtitle": "Bags",
+    "price": 34900,
+    "category": "Bags",
+    "role": "handbag",
+    "description": "Atelier Black Bag combines pebbled leather and gold-tone hardware with a practical, carefully finished design. A premium black pebbled leather top-handle handbag with a structured trapezoid body, one complete short arch handle and a small polished gold clasp.",
+    "materials": "Pebbled leather and gold-tone hardware",
+    "dimensions": "W27 × D11 × H23 cm",
+    "care": "Spot clean with a soft cloth. Air dry away from direct heat.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#303638"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/atelier-black-bag.webp"
+  },
+  {
+    "id": "daily-canvas-sneaker",
+    "name": "Daily Canvas Sneaker",
+    "subtitle": "Footwear",
+    "price": 2900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "Daily Canvas Sneaker combines cotton canvas and rubber sole with a practical, carefully finished design. A cream cotton canvas low-top lace-up sneaker with neat simple laces and a solid white rubber sole.",
+    "materials": "Cotton canvas and rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Spot clean with a soft cloth. Air dry away from direct heat.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#e8dec5"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/daily-canvas-sneaker.webp"
+  },
+  {
+    "id": "pace-gray-sneaker",
+    "name": "Pace Gray Sneaker",
+    "subtitle": "Footwear",
+    "price": 4500,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "Pace Gray Sneaker combines mesh textile and foam rubber sole with a practical, carefully finished design. A light gray mesh running sneaker with simple gray laces and a continuous solid white foam sole.",
+    "materials": "Mesh textile and foam rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Spot clean with a soft cloth. Air dry away from direct heat.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#92999b"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/pace-gray-sneaker.webp"
+  },
+  {
+    "id": "weekend-olive-slip-on",
+    "name": "Weekend Olive Slip-On",
+    "subtitle": "Footwear",
+    "price": 5900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "Weekend Olive Slip-On combines cotton canvas and rubber sole with a practical, carefully finished design. A olive canvas slip-on shoe with elastic side panels, a rounded toe and a solid white rubber sole.",
+    "materials": "Cotton canvas and rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Spot clean with a soft cloth. Air dry away from direct heat.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#777c4d"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/weekend-olive-slip-on.webp"
+  },
+  {
+    "id": "court-black-sneaker",
+    "name": "Court Black Sneaker",
+    "subtitle": "Footwear",
+    "price": 8500,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "Court Black Sneaker combines leather upper and rubber sole with a practical, carefully finished design. A black leather low-top lace-up sneaker with a simple panel construction and a solid off-white rubber cup sole.",
+    "materials": "Leather upper and rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Spot clean with a soft cloth. Air dry away from direct heat.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#303638"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/court-black-sneaker.webp"
+  },
+  {
+    "id": "stride-sand-runner",
+    "name": "Stride Sand Runner",
+    "subtitle": "Footwear",
+    "price": 11900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "Stride Sand Runner combines suede, mesh and foam rubber sole with a practical, carefully finished design. A sand and cream suede running sneaker with simple laces, subtle mesh panels and a solid cream foam rubber sole.",
+    "materials": "Suede, mesh and foam rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Spot clean with a soft cloth. Air dry away from direct heat.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#cfbfa4"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/stride-sand-runner.webp"
+  },
+  {
+    "id": "heritage-chestnut-derby",
+    "name": "Heritage Chestnut Derby",
+    "subtitle": "Footwear",
+    "price": 14900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "Heritage Chestnut Derby combines leather upper and rubber sole with a practical, carefully finished design. A chestnut leather lace-up derby shoe with a plain rounded toe, neat stitching and a low solid dark brown sole.",
+    "materials": "Leather upper and rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Spot clean with a soft cloth. Air dry away from direct heat.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#805537"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/heritage-chestnut-derby.webp"
+  },
+  {
+    "id": "soft-navy-loafer",
+    "name": "Soft Navy Loafer",
+    "subtitle": "Footwear",
+    "price": 17900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "Soft Navy Loafer combines suede upper and rubber sole with a practical, carefully finished design. A navy suede slip-on loafer with a rounded moccasin toe and a continuous thin textured rubber sole.",
+    "materials": "Suede upper and rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Spot clean with a soft cloth. Air dry away from direct heat.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#304c68"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/soft-navy-loafer.webp"
+  },
+  {
+    "id": "atelier-brown-loafer",
+    "name": "Atelier Brown Loafer",
+    "subtitle": "Footwear",
+    "price": 22900,
+    "category": "Footwear",
+    "role": "shoes",
+    "description": "Atelier Brown Loafer combines leather upper, leather lining and rubber sole with a practical, carefully finished design. A rich dark brown leather penny loafer with a smooth rounded toe, a simple leather saddle and a low solid dark sole.",
+    "materials": "Leather upper, leather lining and rubber sole",
+    "dimensions": "Size EU 42",
+    "care": "Spot clean with a soft cloth. Air dry away from direct heat.",
+    "colors": [
+      {
+        "name": "Original",
+        "value": null,
+        "swatch": "#805537"
+      },
+      {
+        "name": "Warm ivory",
+        "value": "#dfd5bf",
+        "swatch": "#dfd5bf"
+      },
+      {
+        "name": "Forest",
+        "value": "#789b82",
+        "swatch": "#789b82"
+      },
+      {
+        "name": "Clay",
+        "value": "#c9967a",
+        "swatch": "#c9967a"
+      },
+      {
+        "name": "Deep blue",
+        "value": "#829bb9",
+        "swatch": "#829bb9"
+      },
+      {
+        "name": "Charcoal",
+        "value": "#737d78",
+        "swatch": "#737d78"
+      }
+    ],
+    "imagePath": "/demo/catalog-v2/atelier-brown-loafer.webp"
   }
 ]

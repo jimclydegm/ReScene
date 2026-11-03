@@ -16,7 +16,7 @@ const models = JSON.parse(
   await readFile("src/lib/demo/catalog-models.json", "utf8"),
 );
 const version = "judge-assets-v1";
-console.log(`Preparing ${models.length} approved sample models (about 134 MiB on the first run)…`);
+console.log(`Preparing ${models.length} approved sample models (about ${Math.ceil(models.reduce((n,m)=>n+m.bytes,0)/1024/1024)} MiB on the first run)…`);
 let verified = 0;
 for (const m of models) {
   const key = `judge/demo/store-v1/${m.digest}.glb`,

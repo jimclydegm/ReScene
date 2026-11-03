@@ -14,6 +14,7 @@ import {
 } from "@/lib/demo/scenes";
 import type { Arrangement } from "@/lib/demo/state";
 import type { ShoppingIntent, StylistInput } from "./contracts";
+import { catalogSelections, diverseSelections } from "./catalog-search";
 
 export type Candidate = {
   id: string;
@@ -42,9 +43,17 @@ export function productRole(category: string) {
   if (/chair|sofa|stool/i.test(category)) return "seating";
   if (/storage|table/i.test(category)) return "surface";
   if (/lighting/i.test(category)) return "lighting";
+  const roles: Record<string, string> = { Bags: "bag", Footwear: "shoes", Mugs: "mug", "Computer mice": "mouse" };
+  if (roles[category]) return roles[category];
   return category.toLowerCase();
 }
 function roleOf(p: DemoProduct) {
+  if (p.role === "tote" || p.role === "handbag") return "bag";
+  if (p.role === "table") return "surface";
+  if (!p.role && p.category === "Home accessories") {
+    if (/vase/i.test(p.name)) return "vase";
+    if (/lamp/i.test(p.name)) return "lighting";
+  }
   return (
     p.role ??
     (/sofa/i.test(p.category)
@@ -63,6 +72,8 @@ export function stylistCompatible(
   intent: Pick<ShoppingIntent, "requireStorage">,
 ) {
   const original = findDemoProduct(slot)!;
+  if (/chairs$/i.test(original.category) && /chairs$/i.test(p.category) && original.category !== p.category) return false;
+  if (/tables$/i.test(original.category) && original.category !== p.category) return false;
   if (original.role) return roleOf(original) === roleOf(p);
   if (supportOf(scene, slot)) return p.category === "Home accessories";
   if (intent.requireStorage && original.category === "Storage")
@@ -157,6 +168,16 @@ function finishFor(
   palette: ShoppingIntent["palette"],
   variant: number,
 ) {
+  const originalPalette = {
+    warm: /wood|walnut|oak|pine|birch|ash|cognac|tan\b|terracotta|rust|cream|sand|ivory|oat/i,
+    cool: /blue|navy|sage|olive|forest|silver/i,
+    neutral: /white|ivory|cream|chalk|charcoal|black|gr[ae]y|sand|taupe/i,
+    colorful: /yellow|mustard|blue|navy|sage|olive|forest|rust|terracotta|burgundy/i,
+    original: null,
+  }[palette];
+  // Keep an already suitable original material in the first look. Applying the
+  // same tint to every product would erase much of the catalog's visual variety.
+  if (variant === 0 && originalPalette?.test(`${p.name} ${p.materials} ${p.colors[0].name}`)) return 0;
   const term =
     palette === "warm"
       ? variant % 2
@@ -224,20 +245,24 @@ export function buildCandidates(input: StylistInput, intent: ShoppingIntent) {
       input.draft,
       ...(intent.layout === "original" ? [] : [layouts.B, layouts.D]),
     ];
-  const visit = (index: number, selected: DemoProduct[], cost: number) => {
-    if (cost > budget || checked >= 12000) return;
-    if (index < slots.length) {
-      for (const p of choices[index])
-        visit(
-          index + 1,
-          [...selected, p],
-          cost + (purchasing(input.draft.items[slots[index]]) ? p.price : 0),
-        );
-      return;
+  const selections = catalogSelections(choices, slots.map(s => purchasing(input.draft.items[s])), budget);
+  // Also retain every affordable single substitution in the current arrangement.
+  // A beam can otherwise lose a physically valid kit before geometry validation.
+  for (let index = 0; index < slots.length; index++)
+    for (const p of choices[index]) {
+      const products = slots.map((slot, i) => i === index ? p : findDemoProduct(itemProductId(slot, input.draft.items[slot]))!);
+      if (products.some((p, i) => !choices[i].some(c => c.id === p.id))) continue;
+      const cost = products.reduce((n, p, i) => n + (purchasing(input.draft.items[slots[i]]) ? p.price : 0), 0);
+      if (cost <= budget) selections.push({ products, cost });
     }
+  const selectionKeys = new Set<string>();
+  selectionLoop: for (const { products: selected, cost } of selections) {
+    const selectionKey = selected.map(p => p.id).join("|");
+    if (selectionKeys.has(selectionKey)) continue;
+    selectionKeys.add(selectionKey);
     for (let variation = 0; variation < 2; variation++)
       for (const base of bases) {
-        if (checked++ >= 12000) return;
+        if (checked++ >= 12000) break selectionLoop;
         const draft = structuredClone(input.draft);
         for (let i = 0; i < slots.length; i++) {
           const slot = slots[i],
@@ -302,8 +327,7 @@ export function buildCandidates(input: StylistInput, intent: ShoppingIntent) {
           changes,
         });
       }
-  };
-  visit(0, [], 0);
+  }
   // Preserve variety in products instead of filling the shortlist with tint duplicates.
   candidates.sort((a, b) => a.score - b.score);
   const kits = new Map<string, Candidate[]>();
@@ -313,9 +337,20 @@ export function buildCandidates(input: StylistInput, intent: ShoppingIntent) {
       .join("|");
     kits.set(key, [...(kits.get(key) ?? []), c]);
   }
-  const shortlist = [...kits.values()]
-    .flatMap((v) => v.slice(0, 2))
-    .slice(0, 24);
+  const representatives = [...kits.values()].map(v => ({
+    products: Object.entries(v[0].draft.items).map(([s, i]) => findDemoProduct(itemProductId(s, i))!),
+    cost: v[0].subtotalCents,
+    options: v,
+  }));
+  const chosen = diverseSelections(representatives, budget, 24);
+  const shortlist = chosen.map(c => c.options[0]);
+  // With multiple valid kits, give Spark one candidate per merchandise set so
+  // its two results cannot be the same products with different tint labels.
+  if (shortlist.length === 1)
+    for (const c of chosen) {
+      const second = c.options[1];
+      if (second && shortlist.length < 24) shortlist.push(second);
+    }
   return {
     candidates: shortlist,
     checked,

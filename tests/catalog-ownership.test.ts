@@ -48,7 +48,7 @@ describe("Owned generated catalog", () => {
       },
     ]);
     expect(await catalog("target", "owner")).toEqual([
-      { id: "valid", name: "My chair", imageUrl: "owned-image-url" },
+      { id: "valid", name: "My chair", imageUrl: "owned-image-url", category: null, price: null, currency: null },
     ]);
     expect(m.db.product.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -57,6 +57,17 @@ describe("Owned generated catalog", () => {
         }),
       }),
     );
+  });
+  it("keeps a curated listing once instead of duplicating its source object", async () => {
+    const asset = { sceneId: "source", status: "READY", kind: "MODEL_GLB" };
+    m.db.product.findMany.mockResolvedValue([
+      {id:"raw",name:"Original",sceneId:"source",modelAsset:asset},
+      {id:"approved",name:"Catalog chair",sceneId:"source",sourceProductId:"raw",modelAsset:asset,
+       price:{toFixed:()=>"39.00"},currency:"USD",inferredDetails:{category:"Dining chairs"}},
+    ]);
+    expect(await catalog("target","owner")).toEqual([
+      {id:"approved",name:"Catalog chair",imageUrl:null,price:"39.00",currency:"USD",category:"Dining chairs"},
+    ]);
   });
   it("cannot import another owner's source or read its bytes", async () => {
     m.db.sceneObject.findFirst.mockResolvedValue({
